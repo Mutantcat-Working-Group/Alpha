@@ -124,12 +124,13 @@ export interface ISessions {
     signal: AbortSignal,
   ): Promise<RemoteResult<{ items: SessionSearchResultItem[]; hasMore: boolean }>>
   /**
-   * Fork a session from a completed-turn prefix of the source; on resolution
-   * the child is in the catalog and may be explicitly retained.
-   * @param opts - source session id, the optional event seq anchoring the
-   *   cut (the boundary is the first turn/end at or after it; an in-log
-   *   anchor in an open turn is unavailable rather than clipped backward),
-   *   and whether to increment an inherited durable title before resolving.
+   * Fork a session from an exact inclusive prefix of the source; on
+   * resolution the child is in the list store and `open()` can target it.
+   * @param opts - source session id, the optional exact inclusive boundary
+   *   seq (a real event seq the caller already knows; a cut inside an open
+   *   turn is balanced Host-side with synthetic closers, and omission selects
+   *   the latest completed-turn prefix), and whether to increment an
+   *   inherited durable title before resolving.
    * @returns the child session id.
    * @throws when the fork fails, or when a requested child-title rename fails after creation.
    */

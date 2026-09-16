@@ -12288,7 +12288,7 @@
       "kind": "event",
       "event": "turn/end",
       "surface": false,
-      "digest": "bab768260853e13a7cf2e22e65af572a1e76a5b2c01f3cdc2ce09d39b87fb70b",
+      "digest": "0f8512903d94f57a4748fa1a2092e64342856796684e6b8343db685b192745ce",
       "schema": {
         "root": 0,
         "nodes": [
@@ -12302,22 +12302,22 @@
               },
               {
                 "name": "ignorable",
-                "type": 29,
+                "type": 31,
                 "optional": true
               },
               {
                 "name": "seq",
-                "type": 14,
+                "type": 16,
                 "optional": false
               },
               {
                 "name": "time",
-                "type": 14,
+                "type": 16,
                 "optional": false
               },
               {
                 "name": "type",
-                "type": 30,
+                "type": 32,
                 "optional": false
               }
             ],
@@ -12333,7 +12333,7 @@
               },
               {
                 "name": "turn",
-                "type": 14,
+                "type": 16,
                 "optional": false
               }
             ],
@@ -12347,7 +12347,8 @@
               7,
               9,
               11,
-              16
+              13,
+              18
             ]
           },
           {
@@ -12393,7 +12394,7 @@
           },
           {
             "kind": "literal",
-            "value": "interrupted"
+            "value": "forked"
           },
           {
             "kind": "object",
@@ -12408,6 +12409,21 @@
           },
           {
             "kind": "literal",
+            "value": "interrupted"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 12,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
             "value": "max-tokens"
           },
           {
@@ -12415,12 +12431,12 @@
             "properties": [
               {
                 "name": "error",
-                "type": 12,
+                "type": 14,
                 "optional": false
               },
               {
                 "name": "kind",
-                "type": 15,
+                "type": 17,
                 "optional": false
               }
             ],
@@ -12431,32 +12447,32 @@
             "properties": [
               {
                 "name": "code",
-                "type": 13,
+                "type": 15,
                 "optional": false
               },
               {
                 "name": "message",
-                "type": 13,
+                "type": 15,
                 "optional": false
               },
               {
                 "name": "offloadImages",
-                "type": 14,
+                "type": 16,
                 "optional": true
               },
               {
                 "name": "providerRetryAfterMs",
-                "type": 14,
+                "type": 16,
                 "optional": true
               },
               {
                 "name": "requestId",
-                "type": 13,
+                "type": 15,
                 "optional": true
               },
               {
                 "name": "status",
-                "type": 14,
+                "type": 16,
                 "optional": true
               }
             ],
@@ -12479,12 +12495,12 @@
             "properties": [
               {
                 "name": "kind",
-                "type": 17,
+                "type": 19,
                 "optional": false
               },
               {
                 "name": "reason",
-                "type": 18,
+                "type": 20,
                 "optional": false
               }
             ],
@@ -12497,27 +12513,12 @@
           {
             "kind": "union",
             "types": [
-              19,
               21,
               23,
               25,
-              27
+              27,
+              29
             ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 20,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "user"
           },
           {
             "kind": "object",
@@ -12526,13 +12527,18 @@
                 "name": "kind",
                 "type": 22,
                 "optional": false
+              },
+              {
+                "name": "reason",
+                "type": 15,
+                "optional": false
               }
             ],
             "indices": []
           },
           {
             "kind": "literal",
-            "value": "disposed"
+            "value": "hook"
           },
           {
             "kind": "object",
@@ -12547,7 +12553,7 @@
           },
           {
             "kind": "literal",
-            "value": "legacy"
+            "value": "parent"
           },
           {
             "kind": "object",
@@ -12562,7 +12568,7 @@
           },
           {
             "kind": "literal",
-            "value": "parent"
+            "value": "user"
           },
           {
             "kind": "object",
@@ -12571,10 +12577,20 @@
                 "name": "kind",
                 "type": 28,
                 "optional": false
-              },
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "disposed"
+          },
+          {
+            "kind": "object",
+            "properties": [
               {
-                "name": "reason",
-                "type": 13,
+                "name": "kind",
+                "type": 30,
                 "optional": false
               }
             ],
@@ -12582,7 +12598,7 @@
           },
           {
             "kind": "literal",
-            "value": "hook"
+            "value": "legacy"
           },
           {
             "kind": "literal",
@@ -16604,7 +16620,7 @@
         "event:assistant/attempt.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:335"
+        "packages/core/session/src/types.ts:342"
       ]
     },
     {
@@ -16799,6 +16815,334 @@
       "sources": [
         "packages/attachment/attachment/src/types.ts:28"
       ]
+    },
+    {
+      "digest": "0f8512903d94f57a4748fa1a2092e64342856796684e6b8343db685b192745ce",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "data",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "ignorable",
+                "type": 31,
+                "optional": true
+              },
+              {
+                "name": "seq",
+                "type": 16,
+                "optional": false
+              },
+              {
+                "name": "time",
+                "type": 16,
+                "optional": false
+              },
+              {
+                "name": "type",
+                "type": 32,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "reason",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "turn",
+                "type": 16,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "union",
+            "types": [
+              3,
+              5,
+              7,
+              9,
+              11,
+              13,
+              18
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 4,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "blocked"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 6,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "forked"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 10,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "interrupted"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 12,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "max-tokens"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "error",
+                "type": 14,
+                "optional": false
+              },
+              {
+                "name": "kind",
+                "type": 17,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "code",
+                "type": 15,
+                "optional": false
+              },
+              {
+                "name": "message",
+                "type": 15,
+                "optional": false
+              },
+              {
+                "name": "offloadImages",
+                "type": 16,
+                "optional": true
+              },
+              {
+                "name": "providerRetryAfterMs",
+                "type": 16,
+                "optional": true
+              },
+              {
+                "name": "requestId",
+                "type": 15,
+                "optional": true
+              },
+              {
+                "name": "status",
+                "type": 16,
+                "optional": true
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "literal",
+            "value": "error"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 19,
+                "optional": false
+              },
+              {
+                "name": "reason",
+                "type": 20,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "aborted"
+          },
+          {
+            "kind": "union",
+            "types": [
+              21,
+              23,
+              25,
+              27,
+              29
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 22,
+                "optional": false
+              },
+              {
+                "name": "reason",
+                "type": 15,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "hook"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 24,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "parent"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 26,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "user"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 28,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "disposed"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 30,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "legacy"
+          },
+          {
+            "kind": "literal",
+            "value": true
+          },
+          {
+            "kind": "literal",
+            "value": "turn/end"
+          }
+        ]
+      },
+      "names": [
+        "event:turn/end"
+      ],
+      "sources": []
     },
     {
       "digest": "10e386801903f9d424602c31d3ff837a94aef623c8b391376d8d9e253525fabe",
@@ -19720,7 +20064,7 @@
         "event:session/end-seed.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:405"
+        "packages/core/session/src/types.ts:412"
       ]
     },
     {
@@ -21714,7 +22058,7 @@
         "event:system/message.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:310"
+        "packages/core/session/src/types.ts:317"
       ]
     },
     {
@@ -24842,7 +25186,7 @@
         "event:request/header.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:370"
+        "packages/core/session/src/types.ts:377"
       ]
     },
     {
@@ -29427,6 +29771,147 @@
       "sources": []
     },
     {
+      "digest": "326a9bfda27dda5882fb3cbe6e715df41dae2298fdae3d66437457268a665693",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "maxTokens",
+                "type": 1,
+                "optional": true
+              },
+              {
+                "name": "reasoningEffort",
+                "type": 1,
+                "optional": true
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": true
+          }
+        ]
+      },
+      "names": [
+        "packages/llm/llm/src/call-config.ts#LlmCallConfigAdapterDefaults"
+      ],
+      "sources": [
+        "packages/llm/llm/src/call-config.ts:36"
+      ]
+    },
+    {
+      "digest": "3305a4bb6b6c29b482ba91d59c60b47e8f98282d3dacc8c29e4a4c2712209bdd",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "union",
+            "types": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "kind": "literal",
+            "value": "instruction-following"
+          },
+          {
+            "kind": "literal",
+            "value": "other"
+          },
+          {
+            "kind": "literal",
+            "value": "product-interaction"
+          },
+          {
+            "kind": "literal",
+            "value": "resource-cost"
+          },
+          {
+            "kind": "literal",
+            "value": "security-privacy-permission"
+          },
+          {
+            "kind": "literal",
+            "value": "service-stability"
+          },
+          {
+            "kind": "literal",
+            "value": "task-result"
+          }
+        ]
+      },
+      "names": [
+        "event:feedback/message-put.data.item.category",
+        "event:feedback/record.data.category"
+      ],
+      "sources": []
+    },
+    {
+      "digest": "335e242de1fcc17b6ca920fc420d71bec2d76e53e37955c00948b65ab77f05c5",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "union",
+            "types": [
+              1,
+              2
+            ]
+          },
+          {
+            "kind": "literal",
+            "value": "append"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "endSeq",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "op",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "startSeq",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "literal",
+            "value": "replace"
+          }
+        ]
+      },
+      "names": [
+        "packages/core/session/src/types.ts#SurfaceOp"
+      ],
+      "sources": [
+        "packages/core/session/src/types.ts:446"
+      ]
+    },
+    {
       "digest": "34d1ab5c5df378186d6054b1a1beea9a41e41965d6f336f0bc0025c441a82e66",
       "schema": {
         "root": 0,
@@ -29951,7 +30436,7 @@
         "event:tool/result.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:355"
+        "packages/core/session/src/types.ts:362"
       ]
     },
     {
@@ -35037,7 +35522,7 @@
         "packages/core/session/src/types.ts#RequestHeaderReason"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:261"
+        "packages/core/session/src/types.ts:268"
       ]
     },
     {
@@ -41035,7 +41520,7 @@
         "event:assistant/message.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:321"
+        "packages/core/session/src/types.ts:328"
       ]
     },
     {
@@ -49254,265 +49739,6 @@
       ]
     },
     {
-      "digest": "a5a8c15f08af1b0f26f40906e0797b6b0920fd01069e660becce35ab7fc48d77",
-      "schema": {
-        "root": 0,
-        "nodes": [
-          {
-            "kind": "union",
-            "types": [
-              1,
-              3,
-              5,
-              10,
-              23,
-              25
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 2,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "interrupted"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 4,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "max-tokens"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "error",
-                "type": 6,
-                "optional": false
-              },
-              {
-                "name": "kind",
-                "type": 9,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "code",
-                "type": 7,
-                "optional": false
-              },
-              {
-                "name": "message",
-                "type": 7,
-                "optional": false
-              },
-              {
-                "name": "offloadImages",
-                "type": 8,
-                "optional": true
-              },
-              {
-                "name": "providerRetryAfterMs",
-                "type": 8,
-                "optional": true
-              },
-              {
-                "name": "requestId",
-                "type": 7,
-                "optional": true
-              },
-              {
-                "name": "status",
-                "type": 8,
-                "optional": true
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "primitive",
-            "type": "string"
-          },
-          {
-            "kind": "primitive",
-            "type": "number"
-          },
-          {
-            "kind": "literal",
-            "value": "error"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 11,
-                "optional": false
-              },
-              {
-                "name": "reason",
-                "type": 12,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "aborted"
-          },
-          {
-            "kind": "union",
-            "types": [
-              13,
-              15,
-              17,
-              19,
-              21
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 14,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "disposed"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 16,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "legacy"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 18,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "parent"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 20,
-                "optional": false
-              },
-              {
-                "name": "reason",
-                "type": 7,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "hook"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 22,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "user"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 24,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "blocked"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 26,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "completed"
-          }
-        ]
-      },
-      "names": [
-        "packages/core/session/src/types.ts#TurnEndReason"
-      ],
-      "sources": [
-        "packages/core/session/src/types.ts:224"
-      ]
-    },
-    {
       "digest": "a6567ccb2e530606b775371eb4fa31468d72084339968e8b0440a516a23b39dc",
       "schema": {
         "root": 0,
@@ -50971,7 +51197,7 @@
         "event:tool/result.data.error"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:363",
+        "packages/core/session/src/types.ts:370",
         "packages/core/tools/src/types.ts:24"
       ]
     },
@@ -52028,7 +52254,7 @@
         "packages/core/session/src/types.ts#RequestContext"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:242"
+        "packages/core/session/src/types.ts:249"
       ]
     },
     {
@@ -53548,6 +53774,20 @@
       "names": [
         "event:image/offload"
       ],
+      "sources": []
+    },
+    {
+      "digest": "b2245a906e13aa94f2d3cc6cf7b04cfa0267f7b7f4d468de1b00b1a314e54626",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "literal",
+            "value": "forked"
+          }
+        ]
+      },
+      "names": [],
       "sources": []
     },
     {
@@ -55141,318 +55381,6 @@
       "sources": []
     },
     {
-      "digest": "bab768260853e13a7cf2e22e65af572a1e76a5b2c01f3cdc2ce09d39b87fb70b",
-      "schema": {
-        "root": 0,
-        "nodes": [
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "data",
-                "type": 1,
-                "optional": false
-              },
-              {
-                "name": "ignorable",
-                "type": 29,
-                "optional": true
-              },
-              {
-                "name": "seq",
-                "type": 14,
-                "optional": false
-              },
-              {
-                "name": "time",
-                "type": 14,
-                "optional": false
-              },
-              {
-                "name": "type",
-                "type": 30,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "reason",
-                "type": 2,
-                "optional": false
-              },
-              {
-                "name": "turn",
-                "type": 14,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "union",
-            "types": [
-              3,
-              5,
-              7,
-              9,
-              11,
-              16
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 4,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "blocked"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 6,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "completed"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 8,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "interrupted"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 10,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "max-tokens"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "error",
-                "type": 12,
-                "optional": false
-              },
-              {
-                "name": "kind",
-                "type": 15,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "code",
-                "type": 13,
-                "optional": false
-              },
-              {
-                "name": "message",
-                "type": 13,
-                "optional": false
-              },
-              {
-                "name": "offloadImages",
-                "type": 14,
-                "optional": true
-              },
-              {
-                "name": "providerRetryAfterMs",
-                "type": 14,
-                "optional": true
-              },
-              {
-                "name": "requestId",
-                "type": 13,
-                "optional": true
-              },
-              {
-                "name": "status",
-                "type": 14,
-                "optional": true
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "primitive",
-            "type": "string"
-          },
-          {
-            "kind": "primitive",
-            "type": "number"
-          },
-          {
-            "kind": "literal",
-            "value": "error"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 17,
-                "optional": false
-              },
-              {
-                "name": "reason",
-                "type": 18,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "aborted"
-          },
-          {
-            "kind": "union",
-            "types": [
-              19,
-              21,
-              23,
-              25,
-              27
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 20,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "user"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 22,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "disposed"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 24,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "legacy"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 26,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "parent"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 28,
-                "optional": false
-              },
-              {
-                "name": "reason",
-                "type": 13,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "hook"
-          },
-          {
-            "kind": "literal",
-            "value": true
-          },
-          {
-            "kind": "literal",
-            "value": "turn/end"
-          }
-        ]
-      },
-      "names": [
-        "event:turn/end"
-      ],
-      "sources": []
-    },
-    {
       "digest": "babf9ee4d1af62bf6c3a8103737f7a5e4e78ce179be835ce05a38803e15884b7",
       "schema": {
         "root": 0,
@@ -56014,7 +55942,7 @@
         "SessionEventEnvelope[6].surfaceOp[1]"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:441"
+        "packages/core/session/src/types.ts:448"
       ]
     },
     {
@@ -56612,7 +56540,7 @@
         "packages/core/session/src/types.ts#EpochHeader"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:232"
+        "packages/core/session/src/types.ts:239"
       ]
     },
     {
@@ -59205,281 +59133,6 @@
       "sources": []
     },
     {
-      "digest": "d3e447062a2847dad847dad5168a9508d92c484363dfc76fd82605aa7bd46285",
-      "schema": {
-        "root": 0,
-        "nodes": [
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "reason",
-                "type": 1,
-                "optional": false
-              },
-              {
-                "name": "turn",
-                "type": 9,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "union",
-            "types": [
-              2,
-              4,
-              6,
-              11,
-              24,
-              26
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 3,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "interrupted"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 5,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "max-tokens"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "error",
-                "type": 7,
-                "optional": false
-              },
-              {
-                "name": "kind",
-                "type": 10,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "code",
-                "type": 8,
-                "optional": false
-              },
-              {
-                "name": "message",
-                "type": 8,
-                "optional": false
-              },
-              {
-                "name": "offloadImages",
-                "type": 9,
-                "optional": true
-              },
-              {
-                "name": "providerRetryAfterMs",
-                "type": 9,
-                "optional": true
-              },
-              {
-                "name": "requestId",
-                "type": 8,
-                "optional": true
-              },
-              {
-                "name": "status",
-                "type": 9,
-                "optional": true
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "primitive",
-            "type": "string"
-          },
-          {
-            "kind": "primitive",
-            "type": "number"
-          },
-          {
-            "kind": "literal",
-            "value": "error"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 12,
-                "optional": false
-              },
-              {
-                "name": "reason",
-                "type": 13,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "aborted"
-          },
-          {
-            "kind": "union",
-            "types": [
-              14,
-              16,
-              18,
-              20,
-              22
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 15,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "disposed"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 17,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "legacy"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 19,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "parent"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 21,
-                "optional": false
-              },
-              {
-                "name": "reason",
-                "type": 8,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "hook"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 23,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "user"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 25,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "blocked"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 27,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "completed"
-          }
-        ]
-      },
-      "names": [
-        "event:turn/end.data"
-      ],
-      "sources": [
-        "packages/core/session/src/types.ts:285"
-      ]
-    },
-    {
       "digest": "d4e4d575abeb4b72d616dc65c17ac0eaa943cc135609395044c38d5afcb10e31",
       "schema": {
         "root": 0,
@@ -60785,6 +60438,297 @@
       "sources": []
     },
     {
+      "digest": "e481c46af3813e0010558e93f578b2986acd658404cec2d1679e3ac2a6c48654",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "reason",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "turn",
+                "type": 13,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "union",
+            "types": [
+              2,
+              4,
+              6,
+              8,
+              10,
+              15,
+              28
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 5,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "forked"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 7,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "interrupted"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 9,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "max-tokens"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "error",
+                "type": 11,
+                "optional": false
+              },
+              {
+                "name": "kind",
+                "type": 14,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "code",
+                "type": 12,
+                "optional": false
+              },
+              {
+                "name": "message",
+                "type": 12,
+                "optional": false
+              },
+              {
+                "name": "offloadImages",
+                "type": 13,
+                "optional": true
+              },
+              {
+                "name": "providerRetryAfterMs",
+                "type": 13,
+                "optional": true
+              },
+              {
+                "name": "requestId",
+                "type": 12,
+                "optional": true
+              },
+              {
+                "name": "status",
+                "type": 13,
+                "optional": true
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "literal",
+            "value": "error"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 16,
+                "optional": false
+              },
+              {
+                "name": "reason",
+                "type": 17,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "aborted"
+          },
+          {
+            "kind": "union",
+            "types": [
+              18,
+              20,
+              22,
+              24,
+              26
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 19,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "user"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 21,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "disposed"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 23,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "legacy"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 25,
+                "optional": false
+              },
+              {
+                "name": "reason",
+                "type": 12,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "hook"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 27,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "parent"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 29,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "blocked"
+          }
+        ]
+      },
+      "names": [
+        "event:turn/end.data"
+      ],
+      "sources": [
+        "packages/core/session/src/types.ts:292"
+      ]
+    },
+    {
       "digest": "e4c18e294232c3ba6c9f1999f168263cc55956147cfe4121720899be8e52edd1",
       "schema": {
         "root": 0,
@@ -60834,7 +60778,7 @@
         "event:tool/call.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:341"
+        "packages/core/session/src/types.ts:348"
       ]
     },
     {
@@ -61760,7 +61704,7 @@
       "sources": []
     },
     {
-      "digest": "eea687d437880bd5f55fb447a561112800ca34334c0724d9cecb98493059d9e4",
+      "digest": "ec8b5ff7c77ca6893ac7ba5a0c5b2aefeb52f12c64450b7359660c2a7e8a53d7",
       "schema": {
         "root": 0,
         "nodes": [
@@ -61768,169 +61712,24 @@
             "kind": "object",
             "properties": [
               {
-                "name": "operation",
+                "name": "kind",
                 "type": 1,
                 "optional": false
-              },
-              {
-                "name": "schedule",
-                "type": 2,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 11,
-                "optional": false
               }
             ],
             "indices": []
           },
           {
             "kind": "literal",
-            "value": "create"
-          },
-          {
-            "kind": "union",
-            "types": [
-              3,
-              7,
-              9
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "afterSeconds",
-                "type": 4,
-                "optional": false
-              },
-              {
-                "name": "id",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "kind",
-                "type": 6,
-                "optional": false
-              },
-              {
-                "name": "prompt",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "scheduledAt",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "title",
-                "type": 5,
-                "optional": true
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "primitive",
-            "type": "number"
-          },
-          {
-            "kind": "primitive",
-            "type": "string"
-          },
-          {
-            "kind": "literal",
-            "value": "after"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "everySeconds",
-                "type": 4,
-                "optional": false
-              },
-              {
-                "name": "id",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "kind",
-                "type": 8,
-                "optional": false
-              },
-              {
-                "name": "prompt",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "scheduledAt",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "title",
-                "type": 5,
-                "optional": true
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "every"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "id",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "kind",
-                "type": 10,
-                "optional": false
-              },
-              {
-                "name": "prompt",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "scheduledAt",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "title",
-                "type": 5,
-                "optional": true
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "at"
-          },
-          {
-            "kind": "literal",
-            "value": 1
+            "value": "forked"
           }
         ]
       },
       "names": [
-        "packages/schedule/schedule/src/types.ts#ScheduleCreateChange"
+        "event:turn/end.data.reason[6]"
       ],
       "sources": [
-        "packages/schedule/schedule/src/types.ts:223"
+        "packages/core/session/src/types.ts:227"
       ]
     },
     {
@@ -61979,8 +61778,8 @@
         "event:step/start.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:287",
-        "packages/core/session/src/types.ts:289"
+        "packages/core/session/src/types.ts:294",
+        "packages/core/session/src/types.ts:296"
       ]
     },
     {
@@ -62048,6 +61847,281 @@
       ],
       "sources": [
         "packages/api/session-controller/src/types.ts:86"
+      ]
+    },
+    {
+      "digest": "f1687f982fa3d41ef29e159feed154ecd13af4dd209acaee16038f223f2e9402",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "union",
+            "types": [
+              1,
+              3,
+              5,
+              7,
+              9,
+              14,
+              27
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 2,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 4,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "forked"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 6,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "interrupted"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "max-tokens"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "error",
+                "type": 10,
+                "optional": false
+              },
+              {
+                "name": "kind",
+                "type": 13,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "code",
+                "type": 11,
+                "optional": false
+              },
+              {
+                "name": "message",
+                "type": 11,
+                "optional": false
+              },
+              {
+                "name": "offloadImages",
+                "type": 12,
+                "optional": true
+              },
+              {
+                "name": "providerRetryAfterMs",
+                "type": 12,
+                "optional": true
+              },
+              {
+                "name": "requestId",
+                "type": 11,
+                "optional": true
+              },
+              {
+                "name": "status",
+                "type": 12,
+                "optional": true
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "literal",
+            "value": "error"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 15,
+                "optional": false
+              },
+              {
+                "name": "reason",
+                "type": 16,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "aborted"
+          },
+          {
+            "kind": "union",
+            "types": [
+              17,
+              19,
+              21,
+              23,
+              25
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 18,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "user"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 20,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "disposed"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 22,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "legacy"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 24,
+                "optional": false
+              },
+              {
+                "name": "reason",
+                "type": 11,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "hook"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 26,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "parent"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 28,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "blocked"
+          }
+        ]
+      },
+      "names": [
+        "packages/core/session/src/types.ts#TurnEndReason"
+      ],
+      "sources": [
+        "packages/core/session/src/types.ts:231"
       ]
     },
     {
@@ -63028,8 +63102,7 @@
         "event:workspace/changes.data"
       ],
       "sources": [
-        "packages/core/session/src/types.ts:276",
-        "packages/deliverables/workspace-changes/src/types.ts:106"
+        "packages/core/session/src/types.ts:283"
       ]
     },
     {

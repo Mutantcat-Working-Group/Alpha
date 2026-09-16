@@ -139,8 +139,8 @@ export interface CreateSessionOptions {
   readonly seed?: readonly SessionEvent[]
   /**
    * Exact fork-inherited prefix length when `meta.isSeeded` is true. The
-   * constructor seed is exactly this inherited prefix; the constructor
-   * appends the child-owned tagged marker at the cut.
+   * constructor appends the child-owned tagged marker at the cut unless
+   * the seed already includes it followed by child-owned fork closers.
    */
   readonly inheritedEventCount?: SessionLogOffset
   /**
@@ -218,6 +218,13 @@ export interface TurnEndReasonMap {
    * the events recorded before the crash remain intact.
    */
   interrupted: { kind: 'interrupted' }
+  /**
+   * Fork-seed construction closed a turn that was still open at the fork
+   * boundary in the source session. Only fork seeds carry this marker — the
+   * loop never emits it — and the source events before the boundary remain
+   * intact in the child.
+   */
+  forked: { kind: 'forked' }
 }
 
 /** The union over {@link TurnEndReasonMap} — why a turn ended; plugins extend it by merging variants into the map. */

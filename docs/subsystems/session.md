@@ -458,29 +458,26 @@ declare class Session {
   /** The session identity, derived from its durable header's single copy. */
   get id(): SessionId;
   /**
-   * The first seq appended IN THIS PROCESS: the length of the constructor
-   * seed (0 without one). Events with smaller seq values entered through
-   * construction — replay, fork, or resume — and were never published on the
-   * `session/event` firehose (constructor seeds do not emit). This offset marks
-   * the constructor-input boundary for lifecycle ownership and persistence
-   * adoption; consumers that need complete canonical history still start at
-   * seq 0. Distinct from {@link inheritedEventCount}, the DURABLE
-   * fork-lineage cut: a resumed session's constructor seed is its full stored
-   * log, while the inherited count keeps the original fork value — this field is the
-   * in-process construction fact.
+   * The constructor seed length (0 without one), before any marker appended
+   * during construction. Seed events never publish on `session/event`. A
+   * marker appended before the store attaches occupies this seq without
+   * publishing either; otherwise this seq is available for the next append.
    *
-   * Not persisted itself: a seeded session projects it into the log as the
-   * `session/end-seed` event, which is what a consumer reading STORED history
-   * reads. Locate the LAST such event, not necessarily one at this seq — a
-   * seed already ending in one is not re-marked, so reopening an untouched
-   * session leaves that event at a smaller seq than `firstLiveSeq`. Prefer
-   * this field in-process: it is exact before the marker reaches storage.
-   *
-   * When this lifecycle appends the marker, it occupies this seq before the
-   * store attaches and therefore does not publish either. Otherwise this seq
-   * holds an ordinary published write.
+   * This in-process offset is not persisted. A fork seed can already contain
+   * the child's inherited marker and synthetic closers, so its child-owned
+   * history starts at {@link inheritedEventCount}, before this offset. A
+   * resumed Session's seed contains its full stored log, while its inherited
+   * count keeps the durable fork cut. Consumers needing complete canonical
+   * history start at seq 0.
    */
   readonly firstLiveSeq: SessionLogOffset;
+  /**
+   * First event produced for this object lifecycle. A new fork includes its
+   * child-owned seed marker and closers; a restored Session starts after its
+   * complete stored prefix. This in-process capture offset is not persisted.
+   */
+  readonly firstLifecycleSeq: SessionLogOffset;
+
   /**
    * Create a detached session by validating and snapshotting borrowed seed
    * events and storage metadata.
@@ -698,6 +695,13 @@ interface TurnEndReasonMap {
    * the events recorded before the crash remain intact.
    */
   interrupted: { kind: 'interrupted' }
+  /**
+   * Fork-seed construction closed a turn that was still open at the fork
+   * boundary in the source session. Only fork seeds carry this marker — the
+   * loop never emits it — and the source events before the boundary remain
+   * intact in the child.
+   */
+  forked: { kind: 'forked' }
 }
 ```
 
@@ -834,8 +838,10 @@ workspaceDesktop(): { name: string; available: boolean; fileManager: 'finder' | 
 @Remote('rename') rename(request: SessionRenameRequest): Promise<SessionRenameValue>
 
 /**
- * Fork one cold-readable completed-turn prefix into a new Session.
- * @param request - source Session and optional event anchor.
+ * Fork one cold-readable exact event prefix into a new Session. An omitted
+ * boundary selects the latest completed-turn prefix; an open cut receives
+ * synthetic fork closers.
+ * @param request - source Session and optional exact inclusive event boundary.
  * @returns the new Session identity.
  */
 @Remote('fork') fork(request: SessionForkRequest): Promise<SessionForkValue>
@@ -1022,10 +1028,12 @@ get(id: SessionId): Session | undefined
 list(): Session[]
 
 /**
- * Create a live child session from a stable prefix of a live source.
+ * Create a live child session from an exact prefix of a live source.
  * `boundary` is an inclusive source event seq; omitted means the source's
- * current last event. The selected slice may end with a between-turn event
- * but must not end inside an open turn.
+ * current last event. An open tail receives synthetic tool results and
+ * step/turn closers with the forked cause. Closed steps and turns remain
+ * unchanged, including any failed tool calls already missing results.
+ * `inheritedEventCount` counts only copied source events, excluding these closers.
  *
  * @param source - Live source session object or id.
  * @param boundary - Inclusive source event seq to fork through; omitted means

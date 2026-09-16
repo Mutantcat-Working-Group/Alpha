@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import LlmRuntime, { createUserMessage, ToolCallId, LlmError, MessageSource, ProviderRequestId, StreamChunk  } from '@mutantcat/dsh-llm'
-import SessionStore, { Session, SessionEvent, SessionId, TurnEndReason, type UserMessage } from '@mutantcat/dsh-session'
-import SystemPrompt from '@mutantcat/dsh-system-prompt'
-import ToolRuntime, { defineContentToolFixture, type PostToolDecision } from '@mutantcat/dsh-tools'
-import AgentRegistry, { type Agent } from '@mutantcat/dsh-agent'
-import AgentLoop from '@mutantcat/dsh-agent-loop'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import InvariantRegistry from '@mutantcat/dsh-invariants'
-import * as SessionInvariant from '@mutantcat/dsh-session/invariant'
-import * as AgentInvariant from '@mutantcat/dsh-agent/invariant'
-import * as AgentLoopInvariant from '@mutantcat/dsh-agent-loop/invariant'
+import { Context } from '@deepseek-ai/cordis'
+import LlmRuntime, { type Message, createUserMessage, ToolCallId, LlmError, MessageSource, ProviderRequestId, StreamChunk  } from '@deepseek-ai/dsh-llm'
+import SessionStore, { Session, SessionEvent, SessionId, TurnEndReason, type UserMessage } from '@deepseek-ai/dsh-session'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
+import ToolRuntime, { defineContentToolFixture, type PostToolDecision } from '@deepseek-ai/dsh-tools'
+import AgentRegistry, { type Agent } from '@deepseek-ai/dsh-agent'
+import AgentLoop from '@deepseek-ai/dsh-agent-loop'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import InvariantRegistry from '@deepseek-ai/dsh-invariants'
+import * as SessionInvariant from '@deepseek-ai/dsh-session/invariant'
+import * as AgentInvariant from '@deepseek-ai/dsh-agent/invariant'
+import * as AgentLoopInvariant from '@deepseek-ai/dsh-agent-loop/invariant'
 import { MockAdapter, textResponse, toolCallResponse } from './mock-adapter.ts'
 
 async function mountInvariants(ctx: Context): Promise<void> {
@@ -602,6 +602,149 @@ describe('turn numbering continues across seeded sessions', () => {
     })
 
     expect(turns).toEqual([2])
+  })
+
+  it('an agent over a mid-turn fork seed continues past the synthetic forked closer as a resume', async () => {
+    const adapter = new MockAdapter([textResponse('branched reply')])
+    const ctx = await harness(adapter)
+    // A source cut open mid-turn: turn 1 completed under a logged header, turn 2
+    // claimed its prompt but never closed.
+    const source = ctx.sessions.create(SessionId('mid-turn-source'))
+    source.append('turn/start', { turn: 1 })
+    source.append('user/message', createUserMessage({
+      content: [{ type: 'text', text: 'first' }], source: { kind: 'user' },
+    }), { surfaceOp: 'append' })
+    source.append('request/header', {
+      header: { config: { provider: 'mock', model: 'mock' } },
+      reason: 'initial',
+    })
+    source.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
+    source.append('turn/start', { turn: 2 })
+    source.append('user/message', createUserMessage({
+      content: [{ type: 'text', text: 'second' }], source: { kind: 'user' },
+    }), { surfaceOp: 'append' })
+    const boundary = source.snapshotEvents().at(-1)!.seq
+
+    const child = ctx.sessions.fork(source, boundary, SessionId('mid-turn-child'))
+    const closer = child.snapshotEvents().at(-1)
+    expect(closer?.type === 'turn/end' && closer.data.reason).toEqual({ kind: 'forked' })
+
+    const { agent: forked } = await ctx.agents.create({
+      sessionId: SessionId('mid-turn-agent'), seed: child.snapshotEvents(),
+      inheritedEventCount: child.inheritedEventCount, meta: { isSeeded: true },
+      agentOptions: { provider: 'mock', model: 'mock' },
+    })
+    const turns: number[] = []
+    const headerReasons: string[] = []
+    ctx.on('session/event', (session, event) => {
+      if (session !== forked.session) return
+      if (event.type === 'turn/start') turns.push(event.data.turn)
+      if (event.type === 'request/header') headerReasons.push(event.data.reason)
+    })
+    forked.followup(createUserMessage({ content: [{ type: 'text', text: 'continue' }], source: { kind: 'user' } }))
+    await waitForIdle(ctx, forked)
+
+    // The synthetic closer ended turn 2, so the branch's first live turn is 3,
+    // and its first request over the seeded log is a resume, not a new header.
+    expect(turns).toEqual([3])
+    expect(headerReasons).toEqual(['resume'])
+    const reply = forked.session.deriveMessages().at(-1)
+    expect(reply?.role).toBe('assistant')
+    expect(reply?.content).toEqual([{ type: 'text', text: 'branched reply' }])
+  })
+})
+
+/** Assert the call/result ordering delivered to the model, including missing results. */
+function expectPairedTools(messages: readonly Message[]): void {
+  const pending = new Set<ToolCallId>()
+  for (const message of messages) {
+    if (pending.size > 0) expect(message.source.kind).toBe('tool')
+    for (const block of message.content) {
+      if (block.type === 'tool-call') {
+        expect(pending.has(block.id)).toBe(false)
+        pending.add(block.id)
+      } else if (block.type === 'tool-result') {
+        expect(pending.delete(block.toolCallId)).toBe(true)
+      }
+    }
+  }
+  expect([...pending]).toEqual([])
+}
+
+describe('forked tool history reaches the next model request', () => {
+  it.each([
+    ['assistant/message', 0, 2],
+    ['tool/call', 0, 2],
+    ['tool/result', 0, 1],
+    ['tool/result', 1, 0],
+    ['step/end', 0, 0],
+  ] as const)('cuts after %s[%i] and supplies %i missing results', async (type, occurrence, missing) => {
+    const first = toolCallResponse('call-first', 'first', {}).slice(0, -2)
+    const second = toolCallResponse('call-second', 'second', {}).map(chunk => (
+      'index' in chunk ? { ...chunk, index: 1 } : chunk
+    ))
+    const adapter = new MockAdapter([
+      [...first, ...second], textResponse('parent complete'), textResponse('child complete'),
+    ])
+    const ctx = await harness(adapter)
+    try {
+      await mountInvariants(ctx)
+      const executions: string[] = []
+      for (const name of ['first', 'second']) {
+        ctx.tools.register(defineContentToolFixture({
+          name, description: '', parameters: {},
+          execute: () => {
+            executions.push(name)
+            return Promise.resolve([{ type: 'text', text: `${name} result` }])
+          },
+        }))
+      }
+      const parent = await ctx.agentLoop.create(SessionId('paired-parent'), { provider: 'mock', model: 'mock' })
+      send(parent, 'run both tools')
+      await waitForIdle(ctx, parent)
+      const source = parent.session.snapshotEvents()
+      const boundary = source.filter(event => event.type === type)[occurrence]
+      if (boundary === undefined) throw new Error(`parent has no ${type}[${occurrence}]`)
+      expect(source.at(-1)).toMatchObject({ type: 'turn/end', data: { reason: { kind: 'completed' } } })
+      expectPairedTools(adapter.requests[1]!.messages)
+
+      const child = ctx.sessions.fork(parent.session, boundary.seq, SessionId('paired-child'))
+      expect(child.snapshotEvents().slice(0, boundary.seq + 1)).toEqual(source.slice(0, boundary.seq + 1))
+      const closers = child.snapshotEvents().slice(boundary.seq + 1, child.firstLiveSeq)
+      const results = closers.filter(event => event.type === 'tool/result')
+      expect(results).toHaveLength(missing)
+      expect(closers.filter(event => event.type === 'step/end')).toHaveLength(type === 'step/end' ? 0 : 1)
+      expect(closers.at(-1)).toMatchObject({ type: 'turn/end', data: { reason: { kind: 'forked' } } })
+      for (const result of results) {
+        const text = result.data.message.content[0].content[0]
+        if (text?.type !== 'text') throw new Error('fork result has no text')
+        expect(text.text).toContain('The parent session may have')
+      }
+      const inheritedResults = source.slice(0, boundary.seq + 1).filter(event => event.type === 'tool/result')
+      const expectedResults = [...inheritedResults, ...results].map(event => event.data.message)
+      const { agent: forked } = await ctx.agents.create({
+        sessionId: SessionId('paired-child-agent'), seed: child.snapshotEvents(),
+        inheritedEventCount: child.inheritedEventCount, meta: { isSeeded: true },
+        agentOptions: { provider: 'mock', model: 'mock' },
+      })
+      send(forked, 'continue this branch')
+      await waitForIdle(ctx, forked)
+      const request = adapter.requests[2]
+      if (request === undefined) throw new Error('child never reached the adapter')
+      expectPairedTools(request.messages)
+      expect(request.messages.filter(message => message.source.kind === 'tool')).toEqual(expectedResults)
+      expect(expectedResults.map(message => message.source.callId)).toEqual([ToolCallId('call-first'), ToolCallId('call-second')])
+      expect(() => {
+        expectPairedTools(request.messages.filter(message => (
+          message.source.kind !== 'tool' || message.source.callId !== ToolCallId('call-second')
+        )))
+      }).toThrow()
+      expect(executions).toEqual(['first', 'second'])
+      expect(parent.session.snapshotEvents()).toEqual(source)
+      expect(forked.session.deriveMessages().at(-1)?.content).toEqual([{ type: 'text', text: 'child complete' }])
+    } finally {
+      await ctx.fiber.dispose()
+    }
   })
 })
 

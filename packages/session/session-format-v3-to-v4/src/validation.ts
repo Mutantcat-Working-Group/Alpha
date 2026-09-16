@@ -4,6 +4,7 @@ import { SessionFormatError, isSessionFormatJsonObject, sessionFormatCount } fro
 import type { SessionFormatArtifact, SessionFormatEvent, SessionFormatHeader, SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import { assertReleasedV3Header, restoreReleasedV3Artifact } from '@deepseek-ai/dsh-session-format-v2-to-v3'
 import { catalogFact } from './facts.ts'
+import { forkResultValidationView } from './fork-result.ts'
 
 /**
  * Validate V4 metadata with the unchanged released V3 header fields.
@@ -23,7 +24,8 @@ export function assertReleasedV4Header(header: SessionFormatHeader): void {
 export function restoreReleasedV4Artifact(artifact: SessionFormatArtifact, knownEventTypes: ReadonlySet<string>): SessionFormatArtifact {
   assertReleasedV4Header(artifact.header)
   assertReleasedV4Relationships(artifact)
-  const events = artifact.events.map((event): SessionFormatEvent => {
+  const events = artifact.events.map((original): SessionFormatEvent => {
+    const event = forkResultValidationView(original)
     if (event.type !== 'session-log-deepseek/delivery-accepted') return event
     const data = event.data as SessionFormatJsonObject
     const version = data['sessionFormatVersion']

@@ -1,8 +1,9 @@
 # Agent Note: Session Controller 分叉截到选中轮次的结束事件
 
 Status: implemented
+Archived: 2026-09-16
 
-English | [中文](2026-09-11-session-controller-fork-turn-cut.md)
+[English](2026-09-11-session-controller-fork-turn-cut.md) | 中文
 
 ## Problem
 

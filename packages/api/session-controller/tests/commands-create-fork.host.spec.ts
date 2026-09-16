@@ -218,6 +218,10 @@ describe('Session fork failures', () => {
     const controller = new SessionCommandController(ctx, controllerAgents(), '/default')
 
     await expectFailure(controller.fork({ sessionId: source.id }), 'session/fork-unavailable')
+    await expect(controller.fork({ sessionId: source.id, atSeq: 0 })).rejects.toMatchObject({
+      code: 'session/fork-unavailable',
+      message: 'event 0 does not exist in session "empty-source" (last seq: none)',
+    })
     await ctx.fiber.dispose()
   })
 

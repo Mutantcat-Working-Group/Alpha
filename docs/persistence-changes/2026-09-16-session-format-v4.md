@@ -9,7 +9,7 @@ English | [中文](2026-09-16-session-format-v4.zh.md)
 
 ## Summary
 
-Advances the declared SessionHeader.version from 3 to 4 for the V4 integration writer. No declared event payload or envelope type changes.
+Advances the declared SessionHeader.version from 3 to 4 for the V4 integration writer and adds the forked variant to turn/end.reason.
 
 ## Table of Contents
 
@@ -30,6 +30,10 @@ changes:
     previous: "2026-09-11-initial"
     after: "1a3440e3577382704d42a6263aa463504eb74c566734a55e9503a63efcd02445"
     decision: version-bump
+  - root: "event:turn/end"
+    previous: "2026-09-14-image-offload"
+    after: "0f8512903d94f57a4748fa1a2092e64342856796684e6b8343db685b192745ce"
+    decision: version-bump
 ```
 
 <a id="compatibility"></a>
@@ -39,12 +43,16 @@ The [V3-to-V4 migration](../../packages/session/session-format-v3-to-v4/README.m
 
 Historical read opens prepare the result in memory. Write opens revalidate child membership and revisions before publishing the current successor beside unchanged predecessor files. Already-written V4 files do not rerun this incoming edge, so unreleased integration uses disposable homes. Delivery-generation checks keep historical acknowledgements from becoming active V4 watermarks. V3 readers refuse the newer generation; the [V3 schema reference](historical-formats/v3.md) preserves the outgoing declarations.
 
+The same unreleased transition adds `forked` to `turn/end.reason`. Exact-cut forks append child-owned error results and closers after the inherited marker. V4 admits checked not-started fork results with deterministic branch-specific IDs and wording; released V0–V3 validators and recorded predecessor generations remain unchanged.
+
 <a id="verification"></a>
 ## Verification
 
 `pnpm exec vitest run packages/session/session-format-v3-to-v4/tests packages/session/session-format-catalog/tests packages/session/session-persistence-jsonl/tests/catalog-migration.spec.ts` passed 140 tests across nine files, with one skipped test. The suites cover catalog completion, inherited cuts, child-evidence refusal, and JSONL preparation/publication.
 
-Before the writer change, `pnpm run verify-persistence-catalog` passed and `pnpm run verify-persistence-formats --archive 3` captured the V3 schema. The V4 header schema digest and its generated companion remain unchanged.
+Before the writer change, `pnpm run verify-persistence-catalog` passed and `pnpm run verify-persistence-formats --archive 3` captured the V3 schema. The V4 header schema digest remains unchanged.
+
+The focused Session, agent-loop, Session Controller, V4, chat-view, and compaction suites passed 1,523 tests across 63 files after integration of exact-cut forks. V4 fork tests retain original IDs and text across encoding, decoding, and restoration, reject malformed results, and validate nested inherited cuts.
 
 <a id="dev-note"></a>
 ## Dev Note

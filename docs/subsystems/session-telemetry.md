@@ -55,7 +55,7 @@ interface SessionTelemetryRecord {
 }
 ```
 
-Every canonical [session event](session.md), including each `assistant/message` or `assistant/attempt` with its complete compact stream and every plugin-merged type the seam never heard of, passes through whole as one ordered ledger record. Process-local `agent/assistant-stream` frames do not enter this durable feed. A new Session object starts at its lifecycle boundary unless the backend selects `includeHistory`; re-adopting the same object resumes after its handoff cursor. Delivery is best-effort: the cursor marks handed-off, not delivered, and records can be lost (crash, reload window) or duplicated (new-object replay, SDK retries), so receivers dedupe ledger records on `(session.id, session.format_version, event.seq)`; ops records deliberately omit that identity — they are signals to alert on, not entries to sum, and tolerate duplicates instead.
+Every canonical [session event](session.md), including each `assistant/message` or `assistant/attempt` with its complete compact stream and every plugin-merged type the seam never heard of, passes through whole as one ordered ledger record. Process-local `agent/assistant-stream` frames do not enter this durable feed. A new fork starts at its child-owned suffix, including the inherited marker and fork closers; restored Sessions start after their stored prefix, including restored forks. The backend can select `includeHistory` to include the complete prefix; re-adopting the same object resumes after its handoff cursor. Delivery is best-effort: the cursor marks handed-off, not delivered, and records can be lost (crash, reload window) or duplicated (new-object replay, SDK retries), so receivers dedupe ledger records on `(session.id, session.format_version, event.seq)`; ops records deliberately omit that identity — they are signals to alert on, not entries to sum, and tolerate duplicates instead.
 
 ## The sharing disclosure
 
@@ -80,7 +80,7 @@ type SessionTelemetryCapture = 'live' | 'on-demand'
 interface SessionTelemetryCaptureOptions {
   /** Follow live events, or wait for explicit capture; defaults to live. */
   capture?: SessionTelemetryCapture
-  /** Include stored history before this lifecycle; defaults to false. */
+  /** Include inherited fork history and stored history from earlier lifecycles; defaults to false. */
   includeHistory?: boolean
 }
 ```

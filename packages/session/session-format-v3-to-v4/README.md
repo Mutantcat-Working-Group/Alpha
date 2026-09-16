@@ -70,6 +70,8 @@ An existing own parent catalog entry does not require an available child descrip
 
 Migration retains every source event, order, sequence, timestamp, and payload, appending missing own catalog records sorted by creation time then child id. Appended records use the last source event time, or header creation time for an empty log. Catalog field and uniqueness checks apply only after the final inherited cut; inherited payloads remain opaque and do not establish own membership. Existing catalog extensions remain intact.
 
+V4 also admits fork-generated `TOOL_NOT_STARTED` results with deterministic `forked-tool-result-<callId>-<seq>` IDs and branch-specific text. Validation checks the advertised call and error result, using a private canonical V3 repair view; persisted and restored data retain the original fork ID and wording. Later surface replacements, including tool-result pruning, retain that identity and validate their source references through the released rules. Released V0–V3 validators remain unchanged.
+
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 

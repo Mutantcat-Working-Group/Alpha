@@ -1,6 +1,7 @@
 # Agent Note: Session Controller forks stop at the selected turn end
 
 Status: implemented
+Archived: 2026-09-16
 
 English | [中文](2026-09-11-session-controller-fork-turn-cut.zh.md)
 

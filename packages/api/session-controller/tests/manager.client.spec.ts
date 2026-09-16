@@ -755,8 +755,13 @@ describe('remaining branches', () => {
     expect(manager.getListSnapshot().items).toEqual([expect.objectContaining({
       sessionId: S2,
       parentSessionId: S1,
-      blank: false,
+      blank: true,
     })])
+
+    manager.handleSessionAdded(summary(S2, { blank: true, parentSessionId: S1 }))
+    expect(manager.getListSnapshot().items[0]?.blank).toBe(true)
+    manager.handleSessionAdded(summary(S2, { blank: false, parentSessionId: S1 }))
+    expect(manager.getListSnapshot().items[0]?.blank).toBe(false)
   })
 
   it('reconciles a preallocated id after an ordinary transport failure', async ({ mock, remote }) => {

@@ -450,15 +450,14 @@ export class ClientSessions implements ISessions {
   }
 
   /**
-   * Fork a Session from a completed-turn prefix of the source and publish
-   * the child in the catalog before resolving.
-   * @param opts - source session id, the optional event seq anchoring the
-   *   cut (the boundary is the first turn/end at or after it; an in-log
-   *   anchor in an open turn is unavailable rather than clipped backward),
-   *   and whether to increment an inherited durable title before resolving.
-   *   A fractional anchor floors to a real event seq: the frozen nodes of an
-   *   interrupted turn carry flow-ordering seqs between two events, and the
-   *   wire takes integers only.
+   * Fork a session from an exact inclusive prefix of the source (same
+   * synchronous-addressability guarantee as {@link ClientSessions.create}:
+   * on resolution the child is in the list store and open() can target it).
+   * @param opts - source session id, the optional exact inclusive boundary
+   *   seq (a real event seq the caller already knows; a cut inside an open
+   *   turn is balanced Host-side with synthetic closers, and omission selects
+   *   the latest completed-turn prefix), and whether to increment an
+   *   inherited durable title before resolving.
    * @returns the child session id.
    * @throws {SessionForkError} with the source id.
    * @throws {Error} when a requested child-title rename fails after creation.
@@ -473,10 +472,7 @@ export class ClientSessions implements ISessions {
       : undefined
     const result = await this.manager.fork({
       sessionId: opts.sessionId,
-      // Flooring lands inside the anchor's own turn (every turn opens with a
-      // turn/start), so the host's first-turn/end-at-or-after cut still ends
-      // on that turn — never clipped back to the previous one.
-      ...(opts.atSeq === undefined ? {} : { atSeq: SessionSeq(Math.floor(opts.atSeq)) }),
+      ...(opts.atSeq === undefined ? {} : { atSeq: SessionSeq(opts.atSeq) }),
     })
     if (!result.ok) throw new SessionForkError(result.error, opts.sessionId)
     this.projectList()

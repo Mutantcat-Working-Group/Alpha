@@ -70,6 +70,8 @@ const artifact = restore.finish()
 
 迁移保留每个来源事件及其顺序、序号、时间和 payload，仅按创建时间、子 id 排序追加缺失的自身目录记录。追加时间使用来源最后一个事件的时间，空日志使用 header 创建时间。目录字段与唯一性检查仅作用于最终继承截点之后的记录；继承的 payload 保持不透明，也不计入自身成员关系。已有目录的扩展字段原样保留。
 
+V4 还接受 fork 生成的 `TOOL_NOT_STARTED` 结果，使用确定性的 `forked-tool-result-<callId>-<seq>` ID 和分支专用文案。校验通过内部规范 V3 修复视图检查声明的调用和错误结果；持久化与恢复的数据保留原始 fork ID 和文案。后续 surface 替换（包括工具结果裁剪）保留该身份，并通过已发布规则校验其源引用。已发布的 V0–V3 校验器保持不变。
+
 <a id="understand-the-implementation"></a>
 ## 理解实现
 

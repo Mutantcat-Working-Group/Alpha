@@ -26,6 +26,10 @@
       "types": "./lib/types/types.d.ts",
       "default": "./lib/types/types.js"
     },
+    "./fork": {
+      "types": "./lib/types/fork.d.ts",
+      "default": "./lib/types/fork.js"
+    },
     "./src/*": "./src/*",
     "./package.json": "./package.json",
     "./surface": {

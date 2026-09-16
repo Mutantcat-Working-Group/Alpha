@@ -23,12 +23,12 @@ import type {
   Message,
   StreamChunk,
   TokenUsage,
-} from '@mutantcat/dsh-llm'
-import SessionStore, { Session, SessionId, type SessionEvent } from '@mutantcat/dsh-session'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import LlmRuntime from '@mutantcat/dsh-llm'
-import TokenMeter from '@mutantcat/dsh-token-meter'
-import type { Agent } from '@mutantcat/dsh-agent'
+} from '@deepseek-ai/dsh-llm'
+import SessionStore, { buildForkSeed, Session, SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import LlmRuntime from '@deepseek-ai/dsh-llm'
+import TokenMeter from '@deepseek-ai/dsh-token-meter'
+import type { Agent } from '@deepseek-ai/dsh-agent'
 import type {
   SummarizationInput,
   SummaryResult,
@@ -473,6 +473,28 @@ describe('compactNow transaction and failure classification', () => {
     const agent = fakeAgent(reloaded, () => () => undefined)
 
     expect(boundary?.seq).toBeGreaterThan(orphan?.seq ?? Number.MAX_SAFE_INTEGER)
+    await expect(compact.compactNow(agent, SIGNAL)).resolves.not.toBeNull()
+    expect(compact.calls).toHaveLength(1)
+  })
+
+  it('ignores an unmatched bracket a mid-turn fork seed cut open', async () => {
+    // A fork boundary inside the source's live compaction bracket: the seed
+    // keeps the unmatched compaction/start and balances only the turn with
+    // forked closers — never a synthetic compaction/end. The child's end-seed
+    // marker proves the inherited lock stale, so compaction is not blocked.
+    const { compact } = detachedService()
+    const original = closedConversation(2)
+    original.append('turn/start', { turn: 3 })
+    original.append('compaction/start', {
+      compactionId: CompactionId('forked-manual-compaction'),
+      turn: 3,
+    })
+    const seed = buildForkSeed(original.snapshotEvents(), original.snapshotEvents().at(-1)!.seq)
+    expect(seed.filter(event => event.type === 'compaction/end')).toEqual([])
+    expect(seed.at(-1)).toMatchObject({ type: 'turn/end', data: { reason: { kind: 'forked' } } })
+    const child = Session.create(SessionId('forked-orphan'), seed)
+    const agent = fakeAgent(child, () => () => undefined)
+
     await expect(compact.compactNow(agent, SIGNAL)).resolves.not.toBeNull()
     expect(compact.calls).toHaveLength(1)
   })

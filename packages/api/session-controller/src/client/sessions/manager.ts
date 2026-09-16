@@ -520,11 +520,12 @@ export class SessionManager {
 
   /**
    * Contract session.fork; on success merge the child into summaries
-   * immediately (same synchronous-addressability guarantee as create). The
-   * child carries the source's history, so it is never blank; lineage rides
-   * parentSessionId so the list nests it under its source. A child published
-   * before Workspace attachment fails is also reconciled into the list.
-   * @param opts - source session and the optional seq anchoring the cut.
+   * immediately (same synchronous-addressability guarantee as create).
+   * Blankness starts provisionally true so the authoritative Host summary can
+   * preserve it or lower it after an exact cut before the first `turn/start`;
+   * lineage rides parentSessionId. A child published before Workspace
+   * attachment fails is also reconciled into the list.
+   * @param opts - source session and the optional exact inclusive boundary seq.
    * @returns the fork result (the child session id).
    */
   async fork(
@@ -539,8 +540,8 @@ export class SessionManager {
       ? result.value.sessionId
       : workspaceAttachSessionId(result.error)
     if (childId !== undefined) {
-      this.recordMutation({ kind: 'upsert', summary: {
-        sessionId: childId, updatedAt: Date.now(), running: false, blank: false,
+      this.recordMutation({ kind: 'placeholder', summary: { agentAvailable: true,
+        sessionId: childId, updatedAt: Date.now(), running: false, blank: true,
         parentSessionId: opts.sessionId,
         ...(source?.cwd !== undefined ? { cwd: source.cwd } : {}),
       } })

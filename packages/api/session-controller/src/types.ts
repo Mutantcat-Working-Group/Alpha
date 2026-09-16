@@ -304,6 +304,7 @@ export interface SessionRenameValue {
 /** Session fork request. */
 export interface SessionForkRequest {
   readonly sessionId: SessionId
+  /** Exact inclusive source event seq; omission selects the latest completed-turn prefix. */
   readonly atSeq?: number
 }
 
