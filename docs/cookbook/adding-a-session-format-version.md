@@ -69,7 +69,7 @@ Verify both read and write paths. Header-only listing must not read bodies or pu
 <a id="snapshot-successors"></a>
 ## 5. Create snapshot successors
 
-Read [snapshot ownership](../../snapshots/AGENTS.md) and the [snapshot library](../../packages/test-support/session-snapshot/README.md). Select the owning scenario, not an adapter that only references it. After implementing N+1, keep each historical file and generate its successor using the target version’s canonical parent and child filenames. Never rename a predecessor to the target filename or change only its header.
+Read [snapshot ownership](../../snapshots/AGENTS.md) and the [snapshot library](../../packages/test-support/session-snapshot/README.md). The [corpus policy](../../scripts/session-snapshot-corpus-policy.ts) keeps its declared baseline as replay input so upgrades exercise the adjacent chain; a writer bump does not require refreshing that corpus. Select the owning scenario when a current-generation successor is needed, keep each historical file, and use the target version’s canonical parent and child filenames. Never rename a predecessor to the target filename or change only its header.
 
 For unchanged replay input, use keyless refresh on the owner, then replay without write-back. These SDK commands use `text-turn` and the checkout's writer version. Implement and wire N+1 before using them to generate that version, and select the actual affected owner for a feature:
 
@@ -80,7 +80,7 @@ pnpm run test:snapshot snapshots/sdk/sdk.snapshot.ts -t text-turn
 
 Review the new generation, request sidecars, and protocol output together. Verify every predecessor remains byte-identical and that parent/child roles remain contiguous. Selection uses the numerically highest generation, so update shared references to the owner's selected parent. Do not use the packed-layout migrator as a version upgrader. If the model transcript must change, the scenario owner uses live recording under the [testing policy](../testing.md), with its required provider key.
 
-Keep deliberate historical cases explicit through `snapshot.yml`'s `sessionFormat.version` and supported `coverage` names; record and refresh leave their Session fixtures untouched. Update the [corpus policy](../../scripts/session-snapshot-corpus-policy.ts) for the current generation while retaining focused direct-edge, multi-hop, packed-row, retry/failure, and shipped-profile coverage. Check the corpus and both SDK projections; do not mass-refresh unrelated scenarios merely to silence a validation failure.
+Keep cases older than the retained baseline explicit through `snapshot.yml`'s `sessionFormat.version` and supported `coverage` names; record and refresh leave pinned Session fixtures untouched. Update the [corpus policy](../../scripts/session-snapshot-corpus-policy.ts) for the current generation while retaining focused direct-edge, multi-hop, packed-row, retry/failure, and shipped-profile coverage. Check the corpus and both SDK projections; do not mass-refresh unrelated scenarios merely to silence a validation failure.
 
 <a id="validate"></a>
 ## 6. Validate the integrated result

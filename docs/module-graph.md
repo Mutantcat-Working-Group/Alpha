@@ -326,6 +326,7 @@ flowchart TD
     pkg_session_format_v0_to_v1["session-format-v0-to-v1"]
     pkg_session_format_v1_to_v2["session-format-v1-to-v2"]
     pkg_session_format_v2_to_v3["session-format-v2-to-v3"]
+    pkg_session_format_v3_to_v4["session-format-v3-to-v4"]
     pkg_session_log_deepseek["session-log-deepseek"]
     pkg_session_persistence["session-persistence"]
     pkg_session_persistence_jsonl["session-persistence-jsonl"]
@@ -1400,6 +1401,7 @@ flowchart TD
 | [`session-format-v0-to-v1`](../packages/session/session-format-v0-to-v1) | `session` | — |
 | [`session-format-v1-to-v2`](../packages/session/session-format-v1-to-v2) | `session` | — |
 | [`session-format-v2-to-v3`](../packages/session/session-format-v2-to-v3) | `session` | — |
+| [`session-format-v3-to-v4`](../packages/session/session-format-v3-to-v4) | `session` | — |
 | [`storage`](../packages/storage/storage) | `storage` | — |
 | [`win32-process`](../packages/subprocess/win32-process) | `subprocess` | — |
 | [`llm-mock-server`](../packages/test-support/llm-mock-server) | `test-support` | — |

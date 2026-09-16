@@ -1,11 +1,11 @@
-/** Cold V2 restoration mounts the shipped PTC preset and publishes only a V3 successor. */
+/** Cold V2 restoration mounts the shipped PTC preset and publishes only the current successor. */
 
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { zstdCompressSync, zstdDecompressSync } from 'node:zlib'
 import { describe, expect, it } from 'vitest'
-import { SessionId } from '@mutantcat/dsh-session'
+import { SESSION_FORMAT_VERSION, SessionId } from '@deepseek-ai/dsh-session'
 import { generationLogPath } from '../../../packages/session/session-persistence-jsonl/src/format.ts'
 import { scanZstdFrames } from '../../../packages/session/session-persistence-jsonl/src/zstd.ts'
 import type {} from '@mutantcat/dsh-agent-presets'
@@ -28,7 +28,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
       const rows: Record<string, unknown>[] = events.map((event, seq) => ({ ...event, seq, time: seq + 2 }))
       const source = Buffer.concat([header, ...rows].map(row => zstdCompressSync(Buffer.from(JSON.stringify(row) + '\n'))))
       const predecessor = generationLogPath(scaffold.persistenceRoot, scaffold.workspaceCwd, id, 2, 'zstd')
-      const successor = join(dirname(predecessor), 'session.v3.jsonl.zstd')
+      const successor = generationLogPath(scaffold.persistenceRoot, scaffold.workspaceCwd, id, SESSION_FORMAT_VERSION, 'zstd')
       await mkdir(dirname(predecessor), { recursive: true })
       await writeFile(predecessor, source)
 
@@ -53,7 +53,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
       const published = Buffer.concat(scanZstdFrames(publishedBytes).frames
         .map(({ start, end }) => zstdDecompressSync(publishedBytes.subarray(start, end)))).toString('utf8')
       const expected = [
-        { ...header, version: 3, agentPreset: 'ptc' },
+        { ...header, version: SESSION_FORMAT_VERSION, agentPreset: 'ptc' },
         ...rows.map(row => row['type'] === 'agent-preset/selected'
           && (row['data'] as { agentPreset: string }).agentPreset === 'code'
           ? { ...row, data: { agentPreset: 'ptc' } }
@@ -65,7 +65,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
       expect(normalizeSessionSnapshots([published], context)).toEqual(normalizeSessionSnapshots([expected], context))
       expect(await readFile(predecessor)).toEqual(source)
       expect((await readdir(dirname(predecessor))).filter(name => name.endsWith('.jsonl.zstd')).sort())
-        .toEqual(['session.v2.jsonl.zstd', 'session.v3.jsonl.zstd'])
+        .toEqual(['session.v2.jsonl.zstd', `session.v${SESSION_FORMAT_VERSION}.jsonl.zstd`])
     } finally {
       await scaffold.close()
     }

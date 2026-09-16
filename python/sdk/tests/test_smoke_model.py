@@ -14,6 +14,10 @@ from deepseek_harness import RunResult
 
 ROOT = Path(__file__).resolve().parents[3]
 SMOKE = runpy.run_path(ROOT / "scripts" / "smoke-python-runtime.py")
+SESSION_FORMAT_VERSION = int(
+    (ROOT / "packages/core/session/src/types.ts").read_text(encoding="utf-8")
+    .split("export const SESSION_FORMAT_VERSION = ", 1)[1].splitlines()[0]
+)
 
 
 def live_result(**overrides: object) -> RunResult:
@@ -460,21 +464,22 @@ def test_snapshot_generation_names_select_highest_role_without_double_counting(
     }
 
 
-def test_snapshot_comparison_accepts_v3_output_against_v2_without_rewriting(tmp_path: Path) -> None:
+def test_snapshot_comparison_accepts_current_output_against_v2_without_rewriting(tmp_path: Path) -> None:
     predecessor = '{"type":"session","version":2}\n'
-    successor = '{"type":"session","version":3}\n'
+    successor = json.dumps({"type": "session", "version": SESSION_FORMAT_VERSION}) + "\n"
+    successor_name = f"session.v{SESSION_FORMAT_VERSION}.jsonl"
     old_path = tmp_path / "session.v2.jsonl"
     old_path.write_text(predecessor, encoding="utf-8")
-    files = {"session.v3.jsonl": successor}
+    files = {successor_name: successor}
 
     SMOKE["compare_snapshot_files"](files, False, tmp_path, ("session.v2.jsonl",))
     assert old_path.read_text(encoding="utf-8") == predecessor
-    assert not (tmp_path / "session.v3.jsonl").exists()
+    assert not (tmp_path / successor_name).exists()
 
     SMOKE["compare_snapshot_files"](files, True, tmp_path, ("session.v2.jsonl",))
     assert old_path.read_text(encoding="utf-8") == predecessor
-    assert (tmp_path / "session.v3.jsonl").read_text(encoding="utf-8") == successor
-    assert SMOKE["selected_snapshot_session_files"](tmp_path) == {0: tmp_path / "session.v3.jsonl"}
+    assert (tmp_path / successor_name).read_text(encoding="utf-8") == successor
+    assert SMOKE["selected_snapshot_session_files"](tmp_path) == {0: tmp_path / successor_name}
 
 
 @pytest.mark.parametrize("filenames", [
@@ -485,7 +490,7 @@ def test_snapshot_comparison_accepts_v3_output_against_v2_without_rewriting(tmp_
 def test_snapshot_builder_checks_role_order_and_count_across_generations(
     tmp_path: Path, filenames: tuple[str, ...],
 ) -> None:
-    files = {"session.v3.jsonl": "", "session.1.v3.jsonl": ""}
+    files = {f"session.v{SESSION_FORMAT_VERSION}.jsonl": "", f"session.1.v{SESSION_FORMAT_VERSION}.jsonl": ""}
     with pytest.raises(AssertionError, match="snapshot builder produced"):
         SMOKE["compare_snapshot_files"](files, False, tmp_path, filenames)
 
@@ -496,12 +501,14 @@ def test_snapshot_generation_comparison_rejects_changed_payload(tmp_path: Path) 
     )
     with pytest.raises(AssertionError, match="executable snapshot mismatch"):
         SMOKE["compare_snapshot_files"](
-            {"session.v3.jsonl": '{"type":"session","version":3,"id":"changed"}\n'},
+            {f"session.v{SESSION_FORMAT_VERSION}.jsonl": json.dumps({
+                "type": "session", "version": SESSION_FORMAT_VERSION, "id": "changed",
+            }) + "\n"},
             False, tmp_path, ("session.v2.jsonl",),
         )
 
 
-@pytest.mark.parametrize("version", [2, 4])
+@pytest.mark.parametrize("version", [SESSION_FORMAT_VERSION - 1, SESSION_FORMAT_VERSION + 1])
 @pytest.mark.parametrize("update", [False, True])
 def test_snapshot_comparison_rejects_noncurrent_writer(
     tmp_path: Path, version: int, update: bool,
@@ -509,22 +516,22 @@ def test_snapshot_comparison_rejects_noncurrent_writer(
     golden = '{"type":"session","version":2}\n'
     (tmp_path / "session.v2.jsonl").write_text(golden, encoding="utf-8")
     content = json.dumps({"type": "session", "version": version}) + "\n"
-    with pytest.raises(AssertionError, match="expected current Session format v3"):
+    with pytest.raises(AssertionError, match=f"expected current Session format v{SESSION_FORMAT_VERSION}"):
         SMOKE["compare_snapshot_files"](
             {f"session.v{version}.jsonl": content}, update, tmp_path, ("session.v2.jsonl",),
         )
     assert (tmp_path / "session.v2.jsonl").read_text(encoding="utf-8") == golden
-    assert not (tmp_path / "session.v4.jsonl").exists()
+    assert not (tmp_path / f"session.v{SESSION_FORMAT_VERSION}.jsonl").exists()
 
 
-@pytest.mark.parametrize("version", [2, 3, 4])
+@pytest.mark.parametrize("version", [SESSION_FORMAT_VERSION - 1, SESSION_FORMAT_VERSION, SESSION_FORMAT_VERSION + 1])
 def test_persisted_session_requires_current_writer(version: int) -> None:
     content = json.dumps({"type": "session", "version": version}) + "\n"
     path = Path(f"session.v{version}.jsonl")
-    if version == 3:
+    if version == SESSION_FORMAT_VERSION:
         assert SMOKE["assert_persisted_session_version"](path, content) == version
     else:
-        with pytest.raises(AssertionError, match="expected current Session format v3"):
+        with pytest.raises(AssertionError, match=f"expected current Session format v{SESSION_FORMAT_VERSION}"):
             SMOKE["assert_persisted_session_version"](path, content)
 
 

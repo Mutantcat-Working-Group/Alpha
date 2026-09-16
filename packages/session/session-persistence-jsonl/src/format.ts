@@ -18,12 +18,12 @@ import type {
   SessionHeader,
   SessionId,
   SessionLogOffset as SessionLogOffsetType,
-} from '@mutantcat/dsh-session'
-import { parseSessionFormatLogFilename, sessionFormatLogFilename, SessionFormatUnsupportedMigrationError } from '@mutantcat/dsh-session-format'
-import type { SessionFormatEvent } from '@mutantcat/dsh-session-format'
-import type { SessionFormatRecovery, SessionFormatRestore } from '@mutantcat/dsh-session-format'
-import { sessionFormatCatalog } from '@mutantcat/dsh-session-format-catalog'
-import { assertV3RowAdmission } from '@mutantcat/dsh-session-format-v2-to-v3'
+} from '@deepseek-ai/dsh-session'
+import { parseSessionFormatLogFilename, sessionFormatLogFilename, SessionFormatUnsupportedMigrationError } from '@deepseek-ai/dsh-session-format'
+import type { SessionFormatEvent } from '@deepseek-ai/dsh-session-format'
+import type { SessionFormatRecovery, SessionFormatRestore } from '@deepseek-ai/dsh-session-format'
+import { sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
+import { assertV4RowAdmission } from '@deepseek-ai/dsh-session-format-v3-to-v4'
 import {
   SessionFormatUnsupportedError,
   sessionFormatVersionRefusal,
@@ -488,7 +488,7 @@ export class SessionLogScanner {
     // This scanner accepts only current-generation files. Owned structural refusal must
     // precede its recoverable-tail suppression, independently of the strict decoder state.
     try {
-      assertV3RowAdmission(decoded)
+      assertV4RowAdmission(decoded)
     } catch (error: unknown) {
       if (error instanceof SessionFormatUnsupportedMigrationError) throw new SessionFormatUnsupportedError(error.message)
       throw error
@@ -502,7 +502,7 @@ export class SessionLogScanner {
     try {
       this.restore.decodeRow(decoded)
     } catch (error: unknown) {
-      // Unsupported V3 rows have already been refused before recovery.
+      // Unsupported current-format rows have already been refused before recovery.
       /* v8 ignore next -- every production Session format decoder rejects with Error. */
       const detail = error instanceof Error ? error.message : String(error)
       const issue = new Error(`corrupt session log: invalid committed event at line ${this.eventLine}: ${detail}`, {

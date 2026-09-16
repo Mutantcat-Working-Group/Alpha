@@ -85,7 +85,7 @@ export type OptionalSessionSeq = SessionSeq | null
  * immutable prior-generation, and current fast-path rules are recorded in
  * `.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.md`.
  */
-export const SESSION_FORMAT_VERSION = 3
+export const SESSION_FORMAT_VERSION = 4
 
 /**
  * Immutable validated storage metadata, kept outside the conversation event log.

@@ -1,10 +1,10 @@
-/** Durable EOF refusals preserve historical generations and never fall back from native V3. */
+/** Durable EOF refusals preserve historical generations and never fall back from the selected generation. */
 
-import { Context } from '@mutantcat/cordis'
-import { SessionId } from '@mutantcat/dsh-session'
-import type { SessionFormatJsonObject } from '@mutantcat/dsh-session-format'
-import { SessionFormatUnsupportedError } from '@mutantcat/dsh-session-persistence'
-import JsonlSessionPersistence from '@mutantcat/dsh-session-persistence-jsonl'
+import { Context } from '@deepseek-ai/cordis'
+import { SESSION_FORMAT_VERSION, SessionId } from '@deepseek-ai/dsh-session'
+import type { SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
+import { SessionFormatUnsupportedError } from '@deepseek-ai/dsh-session-persistence'
+import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -116,7 +116,11 @@ function line(value: unknown): string {
   return JSON.stringify(value) + '\n'
 }
 
-async function store(version: 2 | 3, compression: JsonlCompression, rows: readonly SessionFormatJsonObject[]) {
+async function store(
+  version: 2 | 3 | typeof SESSION_FORMAT_VERSION,
+  compression: JsonlCompression,
+  rows: readonly SessionFormatJsonObject[],
+) {
   const path = generationLogPath(root, undefined, id, version, compression)
   const header = { type: 'session', version, id, createdAt: 1000, isSeeded: false, delegationDepth: 0 }
   const events = rows.map((row, seq) => ({ ...row, seq, time: 1001 + seq }))
@@ -162,38 +166,43 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
       expect(await observe(path)).toEqual(original)
       await expectOnlyGenerations([path])
       for (const targetCompression of ['none', 'zstd'] as const) {
-        await expect(stat(generationLogPath(root, undefined, id, 3, targetCompression)))
-          .rejects.toMatchObject({ code: 'ENOENT' })
+        for (const targetVersion of [3, SESSION_FORMAT_VERSION]) {
+          await expect(stat(generationLogPath(root, undefined, id, targetVersion, targetCompression)))
+            .rejects.toMatchObject({ code: 'ENOENT' })
+        }
       }
     }
   })
 
-  it.each(nativeRefusals)('refuses native V3 $name instead of falling back to readable V2', async ({ tail, diagnostic }) => {
-    const lowerPath = await store(2, compression, prefix)
-    const lower = await observe(lowerPath)
-    const ctx = await mount(compression)
-    const reader = await ctx.sessionPersistence.open(id, 'read')
-    try {
-      expect(reader.header.version).toBe(3)
-      const restored = await reader.read()
-      expect(restored.events.map(event => event.type)).toEqual([
-        'turn/start', 'step/start', 'system/message', 'user/message', 'system/message', 'request/header',
-      ])
-      expect(restored.events.find(event => event.type === 'user/message')?.data).toEqual(question)
-    } finally {
-      await reader.close()
-    }
-    expect(await observe(lowerPath)).toEqual(lower)
-    await expectOnlyGenerations([lowerPath])
-
-    const path = await store(3, compression, [...nativePrefix, tail])
-    const original = await observe(path)
-    const message = diagnostic + ' (raw log: ' + path + ')'
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      await expectRefusal(ctx, access, path, message)
-      expect(await observe(path)).toEqual(original)
+  it.each(nativeRefusals.flatMap(refusal => ([3, SESSION_FORMAT_VERSION] as const).map(version => ({ ...refusal, version }))))(
+    'refuses V$version $name instead of falling back to readable V2', async ({ tail, diagnostic, version }) => {
+      const lowerPath = await store(2, compression, prefix)
+      const lower = await observe(lowerPath)
+      const ctx = await mount(compression)
+      const reader = await ctx.sessionPersistence.open(id, 'read')
+      try {
+        expect(reader.header.version).toBe(SESSION_FORMAT_VERSION)
+        const restored = await reader.read()
+        expect(restored.events.map(event => event.type)).toEqual([
+          'turn/start', 'step/start', 'system/message', 'user/message', 'system/message', 'request/header',
+        ])
+        expect(restored.events.find(event => event.type === 'user/message')?.data).toEqual(question)
+      } finally {
+        await reader.close()
+      }
       expect(await observe(lowerPath)).toEqual(lower)
-      await expectOnlyGenerations([lowerPath, path])
-    }
-  })
+      await expectOnlyGenerations([lowerPath])
+
+      const path = await store(version, compression, [...nativePrefix, tail])
+      const original = await observe(path)
+      const message = diagnostic + (version < SESSION_FORMAT_VERSION ? `; source v${version} artifact remains unchanged` : '')
+        + ' (raw log: ' + path + ')'
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        await expectRefusal(ctx, access, path, message)
+        expect(await observe(path)).toEqual(original)
+        expect(await observe(lowerPath)).toEqual(lower)
+        await expectOnlyGenerations([lowerPath, path])
+      }
+    },
+  )
 })

@@ -1,15 +1,15 @@
-import { Context } from '@mutantcat/cordis'
-import { SessionId, SessionSeq } from '@mutantcat/dsh-session'
-import { SessionFormatUnsupportedError } from '@mutantcat/dsh-session-persistence'
-import JsonlSessionPersistence from '@mutantcat/dsh-session-persistence-jsonl'
+import { Context } from '@deepseek-ai/cordis'
+import { SESSION_FORMAT_VERSION, SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
+import { SessionFormatUnsupportedError } from '@deepseek-ai/dsh-session-persistence'
+import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { generationLogPath, scanLog } from '../src/format.ts'
 
-const id = SessionId('v3-admission')
-const header = { type: 'session', version: 3, id, createdAt: 1000, isSeeded: false, delegationDepth: 0 }
+const id = SessionId('current-admission')
+const header = { type: 'session', version: SESSION_FORMAT_VERSION, id, createdAt: 1000, isSeeded: false, delegationDepth: 0 }
 const start = { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } }
 const prefix = [header, start].map(row => JSON.stringify(row)).join('\n') + '\n'
 const obsoleteTypes = ['tool/code-dispatch-start', 'tool/code-dispatch'] as const
@@ -22,12 +22,12 @@ function obsoleteEvent(type: string, ignorable?: true) {
   }
 }
 
-describe('native V3 event admission at EOF', () => {
+describe('current event admission at EOF', () => {
   let root: string
   let ctx: Context
 
   beforeEach(async () => {
-    root = await mkdtemp(join(tmpdir(), 'dsh-v3-admission-'))
+    root = await mkdtemp(join(tmpdir(), 'dsh-current-admission-'))
     ctx = new Context()
     await ctx.plugin(JsonlSessionPersistence, { root, compression: 'none' })
   })
@@ -41,7 +41,7 @@ describe('native V3 event admission at EOF', () => {
   })
 
   async function store(bytes: Buffer): Promise<string> {
-    const path = generationLogPath(root, undefined, id, 3, 'none')
+    const path = generationLogPath(root, undefined, id, SESSION_FORMAT_VERSION, 'none')
     await mkdir(dirname(path), { recursive: true })
     await writeFile(path, bytes)
     return path

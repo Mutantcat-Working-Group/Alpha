@@ -1,10 +1,10 @@
-import { freezeMessage, MessageId } from '@mutantcat/dsh-llm'
-import { Context } from '@mutantcat/cordis'
-import { Session, SessionId, SessionLogOffset, SessionSeq } from '@mutantcat/dsh-session'
-import type { SessionEvent } from '@mutantcat/dsh-session'
-import { SessionFormatUnsupportedError } from '@mutantcat/dsh-session-persistence'
-import type { SessionHandle } from '@mutantcat/dsh-session-persistence'
-import JsonlSessionPersistence from '@mutantcat/dsh-session-persistence-jsonl'
+import { freezeMessage, MessageId } from '@deepseek-ai/dsh-llm'
+import { Context } from '@deepseek-ai/cordis'
+import { SESSION_FORMAT_VERSION, Session, SessionId, SessionLogOffset, SessionSeq } from '@deepseek-ai/dsh-session'
+import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import { SessionFormatUnsupportedError } from '@deepseek-ai/dsh-session-persistence'
+import type { SessionHandle } from '@deepseek-ai/dsh-session-persistence'
+import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -95,7 +95,7 @@ function assertRequestHistory(events: readonly SessionEvent[], handle: SessionHa
 }
 
 describe('V2 system prompts through current Session and JSONL persistence', () => {
-  it.each([undefined, ''])('prepares prompts and clear (%j) read-only, then publishes V3 without replacing V2', async (clear) => {
+  it.each([undefined, ''])('prepares prompts and clear (%j) read-only, then publishes the current generation without replacing V2', async (clear) => {
     const sourcePath = await writeV2([
       { type: 'turn/start', data: { turn: 1 } },
       { type: 'step/start', data: { turn: 1, step: 1 } },
@@ -110,7 +110,7 @@ describe('V2 system prompts through current Session and JSONL persistence', () =
     const reader = await ctx.sessionPersistence.open(id, 'read')
     let prepared: readonly SessionEvent[]
     try {
-      expect(reader.header.version).toBe(3)
+      expect(reader.header.version).toBe(SESSION_FORMAT_VERSION)
       prepared = (await reader.read()).events
       expect(prepared.map(event => event.seq)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
       expect(prepared.filter(event => event.type !== 'system/message').map(event => [event.type, event.time])).toEqual([
@@ -156,10 +156,10 @@ describe('V2 system prompts through current Session and JSONL persistence', () =
     }
     expect(await observeFile(sourcePath)).toEqual(original)
     expect((await readdir(directory)).filter(name => name.endsWith('.jsonl')).sort())
-      .toEqual(['session.v2.jsonl', 'session.v3.jsonl'])
-    const publishedPath = generationLogPath(root, undefined, id, 3, 'none')
+      .toEqual(['session.v2.jsonl', `session.v${SESSION_FORMAT_VERSION}.jsonl`])
+    const publishedPath = generationLogPath(root, undefined, id, SESSION_FORMAT_VERSION, 'none')
     const published = (await readFile(publishedPath, 'utf8')).trimEnd().split('\n').map(line => JSON.parse(line) as unknown)
-    expect(published[0]).toMatchObject({ type: 'session', version: 3, id })
+    expect(published[0]).toMatchObject({ type: 'session', version: SESSION_FORMAT_VERSION, id })
     expect(published.slice(1)).toEqual(prepared)
 
     const reopened = await mount()
@@ -268,7 +268,7 @@ describe('V2 system prompts through current Session and JSONL persistence', () =
       .toEqual(['session.v1.jsonl', 'session.v2.jsonl'])
   })
 
-  it('persists native V3 system appends after the protected head without converting them to user messages', async () => {
+  it('persists current system appends after the protected head without converting them to user messages', async () => {
     const ctx = await mount()
     const session = Session.create(id)
     const writer = await ctx.sessionPersistence.create(session.header)

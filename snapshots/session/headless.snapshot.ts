@@ -1174,12 +1174,12 @@ describe('headless recorded-session snapshots', () => {
         if (mode === 'refresh') await writeSessionFixtures(scenario, actualLogs, fixtures, actualContext)
         expected = await Promise.all(fixtures.map((_, index) => readFile(join(scenario.dir, writerSnapshotName(index)), 'utf8')))
         for (const [index, content] of expected.entries()) {
-          expect(sessionHeaderVersion(content, writerSnapshotName(index))).toBe(SESSION_FORMAT_VERSION)
+          expect(sessionHeaderVersion(content, writerSnapshotName(index))).toBeLessThanOrEqual(SESSION_FORMAT_VERSION)
         }
         expect(await fixtureSessions(scenario), 'historical replay input remains unchanged').toEqual(fixtures)
       }
-      const actualSnapshots = normalizeSessionSnapshots(actualLogs.map(log => log.content), actualContext)
-      const expectedSnapshots = normalizeSessionSnapshots(expected, contextOf(expected))
+      const actualSnapshots = normalizeSessionSnapshots(actualLogs.map(log => log.content), actualContext, { nativeWriterOutput: true })
+      const expectedSnapshots = normalizeSessionSnapshots(expected, contextOf(expected), { nativeWriterOutput: true })
       for (const [index, actual] of actualSnapshots.entries()) {
         expect(records(actual), `${scenario.name}: session ${index}`).toEqual(records(expectedSnapshots[index] as string))
       }

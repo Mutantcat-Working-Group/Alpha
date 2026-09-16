@@ -19,7 +19,7 @@
 
 | 根类型 | 类别 | SHA-256 | 已解析类型 |
 |---|---|---|---|
-| `SessionHeader` | header | `2a8b114637e66faab5fae1c6e2fba65320db6224c80f5f36c5bf32f937154d03` | [`packages/core/session/src/types.ts#SessionHeader`](#persistence-type-packagescoresessionsrctypestssessionheader) |
+| `SessionHeader` | header | `1a3440e3577382704d42a6263aa463504eb74c566734a55e9503a63efcd02445` | [`packages/core/session/src/types.ts#SessionHeader`](#persistence-type-packagescoresessionsrctypestssessionheader) |
 | `JsonlHeaderLine` | header | `18ee62b8900a4c3d046700f05d7a4d49d6cab2a660a020c87481d1603dd8bd4f` | [`packages/session/session-persistence-jsonl/src/format.ts#HeaderLine`](#persistence-type-packagessessionsession-persistence-jsonlsrcformattsheaderline) |
 | `SessionEventEnvelope` | envelope | `5776e5553ff2dfe3f5bc202dbb1e7c9f93e35a531aebb7764c23b2b6153b2ccc` | [`SessionEventEnvelope`](#persistence-type-sessioneventenvelope) |
 | `event:agent-preset/selected` | event | `a10c17474eaf2ddab7095a099e0fe3d046fc18e56c3e344fc8894c05ff9ef97b` | [`event:agent-preset/selected`](#persistence-type-eventagent-presetselected) |
@@ -1288,13 +1288,13 @@ SHA-256: `a0f906856fc06f1c6f2083eb970e5a657a82b1a84c06c095445e5d6d161cda80`
 
 `2`
 
-<a id="persistence-type-3"></a>
+<a id="persistence-type-4"></a>
 
-### `3`
+### `4`
 
-SHA-256: `137ac60e26bcb192210d9a32a704b73b0924ed34019323defa1b787be95bd45e`
+SHA-256: `af6e173f7be819bcd0a5c8d77918649c10ce761d8a184ff472f2e01ce64eb2e0`
 
-`3`
+`4`
 
 <a id="persistence-type-aborted"></a>
 
@@ -4672,7 +4672,7 @@ SHA-256: `530da6c0267813bb4511af72883cc518834e624e3b3220a7062955fd57a788a6`
 
 ### `packages/core/session/src/types.ts#SessionHeader`
 
-SHA-256: `2a8b114637e66faab5fae1c6e2fba65320db6224c80f5f36c5bf32f937154d03`
+SHA-256: `1a3440e3577382704d42a6263aa463504eb74c566734a55e9503a63efcd02445`
 
 来源：[`packages/core/session/src/types.ts:93`](../packages/core/session/src/types.ts)
 
@@ -4686,7 +4686,7 @@ SHA-256: `2a8b114637e66faab5fae1c6e2fba65320db6224c80f5f36c5bf32f937154d03`
 | `isSeeded` | 必需 | `boolean` |
 | `origin` | 可选 | `"subagent"` |
 | `parentSession` | 可选 | `string` |
-| `version` | 必需 | `3` |
+| `version` | 必需 | `4` |
 
 <a id="persistence-type-packagescoresessionsrctypestssurfaceop"></a>
 

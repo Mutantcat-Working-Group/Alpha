@@ -59,12 +59,15 @@ JSONL record
   → v0-to-v1 stage
   → v1-to-v2 stage
   → v2-to-v3 stage
+  → v3-to-v4 stage
   → current event collector
 ```
 
 Chain 中不存在 `flatMap`、spread expansion、中间 event array 或 scheduler。只有在每个 migration stage 都已获得直接消费 compact run 的机会后，最终 event collector 才会展开它。
 
 ### 相邻版本所有权
+
+[V3 到 V4 规范](../../../../packages/session/session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)负责 body 的恒等转换：它推进 header 版本，同时保留已接纳的事件与继承切点。它复用 V2→V3 中冻结的 V3 codec。按 generation 校验 delivery 可防止历史确认仅因 header 变化而获得当前水位含义；更早的 migration edge 保留各自的来源准入策略。
 
 [V2 到 V3 投递保护](../../../../packages/session/session-format-v2-to-v3/README.zh.md#delivery-guards)防止源代中被忽略的标记仅因头部变化就成为有效上传水位。Python 发布冒烟测试独立于跨代 golden 比较，按源代码中的 `SESSION_FORMAT_VERSION` 检查生成日志，因此文件名与 header 自洽不能掩盖过期 writer。
 

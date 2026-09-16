@@ -9414,6 +9414,9 @@ importers:
       '@mutantcat/dsh-session-format-v2-to-v3':
         specifier: workspace:^
         version: link:../session-format-v2-to-v3
+      '@deepseek-ai/dsh-session-format-v3-to-v4':
+        specifier: workspace:^
+        version: link:../session-format-v3-to-v4
     devDependencies:
       '@mutantcat/cordis':
         specifier: workspace:^
@@ -9473,6 +9476,19 @@ importers:
         version: link:../session-format-v1-to-v2
     devDependencies:
       '@mutantcat/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+
+  packages/session/session-format-v3-to-v4:
+    dependencies:
+      '@deepseek-ai/dsh-session-format':
+        specifier: workspace:^
+        version: link:../session-format
+      '@deepseek-ai/dsh-session-format-v2-to-v3':
+        specifier: workspace:^
+        version: link:../session-format-v2-to-v3
+    devDependencies:
+      '@deepseek-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
 
@@ -9558,10 +9574,10 @@ importers:
       '@mutantcat/dsh-session-format-catalog':
         specifier: workspace:^
         version: link:../session-format-catalog
-      '@mutantcat/dsh-session-format-v2-to-v3':
+      '@deepseek-ai/dsh-session-format-v3-to-v4':
         specifier: workspace:^
-        version: link:../session-format-v2-to-v3
-      '@mutantcat/node-addon-system':
+        version: link:../session-format-v3-to-v4
+      '@deepseek-ai/node-addon-system':
         specifier: workspace:^
         version: link:../../../native/system/packages/entry
       '@mutantcat/schemastery':

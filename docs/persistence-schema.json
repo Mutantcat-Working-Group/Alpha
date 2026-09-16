@@ -4,7 +4,7 @@
     {
       "key": "SessionHeader",
       "kind": "header",
-      "digest": "2a8b114637e66faab5fae1c6e2fba65320db6224c80f5f36c5bf32f937154d03",
+      "digest": "1a3440e3577382704d42a6263aa463504eb74c566734a55e9503a63efcd02445",
       "schema": {
         "root": 0,
         "nodes": [
@@ -77,7 +77,7 @@
           },
           {
             "kind": "literal",
-            "value": 3
+            "value": 4
           }
         ]
       }
@@ -18097,20 +18097,6 @@
       ]
     },
     {
-      "digest": "137ac60e26bcb192210d9a32a704b73b0924ed34019323defa1b787be95bd45e",
-      "schema": {
-        "root": 0,
-        "nodes": [
-          {
-            "kind": "literal",
-            "value": 3
-          }
-        ]
-      },
-      "names": [],
-      "sources": []
-    },
-    {
       "digest": "13d3d180f977bf78081d487ffa0ecb75857349bcab29a5a3fb48189fca2a6176",
       "schema": {
         "root": 0,
@@ -19979,6 +19965,91 @@
       },
       "names": [],
       "sources": []
+    },
+    {
+      "digest": "1a3440e3577382704d42a6263aa463504eb74c566734a55e9503a63efcd02445",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "agentPreset",
+                "type": 1,
+                "optional": true
+              },
+              {
+                "name": "createdAt",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "cwd",
+                "type": 1,
+                "optional": true
+              },
+              {
+                "name": "delegationDepth",
+                "type": 2,
+                "optional": true
+              },
+              {
+                "name": "id",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "isSeeded",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "origin",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "parentSession",
+                "type": 1,
+                "optional": true
+              },
+              {
+                "name": "version",
+                "type": 5,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "primitive",
+            "type": "boolean"
+          },
+          {
+            "kind": "literal",
+            "value": "subagent"
+          },
+          {
+            "kind": "literal",
+            "value": 4
+          }
+        ]
+      },
+      "names": [
+        "packages/core/session/src/types.ts#SessionHeader"
+      ],
+      "sources": [
+        "packages/core/session/src/types.ts:93"
+      ]
     },
     {
       "digest": "1ab2ef1296f157ba96998f179bb5daa9d21a82480da2901127aeab2730797c92",
@@ -23771,7 +23842,7 @@
       "sources": []
     },
     {
-      "digest": "2a8b114637e66faab5fae1c6e2fba65320db6224c80f5f36c5bf32f937154d03",
+      "digest": "2a7f86849ae54b3398ee49661a757c4fcb59a6192b7036ee2ff514617e13fb42",
       "schema": {
         "root": 0,
         "nodes": [
@@ -23779,44 +23850,59 @@
             "kind": "object",
             "properties": [
               {
-                "name": "agentPreset",
-                "type": 1,
-                "optional": true
-              },
-              {
-                "name": "createdAt",
-                "type": 2,
-                "optional": false
-              },
-              {
-                "name": "cwd",
-                "type": 1,
-                "optional": true
-              },
-              {
-                "name": "delegationDepth",
-                "type": 2,
-                "optional": true
-              },
-              {
-                "name": "id",
+                "name": "data",
                 "type": 1,
                 "optional": false
               },
               {
-                "name": "isSeeded",
+                "name": "ignorable",
+                "type": 19,
+                "optional": true
+              },
+              {
+                "name": "seq",
+                "type": 13,
+                "optional": false
+              },
+              {
+                "name": "time",
+                "type": 13,
+                "optional": false
+              },
+              {
+                "name": "type",
+                "type": 20,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "union",
+            "types": [
+              2,
+              6,
+              8,
+              9
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "acceptedAt",
                 "type": 3,
                 "optional": false
               },
               {
-                "name": "origin",
-                "type": 4,
-                "optional": true
+                "name": "id",
+                "type": 3,
+                "optional": false
               },
               {
-                "name": "parentSession",
-                "type": 1,
-                "optional": true
+                "name": "operation",
+                "type": 4,
+                "optional": false
               },
               {
                 "name": "version",
@@ -23831,29 +23917,210 @@
             "type": "string"
           },
           {
+            "kind": "literal",
+            "value": "dispatch"
+          },
+          {
+            "kind": "literal",
+            "value": 1
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "id",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "operation",
+                "type": 7,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 5,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "delete"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "id",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "operation",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 5,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "operation",
+                "type": 10,
+                "optional": false
+              },
+              {
+                "name": "schedule",
+                "type": 11,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 5,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "create"
+          },
+          {
+            "kind": "union",
+            "types": [
+              12,
+              15,
+              17
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "afterSeconds",
+                "type": 13,
+                "optional": false
+              },
+              {
+                "name": "id",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "kind",
+                "type": 14,
+                "optional": false
+              },
+              {
+                "name": "prompt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "scheduledAt",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
             "kind": "primitive",
             "type": "number"
           },
           {
-            "kind": "primitive",
-            "type": "boolean"
+            "kind": "literal",
+            "value": "after"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "everySeconds",
+                "type": 13,
+                "optional": false
+              },
+              {
+                "name": "id",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "kind",
+                "type": 16,
+                "optional": false
+              },
+              {
+                "name": "prompt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "scheduledAt",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
           },
           {
             "kind": "literal",
-            "value": "subagent"
+            "value": "every"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "id",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "kind",
+                "type": 18,
+                "optional": false
+              },
+              {
+                "name": "prompt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "scheduledAt",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
           },
           {
             "kind": "literal",
-            "value": 3
+            "value": "at"
+          },
+          {
+            "kind": "literal",
+            "value": true
+          },
+          {
+            "kind": "literal",
+            "value": "schedule/change"
           }
         ]
       },
       "names": [
-        "packages/core/session/src/types.ts#SessionHeader"
+        "event:schedule/change"
       ],
-      "sources": [
-        "packages/core/session/src/types.ts:93"
-      ]
+      "sources": []
     },
     {
       "digest": "2ab12a0e345658f9342816d773fe610f049982bcad82631f43b9205abe43e5ee",
@@ -51478,6 +51745,20 @@
           {
             "kind": "literal",
             "value": "todo/write"
+          }
+        ]
+      },
+      "names": [],
+      "sources": []
+    },
+    {
+      "digest": "af6e173f7be819bcd0a5c8d77918649c10ce761d8a184ff472f2e01ce64eb2e0",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "literal",
+            "value": 4
           }
         ]
       },

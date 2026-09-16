@@ -439,7 +439,7 @@ describe('JsonlSessionPersistence: format helpers', () => {
     ['unseeded', false, 0],
     ['empty-seed', true, 0],
     ['nonempty-seed', true, 3],
-  ] as const)('round-trips v3 lineage markers for %s', (_case, isSeeded, inheritedEventCount) => {
+  ] as const)('round-trips current lineage markers for %s', (_case, isSeeded, inheritedEventCount) => {
     const events = isSeeded
       ? [
         ...Array.from({ length: inheritedEventCount }, (_, seq) => ({
@@ -470,7 +470,7 @@ describe('JsonlSessionPersistence: format helpers', () => {
     expect(toHeaderLine(scanned.meta, scanned.inheritedEventCount)).toStrictEqual(line)
   })
 
-  it('rejects a v3 physical header without explicit isSeeded', () => {
+  it('rejects a current physical header without explicit isSeeded', () => {
     const { isSeeded: _isSeeded, ...line } = toHeaderLine(meta('missing-is-seeded'))
     expect(() => scanLog(Buffer.from(`${JSON.stringify(line)}\n`))).toThrow(/session header/)
   })
@@ -698,7 +698,6 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
   afterEach(async () => { await ctx.fiber.dispose() })
 
   it('projects a released v0 header through stat and list without reading or mutating its body', async () => {
-    expect(SESSION_FORMAT_VERSION).toBe(3)
     const header = meta('released-v0-metadata', '/work')
     const sourcePath = historicalLogPath(root, header.cwd, header.id)
     const currentPath = rawLogPath(root, header.cwd, header.id)
@@ -972,12 +971,12 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
       .toEqual(['session.v1.jsonl'])
   })
 
-  it('selects v1 from a v0/v1 directory, then v3 from the retained three-generation set', async () => {
+  it('selects v1 from a v0/v1 directory, then the current generation from the retained three-generation set', async () => {
     const header = meta('mixed-generation-read', '/work')
     const directory = sessionDir(root, header.cwd, header.id)
     const v0Path = historicalLogPath(root, header.cwd, header.id)
     const v1Path = generationLogPath(root, header.cwd, header.id, 1, 'none')
-    const v3Path = rawLogPath(root, header.cwd, header.id)
+    const currentPath = rawLogPath(root, header.cwd, header.id)
     await mkdir(directory, { recursive: true })
     await writeFile(v0Path, `${JSON.stringify(releasedV0Header(header))}\n`)
     await writeFile(v1Path, releasedV1PackedPhysicalLog(header))
@@ -988,13 +987,13 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
     await writer.close()
     expect((await readdir(directory)).filter(name => name.startsWith('session')).sort())
       .toEqual(process.platform === 'win32'
-        ? ['session.jsonl', 'session.v1.jsonl', 'session.v3.jsonl']
-        : ['session.jsonl', 'session.lock', 'session.v1.jsonl', 'session.v3.jsonl'])
+        ? ['session.jsonl', 'session.v1.jsonl', `session.v${SESSION_FORMAT_VERSION}.jsonl`]
+        : ['session.jsonl', 'session.lock', 'session.v1.jsonl', `session.v${SESSION_FORMAT_VERSION}.jsonl`])
 
     await writeFile(v0Path, 'corrupt lower v0\n')
     await writeFile(v1Path, 'corrupt lower v1\n')
     await expect(readAll(ctx.sessionPersistence, header.id)).resolves.toEqual(migrated)
-    expect(await readFile(v3Path, 'utf8')).toContain('"version":3')
+    expect(await readFile(currentPath, 'utf8')).toContain(`"version":${SESSION_FORMAT_VERSION}`)
   })
 
   it('does not publish a historical generation through handle storage resolution', async () => {
@@ -1073,7 +1072,7 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
     const writer = await ctx.sessionPersistence.open(header.id, 'write')
     await writer.close()
     expect(await readFile(sourcePath, 'utf8')).toBe(`${source}\n`)
-    expect(await readFile(currentPath, 'utf8')).toContain('"version":3')
+    expect(await readFile(currentPath, 'utf8')).toContain(`"version":${SESSION_FORMAT_VERSION}`)
   })
 
   it('finishes publication before rejecting a write open cancelled during publication', async () => {
@@ -1089,7 +1088,7 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
 
     await expect(ctx.sessionPersistence.open(header.id, 'write', { signal: controller.signal }))
       .rejects.toBe(reason)
-    expect(await readFile(currentPath, 'utf8')).toContain('"version":3')
+    expect(await readFile(currentPath, 'utf8')).toContain(`"version":${SESSION_FORMAT_VERSION}`)
     const writer = await ctx.sessionPersistence.open(header.id, 'write')
     await writer.close()
   })
@@ -2012,7 +2011,7 @@ describe('JsonlSessionPersistence: scanLog unit', () => {
     expect(restored).toMatchObject({ type: 'user/message', surfaceOp: 'append', sourceEventSeqs: [0, 1] })
   })
 
-  it('requires the tagged inherited cut to agree with the v3 header lineage', () => {
+  it('requires the tagged inherited cut to agree with the current header lineage', () => {
     const seeded = { ...meta('scanner-seeded-cut'), isSeeded: true }
     const seededHeader = JSON.stringify(toHeaderLine(seeded, SessionLogOffset(0)))
     expect(() => scanLog(Buffer.from(`${seededHeader}\n`)))
@@ -2234,7 +2233,7 @@ describe('JsonlSessionPersistence: scanLog unit', () => {
   })
 })
 
-describe('JsonlSessionPersistence: nested v3 Assistant streams', () => {
+describe('JsonlSessionPersistence: nested Assistant streams', () => {
   let ctx: Context
   beforeEach(async () => {
     root = await freshRoot()
@@ -2287,7 +2286,7 @@ describe('JsonlSessionPersistence: nested v3 Assistant streams', () => {
     expect(loaded.events).toEqual(log)
   })
 
-  it.each([2, 3])('reads v%s rows and appends a v3 turn without changing predecessor bytes', async (version) => {
+  it.each([2, 3])('reads v%s rows and appends a current turn without changing predecessor bytes', async (version) => {
     const m = meta('mixed', '/work')
     const log = chunkRunLog()
     const sourcePath = generationLogPath(root, '/work', m.id, version, 'none')
@@ -2304,10 +2303,10 @@ describe('JsonlSessionPersistence: nested v3 Assistant streams', () => {
 
     const expected = version === 2 ? withMigratedEmptyHead(log) : log
     const restored = await readAll(ctx.sessionPersistence, m.id)
-    expect(restored.meta.version).toBe(3)
+    expect(restored.meta.version).toBe(SESSION_FORMAT_VERSION)
     expect(restored.events).toEqual(expected)
     expect(await readFile(sourcePath)).toEqual(source)
-    if (version === 2) await expect(readFile(currentPath)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(readFile(currentPath)).rejects.toMatchObject({ code: 'ENOENT' })
     const secondTurn: SessionEvent[] = JSON.parse(JSON.stringify(log)) as SessionEvent[]
     for (const [k, e] of secondTurn.entries()) {
       ;(e as { seq: number }).seq = expected.length + k
@@ -2317,11 +2316,11 @@ describe('JsonlSessionPersistence: nested v3 Assistant streams', () => {
 
     const loaded = await readAll(ctx.sessionPersistence, m.id)
     expect(loaded.events).toEqual([...expected, ...secondTurn])
-    expect(currentPath).toBe(join(dirname(sourcePath), 'session.v3.jsonl'))
+    expect(currentPath).toBe(join(dirname(sourcePath), `session.v${SESSION_FORMAT_VERSION}.jsonl`))
     const successor = (await readFile(currentPath, 'utf8')).trimEnd().split('\n')
-    expect(JSON.parse(successor[0] as string)).toMatchObject({ version: 3 })
+    expect(JSON.parse(successor[0] as string)).toMatchObject({ version: SESSION_FORMAT_VERSION })
     expect(successor.slice(1).map(row => JSON.parse(row) as unknown)).toEqual([...expected, ...secondTurn])
-    if (version === 2) expect(await readFile(sourcePath)).toEqual(source)
+    expect(await readFile(sourcePath)).toEqual(source)
     // Compact tags stay nested; physical rows contain only current event tags.
     const tags = (await readFile(rawLogPath(root, '/work', m.id), 'utf8')).split('\n').filter(Boolean)
       .map(line => (JSON.parse(line) as { type: string }).type)

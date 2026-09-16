@@ -59,12 +59,15 @@ JSONL record
   → v0-to-v1 stage
   → v1-to-v2 stage
   → v2-to-v3 stage
+  → v3-to-v4 stage
   → current event collector
 ```
 
 The chain contains no `flatMap`, spread expansion, intermediate event array, or scheduler. The final event collector expands a compact run only after every migration stage has had the opportunity to consume it directly.
 
 ### Adjacent version ownership
+
+The [V3-to-V4 specification](../../../../packages/session/session-format-v3-to-v4/README.md#v3-to-v4-specification) owns an identity body conversion: it advances the header version while preserving admitted events and inherited cuts. It reuses the frozen V3 codec from V2→V3. Generation-aware delivery validation prevents a historical acknowledgement from acquiring a current watermark meaning solely through the header change; earlier edges retain their own source-admission policies.
 
 The [V2-to-V3 delivery guards](../../../../packages/session/session-format-v2-to-v3/README.md#delivery-guards) prevent a marker ignored in the source generation from becoming an active upload watermark merely because the header changes. Python release smoke checks generated logs against the source `SESSION_FORMAT_VERSION` independently of generation-neutral golden comparison, so coherent filenames and headers cannot conceal an outdated writer.
 

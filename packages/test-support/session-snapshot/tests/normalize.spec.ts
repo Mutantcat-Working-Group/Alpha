@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { SESSION_FORMAT_VERSION } from '@deepseek-ai/dsh-session'
+import { prepareSessionSnapshotFixtureForComparison } from '@deepseek-ai/dsh-llm-replay'
 import {
   type NormalizeContext,
   extractSnapshotSpillPaths,
@@ -753,7 +755,60 @@ describe('normalizeSessionSnapshot', () => {
       .toThrow('session snapshot must start with a session header')
   })
 
-  it('preserves delivery and captured-source generations after artifact migration', () => {
+  function deliveryLog(version: number, deliveryVersion = version): string {
+    return [
+      { type: 'session', version, id: 'delivery', createdAt: 1, isSeeded: false, delegationDepth: 0 },
+      { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
+      {
+        type: 'session-log-deepseek/delivery-accepted', seq: 1, time: 2,
+        data: { sessionId: 'delivery', throughSeq: 0, sessionFormatVersion: deliveryVersion },
+      },
+    ].map(record => JSON.stringify(record)).join('\n') + '\n'
+  }
+
+  it('compares each strictly restored input using its own native delivery generation', () => {
+    const [historical, current] = normalizeSessionSnapshots(
+      [deliveryLog(3), deliveryLog(SESSION_FORMAT_VERSION)], ctx, { nativeWriterOutput: true },
+    )
+    expect(historical).toBe(current)
+    expect(current).toContain('"sessionFormatVersion":"{{sourceSessionFormatVersion}}"')
+    expect(normalizeSessionSnapshot(deliveryLog(SESSION_FORMAT_VERSION), ctx))
+      .toContain(`"sessionFormatVersion":${SESSION_FORMAT_VERSION}`)
+  })
+
+  it('keeps source-versus-migrated-artifact delivery comparison generation-exact by default', () => {
+    const source = deliveryLog(3)
+    const target = prepareSessionSnapshotFixtureForComparison(source)
+    const [historical, migrated] = normalizeSessionSnapshots([source, target], ctx)
+    expect(historical).toBe(migrated)
+    expect(migrated).toContain('"sessionFormatVersion":3')
+  })
+
+  it('keeps a wrong native delivery generation distinguishable from historical writer output', () => {
+    const [historical, staleCurrent] = normalizeSessionSnapshots(
+      [deliveryLog(3), deliveryLog(SESSION_FORMAT_VERSION, 3)], ctx, { nativeWriterOutput: true },
+    )
+    expect(staleCurrent).not.toBe(historical)
+    expect(staleCurrent).toContain('"sessionFormatVersion":3')
+  })
+
+  it('refuses a source marker claiming the migration target before creating comparison tokens', () => {
+    expect(() => normalizeSessionSnapshots([deliveryLog(3, 4)], ctx, { nativeWriterOutput: true }))
+      .toThrow('format v3 delivery marker claims target format v4')
+  })
+
+  it('keeps captured generations and delivery lookalikes numeric in versioned inputs', () => {
+    const log = deliveryLog(SESSION_FORMAT_VERSION) + JSON.stringify({
+      type: 'custom/event', seq: 2, time: 3, ignorable: true,
+      data: { capturedFormatVersion: SESSION_FORMAT_VERSION, sessionFormatVersion: SESSION_FORMAT_VERSION },
+    }) + '\n'
+    const [normalized] = normalizeSessionSnapshots([log], ctx, { nativeWriterOutput: true })
+    expect(normalized).toContain(JSON.stringify({
+      capturedFormatVersion: SESSION_FORMAT_VERSION, sessionFormatVersion: SESSION_FORMAT_VERSION,
+    }))
+  })
+
+  it('preserves delivery and captured-source generations without a validated source generation', () => {
     const event = (version: number): string => JSON.stringify({
       type: 'session-log-deepseek/delivery-accepted',
       data: { sessionId: 's', throughSeq: 4, sessionFormatVersion: version },

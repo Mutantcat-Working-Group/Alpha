@@ -69,7 +69,7 @@ pnpm run gen-session-format-catalog
 <a id="snapshot-successors"></a>
 ## 5. 创建快照后继代际
 
-阅读[快照所有权](../../snapshots/AGENTS.md)和[快照库](../../packages/test-support/session-snapshot/README.zh.md)。选择拥有数据的场景，而非仅引用它的适配器。实现 N+1 后，保留每份历史文件，并按目标版本的规范父子文件名生成后继文件。绝不将前代重命名为目标文件名，或仅修改其 header。
+阅读[快照所有权](../../snapshots/AGENTS.md)和[快照库](../../packages/test-support/session-snapshot/README.zh.md)。[语料策略](../../scripts/session-snapshot-corpus-policy.ts)保留其声明的 baseline 作为回放输入，让升级实际经过相邻迁移链；提高 writer 版本不要求 refresh 该语料。需要当前代际后继时，选择拥有数据的场景，保留每份历史文件，并使用目标版本的规范父子文件名。绝不将前代重命名为目标文件名，或仅修改其 header。
 
 如果回放输入不变，在所有者上执行无密钥 refresh，再执行不写回的 replay。以下 SDK 命令使用 `text-turn` 和工作区的写入器版本。先实现并接入 N+1，才能用它们生成该版本；功能变更应选择实际受影响的所有者：
 
@@ -80,7 +80,7 @@ pnpm run test:snapshot snapshots/sdk/sdk.snapshot.ts -t text-turn
 
 一起审查新代际、请求伴随文件与协议输出。验证每个前代的字节保持相同，且父子角色连续。选择规则采用数值最高的代际，因此应将共享引用更新为所有者选中的父代际。不要把 packed 布局迁移器当作版本升级器。如果模型 transcript（文本记录）必须变化，由场景所有者按照[测试策略](../testing.zh.md)使用所需提供方密钥进行实时录制。
 
-通过 `snapshot.yml` 的 `sessionFormat.version` 与受支持的 `coverage` 名称显式保留历史案例；record 和 refresh 不改动这些 Session fixture。更新[语料策略](../../scripts/session-snapshot-corpus-policy.ts)以采用当前代际，同时保留聚焦的直接迁移边、多跳、packed row、重试/失败及交付 profile 覆盖。检查语料和两个 SDK 投影；不要仅为消除校验失败而批量 refresh 无关场景。
+通过 `snapshot.yml` 的 `sessionFormat.version` 与受支持的 `coverage` 名称显式保留早于 baseline 的案例；record 和 refresh 不改动已 pin 的 Session fixture。更新[语料策略](../../scripts/session-snapshot-corpus-policy.ts)以采用当前代际，同时保留聚焦的直接迁移边、多跳、packed row、重试/失败及交付 profile 覆盖。检查语料和两个 SDK 投影；不要仅为消除校验失败而批量 refresh 无关场景。
 
 <a id="validate"></a>
 ## 6. 验证集成结果

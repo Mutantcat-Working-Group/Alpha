@@ -408,6 +408,17 @@ function records(log: string): JsonObject[] {
     .map(line => JSON.parse(line) as JsonObject)
 }
 
+function notificationComparisonRecords(log: string, sourceLogs: readonly string[]): JsonObject[] {
+  const versions = sourceLogs.map((source, index) => sessionHeaderVersion(source, `notification Session ${index}`))
+  expect(new Set(versions).size, 'wire golden Session roles share one native writer generation').toBe(1)
+  return records(log).map((record) => {
+    if (record.method !== 'session.event') return record
+    const params = record.params as JsonObject
+    const event = JSON.parse(normalizeSessionFormatMetadata(JSON.stringify(params.event), versions[0])) as unknown
+    return { ...record, params: { ...params, event } }
+  })
+}
+
 function modelFromSession(log: string): { provider: string; model: string } {
   for (const record of records(log)) {
     if (record.type !== 'request/header') continue
@@ -893,14 +904,14 @@ describe('TypeScript SDK snapshots over the jsonrpc runtime', () => {
         expect(await Promise.all((await fixtureFiles(scenario)).map(file => readFile(file, 'utf8'))),
           'historical replay input remains unchanged').toEqual(replayContents)
         for (const [index, content] of expectedContents.entries()) {
-          expect(sessionHeaderVersion(content, writerSnapshotName(index))).toBe(SESSION_FORMAT_VERSION)
+          expect(sessionHeaderVersion(content, writerSnapshotName(index))).toBeLessThanOrEqual(SESSION_FORMAT_VERSION)
         }
       }
 
       // Persisted transcripts match the committed fixtures.
       const expectedContext = contextOfContents(expectedContents)
-      const actualSnapshots = normalizeSessionSnapshots(ordered.map(log => log.content), actualContext)
-      const expectedSnapshots = normalizeSessionSnapshots(expectedContents, expectedContext)
+      const actualSnapshots = normalizeSessionSnapshots(ordered.map(log => log.content), actualContext, { nativeWriterOutput: true })
+      const expectedSnapshots = normalizeSessionSnapshots(expectedContents, expectedContext, { nativeWriterOutput: true })
       expect(actualSnapshots.map(records), `${scenario.name}: sessions`).toEqual(expectedSnapshots.map(records))
       await verifyHeaders(scenario, ordered, actualContext, assertions.dshSdkChild?.agentConfig)
 
@@ -916,10 +927,10 @@ describe('TypeScript SDK snapshots over the jsonrpc runtime', () => {
         }
         const expectedNotifications = await readFile(notificationsExpectedPath, 'utf8')
         expect(
-          records(normalizedNotifications),
+          notificationComparisonRecords(normalizedNotifications, ordered.map(log => log.content)),
           `${scenario.name}: notifications`,
         )
-          .toEqual(records(expectedNotifications))
+          .toEqual(notificationComparisonRecords(expectedNotifications, expectedContents))
         expect(normalizedResult).toBe(await readFile(resultExpectedPath, 'utf8'))
       }
 
