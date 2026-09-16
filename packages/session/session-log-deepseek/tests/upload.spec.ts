@@ -8,10 +8,12 @@ import SessionStore, {
   SessionSeq,
   type CreateSessionOptions,
   type SessionEvent,
-} from '@mutantcat/dsh-session'
-import DeepSeekLlmApiExtensionRegistry from '@mutantcat/dsh-deepseek-llm-api-extensions'
-import { createAssistantMessage, createSystemMessage, createUserMessage } from '@mutantcat/dsh-llm'
-import type { JsonValue } from '@mutantcat/dsh-util-values'
+  type SessionHeader,
+} from '@deepseek-ai/dsh-session'
+import { createSessionFormatCatalogWithChildren } from '@deepseek-ai/dsh-session-format-catalog'
+import DeepSeekLlmApiExtensionRegistry from '@deepseek-ai/dsh-deepseek-llm-api-extensions'
+import { createAssistantMessage, createSystemMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { JsonValue } from '@deepseek-ai/dsh-util-values'
 import * as SessionLogDeepSeek from '../src/index.ts'
 import type { DeepSeekSessionLogExtension, DeepSeekSessionLogWireEvent, DeepSeekSessionLogWireSurfaceOp } from '../src/types.ts'
 
@@ -213,6 +215,36 @@ describe('incremental DeepSeek session-log upload', () => {
     expect(SessionLogDeepSeek.acceptedThrough(fork.session)).toBe(-1)
     const forkPayload = await fork.ctx.deepseekLlmApiExtensions.prepare({ body: body(), signal: SIGNAL, sessionId: fork.session.id })
     expect(forkPayload.fields.dsh_session_log).toMatchObject({ afterSeq: -1, throughSeq: fork.session.seq - 1 })
+  })
+
+  it('uploads a migrated V3 log from the beginning before resuming current-generation acknowledgements', async () => {
+    const id = SessionId('migrated-v3-delivery')
+    const reader = createSessionFormatCatalogWithChildren([]).createRestore({
+      type: 'session', version: 3, id, createdAt: 1, isSeeded: false, delegationDepth: 0,
+    }, { recovery: 'strict', validation: 'current' })
+    reader.decodeRow({ type: 'feedback/record', seq: 0, time: 2, data: { text: 'retained' } })
+    reader.decodeRow({
+      type: 'session-log-deepseek/delivery-accepted', seq: 1, time: 3,
+      data: { sessionId: id, throughSeq: 0, sessionFormatVersion: 3 },
+    })
+    const artifact = reader.finish()
+    const session = Session.fromRestore(id, artifact.events as SessionEvent[],
+      artifact.header as unknown as SessionHeader, SessionLogOffset(artifact.inheritedEventCount), 'detached')
+    const { ctx } = await harness('delivery-migration-owner')
+    ctx.effect(() => ctx.sessions.enter(session))
+
+    const first = await ctx.deepseekLlmApiExtensions.prepare({ body: body(), signal: SIGNAL, sessionId: id })
+    expect(first.fields.dsh_session_log).toMatchObject({ sessionFormatVersion: SESSION_FORMAT_VERSION, afterSeq: -1 })
+    expect(first.fields.dsh_session_log?.events[0]?.seq).toBe(0)
+    expect(first.fields.dsh_session_log?.events[1]).toMatchObject({ data: { sessionFormatVersion: 3, throughSeq: 0 } })
+    const throughSeq = session.seq - 1
+    await first.accept()
+    expect(session.snapshotEvents().at(-1)?.data).toEqual({ sessionId: id, sessionFormatVersion: SESSION_FORMAT_VERSION, throughSeq })
+
+    const second = await ctx.deepseekLlmApiExtensions.prepare({ body: body(), signal: SIGNAL, sessionId: id })
+    expect(second.fields.dsh_session_log?.afterSeq).toBe(throughSeq)
+    expect(second.fields.dsh_session_log?.events.map(event => event.seq)).toEqual([throughSeq + 1])
+    expect(session.eventAt(SessionSeq(1))?.data).toMatchObject({ sessionFormatVersion: 3, throughSeq: 0 })
   })
 
   it('takes the maximum watermark when concurrent acceptances settle out of order', async () => {

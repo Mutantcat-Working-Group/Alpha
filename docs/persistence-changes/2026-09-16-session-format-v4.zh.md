@@ -35,12 +35,16 @@ changes:
 <a id="compatibility"></a>
 ## 兼容性
 
-[V3 到 V4 迁移](../../packages/session/session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)推进 header，并保留每个已接纳事件与继承切点。其按 generation 校验 delivery 的规则可防止历史确认成为有效的 V4 水位。V3 读取方拒绝更新的 generation；目录通过完整的相邻迁移链恢复受支持的旧输入。[V3 schema 参考](historical-formats/v3.zh.md)保留原声明，持久化在只发布当前后继代的同时保留已提交前代的字节。
+[V3 到 V4 迁移](../../packages/session/session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)推进 header，保留每个已接纳源事件与继承切点，并根据同一持久化根目录中保留的直接子 Session 日志追加缺失的父级 `subagent/catalog` 记录。历史正文恢复要求显式提供子日志证据集合；没有可供补全的子日志时也须传入空集合。缺少必需的 descriptor 或身份冲突会拒绝迁移，且不发布后继；已有 catalog 事实保持不变。链接中的规范负责 descriptor 准入与确定性追加顺序。
+
+历史读取打开在内存中准备结果。写入打开在重新校验子项成员与修订后，将当前后继发布到未修改的前代文件旁。已写入的 V4 文件不会重新运行该迁入边，因此未发布集成使用可丢弃的 home。Delivery generation 校验防止历史确认成为有效的 V4 水位。V3 读取方拒绝更新的 generation；[V3 schema 参考](historical-formats/v3.zh.md)保留原声明。
 
 <a id="verification"></a>
 ## 验证
 
-`pnpm exec vitest run packages/session/session-format-v3-to-v4/tests` 的两个文件共 22 个测试通过，覆盖恒等保留、继承切点、准入与 delivery generation 拒绝。`pnpm run verify-persistence-formats` 对从 V0 到 V4 的全部五个参考均验证通过。写入器变更前，`pnpm run verify-persistence-catalog` 通过，且 `pnpm run verify-persistence-formats --archive 3` 已捕获 V3 schema。
+`pnpm exec vitest run packages/session/session-format-v3-to-v4/tests packages/session/session-format-catalog/tests packages/session/session-persistence-jsonl/tests/catalog-migration.spec.ts` 的九个文件共 140 个测试通过，一个测试跳过。这些测试覆盖 catalog 补全、继承切点、子日志证据拒绝，以及 JSONL 准备与发布。
+
+写入器变更前，`pnpm run verify-persistence-catalog` 通过，且 `pnpm run verify-persistence-formats --archive 3` 已捕获 V3 schema。V4 header schema digest 及其生成的配套文件保持不变。
 
 <a id="dev-note"></a>
 ## 开发备注

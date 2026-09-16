@@ -67,7 +67,7 @@ The chain contains no `flatMap`, spread expansion, intermediate event array, or 
 
 ### Adjacent version ownership
 
-The [V3-to-V4 specification](../../../../packages/session/session-format-v3-to-v4/README.md#v3-to-v4-specification) owns an identity body conversion: it advances the header version while preserving admitted events and inherited cuts. It reuses the frozen V3 codec from V2→V3. Generation-aware delivery validation prevents a historical acknowledgement from acquiring a current watermark meaning solely through the header change; earlier edges retain their own source-admission policies.
+The [V3-to-V4 specification](../../../../packages/session/session-format-v3-to-v4/README.md#v3-to-v4-specification) specifies parent catalog completion: it advances the header version, preserves admitted events and inherited cuts, and appends missing own catalog entries from child evidence. It reuses the frozen V3 codec from V2→V3. Generation-aware delivery validation prevents a historical acknowledgement from acquiring a current watermark meaning solely through the header change; earlier edges retain their own source-admission policies.
 
 The [V2-to-V3 delivery guards](../../../../packages/session/session-format-v2-to-v3/README.md#delivery-guards) prevent a marker ignored in the source generation from becoming an active upload watermark merely because the header changes. Python release smoke checks generated logs against the source `SESSION_FORMAT_VERSION` independently of generation-neutral golden comparison, so coherent filenames and headers cannot conceal an outdated writer.
 
@@ -99,6 +99,8 @@ Current encoding is record based. The provider serializes about 1 MiB of plainte
 
 The shipped `lib/worker.cjs` bundles its JavaScript workspace dependencies so each fresh verifier avoids resolving and compiling their runtime module graph. This is safe because the Worker communicates through plain request/result messages and shares no service or class identity with its host. The Host build applies the existing TypeScript and Typert transforms; the Client pass skips this Node-only package instead of replacing its worker with untransformed source. Native add-ons remain external. Verification, scheduler admission, termination, and durable publication still complete before writable open returns. The built-worker smoke copies the package manifest and worker into an isolated temporary package with ambient module paths removed, accepts a valid generation, and rejects an incorrect event count.
 
+The [browser preview packer](../../../../packages/experimental/webworker-packer/README.md) prepares current successors for bundled Session data in Node, using same-root direct-child descriptors as parent catalog evidence. The browser host does not implement `node:worker_threads`, so this preparation preserves both immutable fixture generations and runtime JSONL’s Worker verification requirement.
+
 Preparation forwards cancellation through source reads and observes it at the existing approximately 500 ms Decode yield boundary. Once `publish()` starts, encode, Worker verification, and publication do not receive caller cancellation and run to settlement; write open checks its caller signal again afterward. A published generation is never rolled back.
 
 The Stage pipeline ends at one prepared current artifact. [Historical Session read preparation](2026-09-05-read-only-session-migration-preparation.md) defines how read open consumes that artifact immediately while write open performs encode, verification, and publication before returning append access.
@@ -124,6 +126,44 @@ Existing write handles retain the process-local claim and kernel-backed cross-pr
 | Bulk current encode builds whole strings and Buffers | Record encoder, 1 MiB input slices, 4 MiB write batches | Bounds allocation and main-thread slices |
 | Verification repeats on the main thread | At most two complete-generation Workers | Keeps verification CPU off the main thread |
 | Production and fixture migration use different APIs | Catalog `createRestore()` with explicit policies | One decoder/chain implementation |
+
+### Parent catalog prerequisites
+
+V3→V4 completes parent child discovery from retained direct-child headers and own descriptors. Storage supplies compact descriptor evidence to the catalog assembly, which binds it into the V3→V4 stage factory; the Stage waits for the parent's final inherited cut before validating catalog payloads and requiring complete own discovery facts. Nested seed markers discard inherited catalog candidates without interpreting their payloads. An existing catalog entry survives an unavailable descriptor, including a child that failed before its first step. Descriptor v1 denotes continuable mode; v2/v3 explicitly record mode. Available discovery fields must agree with the parent; absent entries require a supported descriptor. Missing evidence refuses migration rather than reporting parent corruption. JSONL rechecks related membership and source revisions when preparing, reusing, and publishing. An unsupported generation or unreadable header elsewhere in that scan refuses migration because it cannot prove unrelatedness. Source drift invalidates preparation; read open retries once automatically, while write open refuses publication. Diagnostics retain the offending child path and distinguish unsupported migration evidence from malformed child data. The storage decoder classifies physical JSON and compression failures before the collector adds child context; filesystem reads and cancellation keep their original errors. The V0–V3-only catalog avoids recursive child migration. Current V4 reads skip that scan but apply the same own-catalog field, uniqueness, and current delivery ownership checks as strict restoration. See the [format specification](../../../../packages/session/session-format-v3-to-v4/README.md).
+
+Raw parent/child migration tests retain 24 historical creation-time conflicts as rejection evidence. Detached controls align only the child creation time and prove event-preserving restoration, including a published child without a descriptor. Headless/ACP and SDK snapshot adapters validate live parent/child clocks before normalization and preserve their equality during refresh; committed predecessor generations remain unchanged.
+
+Historical public revisions combine the parent’s physical revision with a fingerprint of every selected canonical path and its filesystem revision. Parent-only tokens cannot identify catalog changes supplied by children; a root fingerprint preserves metadata-only `stat`/`list` and includes unreadable or unsupported members without a new persistent index. Unrelated changes also invalidate historical caches, and obtaining the token costs a root scan. Current tokens stay file-local. The preparation memo keeps physical parent revisions and separately validates child membership and revisions.
+
+The generic format interfaces carry only the artifact being restored. Parent-specific catalog assembly replaces the V3→V4 declaration with a closure over the collected child evidence; it reuses the generated codec, migration, and validation inventory. The assembly compiles one short migration chain per parent preparation, with independent stage state per restore. Binding at assembly keeps child evidence out of generic restore options and stage inputs without moving discovery or source revalidation into the migration. Static header and native current reads need no child evidence; an unbound historical body restore refuses rather than assuming an empty child set.
+
+<a id="catalog-scan-measurements"></a>
+### Catalog scan measurements
+
+The package-local [diagnostic](../../../../packages/session/session-persistence-jsonl/tests/catalog-migration.perf.ts) measures one raw V3 parent, four direct children with 1,000 events each, and 0/100/1,000 unrelated header-only V3 Sessions. Each sample creates its own temporary corpus and Cordis context in a fresh process, runs stat → cold read → memo read → write publication → current warm read, and disposes the context and files. It uses built workspace exports under plain Node; fixture creation is outside the measured intervals. These are filesystem-cache-warm observations after fixture creation, not disk-cold latency or a performance gate.
+
+On macOS arm64 with Node v26.0.0, all three samples per size are below in milliseconds. Read-only opens do not publish: membership scanning remains proportional to corpus size even when decoding is memoized. The 1,000-unrelated medians are 84.14 ms for stat, 237.97 ms for cold read, 110.98 ms for memo read, 268.46 ms for publication, and 0.41 ms for the same-process current read. These measurements document the cost; they establish no speedup claim or cross-host threshold.
+
+| Unrelated Sessions | Historical stat | Cold read | Memo read | Publish | Current warm read |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 5.17 | 19.00 | 1.36 | 42.88 | 0.47 |
+| 0 | 3.30 | 14.87 | 1.45 | 35.75 | 0.41 |
+| 0 | 3.18 | 16.71 | 1.50 | 34.51 | 0.47 |
+| 100 | 29.44 | 77.48 | 17.01 | 60.66 | 0.43 |
+| 100 | 12.42 | 42.71 | 13.69 | 60.19 | 0.43 |
+| 100 | 11.19 | 41.06 | 12.61 | 57.18 | 0.39 |
+| 1000 | 84.14 | 237.97 | 109.86 | 284.96 | 0.48 |
+| 1000 | 99.41 | 259.88 | 123.50 | 268.46 | 0.41 |
+| 1000 | 75.40 | 236.64 | 110.98 | 247.69 | 0.39 |
+
+Run from the repository root after building the runtime:
+
+```sh
+pnpm run build:lib:host
+cd packages/session/session-persistence-jsonl
+node --input-type=module -e 'import { build } from "tsdown"; await build({ config: false, entry: ["tests/catalog-migration.perf.ts"], outDir: ".artifacts/perf", tsconfig: false, dts: false, deps: { neverBundle: [/^@deepseek-ai\//], onlyBundle: false } })'
+node .artifacts/perf/catalog-migration.perf.mjs
+```
 
 ## Verification
 

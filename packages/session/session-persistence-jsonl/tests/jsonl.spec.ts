@@ -1165,6 +1165,25 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
       .rejects.toThrow(/released v0 physical header lacks required member "type"/)
   })
 
+  it('tracks a disappearing corpus member and propagates its storage faults in historical revisions', async () => {
+    const parent = meta('corpus-revision-parent', '/work')
+    const child = meta('corpus-revision-child', '/work')
+    for (const header of [parent, child]) {
+      const path = historicalLogPath(root, header.cwd, header.id)
+      await mkdir(dirname(path), { recursive: true })
+      await writeFile(path, `${JSON.stringify(releasedV0Header(header))}\n`)
+    }
+    const present = await ctx.sessionPersistence.stat(parent.id)
+    statFailure.path = historicalLogPath(root, child.cwd, child.id)
+    statFailure.error = Object.assign(new Error('member disappeared'), { code: 'ENOENT' })
+    const missing = await ctx.sessionPersistence.stat(parent.id)
+    expect(missing).toBeDefined()
+    expect(missing?.revision).not.toBe(present?.revision)
+    expect((await ctx.sessionPersistence.stat(parent.id))?.revision).toBe(missing?.revision)
+    statFailure.error = Object.assign(new Error('member denied'), { code: 'EACCES' })
+    await expect(ctx.sessionPersistence.stat(parent.id)).rejects.toBe(statFailure.error)
+  })
+
   it('surfaces source-read storage faults and aborts unwrapped during migration', async () => {
     const header = meta('source-read-fault', '/work')
     const sourcePath = historicalLogPath(root, header.cwd, header.id)

@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { SESSION_FORMAT_VERSION, Session, SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
-import { sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
+import { createSessionFormatCatalogWithChildren } from '@deepseek-ai/dsh-session-format-catalog'
 import {
   generationLogFilename,
   scanLog,
@@ -41,7 +41,7 @@ function readSession(id: string): ReturnType<typeof scanLog> {
 function restoreSession(content: string, version: number) {
   const [header, ...events] = content.trimEnd().split('\n').map(line => JSON.parse(line) as unknown)
   expect(header).toMatchObject({ type: 'session', version })
-  const restore = sessionFormatCatalog.createRestore(header, { recovery: 'strict', validation: 'current' })
+  const restore = createSessionFormatCatalogWithChildren([]).createRestore(header, { recovery: 'strict', validation: 'current' })
   for (const event of events) restore.decodeRow(event)
   return restore.finish()
 }

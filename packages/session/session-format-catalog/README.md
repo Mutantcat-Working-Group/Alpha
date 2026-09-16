@@ -33,7 +33,8 @@ Import this library from persistence and test-support readers that need the comp
 
 ```text
 const descriptor = sessionFormatCatalog.readHeader(physicalHeader)
-const restore = sessionFormatCatalog.createRestore(physicalHeader, { recovery: 'recoverable', validation: 'transformed' })
+const catalog = createSessionFormatCatalogWithChildren(childFacts)
+const restore = catalog.createRestore(physicalHeader, { recovery: 'recoverable', validation: 'transformed' })
 for (const row of physicalRows) restore.decodeRow(row)
 const current = restore.finish()
 const headerRecord = sessionFormatCatalog.encodeCurrentHeader(current.header, current.inheritedEventCount)
@@ -45,6 +46,8 @@ Import `sessionFormatCatalog` from the package root. JSONL and fixture readers c
 Production historical reads select `{ recovery: 'recoverable', validation: 'transformed' }`. Worker and fixture verification select `{ recovery: 'strict', validation: 'current' }`. Transformed validation runs the released-current rules after migration but deliberately skips installed semantic validation for input that is already current.
 
 The catalog contains all supported historical readers directly. A profile cannot add, remove, or reorder an edge by mounting a feature plugin. Its peer dependency on `dsh-session` supplies the installed current event vocabulary and current restoration rules, while historical edge validators remain frozen. The browser-safe `./message-projections` export assembles current plugin-owned interpreters for detached constructors and surface folds; it does not mount recovery listeners.
+
+`createSessionFormatCatalogWithChildren(childFacts)` binds explicit child evidence to V3→V4 during assembly; see the [catalog-completion specification](../session-format-v3-to-v4/README.md). `historicalSessionFormatCatalog` restores V0–V3 only for collecting child prerequisites without recursively completing their catalogs. Isolated transcript replay explicitly supplies an empty array; persistence must collect the complete available direct-child set. Keep the supplied evidence unchanged for the catalog’s lifetime. Each restore owns independent stage state. The static `sessionFormatCatalog` supports header and native current-format reads; historical body reads require the child-bound catalog.
 
 -----
 

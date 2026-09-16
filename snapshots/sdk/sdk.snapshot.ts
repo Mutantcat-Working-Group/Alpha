@@ -31,6 +31,7 @@ import {
   parseToolSchemasSnapshot,
   redactSessionSnapshotIds,
   refreshFixtureReplacements,
+  reconcileCatalogCreationTimes,
   restorePinnedToolSchemas,
   scrubModelRequestBulk,
   scrubSessionSnapshot,
@@ -822,6 +823,7 @@ describe('TypeScript SDK snapshots over the jsonrpc runtime', () => {
         recording ? logs.length : files.length,
         assertions.dshSdkChild !== undefined,
       )
+      reconcileCatalogCreationTimes(ordered.map(log => log.content), 'validate')
       const actualContext = contextOf(ordered, cwd)
       if (scenario.name === 'subagent-activation-limit') {
         expect(ordered).toHaveLength(2)
@@ -881,7 +883,7 @@ describe('TypeScript SDK snapshots over the jsonrpc runtime', () => {
             stabilizeRefreshLog(log.content, existing, replacements, actualContext),
           ))
         })
-        expectedContents = redactSessionSnapshotIds(stabilizeFixtureMessageIds(refreshed, expectedContents))
+        expectedContents = redactSessionSnapshotIds(stabilizeFixtureMessageIds(reconcileCatalogCreationTimes(refreshed, 'preserve-headers'), expectedContents))
       }
 
       if (writesSessionFixtures || refreshing && retained) {

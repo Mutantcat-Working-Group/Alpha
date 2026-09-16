@@ -35,12 +35,16 @@ changes:
 <a id="compatibility"></a>
 ## Compatibility
 
-The [V3-to-V4 migration](../../packages/session/session-format-v3-to-v4/README.md#v3-to-v4-specification) advances the header and preserves every admitted event and inherited cut. Its generation-aware delivery checks prevent historical acknowledgements from becoming active V4 watermarks. V3 readers refuse the newer generation; the catalog restores supported older inputs through the complete adjacent chain. The [V3 schema reference](historical-formats/v3.md) preserves the outgoing declarations, and persistence retains committed predecessor bytes while publishing only the current successor.
+The [V3-to-V4 migration](../../packages/session/session-format-v3-to-v4/README.md#v3-to-v4-specification) advances the header, preserves every admitted source event and inherited cut, and appends missing parent `subagent/catalog` records from retained direct-child logs in the same persistence root. Historical body restoration requires an explicit child-evidence set, including an empty set when no children are available to backfill. Missing required descriptors or conflicting identities refuse migration without publication; existing catalog facts remain. The linked specification owns descriptor admission and deterministic append order.
+
+Historical read opens prepare the result in memory. Write opens revalidate child membership and revisions before publishing the current successor beside unchanged predecessor files. Already-written V4 files do not rerun this incoming edge, so unreleased integration uses disposable homes. Delivery-generation checks keep historical acknowledgements from becoming active V4 watermarks. V3 readers refuse the newer generation; the [V3 schema reference](historical-formats/v3.md) preserves the outgoing declarations.
 
 <a id="verification"></a>
 ## Verification
 
-`pnpm exec vitest run packages/session/session-format-v3-to-v4/tests` passed 22 tests across two files, covering identity preservation, inherited cuts, admission, and delivery-generation refusal. `pnpm run verify-persistence-formats` passed for all five references from V0 through V4. Before the writer change, `pnpm run verify-persistence-catalog` passed and `pnpm run verify-persistence-formats --archive 3` captured the V3 schema.
+`pnpm exec vitest run packages/session/session-format-v3-to-v4/tests packages/session/session-format-catalog/tests packages/session/session-persistence-jsonl/tests/catalog-migration.spec.ts` passed 140 tests across nine files, with one skipped test. The suites cover catalog completion, inherited cuts, child-evidence refusal, and JSONL preparation/publication.
+
+Before the writer change, `pnpm run verify-persistence-catalog` passed and `pnpm run verify-persistence-formats --archive 3` captured the V3 schema. The V4 header schema digest and its generated companion remain unchanged.
 
 <a id="dev-note"></a>
 ## Dev Note

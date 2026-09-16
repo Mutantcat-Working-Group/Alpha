@@ -1,11 +1,12 @@
-/** Streaming V3-to-V4 identity conversion with inherited cuts and delivery activation guards. */
+/** Append historical child facts after the unchanged V3 source suffix. */
 
-import { SessionFormatError, SessionFormatUnsupportedMigrationError, defineSessionFormatMigration, sessionFormatCount } from '@deepseek-ai/dsh-session-format'
-import type { SessionFormatEvent, SessionFormatEventRun, SessionFormatJsonObject, SessionFormatMigrationContext, SessionFormatMigrationStage, SessionFormatMigrationStageInput } from '@deepseek-ai/dsh-session-format'
+import { defineSessionFormatMigration, SessionFormatError, SessionFormatUnsupportedMigrationError, isSessionFormatJsonObject, sessionFormatCount } from '@deepseek-ai/dsh-session-format'
+import type { SessionFormatEvent, SessionFormatEventRun, SessionFormatJsonObject, SessionFormatJsonValue, SessionFormatMigration, SessionFormatMigrationContext, SessionFormatMigrationStage, SessionFormatMigrationStageInput } from '@deepseek-ai/dsh-session-format'
 import { assertReleasedV3Header } from '@deepseek-ai/dsh-session-format-v2-to-v3'
 import { assertReleasedV4Header, validateDeliveryAccepted } from './validation.ts'
+import { catalogFact, childCatalogSource, childCatalogFact, childCatalogSubject } from './facts.ts'
 
-/** Adjacent migration preserves admitted V3 event values and coordinates. */
+/** Header-only migration declaration; body restoration requires explicit child evidence. */
 export const sessionFormatV3ToV4 = defineSessionFormatMigration({
   name: '@deepseek-ai/dsh-session-format-v3-to-v4',
   fromVersion: 3,
@@ -14,26 +15,51 @@ export const sessionFormatV3ToV4 = defineSessionFormatMigration({
     assertReleasedV3Header(header)
     return { ...header, version: 4 }
   },
-  createStage(input) { return new ReleasedV3ToV4Stage(input) },
+  createStage() {
+    throw new SessionFormatUnsupportedMigrationError('V3 catalog migration requires explicit historical child facts, including an empty array for a parent without children')
+  },
   validateTargetHeader: assertReleasedV4Header,
 })
 
+/**
+ * Bind one parent's historical child evidence to its V3→V4 migration.
+ * @param children - complete child evidence retained unchanged for the lifetime of this declaration; an empty array declares no children.
+ * @returns an adjacent migration that creates independent stages with the supplied evidence.
+ */
+export function createSessionFormatV3ToV4(children: readonly SessionFormatJsonValue[]): SessionFormatMigration {
+  return defineSessionFormatMigration({
+    ...sessionFormatV3ToV4,
+    createStage: input => new ReleasedV3ToV4Stage(input, children),
+  })
+}
+
 class ReleasedV3ToV4Stage implements SessionFormatMigrationStage {
   readonly headerInheritedEventCount?: number
+  private readonly candidates: readonly SessionFormatJsonObject[]
+  private readonly catalogs: SessionFormatJsonValue[] = []
   private cut: number | undefined
   private nextSeq = 0
+  private time: number
   private foreignDeliverySeq: number | undefined
 
-  constructor(private readonly input: SessionFormatMigrationStageInput) {
+  constructor(private readonly input: SessionFormatMigrationStageInput, children: readonly SessionFormatJsonValue[]) {
+    this.candidates = children.map(childCatalogSource).sort((left, right) =>
+      (left['childCreatedAt'] as number) - (right['childCreatedAt'] as number)
+      || (left['childId'] === right['childId'] ? 0 : (left['childId'] as string) < (right['childId'] as string) ? -1 : 1))
     this.cut = input.sourceHeader.isSeeded ? undefined : 0
     if (!input.sourceHeader.isSeeded) this.headerInheritedEventCount = 0
+    this.time = input.sourceHeader.createdAt
   }
 
   transformEvent(event: SessionFormatEvent, context: SessionFormatMigrationContext): void {
-    if (event.seq !== this.nextSeq++) throw new SessionFormatError('format v3 source events must be dense')
-    if (event.type === 'session/end-seed' && (event.data as SessionFormatJsonObject)['inherited'] === true) {
+    if (event.seq !== this.nextSeq++) throw new SessionFormatError('V3 source events must be dense')
+    this.time = event.time
+    if (event.type === 'session/end-seed' && isSessionFormatJsonObject(event.data) && event.data['inherited'] === true) {
       if (!this.input.sourceHeader.isSeeded) throw new SessionFormatError('unseeded format v3 Session contains an inherited end-seed marker')
       this.cut = event.seq
+      this.catalogs.length = 0
+    } else if (event.type === 'subagent/catalog') {
+      this.catalogs.push(event.data)
     }
     const deliveryId = validateDeliveryAccepted(event, 3)
     if (event.type === 'session-log-deepseek/delivery-accepted') {
@@ -49,14 +75,39 @@ class ReleasedV3ToV4Stage implements SessionFormatMigrationStage {
     for (const event of run.expand()) this.transformEvent(event, context)
   }
 
-  finish(_context: SessionFormatMigrationContext): number {
-    const cut = sessionFormatCount(this.cut, 'format v3 inherited event count')
+  finish(context: SessionFormatMigrationContext): number {
+    const cut = sessionFormatCount(this.cut, 'V3 inherited event count')
+    // Catalog payloads belong to this Session only after the final inherited cut.
+    const existingCatalogs = new Map<string, SessionFormatJsonObject>()
+    for (const data of this.catalogs) {
+      const fact = catalogFact(data)
+      const id = fact['childId'] as string
+      if (existingCatalogs.has(id)) throw new SessionFormatUnsupportedMigrationError(`duplicate catalog child ${id}`)
+      existingCatalogs.set(id, fact)
+    }
     if (this.input.sourceInheritedEventCount !== undefined && cut !== this.input.sourceInheritedEventCount) {
       throw new SessionFormatError('format v3 inherited cut disagrees with its source marker')
     }
     if (this.foreignDeliverySeq !== undefined
       && (this.input.sourceHeader.parentSession === undefined || this.foreignDeliverySeq >= cut)) {
       throw new SessionFormatError('current-generation delivery marker names the wrong Session')
+    }
+    for (const source of this.candidates) {
+      const id = source['childId'] as string
+      const existing = existingCatalogs.get(id)
+      const fact = childCatalogFact(source)
+      if (existing !== undefined) {
+        if (existing['childCreatedAt'] !== source['childCreatedAt']) {
+          throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} conflicts with its parent catalog`)
+        }
+        if (fact !== undefined && ['mode', 'label'].some(key => existing[key] !== fact[key])) {
+          throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} conflicts with its parent catalog`)
+        }
+        continue
+      }
+      if (fact === undefined) throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} requires exactly one own supported subagent descriptor to complete its parent catalog`)
+      existingCatalogs.set(id, fact)
+      context.emitEvent({ type: 'subagent/catalog', seq: this.nextSeq++, time: this.time, data: fact })
     }
     return cut
   }

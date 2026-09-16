@@ -35,6 +35,7 @@ import {
   parseSystemPromptSnapshot,
   parseToolSchemasSnapshot,
   refreshFixtureReplacements,
+  reconcileCatalogCreationTimes,
   scenarioSkipped,
   restorePinnedToolSchemas,
   type SharedSnapshotClaim,
@@ -1567,5 +1568,31 @@ describe('stabilizeRefreshLog', () => {
     const outputIds = stabilize(log(freshNames), log(existingNames)).trim().split('\n').slice(1)
       .map(line => (JSON.parse(line) as { data: { id: string } }).data.id)
     expect(outputIds).toEqual(freshNames.map(name => ids[name as keyof typeof ids]))
+  })
+})
+
+
+describe('raw parent and child catalog clocks', () => {
+  const child = '{"type":"session","id":"child","createdAt":100}\n'
+  const parent = (time: number) => [
+    { type: 'session', id: 'parent', createdAt: 1 },
+    { type: 'subagent/catalog', seq: 0, time: 2, data: { version: 0, childId: 'child', childCreatedAt: time, mode: 'one-shot' } },
+  ].map(row => JSON.stringify(row) + '\n').join('')
+
+  it('rejects mismatched raw clocks before normalization can erase them', () => {
+    expect(() => reconcileCatalogCreationTimes([parent(200), child], 'validate')).toThrow('creation time 200 disagrees with child header 100')
+    expect(reconcileCatalogCreationTimes([parent(100), child], 'validate')).toEqual([parent(100), child])
+  })
+
+  it('keeps retained child clocks in newly generated catalog fixtures', () => {
+    const output = reconcileCatalogCreationTimes([parent(200), child], 'preserve-headers')
+    expect(output).toEqual([parent(100), child])
+    expect(reconcileCatalogCreationTimes(output, 'validate')).toEqual(output)
+    expect(reconcileCatalogCreationTimes(output, 'preserve-headers')).toEqual(output)
+  })
+
+  it('preserves partial corpora and unrelated rows verbatim', () => {
+    const partial = parent(200) + '{"type":"feedback/record","data":null}\n'
+    expect(reconcileCatalogCreationTimes([partial], 'validate')).toEqual([partial])
   })
 })

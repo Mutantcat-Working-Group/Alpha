@@ -3,6 +3,7 @@
 import { SessionFormatError, isSessionFormatJsonObject, sessionFormatCount } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatArtifact, SessionFormatEvent, SessionFormatHeader, SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import { assertReleasedV3Header, restoreReleasedV3Artifact } from '@deepseek-ai/dsh-session-format-v2-to-v3'
+import { catalogFact } from './facts.ts'
 
 /**
  * Validate V4 metadata with the unchanged released V3 header fields.
@@ -21,8 +22,8 @@ export function assertReleasedV4Header(header: SessionFormatHeader): void {
  */
 export function restoreReleasedV4Artifact(artifact: SessionFormatArtifact, knownEventTypes: ReadonlySet<string>): SessionFormatArtifact {
   assertReleasedV4Header(artifact.header)
+  assertReleasedV4Relationships(artifact)
   const events = artifact.events.map((event): SessionFormatEvent => {
-    validateDeliveryAccepted(event, 4)
     if (event.type !== 'session-log-deepseek/delivery-accepted') return event
     const data = event.data as SessionFormatJsonObject
     const version = data['sessionFormatVersion']
@@ -52,4 +53,26 @@ export function validateDeliveryAccepted(event: SessionFormatEvent, currentVersi
   const id = data['sessionId']
   if (typeof id !== 'string' || id.length === 0) throw new SessionFormatError('delivery requires a nonempty Session id')
   return id
+}
+
+/**
+ * Validate V4 catalog membership and delivery ownership without changing vocabulary or turn recovery policies.
+ * @param artifact - decoded artifact with its final inherited cut.
+ */
+export function assertReleasedV4Relationships(artifact: SessionFormatArtifact): void {
+  const ids = new Set<string>()
+  for (const event of artifact.events) {
+    const deliveryId = validateDeliveryAccepted(event, 4)
+    if (deliveryId !== undefined
+      && !(artifact.header.parentSession !== undefined && event.seq < artifact.inheritedEventCount)
+      && deliveryId !== artifact.header.id) {
+      throw new SessionFormatError('current-generation delivery marker names the wrong Session')
+    }
+    if (event.type === 'subagent/catalog' && event.seq >= artifact.inheritedEventCount) {
+      const fact = catalogFact(event.data)
+      const id = fact['childId'] as string
+      if (ids.has(id)) throw new SessionFormatError(`duplicate catalog child ${id}`)
+      ids.add(id)
+    }
+  }
 }

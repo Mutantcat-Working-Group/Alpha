@@ -15,6 +15,7 @@ import type {} from '@mutantcat/dsh-deepseek-llm-api-extensions'
 import { SESSION_FORMAT_VERSION, SessionLogOffset, type SessionEvent } from '@mutantcat/dsh-session'
 import type { SessionLogOffset as SessionLogOffsetType } from '@mutantcat/dsh-session'
 import {
+  createSessionFormatCatalogWithChildren,
   SessionFormatUnsupportedMigrationError,
   sessionFormatCatalog,
 } from '@mutantcat/dsh-session-format-catalog'
@@ -232,7 +233,7 @@ function parseSessionFixture(text: string): ParsedSessionFixture {
       headerLineNumber = lineNumber
       sourceHeader = recordValue
       try {
-        restore = sessionFormatCatalog.createRestore(normalizeProjectedHeader(recordValue), {
+        restore = createSessionFormatCatalogWithChildren([]).createRestore(normalizeProjectedHeader(recordValue), {
           recovery: 'strict',
           validation: 'current',
         })

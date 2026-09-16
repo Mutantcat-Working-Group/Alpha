@@ -23,6 +23,7 @@ import {
   JsonlGenerationTargetConflictError,
   JsonlGenerationUnsupportedMigrationError,
   prepareJsonlMigration,
+  readDecodedJsonlSource,
   verifyJsonlCurrentGeneration,
   type JsonlGenerationFormatAdapter,
   type PrepareJsonlMigrationOptions,
@@ -30,7 +31,7 @@ import {
 import { createJsonlGenerationTestRuntime } from '../src/testing/generation.ts'
 import { compressZstdFrame, decompressZstdFrame, scanZstdFrames } from '../src/zstd.ts'
 import type { JsonlCompression } from '../src/format.ts'
-import { sessionFormatCatalog } from '@mutantcat/dsh-session-format-catalog'
+import { createSessionFormatCatalogWithChildren, sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
 import type {
   SessionFormatArtifact,
   SessionFormatEvent,
@@ -85,6 +86,20 @@ function header(version: number, id = 'generation-test'): Record<string, unknown
 
 const event0 = { type: 'turn/start', seq: 0, time: 2, data: { turn: 1 } }
 const event1 = { type: 'turn/end', seq: 1, time: 3, data: { turn: 1, reason: { kind: 'completed' } } }
+
+it('preserves cancellation raised while creating a child source decoder', async () => {
+  const path = join(await tempRoot(), 'session.v3.jsonl')
+  await writeFile(path, line(header(3)))
+  const controller = new AbortController()
+  const reason = new Error('child decoding cancelled')
+  await expect(readDecodedJsonlSource(path, 3, 'none', {
+    createRestore() {
+      controller.abort(reason)
+      throw reason
+    },
+  }, controller.signal)).rejects.toBe(reason)
+})
+
 const assistantUsage = { inputTokens: 3, outputTokens: 2 }
 const assistantReplayState = { response: { id: 'response' } }
 
@@ -179,7 +194,7 @@ function adapter(overrides: Partial<TestGenerationFormatAdapter> = {}): TestGene
 function catalogAdapter(): JsonlGenerationFormatAdapter {
   return {
     currentVersion: sessionFormatCatalog.currentVersion,
-    createRestore: header => sessionFormatCatalog.createRestore(header, {
+    createRestore: header => createSessionFormatCatalogWithChildren([]).createRestore(header, {
       recovery: 'recoverable', validation: 'transformed',
     }),
     encodeHeader: (header, inheritedEventCount) =>

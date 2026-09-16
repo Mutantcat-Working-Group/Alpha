@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { restoreReleasedV3Artifact } from '@deepseek-ai/dsh-session-format-v2-to-v3'
 import { SessionFormatEventCollector } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent, SessionFormatHeader, SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
-import { sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
-import { releasedV3SessionFormatCodec, sessionFormatV3ToV4 } from '../src/index.ts'
+import { createSessionFormatCatalogWithChildren, sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
+import { releasedV3SessionFormatCodec, createSessionFormatV3ToV4, sessionFormatV3ToV4 } from '../src/index.ts'
 
 const header: SessionFormatHeader = { version: 3, id: 'identity', createdAt: 1, isSeeded: false, delegationDepth: 0 }
 const fact: SessionFormatEvent = { type: 'feedback/record', seq: 0, time: 2, data: { text: 'retained' } }
@@ -13,7 +14,7 @@ const delivery = (version: number | undefined, sessionId = header.id): SessionFo
 })
 
 function stage(sourceHeader = header, sourceInheritedEventCount?: number) {
-  return sessionFormatV3ToV4.createStage({
+  return createSessionFormatV3ToV4([]).createStage({
     sourceHeader, targetHeader: sessionFormatV3ToV4.migrateHeader(sourceHeader),
     sourceInheritedEventCount, sourceKind: 'decoded',
   })
@@ -27,12 +28,12 @@ function migrate(events: readonly SessionFormatEvent[], sourceHeader = header, c
 }
 
 function restore(events: readonly SessionFormatEvent[], sourceHeader = header) {
-  const reader = sessionFormatCatalog.createRestore({ type: 'session', ...sourceHeader }, { recovery: 'strict', validation: 'current' })
+  const reader = createSessionFormatCatalogWithChildren([]).createRestore({ type: 'session', ...sourceHeader }, { recovery: 'strict', validation: 'current' })
   for (const event of events) reader.decodeRow(event)
   return reader.finish()
 }
 
-describe('V3 to V4 identity migration', () => {
+describe('V3 to V4 source preservation', () => {
   it('changes only the header version and retains event objects, payloads, timestamps, and coordinates', () => {
     const rows = [fact, delivery(3)]
     const before = JSON.stringify({ header, rows })
@@ -137,7 +138,7 @@ describe('V3 to V4 identity migration', () => {
       ? { type: 'session', version, id: header.id, createdAt: 1, delegationDepth: 0, parentSession: 'ancestor', seedLength: 6 }
       : { type: 'session', ...header, version, isSeeded: true, parentSession: 'ancestor' }
     const before = JSON.stringify({ physical, source })
-    const reader = sessionFormatCatalog.createRestore(physical, { recovery: 'strict', validation: 'current' })
+    const reader = createSessionFormatCatalogWithChildren([]).createRestore(physical, { recovery: 'strict', validation: 'current' })
     for (const row of source) reader.decodeRow(version === 3 ? releasedV3SessionFormatCodec.encodeEvent(row) : row)
     const artifact = reader.finish()
     expect(artifact.header.version).toBe(4)
@@ -150,5 +151,30 @@ describe('V3 to V4 identity migration', () => {
     for (const event of artifact.events) reopened.decodeRow(sessionFormatCatalog.encodeCurrentEvent(event))
     expect(reopened.finish()).toEqual(artifact)
     expect(JSON.stringify({ physical, source })).toBe(before)
+  })
+
+  it.each(['strict', 'recoverable'] as const)('retains delivery inside a nested inherited prefix during %s restoration', (recovery) => {
+    const physical = { type: 'session', ...header, isSeeded: true, parentSession: 'ancestor' }
+    const rows = [fact, seed, { ...delivery(3, 'ancestor'), seq: 2 }, { ...seed, seq: 3 }]
+    const decoder = releasedV3SessionFormatCodec.createDecoder(physical, 'strict')
+    const source = new SessionFormatEventCollector()
+    for (const row of rows) decoder.decodeRow(row, source)
+    const artifact = restoreReleasedV3Artifact({ header: decoder.header, events: source.values,
+      inheritedEventCount: decoder.finish(source) }, new Set(rows.map(row => row.type)))
+    expect(artifact.inheritedEventCount).toBe(3)
+
+    const reader = createSessionFormatCatalogWithChildren([]).createRestore(physical, { recovery, validation: 'current' })
+    for (const row of rows) reader.decodeRow(row)
+    expect(reader.finish()).toEqual({ ...artifact, header: { ...artifact.header, version: 4 } })
+  })
+
+  it.each(['strict', 'recoverable'] as const)('refuses foreign delivery after the final inherited cut during %s restoration', (recovery) => {
+    const reader = createSessionFormatCatalogWithChildren([]).createRestore({ type: 'session', ...header, isSeeded: true, parentSession: 'ancestor' }, {
+      recovery, validation: 'current',
+    })
+    for (const row of [fact, seed, { ...delivery(3, 'ancestor'), seq: 2 }, { ...seed, seq: 3 }, { ...delivery(3, 'ancestor'), seq: 4 }]) {
+      reader.decodeRow(row)
+    }
+    expect(() => reader.finish()).toThrow('wrong Session')
   })
 })

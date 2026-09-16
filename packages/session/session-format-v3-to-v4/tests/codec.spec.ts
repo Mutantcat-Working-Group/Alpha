@@ -7,7 +7,8 @@ import { assertReleasedV4Header, assertV4RowAdmission, releasedV3SessionFormatCo
 
 const header = { version: 4, id: 'parent', createdAt: 1, isSeeded: false, delegationDepth: 0 }
 const fact: SessionFormatEvent = { type: 'feedback/record', seq: 0, time: 1, data: { text: 'retained' } }
-const types = new Set(['feedback/record', 'session-log-deepseek/delivery-accepted', 'session/end-seed'])
+const catalog: SessionFormatEvent = { type: 'subagent/catalog', seq: 0, time: 1, data: { version: 0, childId: 'child', childCreatedAt: 2, mode: 'one-shot' } }
+const types = new Set(['subagent/catalog', 'feedback/record', 'session-log-deepseek/delivery-accepted', 'session/end-seed'])
 const delivery = (version: number | undefined, sessionId = header.id): SessionFormatEvent => ({
   type: 'session-log-deepseek/delivery-accepted', seq: 1, time: 2,
   data: { sessionId, throughSeq: 0, ...(version === undefined ? {} : { sessionFormatVersion: version }) },
@@ -112,5 +113,14 @@ describe('V4 framing and restoration', () => {
     decoder.decodeRow(null, output)
     expect(decoder.finish(output)).toBe(0)
     expect(output.values).toEqual([fact])
+  })
+  it('rejects duplicate own catalog membership', () => {
+    expect(() => restore([catalog, { ...catalog, seq: 1 }])).toThrow('duplicate catalog child')
+  })
+
+  it('keeps inherited catalog entries outside own uniqueness checks', () => {
+    const artifact = { header: { ...header, isSeeded: true, parentSession: 'ancestor' }, inheritedEventCount: 1,
+      events: [catalog, { type: 'session/end-seed', seq: 1, time: 2, data: { inherited: true } }, { ...catalog, seq: 2 }] }
+    expect(restoreReleasedV4Artifact(artifact, types)).toBe(artifact)
   })
 })

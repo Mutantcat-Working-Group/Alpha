@@ -240,13 +240,13 @@ describe('fixture format diagnostics', () => {
       const actual = await importOriginal<typeof import('@mutantcat/dsh-session-format-catalog')>()
       return {
         ...actual,
-        sessionFormatCatalog: {
-          ...actual.sessionFormatCatalog,
+        createSessionFormatCatalogWithChildren: () => ({
+          ...actual.createSessionFormatCatalogWithChildren([]),
           createRestore(): never {
             const failure: unknown = 'decoder exploded'
             throw failure
           },
-        },
+        }),
       }
     })
     try {
@@ -266,8 +266,8 @@ describe('fixture format diagnostics', () => {
       const actual = await importOriginal<typeof import('@mutantcat/dsh-session-format-catalog')>()
       return {
         ...actual,
-        sessionFormatCatalog: {
-          ...actual.sessionFormatCatalog,
+        createSessionFormatCatalogWithChildren: () => ({
+          ...actual.createSessionFormatCatalogWithChildren([]),
           createRestore() {
             return {
               header: { version: SESSION_FORMAT_VERSION, id: 'fixture', createdAt: 0, isSeeded: false, delegationDepth: 0 },
@@ -277,7 +277,7 @@ describe('fixture format diagnostics', () => {
               },
             }
           },
-        },
+        }),
       }
     })
     try {
@@ -297,8 +297,8 @@ describe('fixture format diagnostics', () => {
       const actual = await importOriginal<typeof import('@mutantcat/dsh-session-format-catalog')>()
       return {
         ...actual,
-        sessionFormatCatalog: {
-          ...actual.sessionFormatCatalog,
+        createSessionFormatCatalogWithChildren: () => ({
+          ...actual.createSessionFormatCatalogWithChildren([]),
           createRestore() {
             return {
               header: { version: SESSION_FORMAT_VERSION, id: 'fixture', createdAt: 0, isSeeded: false, delegationDepth: 0 },
@@ -308,7 +308,7 @@ describe('fixture format diagnostics', () => {
               },
             }
           },
-        },
+        }),
       }
     })
     try {
@@ -329,8 +329,8 @@ describe('fixture format diagnostics', () => {
       let row = 0
       return {
         ...actual,
-        sessionFormatCatalog: {
-          ...actual.sessionFormatCatalog,
+        createSessionFormatCatalogWithChildren: () => ({
+          ...actual.createSessionFormatCatalogWithChildren([]),
           createRestore() {
             return {
               header: { version: SESSION_FORMAT_VERSION, id: 'fixture', createdAt: 0, isSeeded: false, delegationDepth: 0 },
@@ -341,7 +341,7 @@ describe('fixture format diagnostics', () => {
               finish(): never { throw new Error('unexpected finish') },
             }
           },
-        },
+        }),
       }
     })
     try {
@@ -372,8 +372,8 @@ describe('fixture format diagnostics', () => {
       const actual = await importOriginal<typeof import('@mutantcat/dsh-session-format-catalog')>()
       return {
         ...actual,
-        sessionFormatCatalog: {
-          ...actual.sessionFormatCatalog,
+        createSessionFormatCatalogWithChildren: () => ({
+          ...actual.createSessionFormatCatalogWithChildren([]),
           createRestore() {
             return {
               header: { version: SESSION_FORMAT_VERSION, id: 'fixture', createdAt: 0, isSeeded: false, delegationDepth: 0 },
@@ -381,7 +381,7 @@ describe('fixture format diagnostics', () => {
               finish(): never { throw new Error(message) },
             }
           },
-        },
+        }),
       }
     })
     try {
