@@ -87,7 +87,7 @@
       "kind": "event",
       "event": "agent/inbox/spliced",
       "surface": false,
-      "digest": "ab1acc0685cc410d0d1e85ff0e0bd29f4b2b4352dd170db54988319d58d4362f",
+      "digest": "3aa732b3400e924132366555c88618f62232b41c1e56b86beee05fd7edc24367",
       "schema": {
         "root": 0,
         "nodes": [
@@ -507,16 +507,16 @@
               111,
               112,
               113,
-              114,
               115,
               116,
+              117,
               118,
-              119,
               120,
               121,
               122,
               123,
               124,
+              125,
               126,
               128,
               129,
@@ -1669,6 +1669,21 @@
             "properties": [
               {
                 "name": "kind",
+                "type": 114,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "ptc-mode"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
                 "type": 46,
                 "optional": false
               }
@@ -1702,7 +1717,7 @@
             "properties": [
               {
                 "name": "kind",
-                "type": 117,
+                "type": 119,
                 "optional": false
               }
             ],
@@ -1777,21 +1792,6 @@
               }
             ],
             "indices": []
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 125,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "code-mode"
           },
           {
             "kind": "object",
@@ -5122,7 +5122,7 @@
       "kind": "event",
       "event": "session/title-llm-request",
       "surface": false,
-      "digest": "eb655047c0dd3f2f3aefd2c9c719df0d060dd88032ba7caf731ea39db5a6725f",
+      "digest": "4eeb9bb8f9c35f59b3020a07113f256c363a504983aecbe33e57fd1ab4f03b19",
       "schema": {
         "root": 0,
         "nodes": [
@@ -5371,11 +5371,11 @@
           },
           {
             "kind": "literal",
-            "value": "image/gif"
+            "value": "image/jpeg"
           },
           {
             "kind": "literal",
-            "value": "image/jpeg"
+            "value": "image/gif"
           },
           {
             "kind": "literal",
@@ -5651,17 +5651,17 @@
               171,
               172,
               173,
-              174,
               175,
               176,
+              177,
               178,
               179,
-              180,
               181,
               182,
               183,
               184,
               185,
+              186,
               187,
               189,
               190
@@ -7673,6 +7673,21 @@
             "properties": [
               {
                 "name": "kind",
+                "type": 174,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "ptc-mode"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
                 "type": 41,
                 "optional": false
               }
@@ -7705,21 +7720,6 @@
             "kind": "object",
             "properties": [
               {
-                "name": "kind",
-                "type": 177,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "system-prompt"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
                 "name": "form",
                 "type": 36,
                 "optional": false
@@ -7731,6 +7731,21 @@
               }
             ],
             "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
+                "type": 180,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "system-prompt"
           },
           {
             "kind": "object",
@@ -7797,21 +7812,6 @@
               }
             ],
             "indices": []
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 186,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "code-mode"
           },
           {
             "kind": "object",
@@ -7905,7 +7905,7 @@
               },
               {
                 "name": "source",
-                "type": 176,
+                "type": 179,
                 "optional": false
               }
             ],
@@ -9873,7 +9873,7 @@
       "kind": "event",
       "event": "user/message",
       "surface": true,
-      "digest": "46c44941f6e93a1764c49f1487e64a57f73ee68a75a657e94c326a8de5d8ad95",
+      "digest": "c3a5c8d0f1bc05ab074fdb086da866eece51dd573ae0c30b17a52bb76dec8836",
       "schema": {
         "root": 0,
         "nodes": [
@@ -10267,16 +10267,16 @@
               108,
               109,
               110,
-              111,
               112,
               113,
+              114,
               115,
-              116,
               117,
               118,
               119,
               120,
               121,
+              122,
               123,
               125,
               126,
@@ -11409,6 +11409,21 @@
             "properties": [
               {
                 "name": "kind",
+                "type": 111,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "ptc-mode"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "kind",
                 "type": 42,
                 "optional": false
               }
@@ -11442,7 +11457,7 @@
             "properties": [
               {
                 "name": "kind",
-                "type": 114,
+                "type": 116,
                 "optional": false
               }
             ],
@@ -11517,21 +11532,6 @@
               }
             ],
             "indices": []
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "kind",
-                "type": 122,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "code-mode"
           },
           {
             "kind": "object",

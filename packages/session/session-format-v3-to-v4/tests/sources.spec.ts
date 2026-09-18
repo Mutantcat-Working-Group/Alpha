@@ -55,7 +55,8 @@ describe('mapEventMessages', () => {
 
 describe('rewritePluginSource', () => {
   it('rewrites renamed and role-sensitive producers, dropping the plugin field', () => {
-    expect(rewritePluginSource({ kind: 'plugin', plugin: 'tools-ptc' }, 1, 'user')).toEqual({ kind: 'code-mode' })
+    expect(rewritePluginSource({ kind: 'plugin', plugin: 'tools-ptc' }, 1, 'user')).toEqual({ kind: 'ptc-mode' })
+    expect(rewritePluginSource({ kind: 'plugin', plugin: 'tools-code-mode' }, 1, 'user')).toEqual({ kind: 'ptc-mode' })
     expect(rewritePluginSource({ kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }, 1, 'system')).toEqual({ kind: 'system-prompt' })
     expect(rewritePluginSource({ kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }, 1, 'user')).toEqual({ kind: 'runtime-context' })
     expect(rewritePluginSource({ kind: 'plugin', plugin: 'external', extra: true }, 1, 'user')).toEqual({ kind: 'external', extra: true })
@@ -69,7 +70,7 @@ describe('rewritePluginSource', () => {
   })
 
   it('refuses external plugin names that collide with current producer kinds', () => {
-    for (const plugin of ['plugin', 'user', 'model', 'tool', 'system-prompt', 'runtime-context', 'compact-checkpoint', 'code-mode', 'compact-basic', 'auto-review']) {
+    for (const plugin of ['plugin', 'user', 'model', 'tool', 'system-prompt', 'runtime-context', 'compact-checkpoint', 'ptc-mode', 'compact-basic', 'auto-review']) {
       expect(() => rewritePluginSource({ kind: 'plugin', plugin }, 3, 'user')).toThrow(/collides with a current producer kind/)
     }
     expect(rewritePluginSource({ kind: 'plugin', plugin: 'agent-instructions', form: 'instructions', changes: [] }, 3, 'user'))

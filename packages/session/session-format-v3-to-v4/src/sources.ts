@@ -38,8 +38,8 @@ export function mapEventMessages(
 /** Released V3 plugin names whose current producer kind is not the plugin string. */
 const RENAMED_PRODUCERS: Readonly<Record<string, string>> = Object.freeze({
   'compact': 'compact-checkpoint',
-  'tools-code-mode': 'code-mode',
-  'tools-ptc': 'code-mode',
+  'tools-code-mode': 'ptc-mode',
+  'tools-ptc': 'ptc-mode',
   'dsh-compaction-basic': 'compact-basic',
   '@deepseek-ai/dsh-system-prompt': 'runtime-context',
 })
@@ -47,7 +47,7 @@ const RENAMED_PRODUCERS: Readonly<Record<string, string>> = Object.freeze({
 /** Current producer kinds whose names are not released V3 plugin identities. */
 const CURRENT_PRODUCER_KINDS: ReadonlySet<string> = new Set([
   'user', 'model', 'tool', 'system-prompt',
-  'runtime-context', 'compact-checkpoint', 'code-mode', 'compact-basic',
+  'runtime-context', 'compact-checkpoint', 'ptc-mode', 'compact-basic',
   'agent-instructions', 'session-reference', 'team-message', 'goal',
   'skill-invocation', 'skill-catalog', 'coordinator', 'subagent-report',
   'subagent-settled', 'webhook', 'agent-message', 'model-selection',

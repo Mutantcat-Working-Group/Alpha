@@ -48,7 +48,7 @@ describe('canonical V4 integration', () => {
     for (const system of systems) expect(system.data).toMatchObject({ message: { role: 'system', source: { kind: 'system-prompt' } } })
     const users = target.events.filter(event => event.type === 'user/message')
     expect(users[0]?.data).toMatchObject({ source: { kind: 'runtime-context' } })
-    expect(users[1]).toMatchObject({ surfaceOp: { op: 'replace', startSeq: 5, endSeq: 5 }, sourceEventSeqs: [5], data: { source: { kind: 'code-mode' } } })
+    expect(users[1]).toMatchObject({ surfaceOp: { op: 'replace', startSeq: 5, endSeq: 5 }, sourceEventSeqs: [5], data: { source: { kind: 'ptc-mode' } } })
     expect(target.events.find(event => event.type === 'tool/ptc-dispatch')?.data).toMatchObject({ arguments: { kind: 'plugin', plugin: 'tools-ptc' } })
     const before = JSON.stringify(target)
     expect(restoreReleasedV4Artifact(target, new Set(target.events.map(event => event.type)))).toBe(target)

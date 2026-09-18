@@ -58,7 +58,7 @@ const imageMessage = {
 }
 const currentImageMessage = {
   ...imageMessage,
-  source: { kind: 'code-mode', form: imageMessage.source.form, summary: imageMessage.source.summary },
+  source: { kind: 'ptc-mode', form: imageMessage.source.form, summary: imageMessage.source.summary },
 }
 const dispatch = {
   rootCallId: toolCall.id, parentCallId: toolCall.id, subCallId: 'tools-code-mode:child-call',

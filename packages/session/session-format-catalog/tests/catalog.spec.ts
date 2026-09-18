@@ -187,7 +187,7 @@ describe('first-party Session format catalog', () => {
     const restore = createSessionFormatCatalogWithChildren([]).createRestore(sourceHeader, { recovery: 'strict', validation: 'current' })
     for (const row of rows) restore.decodeRow(row)
     const artifact = restore.finish()
-    const renamedMessage = (id: string) => ({ ...message(id), source: { kind: 'code-mode' } })
+    const renamedMessage = (id: string) => ({ ...message(id), source: { kind: 'ptc-mode' } })
     const expected = [
       rows[0], rows[1],
       expect.objectContaining({ type: 'system/message', seq: 2 }),

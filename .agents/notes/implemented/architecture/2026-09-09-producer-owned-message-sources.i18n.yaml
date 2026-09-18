@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-09-producer-owned-message-sources.md
-2026-09-09-producer-owned-message-sources.md: 9bc3e57ff2a2fa251bc72a72f9ea9e39060a0912
-2026-09-09-producer-owned-message-sources.zh.md: f587aee39828535f284c9698c8fc5d2948f28ddc
+2026-09-09-producer-owned-message-sources.md: 484a082607a02d469c63e17d66dc7726b3a5453a
+2026-09-09-producer-owned-message-sources.zh.md: 4fc80b66b9f1c918a52e03d636224d363edefb1b

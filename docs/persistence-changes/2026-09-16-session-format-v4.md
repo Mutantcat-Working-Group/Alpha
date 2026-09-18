@@ -32,7 +32,7 @@ changes:
     decision: version-bump
   - root: "event:agent/inbox/spliced"
     previous: "2026-09-14-image-offload"
-    after: "ab1acc0685cc410d0d1e85ff0e0bd29f4b2b4352dd170db54988319d58d4362f"
+    after: "3aa732b3400e924132366555c88618f62232b41c1e56b86beee05fd7edc24367"
     decision: version-bump
   - root: "event:assistant/attempt"
     previous: "2026-09-14-image-offload"
@@ -48,7 +48,7 @@ changes:
     decision: version-bump
   - root: "event:session/title-llm-request"
     previous: "2026-09-14-image-offload"
-    after: "eb655047c0dd3f2f3aefd2c9c719df0d060dd88032ba7caf731ea39db5a6725f"
+    after: "4eeb9bb8f9c35f59b3020a07113f256c363a504983aecbe33e57fd1ab4f03b19"
     decision: version-bump
   - root: "event:system/message"
     previous: "2026-09-14-image-offload"
@@ -72,7 +72,7 @@ changes:
     decision: version-bump
   - root: "event:user/message"
     previous: "2026-09-14-image-offload"
-    after: "46c44941f6e93a1764c49f1487e64a57f73ee68a75a657e94c326a8de5d8ad95"
+    after: "c3a5c8d0f1bc05ab074fdb086da866eece51dd573ae0c30b17a52bb76dec8836"
     decision: version-bump
 ```
 
@@ -90,6 +90,8 @@ The `request/header` schema also records the retired `system` key as forbidden. 
 Producer-owned sources replace released plugin wrappers through the [V3-to-V4 migration](../../packages/session/session-format-v3-to-v4/README.md#v3-to-v4-specification). The frozen rename table and collision rules preserve source fields and event coordinates; unknown producer attribution retains every own JSON property. Native read and write opens validate source fields before exposing the Session. Existing V4 files do not rerun the incoming migration edge.
 
 The core-owned user source property records the attribution-preservation policy; tmux-context qualifies its location attribution while retaining producer-local duplicate suppression. Auto Review and the compaction summarizer use request-only user inputs, removing their active source registrations without removing historical migration support. These inputs cannot be written as durable Session messages. Catalog formatVersion 2 stores the policy metadata; it does not change the Session version or rewrite frozen schema records. System, model, and tool sources retain their strict semantic rules.
+
+The PTC producer writes `source.kind: 'ptc-mode'`. The V3-to-V4 edge retains `tools-code-mode` and `tools-ptc` as historical plugin lookup keys and maps both to that current kind. The source policy reserves `ptc-mode` against attribution-only qualification.
 
 <a id="verification"></a>
 ## Verification

@@ -32,7 +32,7 @@ changes:
     decision: version-bump
   - root: "event:agent/inbox/spliced"
     previous: "2026-09-14-image-offload"
-    after: "ab1acc0685cc410d0d1e85ff0e0bd29f4b2b4352dd170db54988319d58d4362f"
+    after: "3aa732b3400e924132366555c88618f62232b41c1e56b86beee05fd7edc24367"
     decision: version-bump
   - root: "event:assistant/attempt"
     previous: "2026-09-14-image-offload"
@@ -48,7 +48,7 @@ changes:
     decision: version-bump
   - root: "event:session/title-llm-request"
     previous: "2026-09-14-image-offload"
-    after: "eb655047c0dd3f2f3aefd2c9c719df0d060dd88032ba7caf731ea39db5a6725f"
+    after: "4eeb9bb8f9c35f59b3020a07113f256c363a504983aecbe33e57fd1ab4f03b19"
     decision: version-bump
   - root: "event:system/message"
     previous: "2026-09-14-image-offload"
@@ -72,7 +72,7 @@ changes:
     decision: version-bump
   - root: "event:user/message"
     previous: "2026-09-14-image-offload"
-    after: "46c44941f6e93a1764c49f1487e64a57f73ee68a75a657e94c326a8de5d8ad95"
+    after: "c3a5c8d0f1bc05ab074fdb086da866eece51dd573ae0c30b17a52bb76dec8836"
     decision: version-bump
 ```
 
@@ -90,6 +90,8 @@ V3-to-V4 迁移将已发布的 user 角色工具结果提升为 tool 角色消�
 生产者拥有的 source 通过 [V3→V4 迁移](../../packages/session/session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)替代已发布的 plugin wrapper。冻结的重命名表和冲突规则保留 source 字段与事件坐标；未知生产者归属保留每个自有 JSON 属性。原生读取和写入打开在公开 Session 之前校验 source 字段。已有 V4 文件不会重新运行迁入边。
 
 核心拥有的 user source 属性记录归属保留策略；tmux-context 将位置归属标记为符合条件，同时保留生产者内部的去重。Auto Review 和压缩摘要器使用仅供请求使用的 user 输入，移除其活动 source 注册，同时保留历史迁移支持。这些输入不能写为持久化 Session 消息。目录 formatVersion 2 保存策略元数据，不改变 Session 版本，也不重写冻结的 schema 记录。System、model 和 tool source 保持严格的语义规则。
+
+PTC 生产者写入 `source.kind: 'ptc-mode'`。V3→V4 迁入边保留 `tools-code-mode` 和 `tools-ptc` 作为历史 plugin 查找键，并将二者映射到该当前 kind。source 策略保留 `ptc-mode`，不允许将其声明为仅用于归属。
 
 <a id="verification"></a>
 ## 验证

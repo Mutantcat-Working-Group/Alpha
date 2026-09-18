@@ -1383,7 +1383,7 @@ describe('the run_code dispatch bridge', () => {
 
     expect(result.additionalContexts).toMatchObject([{
       role: 'user',
-      source: { kind: 'code-mode' },
+      source: { kind: 'ptc-mode' },
       content: [
         { type: 'text', text: 'image result' },
         { type: 'image', attachment: { mediaType: 'image/png', bytes: 1, width: 1, height: 1 } },

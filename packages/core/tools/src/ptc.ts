@@ -10,7 +10,8 @@ import { brandString } from '@deepseek-ai/dsh-brand'
 import { createUserMessage, HarnessError } from '@deepseek-ai/dsh-llm'
 declare module '@deepseek-ai/dsh-llm' {
   interface MessageSourceMap {
-    'code-mode': { kind: 'code-mode' }
+    /** Images deferred from a successful PTC subcall's final result. */
+    'ptc-mode': { kind: 'ptc-mode' }
   }
 }
 
@@ -638,7 +639,7 @@ export function createRunCodeTool(registry: ToolRuntime, options: RunCodeBridgeO
               if (!result.isError && result.content.some(block => block.type === 'image')) {
                 exec.deferContext(createUserMessage({
                   content: result.content,
-                  source: { kind: 'code-mode' },
+                  source: { kind: 'ptc-mode' },
                 }))
               }
               for (const context of result.additionalContexts ?? []) {

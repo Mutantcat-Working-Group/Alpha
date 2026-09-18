@@ -10,7 +10,7 @@ Status: implemented
 
 ## Decision
 
-消息源是生产者归属的：生产者身份就是 `kind` 本身，由各插件通过 `MessageSourceMap` 声明合并，当前行中不再存在已发布的 `plugin` 字段。V3→V4 迁移用 `packages/session/session-format-v3-to-v4/src/sources.ts`中的冻结重命名表把已发布 plugin 归属改写到生产者 kind：`@deepseek-ai/dsh-system-prompt` 在 system-role 消息上变成 `system-prompt`，否则变成 `runtime-context`；`compact` 变成 `compact-checkpoint`；`tools-code-mode` 与 `tools-ptc` 变成 `code-mode`；`dsh-compaction-basic` 变成 `compact-basic`；其它 plugin 字符串保留自身名字作为 kind。包装丢弃时不丢失身份，上下文形态字段保留，工具结果在同一迁移中从已发布的 user-role 包装行提升为一等 tool-role 消息。重命名查找只读取自有键，重建时保留所有自有 JSON 元数据属性，包括 `__proto__`；合法的外部生产者名字不会被解析为 JavaScript 原型成员。
+消息源是生产者归属的：生产者身份就是 `kind` 本身，由各插件通过 `MessageSourceMap` 声明合并，当前行中不再存在已发布的 `plugin` 字段。V3→V4 迁移用 `packages/session/session-format-v3-to-v4/src/sources.ts`中的冻结重命名表把已发布 plugin 归属改写到生产者 kind：`@deepseek-ai/dsh-system-prompt` 在 system-role 消息上变成 `system-prompt`，否则变成 `runtime-context`；`compact` 变成 `compact-checkpoint`；`tools-code-mode` 与 `tools-ptc` 变成 `ptc-mode`；`dsh-compaction-basic` 变成 `compact-basic`；其它 plugin 字符串保留自身名字作为 kind。包装丢弃时不丢失身份，上下文形态字段保留，工具结果在同一迁移中从已发布的 user-role 包装行提升为一等 tool-role 消息。重命名查找只读取自有键，重建时保留所有自有 JSON 元数据属性，包括 `__proto__`；合法的外部生产者名字不会被解析为 JavaScript 原型成员。
 
 原生 V4 消息源准入在每个声明的持久化消息槽位拒绝退役的 `kind: 'plugin'` 包装，包括 inbox 和标题请求消息。可恢复扫描丢弃后缀之前就会执行此拒绝。完整消息源槽位校验在格式目录和原生 JSONL 扫描器共用的已知事件校验中执行，先于两者公开恢复产物或句柄。即使生产者未安装，未知的非空归属 kind 及额外 JSON 字段仍原样保留。原生压缩和标题关系校验直接使用生产者 kind；[强制校验决策](2026-09-17-native-v4-read-validation.zh.md)负责通用生命周期规则。
 
