@@ -336,7 +336,7 @@ describe('token pressure after loop-admitted system prompts', () => {
         agent.session.append('system/message', {
           turn,
           step,
-          message: createSystemMessage('retry guidance', '@mutantcat/dsh-system-prompt'),
+          message: createSystemMessage('retry guidance'),
         }, { surfaceOp: { op: 'replace', startSeq: node, endSeq: node }, sourceEventSeqs: [node] })
         return { kind: 'retry' }
       })

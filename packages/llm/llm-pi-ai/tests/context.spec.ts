@@ -7,10 +7,17 @@ import type {
   RequestImageAttachment,
 } from '@deepseek-ai/dsh-attachment'
 import { ToolCallId, createAssistantMessage, createMessage, createToolResultMessage, createUserMessage, offloadedImageText } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, GenerateOptions, Message } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, GenerateOptions, Message, RequestUserInput } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import { toPiContext } from '../src/context.ts'
 import type { PiImageRequestContext } from '../src/context.ts'
 import { toPiAssistant } from '../src/replay.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 const ref: ImageAttachmentRef = {
   attachmentId: AttachmentId(`sha256:${'a'.repeat(64)}`),
@@ -67,16 +74,34 @@ function request(messages: GenerateOptions['messages']): GenerateOptions {
 }
 
 function user(content: ContentBlock[]): Message {
-  return createUserMessage({ content, source: { kind: 'plugin', plugin: 'test' } })
+  return createUserMessage({ content, source: { kind: 'test' } })
 }
 
 function history(role: 'system' | 'assistant', content: ContentBlock[]): Message {
   return role === 'system'
-    ? createMessage({ role, content, source: { kind: 'plugin', plugin: 'test' } })
+    ? createMessage({ role, content, source: { kind: 'system-prompt' } })
     : createMessage({ role, content, source: { kind: 'model', provider: 'openai', model: 'gpt-4.1' } })
 }
 
 describe('pi-ai request context conversion', () => {
+  it('preserves the exact context for request-only input after durable tool history', async () => {
+    const prefix = [
+      history('assistant', [{ type: 'tool-call', id: ToolCallId('lookup'), name: 'lookup', arguments: '{}' }]),
+      createToolResultMessage({ callId: ToolCallId('lookup'), content: [{ type: 'text', text: 'result' }], isError: false }),
+    ]
+    const input: RequestUserInput = { role: 'user', content: [{ type: 'text', text: 'review or summarize this input' }] }
+    const durable = createUserMessage({ content: input.content, source: { kind: 'test' } })
+    expect(toPiContext(request([...prefix, input]))).toEqual(toPiContext(request([...prefix, durable])))
+    const withImage: RequestUserInput = { role: 'user', content: [
+      { type: 'text', text: 'before' }, { type: 'image', attachment: ref }, { type: 'text', text: 'after' },
+    ] }
+    const durableImage = createUserMessage({ content: withImage.content, source: { kind: 'test' } })
+    expect(await toPiContext(request([...prefix, withImage]), imageContext(attachments)))
+      .toEqual(await toPiContext(request([...prefix, durableImage]), imageContext(attachments)))
+    expect(withImage).not.toHaveProperty('id')
+    expect(withImage).not.toHaveProperty('source')
+  })
+
   it('omits absent and empty request-level optional fields', () => {
     const base = { provider: 'openai', model: 'gpt-4.1', messages: [] }
     expect(toPiContext(base)).toEqual({ messages: [] })

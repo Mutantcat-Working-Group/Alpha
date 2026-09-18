@@ -3789,7 +3789,7 @@ export const EVENT_API: readonly EventApiEntry[] = [
     signature: '\'llm/stream\'(this: LlmRuntime, options: GenerateOptions, next: () => AsyncIterable<StreamChunk>): AsyncIterable<StreamChunk>',
     summary: 'Waterfall around every streaming model call (retry, replay, routing).',
     description: 'Waterfall around every streaming model call (retry, replay, routing). Bound to the LlmRuntime; call `next()` to reach the resolved adapter\'s stream, or yield your own chunks to short-circuit.',
-    parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; their messages already obey the immutable creation contract.' }],
+    parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; callers own their request inputs and must keep them unchanged until the stream settles.' }],
   },
   {
     name: 'permission-presets/catalog-changed',
@@ -4492,14 +4492,6 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type ContentBlockType = keyof ContentBlockMap;',
   },
   {
-    name: 'ContextFormed',
-    declaration: 'export type ContextFormed = {\n    readonly form?: never;\n} | {\n    readonly form: \'instructions\';\n} | {\n    readonly form: \'catalog\';\n} | {\n    readonly form: \'snapshot\';\n    readonly sections: readonly ContextSnapshotSection[];\n} | {\n    readonly form: \'notice\';\n    readonly summary: string;\n} | {\n    readonly form: \'relay\';\n} | {\n    readonly form: \'recall\';\n};',
-  },
-  {
-    name: 'ContextSnapshotSection',
-    declaration: 'export interface ContextSnapshotSection {\n    readonly name: string;\n    readonly text: string;\n}',
-  },
-  {
     name: 'ContinuableCreateRequest',
     declaration: 'export interface ContinuableCreateRequest {\n    readonly sessionId: SessionId;\n    readonly parent: Agent;\n    readonly signal: AbortSignal;\n}',
   },
@@ -4889,7 +4881,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'GenerateOptions',
-    declaration: 'export interface GenerateOptions {\n    provider: string;\n    model: string;\n    reasoningEffort?: ReasoningEffortId;\n    messages: Message[];\n    system?: string;\n    tools?: ToolSchema[];\n    temperature?: number;\n    maxTokens?: number;\n    stop?: string[];\n    signal?: AbortSignal;\n    sessionId?: Branded<\'SessionId\'>;\n    purpose?: \'compaction\' | \'session-title\';\n}',
+    declaration: 'export interface GenerateOptions {\n    provider: string;\n    model: string;\n    reasoningEffort?: ReasoningEffortId;\n    messages: RequestMessage[];\n    system?: string;\n    tools?: ToolSchema[];\n    temperature?: number;\n    maxTokens?: number;\n    stop?: string[];\n    signal?: AbortSignal;\n    sessionId?: Branded<\'SessionId\'>;\n    purpose?: \'compaction\' | \'session-title\';\n}',
   },
   {
     name: 'GenericCallView',
@@ -5345,7 +5337,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'MessageSourceMap',
-    declaration: 'export interface MessageSourceMap {\n    user: {\n        kind: \'user\';\n    };\n    plugin: {\n        kind: \'plugin\';\n        plugin: string;\n    } & ContextFormed;\n    model: ModelMessageSource;\n    tool: ToolMessageSource;\n}',
+    declaration: 'export interface MessageSourceMap {\n    user: {\n        kind: \'user\';\n    };\n    model: ModelMessageSource;\n    tool: ToolMessageSource;\n    \'system-prompt\': SystemPromptMessageSource;\n}',
   },
   {
     name: 'ModelCatalog',
@@ -5712,8 +5704,16 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface RequestImageAttachment {\n    variantId: ImageVariantId;\n    attachment: ImageAttachmentRef;\n    data: Uint8Array;\n    mediaType: ImageMediaType;\n    bytes: number;\n    width: number;\n    height: number;\n    depth: \'uchar\';\n    space: \'srgb\';\n    hasAlpha: boolean;\n}',
   },
   {
+    name: 'RequestMessage',
+    declaration: 'export type RequestMessage = Message | RequestUserInput;',
+  },
+  {
     name: 'RequestRunOutcome',
     declaration: 'export type RequestRunOutcome = \'approved\' | \'completed\' | \'rejected\' | \'cancelled\' | \'failed\';',
+  },
+  {
+    name: 'RequestUserInput',
+    declaration: 'export interface RequestUserInput {\n    readonly role: \'user\';\n    readonly content: UserMessage[\'content\'];\n    readonly id?: never;\n    readonly source?: never;\n}',
   },
   {
     name: 'ResolvedAlwaysRetryPolicy',
@@ -6773,11 +6773,15 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'SystemMessage',
-    declaration: 'export interface SystemMessage extends MessageBase {\n    readonly role: \'system\';\n    readonly source: MessageSourceMap[\'plugin\'];\n}',
+    declaration: 'export interface SystemMessage extends MessageBase {\n    readonly role: \'system\';\n    readonly source: MessageSourceMap[\'system-prompt\'];\n}',
   },
   {
     name: 'SystemPrompt',
     declaration: 'export class SystemPrompt extends Service {\n    static Config: z<Config>;\n    constructor(ctx: Context, config: Config);\n    section(section: PromptSection): () => void;\n    getSectionOrder(name: PromptSectionOrderName): number;\n    getContextOrder(name: PromptContextOrderName): number;\n    context(context: PromptContext): () => void;\n    suppressRuntimeContext(): () => void;\n    tools(provider: (context: AssembleContext) => ToolProviderResult): () => void;\n    variable(name: string, provider: (context: AssembleContext) => string | undefined): () => void;\n    async assemble(context: AssembleContext = {}): Promise<PromptAssembly>;\n}',
+  },
+  {
+    name: 'SystemPromptMessageSource',
+    declaration: 'export interface SystemPromptMessageSource {\n    kind: \'system-prompt\';\n}',
   },
   {
     name: 'SystemPromptUpdate',

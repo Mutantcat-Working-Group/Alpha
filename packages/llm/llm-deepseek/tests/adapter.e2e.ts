@@ -128,7 +128,7 @@ afterEach(async () => {
 function ask(text: string): Message[] {
   return [createUserMessage({
     content: [{ type: 'text', text }],
-    source: { kind: 'plugin', plugin: 'test' },
+    source: { kind: 'user' },
   })]
 }
 
@@ -163,7 +163,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('llm-deepseek e2e (real API)', ()
     const attachment = await ctx.attachments.saveImage({ data: readFileSync(new URL('fixtures/red.png', import.meta.url)), mediaType: 'image/png' })
     const message = ask('What is the dominant color of this image?')[0]!
     const history: Message[] = [
-      createSystemMessage('Answer with one English color word.', 'test'),
+      createSystemMessage('Answer with one English color word.'),
       { ...message, content: [...message.content, { type: 'image', attachment }] },
     ]
     const reply = async () => {
@@ -173,7 +173,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('llm-deepseek e2e (real API)', ()
       return textOf(response).trim().toLowerCase()
     }
     expect(await reply()).toMatch(/^red[.!]?$/)
-    history.push(createSystemMessage('Reply to every user message with exactly banana.', 'test'), ...ask('Answer now.'))
+    history.push(createSystemMessage('Reply to every user message with exactly banana.'), ...ask('Answer now.'))
     expect(await reply()).toBe('banana')
     history.push(...ask('Answer again.'))
     expect(await reply()).toBe('banana')
@@ -364,7 +364,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('llm-deepseek e2e (real API)', ()
       })
       await expect(ctx.llm.resolveModelInfo('deepseek-official', model))
         .resolves.toMatchObject({ systemPromptUpdate: 'in-history' })
-      const system = (text: string) => createSystemMessage(text, 'test')
+      const system = (text: string) => createSystemMessage(text)
       // A nonce before the padding isolates the provider cache across runs and retries.
       const nonce = randomBytes(16).toString('hex')
       const padding = Array.from({ length: 40 }, (_, index) => `Rule ${String(index + 1)}: keep every answer short and factual.`).join('\n')

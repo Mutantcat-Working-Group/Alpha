@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import { createScope, scopeTarget } from '@mutantcat/dsh-scope'
-import { createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, freezeMessage } from '@mutantcat/dsh-llm'
-import SessionStore, { SessionId, SessionSeq, TOOL_NOT_STARTED } from '@mutantcat/dsh-session'
-import * as SessionInvariant from '@mutantcat/dsh-session/invariant'
-import InvariantRegistry, { InvariantError } from '@mutantcat/dsh-invariants'
+import { Context } from '@deepseek-ai/cordis'
+import { createScope, scopeTarget } from '@deepseek-ai/dsh-scope'
+import { createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, freezeMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import SessionStore, { SessionId, SessionSeq, TOOL_NOT_STARTED } from '@deepseek-ai/dsh-session'
+import * as SessionInvariant from '@deepseek-ai/dsh-session/invariant'
+import InvariantRegistry, { InvariantError } from '@deepseek-ai/dsh-invariants'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 async function setup(): Promise<{ ctx: Context; fiber: Awaited<ReturnType<Context['plugin']>> }> {
   const ctx = new Context()
@@ -156,7 +163,7 @@ describe('session-log invariants', () => {
     const outside = (await setup()).ctx.sessions.create()
     expect(() => outside.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'idle context' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }), { surfaceOp: 'append' })).not.toThrow()
     // Route capacity is core execution state like the header beside it.
     expect(() => outside.append('request/context', {
@@ -237,7 +244,7 @@ describe('session-log invariants', () => {
   it('requires a system/message to name the open step', async () => {
     const session = (await setup()).ctx.sessions.create()
     session.append('turn/start', { turn: 1 })
-    const message = createSystemMessage('You are terse.', '@mutantcat/dsh-system-prompt')
+    const message = createSystemMessage('You are terse.')
     expect(() => session.append('system/message', { turn: 1, step: 1, message }, { surfaceOp: 'append' }))
       .toThrow(/open is turn 1\/step null/)
     session.append('step/start', { turn: 1, step: 1 })

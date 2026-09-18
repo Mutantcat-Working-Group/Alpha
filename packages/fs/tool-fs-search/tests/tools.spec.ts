@@ -14,12 +14,13 @@ import { describe, expect, it } from 'vitest'
 import { Context } from '@mutantcat/cordis'
 import { createScope, type Scope } from '@mutantcat/dsh-scope'
 import { join, sep } from 'node:path'
-import { createUserMessage, ToolCallId } from '@mutantcat/dsh-llm'
-import SystemPrompt, { renderPrompt } from '@mutantcat/dsh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH, type ToolExecution, type ToolExecutionToken } from '@mutantcat/dsh-tools'
-import { SubprocessRuntime } from '@mutantcat/dsh-subprocess'
-import type { SubprocessCollectedOutputs, SubprocessHandle, SubprocessOutcome, SubprocessOutputRead, SubprocessOutputReader, SubprocessSpawnSpec } from '@mutantcat/dsh-subprocess'
-import { MAX_TIMER_DELAY_MS } from '@mutantcat/dsh-timeout'
+import { createUserMessage, ToolCallId } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import SystemPrompt, { renderPrompt } from '@deepseek-ai/dsh-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH, type ToolExecution, type ToolExecutionToken } from '@deepseek-ai/dsh-tools'
+import { SubprocessRuntime } from '@deepseek-ai/dsh-subprocess'
+import type { SubprocessCollectedOutputs, SubprocessHandle, SubprocessOutcome, SubprocessOutputRead, SubprocessOutputReader, SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
+import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 import { rgPath } from '@vscode/ripgrep'
 import { SpillLocator, SpillStore } from '@mutantcat/dsh-spill'
 import type { SaveTextSpill, SpillRef } from '@mutantcat/dsh-spill'
@@ -39,6 +40,12 @@ import {
   sampleAcrossTopLevel,
   toWorkdirRelative,
 } from '@mutantcat/dsh-tool-fs-search'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 const testToolSignal = new AbortController().signal
 
@@ -765,7 +772,7 @@ describe('glob results', () => {
     ctx.on('tools/post-execute', async () => ({
       kind: 'accept',
       additionalContexts: [createUserMessage({
-        content: [{ type: 'text', text: 'glob context' }], source: { kind: 'plugin', plugin: 'test' },
+        content: [{ type: 'text', text: 'glob context' }], source: { kind: 'test' },
       })],
     }))
     subprocess.handler = () => runResult('a.ts\nb.ts\nc.ts\nd.ts\n')
@@ -977,7 +984,7 @@ describe('grep results', () => {
     ctx.on('tools/post-execute', async () => ({
       kind: 'accept',
       additionalContexts: [createUserMessage({
-        content: [{ type: 'text', text: 'grep context' }], source: { kind: 'plugin', plugin: 'test' },
+        content: [{ type: 'text', text: 'grep context' }], source: { kind: 'test' },
       })],
     }))
     subprocess.handler = () => runResult([

@@ -27,6 +27,8 @@ kind: "package-reference"
 
 当组合需要通过 pi-ai 的提供方目录、或通过 pi-ai 已安装目录未描述的网关路由模型请求时挂载本插件。`providers` 字典就是整个配置面：每个键都是请求用 `GenerateOptions.provider` 选择的提供方路由名。
 
+适配器接受 LLM 服务的[仅供请求使用的 user 输入](../llm/README.zh.md#use-this-package)，并可将其与持久历史混用。user 身份与来源不会进入 pi-ai 内容；assistant 回放元数据和工具调用关联仍由持久消息携带。
+
 ### 何时选择
 
 当同一组合服务多个提供方、某条路由需要 pi-ai 目录默认值并修正少数字段、或必须通过自有端点与协议到达手工声明网关时，选择本适配器。`dsh-llm-deepseek` 是可选的孪生适配器，面向只想要 DeepSeek 直连路由的部署；随附 profile 不会挂载任一适配器。两个适配器可以同时挂载，因为它们的路由名不冲突；注册其他适配器已拥有的路由会导致插件加载失败。

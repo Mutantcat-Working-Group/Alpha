@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, MessageId, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import SessionStore, {
   adoptSessionEvent,
   SESSION_FORMAT_VERSION,
@@ -13,6 +14,13 @@ import SessionStore, {
   snapshotSessionEvent,
 } from '@mutantcat/dsh-session'
 import type { CreateSessionOptions, SessionEventType, SessionHeader, SessionSurface } from '@mutantcat/dsh-session'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+    'watcher': { kind: 'watcher' } & ContextFormed
+  }
+}
 
 describe('Session', () => {
   it('exposes one stable readonly surface view', () => {
@@ -93,7 +101,7 @@ describe('Session', () => {
     const session = Session.create(SessionId('s2'))
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'file changed: a.ts' }],
-      source: { kind: 'plugin', plugin: 'watcher' },
+      source: { kind: 'watcher' },
     }), { surfaceOp: 'append' })
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'focus on tests' }],
@@ -111,13 +119,14 @@ describe('Session', () => {
     const session = Session.create(SessionId('s2-raw'))
     const message = createUserMessage({
       content: [{ type: 'text', text: '<system-reminder>Additional instructions from: pkg/AGENTS.md</system-reminder>' }],
-      source: { kind: 'plugin', plugin: 'agent-instructions' },
+      source: { kind: 'agent-instructions', form: 'instructions', changes: [] },
     })
     session.append('user/message', message, { surfaceOp: 'append' })
 
     expect(session.deriveMessages()).toEqual([message])
     const event = session.snapshotEvents()[0]
-    expect(event?.type === 'user/message' && event.data.source).toEqual({ kind: 'plugin', plugin: 'agent-instructions' })
+    expect(event?.type === 'user/message' && event.data.source)
+      .toEqual({ kind: 'agent-instructions', form: 'instructions', changes: [] })
   })
 
   it('replays identically from a seeded event log', () => {
@@ -360,7 +369,7 @@ describe('Session', () => {
           data: {
             turn: 1,
             step: 1,
-            message: { ...user, id: 'system', source: { kind: 'plugin', plugin: 'prompt' } },
+            message: { ...user, id: 'system', source: { kind: 'system-prompt' } },
           },
         },
         message: 'message must have role "system"',
@@ -372,10 +381,10 @@ describe('Session', () => {
           data: {
             turn: 1,
             step: 1,
-            message: { ...user, id: 'system', role: 'system', source: { kind: 'plugin', plugin: '' } },
+            message: { ...user, id: 'system', role: 'system', source: { kind: 'runtime-context' } },
           },
         },
-        message: 'message must have plugin source',
+        message: 'message must have system-prompt source',
       },
       {
         name: 'tool role',
@@ -477,7 +486,7 @@ describe('Session', () => {
       data: {
         turn: 1,
         step: 1,
-        message: createSystemMessage('You are terse.', '@mutantcat/dsh-system-prompt'),
+        message: createSystemMessage('You are terse.'),
       },
     } as unknown as SessionEvent
     const adopted = adoptSessionEvent(event)
@@ -1621,7 +1630,7 @@ describe('SessionStore', () => {
 
     expect(() => session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'replacement' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }), {
       surfaceOp: { op: 'replace', startSeq: SessionSeq(2), endSeq: SessionSeq(2) },
       sourceEventSeqs: [SessionSeq(2)],

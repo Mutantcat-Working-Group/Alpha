@@ -21,7 +21,7 @@ function checkpointId(
     readonly plugin?: unknown
     readonly compactionId?: unknown
   }
-  return source.kind === 'plugin' && source.plugin === 'compact'
+  return source.kind === 'compact-checkpoint'
     && typeof source.compactionId === 'string' && source.compactionId !== ''
     ? source.compactionId
     : undefined

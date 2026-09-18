@@ -36,8 +36,8 @@ declare module '../contract/chat-nodes.ts' {
 
 function isCompactionCheckpoint(event: Parameters<ConversationNodeDefinition['match']>[0]): boolean {
   if (event.type !== 'user/message' || !isReplacementSurfaceEvent(event)) return false
-  const source = event.data.source
-  return source.kind === 'plugin' && source.plugin === 'compact'
+  const source = event.data.source as { kind?: unknown }
+  return source.kind === 'compact-checkpoint'
 }
 
 /** User, steering, and injected-context message classification Definition. */

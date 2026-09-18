@@ -259,7 +259,7 @@ describe('in-process structured output', () => {
     // Exactly one model request and one caller-supplied user message: no nudge turn exists.
     expect(adapter.requests.length).toBe(1)
     const child = ctx.agents.get(run.id)!
-    expect(child.session.snapshotEvents().filter(e => e.type === 'user/message' && e.data.source.kind !== 'plugin').length).toBe(1)
+    expect(child.session.snapshotEvents().filter(e => e.type === 'user/message' && e.data.source.kind !== 'runtime-context').length).toBe(1)
     await run.dispose()
   })
 

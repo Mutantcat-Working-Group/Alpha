@@ -3,6 +3,7 @@
 import { defineSessionFormatMigration, SessionFormatError, SessionFormatUnsupportedMigrationError, isSessionFormatJsonObject, sessionFormatCount } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent, SessionFormatEventRun, SessionFormatJsonObject, SessionFormatJsonValue, SessionFormatMigration, SessionFormatMigrationContext, SessionFormatMigrationStage, SessionFormatMigrationStageInput } from '@deepseek-ai/dsh-session-format'
 import { assertReleasedV3Header } from '@deepseek-ai/dsh-session-format-v2-to-v3'
+import { mapEventMessages, rewritePluginSource } from './sources.ts'
 import { liftToolResult } from './tool-role.ts'
 import { assertReleasedV4Header, validateDeliveryAccepted } from './validation.ts'
 import { catalogFact, childCatalogSource, childCatalogFact, childCatalogSubject } from './facts.ts'
@@ -69,7 +70,12 @@ class ReleasedV3ToV4Stage implements SessionFormatMigrationStage {
       }
       if (deliveryId !== undefined && deliveryId !== this.input.sourceHeader.id) this.foreignDeliverySeq = event.seq
     }
-    context.emitEvent(liftToolResult(event))
+    const rewritten = mapEventMessages(event, (message) => {
+      const source = message['source']
+      if (!isSessionFormatJsonObject(source) || source['kind'] !== 'plugin') return message
+      return { ...message, source: rewritePluginSource(source, event.seq, message['role']) }
+    })
+    context.emitEvent(liftToolResult(rewritten))
   }
 
   transformRun(run: SessionFormatEventRun, context: SessionFormatMigrationContext): void {

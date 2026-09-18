@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { restoreReleasedV3Artifact } from '@deepseek-ai/dsh-session-format-v2-to-v3'
 import { SessionFormatEventCollector } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent, SessionFormatHeader, SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
-import { createSessionFormatCatalogWithChildren, sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
+import { createSessionFormatCatalogWithChildren, historicalSessionFormatCatalog, sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
 import { releasedV3SessionFormatCodec, createSessionFormatV3ToV4, sessionFormatV3ToV4 } from '../src/index.ts'
 
 const header: SessionFormatHeader = { version: 3, id: 'identity', createdAt: 1, isSeeded: false, delegationDepth: 0 }
@@ -29,6 +29,12 @@ function migrate(events: readonly SessionFormatEvent[], sourceHeader = header, c
 
 function restore(events: readonly SessionFormatEvent[], sourceHeader = header) {
   const reader = createSessionFormatCatalogWithChildren([]).createRestore({ type: 'session', ...sourceHeader }, { recovery: 'strict', validation: 'current' })
+  for (const event of events) reader.decodeRow(event)
+  return reader.finish()
+}
+
+function restoreHistorical(events: readonly SessionFormatEvent[], sourceHeader: SessionFormatHeader) {
+  const reader = historicalSessionFormatCatalog.createRestore({ type: 'session', ...sourceHeader }, { recovery: 'strict', validation: 'current' })
   for (const event of events) reader.decodeRow(event)
   return reader.finish()
 }
@@ -133,7 +139,7 @@ describe('V3 to V4 source preservation', () => {
       { type: 'turn/end', data: { turn: 1, reason: { kind: 'completed' } } },
       { type: 'session/end-seed', data: version < 2 ? {} : { inherited: true } },
     ].map((event, seq): SessionFormatEvent => ({ ...event, seq, time: seq + 1 }))
-    const source = version === 3 ? restore(rows, { ...header, version: 2, isSeeded: true }).events : rows
+    const source = version === 3 ? restoreHistorical(rows, { ...header, version: 2, isSeeded: true }).events : rows
     const physical = version < 2
       ? { type: 'session', version, id: header.id, createdAt: 1, delegationDepth: 0, parentSession: 'ancestor', seedLength: 6 }
       : { type: 'session', ...header, version, isSeeded: true, parentSession: 'ancestor' }

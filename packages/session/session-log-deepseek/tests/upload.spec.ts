@@ -110,13 +110,13 @@ describe('incremental DeepSeek session-log upload', () => {
 
   it('uploads system append and replacement placement with unchanged data and source-event references', async () => {
     const { ctx, session } = await harness('wire-system')
-    const headData = { turn: 1, step: 1, message: createSystemMessage('head', 'fixture'), extra: { retained: true } }
+    const headData = { turn: 1, step: 1, message: createSystemMessage('head'), extra: { retained: true } }
     const head = session.append('system/message', headData, { surfaceOp: 'append' })
     session.append('system/message', {
-      turn: 1, step: 2, message: createSystemMessage('later', 'fixture'),
+      turn: 1, step: 2, message: createSystemMessage('later'),
     }, { surfaceOp: 'append' })
     session.append('system/message', {
-      turn: 1, step: 3, message: createSystemMessage('new head', 'fixture'),
+      turn: 1, step: 3, message: createSystemMessage('new head'),
     }, { surfaceOp: { op: 'replace', startSeq: head.seq, endSeq: head.seq }, sourceEventSeqs: [head.seq] })
     const prepared = await ctx.deepseekLlmApiExtensions.prepare({ body: body(), signal: SIGNAL, sessionId: session.id })
     expect(prepared.fields.dsh_session_log?.events).toEqual(session.snapshotEvents())

@@ -80,7 +80,7 @@ describe('toPiContext', () => {
       system: 'be helpful',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
       tools: [{ name: 'f', description: 'F', parameters: { type: 'object', properties: {} } }],
     })
@@ -113,7 +113,7 @@ describe('toPiContext', () => {
       model: 'gpt-4.1',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'describe' }, { type: 'image', attachment }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
     }, imageContext(attachmentStore(readImageRequest)))
 
@@ -186,7 +186,7 @@ describe('toPiContext', () => {
             mediaType: 'image/png', bytes: 1, width: 1, height: 1,
           },
         }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
     })).toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
   })
@@ -324,7 +324,7 @@ describe('toPiContext', () => {
       messages: [
         createMessage({
           role: 'system', content: [{ type: 'text', text: 'rule' }],
-          source: { kind: 'plugin', plugin: 'test' },
+          source: { kind: 'system-prompt' },
         }),
         createUserMessage({
           content: [{ type: 'text', text: 'note' }],

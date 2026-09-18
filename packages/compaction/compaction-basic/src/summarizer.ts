@@ -4,12 +4,13 @@
  * @module @mutantcat/dsh-compaction-basic/summarizer
  */
 
-import type { Context } from '@mutantcat/cordis'
-import { contentHasImage, createUserMessage, BlockAssembler, LlmError } from '@mutantcat/dsh-llm'
+import type { Context } from '@deepseek-ai/cordis'
+import { contentHasImage, BlockAssembler, LlmError } from '@deepseek-ai/dsh-llm'
+import { deepFreeze } from '@deepseek-ai/dsh-util-values'
 import type {
-  ContentBlock, FinishReason, GenerateOptions, Message, TokenUsage, ToolSchema,
-} from '@mutantcat/dsh-llm'
-import type { Agent } from '@mutantcat/dsh-agent'
+  ContentBlock, FinishReason, GenerateOptions, Message, RequestMessage, TokenUsage, ToolSchema,
+} from '@deepseek-ai/dsh-llm'
+import type { Agent } from '@deepseek-ai/dsh-agent'
 
 interface SummaryConfig {
   readonly summarizationProvider: string
@@ -141,11 +142,11 @@ export async function summarizeWithLlm(
   }
 
   const assembler = new BlockAssembler()
-  const messages: Message[] = [
+  const messages: RequestMessage[] = [
     ...input.messages,
-    createUserMessage({
+    deepFreeze({
+      role: 'user',
       content: [{ type: 'text', text: COMPACTION_INSTRUCTION }],
-      source: { kind: 'plugin', plugin: 'dsh-compaction-basic' },
     }),
   ]
   const options: GenerateOptions = {

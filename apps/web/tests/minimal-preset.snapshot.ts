@@ -82,8 +82,7 @@ describe('minimal agent preset', () => {
     const systemPrompt = systemPromptText(agentHandle.agent.session)
     if (systemPrompt === undefined) throw new Error('the minimal agent issued no system prompt')
     expect(agentHandle.agent.session.snapshotEvents().some(event => event.type === 'user/message'
-      && event.data.source.kind === 'plugin'
-      && event.data.source.plugin === '@mutantcat/dsh-system-prompt')).toBe(false)
+      && event.data.source.kind === 'runtime-context')).toBe(false)
     expect(scaffold.ctx.agentPresets.serviceFor(agentHandle.agent, 'fs')).toBeUndefined()
     expect(scaffold.ctx.agentPresets.serviceFor(agentHandle.agent, 'compaction')).toBeUndefined()
 

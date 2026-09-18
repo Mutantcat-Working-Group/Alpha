@@ -199,7 +199,7 @@ function withMigratedEmptyHead(log: readonly SessionEvent[]): readonly unknown[]
       type: 'system/message', seq: 2, time: log[1]!.time, surfaceOp: 'append',
       data: { turn: 1, step: 1, message: {
         id: expect.stringMatching(/^v2-to-v3-system-[0-9a-f]{64}$/) as unknown,
-        role: 'system', content: [], source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' },
+        role: 'system', content: [], source: { kind: 'system-prompt' },
       } },
     },
     ...log.slice(2).map(event => ({ ...event, seq: SessionSeq(event.seq + 1) })),

@@ -223,7 +223,7 @@ describe('V2 system prompts through current Session and JSONL persistence', () =
       session.append('step/start', { turn: 2, step: 1 })
       session.append('system/message', {
         turn: 2, step: 1,
-        message: freezeMessage({ role: 'system', id: MessageId('resumed-system'), content: [{ type: 'text', text: 'resumed prompt' }], source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' } }),
+        message: freezeMessage({ role: 'system', id: MessageId('resumed-system'), content: [{ type: 'text', text: 'resumed prompt' }], source: { kind: 'system-prompt' } }),
       }, { surfaceOp: { op: 'replace', startSeq: SessionSeq(4), endSeq: SessionSeq(4) }, sourceEventSeqs: [SessionSeq(4)] })
       session.append('step/end', { turn: 2, step: 1 })
       session.append('turn/end', { turn: 2, reason: { kind: 'completed' } })
@@ -277,12 +277,12 @@ describe('V2 system prompts through current Session and JSONL persistence', () =
       session.append('step/start', { turn: 1, step: 1 })
       session.append('system/message', {
         turn: 1, step: 1,
-        message: freezeMessage({ role: 'system', id: MessageId('head'), content: [{ type: 'text', text: 'head prompt' }], source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' } }),
+        message: freezeMessage({ role: 'system', id: MessageId('head'), content: [{ type: 'text', text: 'head prompt' }], source: { kind: 'system-prompt' } }),
       }, { surfaceOp: 'append' })
       session.append('user/message', freezeMessage({ role: 'user', id: MessageId('question'), content: human.content, source: { kind: 'user' } }), { surfaceOp: 'append' })
       session.append('system/message', {
         turn: 1, step: 1,
-        message: freezeMessage({ role: 'system', id: MessageId('context'), content: [{ type: 'text', text: 'tail context' }], source: { kind: 'plugin', plugin: 'context-plugin' } }),
+        message: freezeMessage({ role: 'system', id: MessageId('context'), content: [{ type: 'text', text: 'tail context' }], source: { kind: 'system-prompt' } }),
       }, { surfaceOp: 'append' })
       session.append('step/end', { turn: 1, step: 1 })
       session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })

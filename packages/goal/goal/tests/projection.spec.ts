@@ -9,16 +9,23 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import AgentRegistry, { agentEvents } from '@mutantcat/dsh-agent'
-import type { Agent, AgentStatus } from '@mutantcat/dsh-agent'
-import { createUserMessage } from '@mutantcat/dsh-llm'
-import SessionStore from '@mutantcat/dsh-session'
-import type { Session } from '@mutantcat/dsh-session'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import GoalService, { GoalId, applyGoalProjection, foldGoal, goalProjectionDefinition } from '@mutantcat/dsh-goal'
-import type { GoalProjection, GoalProjectionState, GoalRef } from '@mutantcat/dsh-goal'
-import { unsupportedInbox } from '@mutantcat/dsh-agent-loop-testkit'
+import { Context } from '@deepseek-ai/cordis'
+import AgentRegistry, { agentEvents } from '@deepseek-ai/dsh-agent'
+import type { Agent, AgentStatus } from '@deepseek-ai/dsh-agent'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import SessionStore from '@deepseek-ai/dsh-session'
+import type { Session } from '@deepseek-ai/dsh-session'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import GoalService, { GoalId, applyGoalProjection, foldGoal, goalProjectionDefinition } from '@deepseek-ai/dsh-goal'
+import type { GoalProjection, GoalProjectionState, GoalRef } from '@deepseek-ai/dsh-goal'
+import { unsupportedInbox } from '@deepseek-ai/dsh-agent-loop-testkit'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 interface Bench {
   ctx: Context
@@ -132,9 +139,10 @@ describe('goal projection unit', () => {
       start: 0,
       inserted: [createUserMessage({
         content: [{ type: 'text', text: 'unrelated pending context' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
     })
+
 
     expect(bench.tailValues().goal).toBeNull()
     expect(foldGoal(bench.session.snapshotEvents()).goal).toBeUndefined()

@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { AttachmentId, ImageVariantId } from '@deepseek-ai/dsh-attachment'
 import type { ImageAttachmentRef, ImageMediaType, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
 import { createToolResultMessage, createUserMessage, ToolCallId, ReasoningEffortId, createMessage } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, GenerateOptions, Message } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, GenerateOptions, Message, RequestUserInput } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import {
   serializeMessages,
   serializeMessagesWithImages,
@@ -10,6 +11,12 @@ import {
   serializeRequestWithImages,
 } from '../src/protocols/chat-completions/serialize.ts'
 import type { ImageSerializationOptions } from '../src/protocols/chat-completions/serialize.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 type FileResolver = Extract<ImageSerializationOptions['representation'], { kind: 'file' }>['resolveFileId']
 
@@ -78,6 +85,33 @@ function inlineImageOptions(
   }
 }
 
+describe('request-only user input', () => {
+  it('preserves the exact text request and durable tool-result prefix', () => {
+    const prefix = [
+      createMessage({ role: 'assistant', content: [{ type: 'tool-call', id: ToolCallId('lookup'), name: 'lookup', arguments: '{}' }],
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' } }),
+      createToolResultMessage({ callId: ToolCallId('lookup'), content: [{ type: 'text', text: 'result' }], isError: false }),
+    ]
+    const input: RequestUserInput = { role: 'user', content: [{ type: 'text', text: 'review or summarize this input' }] }
+    const durable = createUserMessage({ content: input.content, source: { kind: 'test' } })
+    expect(serializeRequest(request({ messages: [...prefix, input], system: 'policy' })))
+      .toEqual(serializeRequest(request({ messages: [...prefix, durable], system: 'policy' })))
+  })
+
+  it('preserves image ordering and bytes without manufacturing durable metadata', async () => {
+    const ref = imageRef()
+    const input: RequestUserInput = { role: 'user', content: [
+      { type: 'text', text: 'before' }, { type: 'image', attachment: ref }, { type: 'text', text: 'after' },
+    ] }
+    const durable = createUserMessage({ content: input.content, source: { kind: 'test' } })
+    const actual = await serializeRequestWithImages(request({ messages: [input] }), inlineImageOptions([ref]))
+    const expected = await serializeRequestWithImages(request({ messages: [durable] }), inlineImageOptions([ref]))
+    expect(actual).toEqual(expected)
+    expect(input).not.toHaveProperty('id')
+    expect(input).not.toHaveProperty('source')
+  })
+})
+
 describe('serializeMessages', () => {
   it('maps user text to string content', () => {
     const wire = serializeMessages([
@@ -93,7 +127,7 @@ describe('serializeMessages', () => {
     const wire = serializeMessages([
       createMessage({
         role: 'system', content: [{ type: 'text', text: 'be brief' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'system-prompt' },
       }),
     ])
     expect(wire).toEqual([{ role: 'system', content: 'be brief' }])
@@ -174,7 +208,7 @@ describe('serializeMessages', () => {
     const wire = serializeMessages([
       createUserMessage({
         content: [{ type: 'text', text: 'context note' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       }),
       createToolResultMessage({
         callId: ToolCallId('call-1'),
@@ -210,14 +244,14 @@ describe('serializeMessages', () => {
           mediaType: 'image/png', bytes: 68, width: 1, height: 1,
         },
       }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })])).toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
   })
 
   it('emits an empty user message rather than dropping block-less messages', () => {
     const wire = serializeMessages([createUserMessage({
       content: [],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })])
     expect(wire).toEqual([{ role: 'user', content: '' }])
   })
@@ -226,7 +260,7 @@ describe('serializeMessages', () => {
 describe('serializeRequest', () => {
   const history: Message[] = [createUserMessage({
     content: [{ type: 'text', text: 'hi' }],
-    source: { kind: 'plugin', plugin: 'test' },
+    source: { kind: 'test' },
   })]
 
   it('always streams with usage and maps the basics', () => {
@@ -249,7 +283,7 @@ describe('serializeRequest', () => {
     const systemMessage = createMessage({
       role: 'system',
       content: [{ type: 'text', text: 'be helpful' }],
-      source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' },
+      source: { kind: 'system-prompt' },
     })
     const tools = [{ name: 'f', description: 'F', parameters: { type: 'object', properties: {} } }]
     const fromHistory = serializeRequest(request({ messages: [systemMessage, ...history], tools }))
@@ -463,7 +497,7 @@ describe('image serialization', () => {
     const ref = imageRef()
     await expect(serializeMessagesWithImages([createUserMessage({
       content: [{ type: 'image', attachment: ref }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })], imageOptions([]))).rejects.toMatchObject({ code: 'INVALID_REQUEST' })
   })
 
@@ -518,7 +552,7 @@ describe('image serialization', () => {
           { type: 'text', text: '' },
           { type: 'chart', data: 'ignored' } as unknown as ContentBlock,
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       }),
       createToolResultMessage({
         callId: ToolCallId('result'),
@@ -560,7 +594,7 @@ describe('image serialization', () => {
       createMessage({
         role: 'system',
         content: [{ type: 'text', text: 'system history' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'system-prompt' },
       }),
       imageResult('before-assistant'),
       createMessage({
@@ -647,7 +681,7 @@ describe('image serialization', () => {
           ...Array.from({ length: 11 }, () => ({ type: 'image' as const, attachment: ref, offloaded: true as const })),
           ...Array.from({ length: 10 }, () => ({ type: 'image' as const, attachment: ref })),
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
     }), inlineImageOptions([ref], 80, 40))
     const content = wire.messages[0]?.content
@@ -669,7 +703,7 @@ describe('image serialization', () => {
     const resolveFileId = vi.fn()
     const content: ContentBlock[] = [{ type: 'image', attachment: imageRef() }]
     const message = role === 'system'
-      ? createMessage({ role, content, source: { kind: 'plugin', plugin: 'test' } })
+      ? createMessage({ role, content, source: { kind: 'system-prompt' } })
       : createMessage({ role, content, source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' } })
     await expect(serializeMessagesWithImages([message], imageOptions([imageRef()], resolveFileId)))
       .rejects.toMatchObject({ code: 'UNSUPPORTED_CONTENT' })
@@ -682,7 +716,7 @@ describe('image serialization', () => {
       messages: [createMessage({
         role: 'system',
         content: [{ type: 'image', attachment: imageRef('image/png', 300) }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'system-prompt' },
       })],
     }), imageOptions([imageRef('image/png', 300)], resolveFileId, 1)))
       .rejects.toMatchObject({ code: 'UNSUPPORTED_CONTENT' })
@@ -707,7 +741,7 @@ describe('image serialization', () => {
     const resolveFileId = vi.fn(() => Promise.reject(failure))
     await expect(serializeMessagesWithImages([createUserMessage({
       content: [{ type: 'image', attachment: imageRef() }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })], imageOptions([imageRef()], resolveFileId)))
       .rejects.toMatchObject({ code: 'ATTACHMENT_CORRUPT' })
   })
@@ -717,7 +751,7 @@ describe('image serialization', () => {
     const resolveFileId = vi.fn(() => Promise.reject(failure))
     await expect(serializeMessagesWithImages([createUserMessage({
       content: [{ type: 'image', attachment: imageRef() }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })], imageOptions([imageRef()], resolveFileId))).rejects.toBe(failure)
   })
 })

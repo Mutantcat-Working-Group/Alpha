@@ -357,9 +357,8 @@ function assertMessageEventShape(event: Record<string, unknown>, subject: string
   }
   const sourceRecord = source as Record<string, unknown>
   if (type === 'system/message') {
-    if (sourceRecord['kind'] !== 'plugin' || typeof sourceRecord['plugin'] !== 'string'
-      || sourceRecord['plugin'] === '') {
-      throw new Error(`${subject} message must have plugin source`)
+    if (sourceRecord['kind'] !== 'system-prompt') {
+      throw new Error(`${subject} message must have system-prompt source`)
     }
     return
   }

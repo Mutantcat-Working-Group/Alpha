@@ -27,6 +27,8 @@ Stream DeepSeek models through `deepseek-official` with Messages by default, or 
 
 Mount this plugin when a composition streams DeepSeek models through the harness LLM service. It registers the single `deepseek-official` route and resolves connection facts per request, so a composition entry plus an optional user settings section drive the whole adapter.
 
+Both protocols accept the LLM service's [request-only user inputs](../llm/README.md#use-this-package) alongside durable history; omitting request-only identity and attribution does not alter provider content.
+
 ### When to choose it
 
 Choose this adapter for DeepSeek's official API or a gateway that supports the selected protocol through `baseURL`. Choose `dsh-llm-pi-ai` when the same composition also routes other providers or hand-declared gateways through pi-ai's catalogs; the two adapters can be mounted together because their route names do not collide. Registering any other adapter for `deepseek-official` fails with `DUPLICATE_ADAPTER`.

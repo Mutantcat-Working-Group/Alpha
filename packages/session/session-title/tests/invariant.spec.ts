@@ -1,11 +1,18 @@
 // Title-source invariant: `messageSeqs` is empty iff `source.kind` is `user`.
 // — the durable relationship every appended session/title event must keep.
 import { describe, expect, it } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import * as SessionTitleInvariantCompanion from '@mutantcat/dsh-session-title/invariant'
-import InvariantRegistry, { InvariantError } from '@mutantcat/dsh-invariants'
-import SessionStore, { SessionId, SessionSeq } from '@mutantcat/dsh-session'
-import { createUserMessage } from '@mutantcat/dsh-llm'
+import { Context } from '@deepseek-ai/cordis'
+import * as SessionTitleInvariantCompanion from '@deepseek-ai/dsh-session-title/invariant'
+import InvariantRegistry, { InvariantError } from '@deepseek-ai/dsh-invariants'
+import SessionStore, { SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 async function setup(): Promise<Context> {
   const ctx = new Context()
@@ -64,7 +71,7 @@ describe('session-title source invariant', () => {
     })).toThrow(/invalid message seq/)
     const pluginMessage = session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'plugin context' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }), { surfaceOp: 'append' })
     expect(() => session.append('session/title', {
       title: 'plugin source', messageSeqs: [pluginMessage.seq], source: { kind: 'fallback' },

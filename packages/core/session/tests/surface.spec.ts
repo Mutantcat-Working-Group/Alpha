@@ -13,16 +13,30 @@ import {
 } from '@mutantcat/dsh-session'
 import { SurfaceManager } from '@mutantcat/dsh-session/surface'
 import {
+  MessageId,
+  ToolCallId,
   createMessage,
   createSystemMessage,
   createToolResultMessage,
   createUserMessage,
   freezeMessage,
-  ToolCallId,
-  MessageId,
-} from '@mutantcat/dsh-llm'
+} from '@deepseek-ai/dsh-llm'
+import type { ContextFormed, MessageSource } from '@deepseek-ai/dsh-llm'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+    'watcher': { kind: 'watcher' } & ContextFormed
+  }
+}
 
 type TestSurfaceOp = 'append' | { op: 'replace'; startSeq: number; endSeq: number }
+type CheckpointSource = Extract<MessageSource, { readonly kind: 'compact-checkpoint' }>
+
+/** Build a typed checkpoint source for a surface replacement fixture. */
+function checkpointSource(compactionId: string): CheckpointSource {
+  return { kind: 'compact-checkpoint', compactionId: compactionId as CheckpointSource['compactionId'] }
+}
 
 function surfaceOp(value: TestSurfaceOp): SurfaceEvent['surfaceOp'] {
   return value === 'append'
@@ -33,7 +47,7 @@ function surfaceOp(value: TestSurfaceOp): SurfaceEvent['surfaceOp'] {
 function replacementMessage(text: string) {
   return createUserMessage({
     content: [{ type: 'text', text }],
-    source: { kind: 'plugin', plugin: 'test' },
+    source: { kind: 'test' },
   })
 }
 
@@ -689,7 +703,7 @@ describe('deriveMessages with surface', () => {
   it('injected-context and user messages appear on surface', () => {
     const s = Session.create(SessionId('ctx'))
     s.append('user/message', createUserMessage({
-      content: [{ type: 'text', text: 'file changed' }], source: { kind: 'plugin', plugin: 'watcher' },
+      content: [{ type: 'text', text: 'file changed' }], source: { kind: 'watcher' },
     }), { surfaceOp: 'append' })
     s.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'focus' }],
@@ -711,7 +725,7 @@ describe('Session.append surface opts', () => {
       'user/message',
       createUserMessage({
         content: [{ type: 'text', text: 'h' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       }),
       { surfaceOp: 'append', sourceEventSeqs: sourceSeqs(0, 1) },
     )
@@ -832,7 +846,7 @@ describe('surface type guards', () => {
   it('splits surface events into append-origin and replacement by their marker', () => {
     const s = surfaceSession()
     s.append('user/message', createUserMessage({
-      content: [{ type: 'text', text: 'checkpoint' }], source: { kind: 'plugin', plugin: 'compact' },
+      content: [{ type: 'text', text: 'checkpoint' }], source: checkpointSource('surface-compaction-1'),
     }), { surfaceOp: surfaceOp({ op: 'replace', startSeq: 1, endSeq: 2 }), sourceEventSeqs: sourceSeqs(1, 2) })
     const appended = s.snapshotEvents().find(e => e.type === 'user/message')!
     const replacement = s.snapshotEvents().at(-1)!
@@ -880,7 +894,7 @@ describe('SurfaceManager.replaceGeneration', () => {
 
     const nodes = s.surface.nodes
     s.append('user/message', createUserMessage({
-      content: [{ type: 'text', text: 'summary' }], source: { kind: 'plugin', plugin: 'compact' },
+      content: [{ type: 'text', text: 'summary' }], source: checkpointSource('surface-compaction-2'),
     }), { surfaceOp: { op: 'replace', startSeq: nodes[0]!, endSeq: nodes[1]! }, sourceEventSeqs: [nodes[0]!, nodes[1]!] })
     expect(s.surface.replaceGeneration).toBe(1)
   })
@@ -892,7 +906,7 @@ describe('system/message surface node', () => {
       type: 'system/message',
       seq: SessionSeq(seq),
       time: seq,
-      data: { turn: 1, step: 1, message: createSystemMessage(text, 'test-plugin') },
+      data: { turn: 1, step: 1, message: createSystemMessage(text) },
       surfaceOp: surfaceOp(op),
       ...sources === undefined ? {} : { sourceEventSeqs: sourceSeqs(...sources) },
     }
@@ -912,13 +926,13 @@ describe('system/message surface node', () => {
     const s = Session.create(SessionId('sys'))
     s.append('turn/start', { turn: 1 })
     s.append('step/start', { turn: 1, step: 1 })
-    s.append('system/message', { turn: 1, step: 1, message: createSystemMessage('be brief', 'p') }, { surfaceOp: 'append' })
+    s.append('system/message', { turn: 1, step: 1, message: createSystemMessage('be brief') }, { surfaceOp: 'append' })
     s.append('user/message', createUserMessage({ content: [{ type: 'text', text: 'hi' }], source: { kind: 'user' } }), { surfaceOp: 'append' })
     expect(s.deriveMessages().map(message => message.role)).toEqual(['system', 'user'])
     expect(s.deriveMessages()[0]?.content).toEqual([{ type: 'text', text: 'be brief' }])
 
     const head = s.surface.nodes[0] as SessionSeq
-    s.append('system/message', { turn: 1, step: 1, message: createSystemMessage('', 'p') }, {
+    s.append('system/message', { turn: 1, step: 1, message: createSystemMessage('') }, {
       surfaceOp: { op: 'replace', startSeq: head, endSeq: head },
       sourceEventSeqs: [head],
     })
@@ -954,11 +968,11 @@ describe('system/message surface node', () => {
     expect(plainHead.nodes).toEqual(sourceSeqs(2))
   })
 
-  it('rejects a seeded system/message with a non-system role or non-plugin source', () => {
+  it('rejects a seeded system/message with a non-system role or non-system-prompt source', () => {
     const good = systemEvent(0, 'v1')
     const badRole = { ...good, data: { ...good.data, message: { ...(good.data as { message: object }).message, role: 'user' } } }
     expect(() => Session.create(SessionId('bad-role'), [badRole as SessionEvent])).toThrow(/role "system"/)
     const badSource = { ...good, data: { ...good.data, message: { ...(good.data as { message: object }).message, source: { kind: 'user' } } } }
-    expect(() => Session.create(SessionId('bad-source'), [badSource as SessionEvent])).toThrow(/plugin source/)
+    expect(() => Session.create(SessionId('bad-source'), [badSource as SessionEvent])).toThrow(/system-prompt source/)
   })
 })

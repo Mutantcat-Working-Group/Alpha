@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import {
   ToolCallId,
+  boundContextSummary,
+  CONTEXT_SUMMARY_MAX_CHARS,
   createAssistantMessage,
+  createSystemMessage,
   createToolResultMessage,
   createUserMessage,
   freezeMessage,
@@ -9,10 +12,28 @@ import {
 } from '@mutantcat/dsh-llm'
 
 describe('message construction', () => {
+  it('bounds producer summaries while preserving summaries at the exact limit', () => {
+    const exact = 'x'.repeat(CONTEXT_SUMMARY_MAX_CHARS)
+    expect(boundContextSummary(exact)).toBe(exact)
+    expect(boundContextSummary(exact + 'x')).toBe(exact.slice(0, -1) + '…')
+  })
+
+  it('preserves system-prompt attribution on immutable system messages', () => {
+    const expectedSource: { kind: 'system-prompt' } = { kind: 'system-prompt' }
+    const message = createSystemMessage('rule')
+    expectTypeOf(message.source).toEqualTypeOf(expectedSource)
+    expect(message.role).toBe('system')
+    expect(message.content).toEqual([{ type: 'text', text: 'rule' }])
+    expect(message.source).toEqual(expectedSource)
+    expect(Object.isFrozen(message)).toBe(true)
+    expect(Object.isFrozen(message.source)).toBe(true)
+    expect(createSystemMessage('').content).toEqual([])
+  })
+
   it('assigns identity immediately and returns a detached deep-frozen message', () => {
     const input = {
       content: [{ type: 'text' as const, text: 'original' }],
-      source: { kind: 'plugin' as const, plugin: 'test' },
+      source: { kind: 'test' as const },
     }
 
     const message = createUserMessage(input)

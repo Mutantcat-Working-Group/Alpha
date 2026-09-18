@@ -57,7 +57,8 @@ const imageMessage = {
   ],
 }
 const currentImageMessage = {
-  ...imageMessage, source: { ...imageMessage.source, plugin: 'tools-ptc' },
+  ...imageMessage,
+  source: { kind: 'code-mode', form: imageMessage.source.form, summary: imageMessage.source.summary },
 }
 const dispatch = {
   rootCallId: toolCall.id, parentCallId: toolCall.id, subCallId: 'tools-code-mode:child-call',
@@ -166,13 +167,17 @@ describe('JSONL V2 PTC publication and restore', () => {
       target: 'next-step', start: 0, removedCount: 0, inserted: [currentImageMessage],
     } } as SessionFormatEvent
     expectedEvents[9] = { ...expectedEvents[9], data: currentImageMessage } as SessionFormatEvent
+    const titleRequestData = events[10]?.data as { messages: Array<Record<string, unknown>> }
     expectedEvents[10] = { ...expectedEvents[10], data: {
       ...(events[10]?.data as Record<string, unknown>), messageSeqs: [3],
+      messages: titleRequestData.messages.map(message => ({
+        ...message, source: { kind: 'dsh-session-title-llm' },
+      })),
     } } as SessionFormatEvent
     const systemMessage = {
       id: 'v2-to-v3-system-' + createHash('sha256')
         .update(JSON.stringify(['session-format-v2-to-v3', id, 1, 'step/start'])).digest('hex'),
-      role: 'system', source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' }, content: [],
+      role: 'system', source: { kind: 'system-prompt' }, content: [],
     }
     expectedEvents.splice(2, 0, {
       type: 'system/message', seq: 2, time: 1002, surfaceOp: 'append',

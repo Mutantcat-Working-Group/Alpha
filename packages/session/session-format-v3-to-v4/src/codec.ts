@@ -3,6 +3,7 @@
 import { SessionFormatError, isSessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatCodec, SessionFormatCurrentEncoder, SessionFormatHeader, SessionFormatEvent } from '@deepseek-ai/dsh-session-format'
 import { releasedV2SessionFormatCodec } from '@deepseek-ai/dsh-session-format-v2-to-v3'
+import { assertV4SourceRowAdmission } from './message-sources.ts'
 import { assertV4RetiredSyntax } from './retired-syntax.ts'
 import { assertV4SystemMessageFields } from './system-message.ts'
 import { assertV4ForkResult } from './fork-result.ts'
@@ -52,6 +53,7 @@ export const releasedV4SessionFormatCodec = Object.freeze({
  * @param row - parsed physical row before framing and source-event range decoding.
  */
 export function assertV4RowAdmission(row: unknown): void {
+  assertV4SourceRowAdmission(row)
   assertV4RetiredSyntax(row)
   assertV4SystemMessageFields(row)
   if (!isSessionFormatJsonObject(row) || row['type'] !== 'tool/result') return

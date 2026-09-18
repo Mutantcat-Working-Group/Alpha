@@ -1,8 +1,8 @@
 /** Deterministic Messages image preparation for Files references and bounded inline fallback. */
 
-import type { AttachmentStore, ImageAttachmentRef, RequestImageAttachment } from '@mutantcat/dsh-attachment'
-import { contentHasImage, IMAGE_OFFLOAD_REQUIRED_CODE, LlmError, offloadedImageText, projectOffloadedImages, requiredImageOffload } from '@mutantcat/dsh-llm'
-import type { ContentBlock, ImageAttachmentAccessResolver, Message } from '@mutantcat/dsh-llm'
+import type { AttachmentStore, ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
+import { contentHasImage, IMAGE_OFFLOAD_REQUIRED_CODE, LlmError, offloadedImageText, projectOffloadedImages, requiredImageOffload } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, ImageAttachmentAccessResolver, RequestMessage } from '@deepseek-ai/dsh-llm'
 import type { DeepSeekConnectionOptions as Connection } from '../../common/types.ts'
 import { resolveRequestImageTarget } from '../../common/request-pricing.ts'
 import type { DeepSeekFileId } from '../../common/file-id.ts'
@@ -36,9 +36,9 @@ function* imageRefs(blocks: readonly ContentBlock[]): Generator<ImageAttachmentR
  * @returns projected history and prepared image bytes keyed by attachment id.
  */
 export async function prepareImages(
-  history: readonly Message[], connection: Connection, modelId: string,
+  history: readonly RequestMessage[], connection: Connection, modelId: string,
   attachments: AttachmentStore | undefined, access: ImageAttachmentAccessResolver, signal: AbortSignal,
-): Promise<{ messages: readonly Message[]; versions: Map<ImageAttachmentRef['attachmentId'], RequestImageAttachment> }> {
+): Promise<{ messages: readonly RequestMessage[]; versions: Map<ImageAttachmentRef['attachmentId'], RequestImageAttachment> }> {
   const versions = new Map<ImageAttachmentRef['attachmentId'], RequestImageAttachment>()
   const messages = projectOffloadedImages(history, ref => offloadedImageText(ref, access(ref)))
   if (!messages.some(message => contentHasImage(message.content))) return { messages, versions }
@@ -67,16 +67,16 @@ export async function prepareImages(
  * @returns unchanged history within both byte and image-count limits.
  */
 export function inlineImages(
-  messages: readonly Message[], versions: ReadonlyMap<ImageAttachmentRef['attachmentId'], RequestImageAttachment>,
+  messages: readonly RequestMessage[], versions: ReadonlyMap<ImageAttachmentRef['attachmentId'], RequestImageAttachment>,
   connection: Connection,
-): readonly Message[] {
+): readonly RequestMessage[] {
   assertImagesFit(messages, versions, connection, 'base64')
   return messages
 }
 
 /** Count additional oldest occurrences requiring durable offload at their exact represented bytes. */
 function assertImagesFit(
-  messages: readonly Message[], versions: ReadonlyMap<ImageAttachmentRef['attachmentId'], RequestImageAttachment>,
+  messages: readonly RequestMessage[], versions: ReadonlyMap<ImageAttachmentRef['attachmentId'], RequestImageAttachment>,
   connection: Connection, representation: 'raw' | 'base64',
 ): void {
   const offloadImages = requiredImageOffload(messages, bounds(connection, representation),
@@ -97,7 +97,7 @@ function assertImagesFit(
  * @returns ids keyed by durable attachment identity.
  */
 export async function prepareFileIds(
-  messages: readonly Message[], versions: ReadonlyMap<ImageAttachmentRef['attachmentId'], RequestImageAttachment>, files: RequestFiles,
+  messages: readonly RequestMessage[], versions: ReadonlyMap<ImageAttachmentRef['attachmentId'], RequestImageAttachment>, files: RequestFiles,
 ): Promise<Map<ImageAttachmentRef['attachmentId'], DeepSeekFileId>> {
   const ids = new Map<ImageAttachmentRef['attachmentId'], DeepSeekFileId>()
   for (const [index, message] of messages.entries()) {

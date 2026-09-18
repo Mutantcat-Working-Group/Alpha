@@ -1,4 +1,5 @@
-import { ToolCallId, createUserMessage } from '@mutantcat/dsh-llm'
+import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import { describe, expect, it } from 'vitest'
 import { Context } from '@mutantcat/cordis'
 import { type Agent, type AgentOptions } from '@mutantcat/dsh-agent'
@@ -13,6 +14,12 @@ import SubagentRuntime, { snapshotSubagentDescriptor } from '@mutantcat/dsh-suba
 import { defineContentToolFixture } from '@mutantcat/dsh-tools'
 import { maxTokensResponse, MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import { startInProcessRun } from '../src/index.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'late-metadata': { kind: 'late-metadata' } & ContextFormed
+  }
+}
 
 type Script = ConstructorParameters<typeof MockAdapter>[0]
 
@@ -155,7 +162,7 @@ describe('startInProcessRun', () => {
       injected = true
       session.append('user/message', createUserMessage({
         content: [{ type: 'text', text: 'late metadata' }],
-        source: { kind: 'plugin', plugin: 'late-metadata' },
+        source: { kind: 'late-metadata' },
       }), { surfaceOp: 'append' })
     })
 

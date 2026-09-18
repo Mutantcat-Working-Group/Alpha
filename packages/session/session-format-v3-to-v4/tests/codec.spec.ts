@@ -61,6 +61,13 @@ describe('V4 framing and restoration', () => {
     }
   })
 
+  it('rejects released wrapper rows before structural recovery can admit them', () => {
+    const wrapperRow: SessionFormatEvent = {
+      type: 'tool/result', seq: 0, time: 1, data: { message: { role: 'user' } },
+    }
+    expect(() => { assertV4RowAdmission(wrapperRow) }).toThrow(/first-class message/)
+  })
+
   it('retains predecessor and future delivery generations without activating their watermarks', () => {
     for (const version of [undefined, 0, 1, 2, 3, 5]) {
       const marker = { ...delivery(version, 'foreign'), data: { ...delivery(version).data as SessionFormatJsonObject, sessionId: 'foreign', throughSeq: 500 } }

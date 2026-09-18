@@ -4,9 +4,9 @@
  * @module dsh-llm-pi-ai/context
  */
 
-import { brandString } from '@mutantcat/dsh-brand'
-import { contentHasImage, IMAGE_OFFLOAD_REQUIRED_CODE, LlmError, offloadedImageText, projectOffloadedImages, requestImageHandleText, requiredImageOffload } from '@mutantcat/dsh-llm'
-import type { ContentBlock, GenerateOptions, ImageAttachmentAccessResolver, Message, ToolCallId } from '@mutantcat/dsh-llm'
+import { brandString } from '@deepseek-ai/dsh-brand'
+import { contentHasImage, IMAGE_OFFLOAD_REQUIRED_CODE, LlmError, offloadedImageText, projectOffloadedImages, requestImageHandleText, requiredImageOffload } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, GenerateOptions, ImageAttachmentAccessResolver, Message, RequestMessage, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type {
   AttachmentId,
   AttachmentStore,
@@ -20,7 +20,7 @@ import { requestImageDimensions } from '@mutantcat/dsh-attachment'
 import { DEFAULT_REQUEST_IMAGE_MAX_BYTES, DEFAULT_REQUEST_IMAGE_PIXEL_BUDGET } from './config.ts'
 
 /** Join the text blocks of a harness message. */
-function flattenText(message: Message): string {
+function flattenText(message: RequestMessage): string {
   return message.content
     .filter(block => block.type === 'text')
     .map(block => block.text)
@@ -47,7 +47,7 @@ function toolResultOf(
 }
 
 /** Reject image roles that pi-ai cannot replay before request-size offloading can replace them. */
-function assertSupportedImageRoles(messages: readonly Message[]): void {
+function assertSupportedImageRoles(messages: readonly RequestMessage[]): void {
   for (const message of messages) {
     if (message.role !== 'user' && message.role !== 'tool' && contentHasImage(message.content)) {
       throw new LlmError(
@@ -103,7 +103,7 @@ function collectImageRefs(
 }
 
 async function prepareRequestImages(
-  messages: readonly Message[],
+  messages: readonly RequestMessage[],
   attachments: AttachmentStore,
   budget: PiImageRequestBudget,
   signal?: AbortSignal,
@@ -136,7 +136,7 @@ interface SystemPromptSplit {
   /** Text for pi-ai's `systemPrompt`; `undefined` sends no system prompt. */
   systemPrompt: string | undefined
   /** History messages that convert to pi-ai `messages`. */
-  messages: readonly Message[]
+  messages: readonly RequestMessage[]
 }
 
 /**
@@ -179,7 +179,7 @@ function appendAssistant(
 
 /** Append the system and assistant roles both context builders treat identically; true when consumed. */
 function appendSystemOrAssistant(
-  message: Message,
+  message: RequestMessage,
   messages: PiMessage[],
   toolNames: Map<ToolCallId, string>,
   onReplayDegrade?: (reason: string) => void,

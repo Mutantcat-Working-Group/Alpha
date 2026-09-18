@@ -3,19 +3,10 @@
   - img
   - text: 系统提示词
 - text: 简单画一个 SVG 表示冯诺依曼架构, 保存为 von-neumann.svg {{clock}}
-- button "复制":
-  - img
-- button "2 次工具调用 · 1 条消息" [expanded]:
-  - text: 2 次工具调用 · 1 条消息
-  - img
-- button "上下文注入 @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: 上下文注入 @mutantcat/dsh-system-prompt
-- button "思考 The user wants a simple SVG diagram of the von Neumann architecture, saved as von-neumann.svg. Let me create a clean SVG showing CPU (control unit, ALU), memory, input, and output with bidirectional data/control buses.":
-  - img
-  - img
-  - text: 思考 The user wants a simple SVG diagram of the von Neumann architecture, saved as von-neumann.svg. Let me create a clean SVG showing CPU (control unit, ALU), memory, input, and output with bidirectional data/control buses.
+- button "复制"
+- button "2 次工具调用 · 1 条消息" [expanded]
+- button "上下文注入 runtime-context"
+- button "思考 The user wants a simple SVG diagram of the von Neumann architecture, saved as von-neumann.svg. Let me create a clean SVG showing CPU (control unit, ALU), memory, input, and output with bidirectional data/control buses."
 - paragraph: 我来创建一个冯诺依曼架构的 SVG 示意图。
 - button "写入 von-neumann.svg +83 -0":
   - img

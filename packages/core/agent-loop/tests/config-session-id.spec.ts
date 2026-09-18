@@ -4,18 +4,25 @@ import { Context } from '@mutantcat/cordis'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import LlmRuntime from '@mutantcat/dsh-llm'
-import SessionStore, { SessionId } from '@mutantcat/dsh-session'
-import type { SessionEvent } from '@mutantcat/dsh-session'
-import SystemPrompt from '@mutantcat/dsh-system-prompt'
-import ToolRuntime from '@mutantcat/dsh-tools'
-import AgentRegistry, { type Agent } from '@mutantcat/dsh-agent'
-import type { SessionHandle } from '@mutantcat/dsh-session-persistence'
+import LlmRuntime from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
+import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
+import ToolRuntime from '@deepseek-ai/dsh-tools'
+import AgentRegistry, { type Agent } from '@deepseek-ai/dsh-agent'
+import type { SessionHandle } from '@deepseek-ai/dsh-session-persistence'
 
 import JsonlSessionPersistence from '@mutantcat/dsh-session-persistence-jsonl'
 import AgentLoop, { CONFIGURED_AGENT_IDENTITIES_KEY } from '@mutantcat/dsh-agent-loop'
 import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
 import { MockAdapter, textResponse } from './mock-adapter.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 const dirs: string[] = []
 afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }) })
@@ -214,7 +221,7 @@ describe('config-driven session id', () => {
       cleanupStarted.resolve(undefined)
       await cleanupGate.promise
     })
-    first.inject(createUserMessage({ content: [{ type: 'text', text: 'persist before cancellation' }], source: { kind: 'plugin', plugin: 'test' } }))
+    first.inject(createUserMessage({ content: [{ type: 'text', text: 'persist before cancellation' }], source: { kind: 'test' } }))
     await ctx.sessions.flush(first.session)
     expect(JSON.stringify(await readStoredEvents(ctx, sessionId)))
       .toContain('persist before cancellation')

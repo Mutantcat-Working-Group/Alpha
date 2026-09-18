@@ -19,19 +19,10 @@
   - img
   - text: meeting notes.md
 - text: and confirm the fixture wiring {{clock}}
-- button "Copy":
-  - img
-- button "Thought for a while" [expanded]:
-  - text: Thought for a while
-  - img
-- button "Context injection @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: Context injection @mutantcat/dsh-system-prompt
-- button "Context injection user-invoke-demo":
-  - img
-  - img
-  - text: Context injection user-invoke-demo
+- button "Copy"
+- button "Thought for a while" [expanded]
+- button "Context injection runtime-context"
+- button "Context injection user-invoke-demo"
 - paragraph: USER_INVOKE_REPLY acknowledged; following the injected skill.
 - button "Copy":
   - img

@@ -15,19 +15,10 @@
   - img
   - text: System prompt
 - text: "Plan a small change: add a --greeting flag to a CLI. Do not read or write any files. Call exit_plan_mode with a short plan of at most five bullet points. Once the plan is approved, reply with the single word DONE and stop. {{clock}}"
-- button "Copy":
-  - img
-- button "1 tool call · 1 message" [expanded]:
-  - text: 1 tool call · 1 message
-  - img
-- button "Context injection @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: Context injection @mutantcat/dsh-system-prompt
-- 'button "Think The user wants me to plan a small change to add a `--greeting` flag to a CLI. They explicitly told me not to read or write any files, and to call exit_plan_mode with a short plan. Let me do that directly."':
-  - img
-  - img
-  - text: "Think The user wants me to plan a small change to add a `--greeting` flag to a CLI. They explicitly told me not to read or write any files, and to call exit_plan_mode with a short plan. Let me do that directly."
+- button "Copy"
+- button "1 tool call · 1 message" [expanded]
+- button "Context injection runtime-context"
+- 'button "Think The user wants me to plan a small change to add a `--greeting` flag to a CLI. They explicitly told me not to read or write any files, and to call exit_plan_mode with a short plan. Let me do that directly."'
 - paragraph:
   - text: Since the user has explicitly asked me not to read or write any files and to go straight to planning, I'll proceed with
   - code: exit_plan_mode

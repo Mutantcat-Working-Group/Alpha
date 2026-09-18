@@ -9,7 +9,7 @@ English | [中文](2026-09-16-session-format-v4.zh.md)
 
 ## Summary
 
-Advances the declared SessionHeader.version from 3 to 4 for the V4 integration writer, records first-class tool-role results, and adds the forked variant to turn/end.reason.
+Advances the declared SessionHeader.version from 3 to 4 for the V4 integration writer, records first-class tool-role results and producer-owned sources, and adds the forked variant to turn/end.reason.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ changes:
     decision: version-bump
   - root: "event:agent/inbox/spliced"
     previous: "2026-09-14-image-offload"
-    after: "cbe418d5a3727fbd3599f90101680dae254ac1d6163b1b8b2ca30f28afb5212a"
+    after: "ab1acc0685cc410d0d1e85ff0e0bd29f4b2b4352dd170db54988319d58d4362f"
     decision: version-bump
   - root: "event:assistant/attempt"
     previous: "2026-09-14-image-offload"
@@ -48,11 +48,11 @@ changes:
     decision: version-bump
   - root: "event:session/title-llm-request"
     previous: "2026-09-14-image-offload"
-    after: "2a47ef7025d7dcf7e9977aadd738e7408a210b101a7dbbd37f4d87f22166eff0"
+    after: "eb655047c0dd3f2f3aefd2c9c719df0d060dd88032ba7caf731ea39db5a6725f"
     decision: version-bump
   - root: "event:system/message"
     previous: "2026-09-14-image-offload"
-    after: "1772581b17e1fab970fda49f04ffae2a181b7992ca4efa63bffe5f8b2bd62300"
+    after: "54a8682615a7ffc3e1e3c41ab003ae61082ae2792c57407f5bd8bb38fded3f0e"
     decision: version-bump
   - root: "event:team/message/queued"
     previous: "2026-09-14-image-offload"
@@ -72,7 +72,7 @@ changes:
     decision: version-bump
   - root: "event:user/message"
     previous: "2026-09-14-image-offload"
-    after: "5274b395e7bf6660d020fba7e29a1e20ef2e77097fd7597e9debb13e45c540d6"
+    after: "46c44941f6e93a1764c49f1487e64a57f73ee68a75a657e94c326a8de5d8ad95"
     decision: version-bump
 ```
 
@@ -85,10 +85,20 @@ The [native V4 validation decision](../../.agents/notes/implemented/architecture
 
 The V3-to-V4 migration lifts released user-role tool results into tool-role messages with a required toolCallId and optional isError. Tool-result wrappers leave the content-block union. The migration preserves every admitted source event and inherited cut, and appends missing parent subagent/catalog records from retained direct-child logs in the same persistence root. Historical body restoration requires an explicit child-evidence set, including an empty set when no children are available to backfill. Missing required descriptors or conflicting identities refuse migration without publication; existing catalog facts remain. Historical read opens prepare the result in memory. Write opens revalidate child membership and revisions before publishing the current successor beside unchanged predecessor files. Delivery-generation checks keep historical acknowledgements from becoming active V4 watermarks. V3 readers refuse the newer generation. The same unreleased transition adds forked to turn/end.reason; exact-cut forks append child-owned error results and closers after the inherited marker. V4 admits checked not-started fork results with deterministic branch-specific IDs and wording; released V0–V3 validators and recorded predecessor generations remain unchanged.
 
+The `request/header` schema also records the retired `system` key as forbidden. This declaration captures the existing native-reader refusal without changing stored data or prompt reconstruction; later permitting a value requires a version bump instead of being classified as an ordinary optional-field addition.
+
+Producer-owned sources replace released plugin wrappers through the [V3-to-V4 migration](../../packages/session/session-format-v3-to-v4/README.md#v3-to-v4-specification). The frozen rename table and collision rules preserve source fields and event coordinates; unknown producer attribution retains every own JSON property. Native read and write opens validate source fields before exposing the Session. Existing V4 files do not rerun the incoming migration edge.
+
+The core-owned user source property records the attribution-preservation policy; tmux-context qualifies its location attribution while retaining producer-local duplicate suppression. Auto Review and the compaction summarizer use request-only user inputs, removing their active source registrations without removing historical migration support. These inputs cannot be written as durable Session messages. Catalog formatVersion 2 stores the policy metadata; it does not change the Session version or rewrite frozen schema records. System, model, and tool sources retain their strict semantic rules.
+
 <a id="verification"></a>
 ## Verification
 
 The focused Session, agent-loop, Session Controller, V4, chat-view, and compaction suites passed 1,523 tests across 63 files after integration of exact-cut forks. V4 fork tests retain original IDs and text across encoding, decoding, and restoration, reject malformed results, and validate nested inherited cuts. The tool-role migration tests and SDK snapshot refresh also passed in the originating change; the built Python runtime sdk-snapshot scenario passed, and focused pi-ai and auto-review coverage passed 351 tests with 100% coverage of the three affected modules.
+
+The generated request-header reservation regression and existing retired-syntax and Session surface tests pass 65 tests across three files. The generated field retains optional `never`; permitting an optional string produces a version-bump diagnostic while the native reader still refuses the retired key.
+
+The producer-source and request-input checks pass 447 tests across 12 files, including provider equality, request-only type rejection, user-attribution retention, source migration, and native source admission. Comparing the generated inventories with the tool-role parent reports four changed roots and 447 unchanged type fingerprints.
 
 <a id="dev-note"></a>
 ## Dev Note

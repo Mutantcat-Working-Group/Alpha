@@ -1,14 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import { createMessage, createUserMessage } from '@mutantcat/dsh-llm'
-import type { TokenUsage } from '@mutantcat/dsh-llm'
-import SessionStore from '@mutantcat/dsh-session'
-import type { Session, SessionSeq } from '@mutantcat/dsh-session'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import TokenMeter from '@mutantcat/dsh-token-meter'
-import type { ContextPressureProjection, TokenUsageProjection } from '@mutantcat/dsh-token-meter/client'
-import { RetryId } from '@mutantcat/dsh-llm-retry'
-import { CompactionId } from '@mutantcat/dsh-compaction'
+import { Context } from '@deepseek-ai/cordis'
+import { createMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { TokenUsage } from '@deepseek-ai/dsh-llm'
+import SessionStore from '@deepseek-ai/dsh-session'
+import type { Session, SessionSeq } from '@deepseek-ai/dsh-session'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import TokenMeter from '@deepseek-ai/dsh-token-meter'
+import type { ContextPressureProjection, TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
+import { RetryId } from '@deepseek-ai/dsh-llm-retry'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { CompactionId } from '@deepseek-ai/dsh-compaction'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 const ZERO: TokenUsageProjection = {
   uncachedInputTokens: 0,
@@ -273,7 +280,7 @@ describe('tokenUsage session projection', () => {
     appendSummaryMeter(ctx, session, before.seq, before.seq)
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'compacted' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }), {
       surfaceOp: { op: 'replace', startSeq: before.seq, endSeq: before.seq },
       sourceEventSeqs: [before.seq],
@@ -476,7 +483,7 @@ describe('contextPressure session projection', () => {
     appendSummaryMeter(ctx, session, question, grown)
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'summary' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }), {
       surfaceOp: { op: 'replace', startSeq: question, endSeq: grown },
       sourceEventSeqs: [question, answer, grown],
@@ -494,7 +501,7 @@ describe('contextPressure session projection', () => {
       appendSummaryMeter(ctx, session, first, last)
       const target = endpoint === 'start' ? last : first
       session.append('user/message', createUserMessage({
-        content: [{ type: 'text', text: 'summary' }], source: { kind: 'plugin', plugin: 'test' },
+        content: [{ type: 'text', text: 'summary' }], source: { kind: 'test' },
       }), { surfaceOp: { op: 'replace', startSeq: target, endSeq: target }, sourceEventSeqs: [target] })
       expect(() => pressure(ctx, session)).toThrow('has no adjacent shadow price')
     } finally {
@@ -512,7 +519,7 @@ describe('contextPressure session projection', () => {
 
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'summary without a preceding claim' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }), {
       surfaceOp: { op: 'replace', startSeq: question, endSeq: question },
       sourceEventSeqs: [question],
@@ -533,7 +540,7 @@ describe('contextPressure session projection', () => {
     appendSummaryMeter(ctx, session, question, question)
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: '.' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }), {
       surfaceOp: { op: 'replace', startSeq: question, endSeq: question },
       sourceEventSeqs: [question],

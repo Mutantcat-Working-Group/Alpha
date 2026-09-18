@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Use `@mutantcat/dsh-llm` to stream model calls through configured provider adapters, discover models, and resolve model capabilities and call defaults. Every dispatched request remains reconstructable from the session log. Requests are deep-frozen before dispatch, so extensions and adapters can read them but cannot rewrite them. Each stream is one provider attempt: provider-specific translation stays with its adapter, while the optional `@mutantcat/dsh-llm-retry` package re-runs failed requests. Streams always end with a terminal result, so callers can handle success, failure, and cancellation consistently.
+Use `@deepseek-ai/dsh-llm` to stream model calls through configured provider adapters, discover models, and resolve model capabilities and call defaults. Callers must keep all model-visible input reconstructable from the session log. Loop-built requests arrive deep-frozen, so extensions and adapters cannot rewrite them. Each stream is one provider attempt: provider-specific translation stays with its adapter, while the optional `@deepseek-ai/dsh-llm-retry` package re-runs failed requests. Streams always end with a terminal result, so callers can handle success, failure, and cancellation consistently.
 
 ## Table of Contents
 
@@ -48,13 +48,15 @@ A stream returns token-level chunks and always ends with one terminal `finish` c
 for await (const chunk of ctx.llm.stream({
   provider: 'deepseek-official',
   model: 'deepseek-v4-flash',
-  messages: [createUserMessage({ content: [{ type: 'text', text: 'Hello' }] })],
+  messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello' }] }],
 })) {
   // chunks: block-start, text-delta, ..., usage, finish
 }
 ```
 
 After a successful mount, `ctx.llm.listProviders()` reports the registered routes in registration order.
+
+`GenerateOptions.messages` accepts durable `Message` values and request-only `RequestUserInput` values. Request-only inputs carry user-role content with no `id` or `source`; Session writes and Agent delivery still require durable messages. Callers keep auxiliary inputs unchanged until the stream settles. A caller that records its exact request, such as session-title generation, must use durable messages.
 
 ### What you can do
 
@@ -81,7 +83,7 @@ This section explains the design behind the service; the observable behavior is 
 
 ### Design philosophy
 
-The service is built on one separation: **the logical contract is provider-neutral, adapters own the wire.** It defines the canonical message, content-block, and stream-chunk vocabulary once, and every provider adapter translates only its own wire format into that vocabulary. The registry is the topology owner — adapter routes, configurable-provider entries, and discovery offers all register here and are disposed with their fiber — while a request stays a pure function of the session log: loop-built requests arrive deep-frozen, so listeners and adapters read them and never rewrite them.
+The service is built on one separation: **the logical contract is provider-neutral, adapters own the wire.** It defines the canonical message, content-block, and stream-chunk vocabulary once, and every provider adapter translates only its own wire format into that vocabulary. The registry is the topology owner — adapter routes, configurable-provider entries, and discovery offers all register here and are disposed with their fiber — while an agent-loop request stays a pure function of the session log: loop-built requests arrive deep-frozen, so listeners and adapters read them and never rewrite them.
 
 ### Source map
 
@@ -101,13 +103,13 @@ The service is built on one separation: **the logical contract is provider-neutr
 
 ### Main flow
 
-A request is validated against its exact model's capability — context window, output default, reasoning efforts, input modalities, and `systemPromptUpdate` mode — and any adapter-configured defaults are materialized, then the whole request is deep-frozen. `prepareCall()` binds those facts, detached context, and retry policy to the exact adapter generation that performs terminal dispatch, so HMR or dynamic settings cannot combine one generation's image capability with another generation's endpoint. An image-capable adapter projects durable references into route-specific request versions; `resolveImageAttachmentAccess()` separately maps an attachment provider's optional host object into the current tool execution world without changing the request image or its `variantId`. A text-only route receives deterministic per-image placeholders, including tool-role result images, without rewriting append-only session history. Durable `FileBlock` references never reach any adapter: request assembly replaces each one, including tool-role result occurrences, with deterministic handle text naming the file and its saved read-only path, resolved through the mounted attachment and filesystem providers. `ctx.llm.fileRequestText(ref)` exposes that exact synchronous projection to request measurement. An image occurrence derived with `offloaded: true` reaches every route as placeholder text through `projectOffloadedImages()`. An image-capable route whose retained occurrences exceed its `LlmImageRequestBudget` at their exact bytes fails with `IMAGE_OFFLOAD_REQUIRED` naming the additional oldest occurrences (`requiredImageOffload()`), never with an unlogged projection; `dsh-compaction-image-offload` logs the selected occurrences in one `image/offload` event and retries. Adapters that charge visual tokens declare per-route `imageRequestPricing`, which `ctx.llm.imageRequestPricing(provider, model)` resolves synchronously for the token meter. Dispatch goes through the `llm/stream` waterfall, then chunks return as token-level deltas and every adapter outcome reaches the consumer as one terminal `finish` chunk.
+A request is validated against its exact model's capability — context window, output default, reasoning efforts, input modalities, and `systemPromptUpdate` mode — and any adapter-configured defaults are materialized. The runtime preserves freezing for already-frozen input; hand-built callers own input immutability. `prepareCall()` binds those facts, detached context, and retry policy to the exact adapter generation that performs terminal dispatch, so HMR or dynamic settings cannot combine one generation's image capability with another generation's endpoint. An image-capable adapter projects durable references into route-specific request versions; `resolveImageAttachmentAccess()` separately maps an attachment provider's optional host object into the current tool execution world without changing the request image or its `variantId`. A text-only route receives deterministic per-image placeholders, including tool-role result images, without rewriting append-only session history. Durable `FileBlock` references never reach any adapter: request assembly replaces each one, including tool-role result occurrences, with deterministic handle text naming the file and its saved read-only path, resolved through the mounted attachment and filesystem providers. `ctx.llm.fileRequestText(ref)` exposes that exact synchronous projection to request measurement. An image occurrence derived with `offloaded: true` reaches every route as placeholder text through `projectOffloadedImages()`. An image-capable route whose retained occurrences exceed its `LlmImageRequestBudget` at their exact bytes fails with `IMAGE_OFFLOAD_REQUIRED` naming the additional oldest occurrences (`requiredImageOffload()`), never with an unlogged projection; `dsh-compaction-image-offload` logs the selected occurrences in one `image/offload` event and retries. Adapters that charge visual tokens declare per-route `imageRequestPricing`, which `ctx.llm.imageRequestPricing(provider, model)` resolves synchronously for the token meter. Dispatch goes through the `llm/stream` waterfall, then chunks return as token-level deltas and every adapter outcome reaches the consumer as one terminal `finish` chunk.
 
 File detection reads current content, including tool-role result content, on every request without caching message identities or freeze state. The [file-scan decision](../../../.agents/notes/implemented/simplification/2026-09-07-file-content-scan.md) records the measured traversal cost.
 
 ### Invariants
 
-- **Model-visible ⟺ logged** — anything that reaches a provider request is reconstructable from the session log; loop-built requests are deep-frozen and never rewritten.
+- **Model-visible ⟺ logged** — callers must keep every provider request's model-visible input reconstructable from the session log; loop-built requests arrive deep-frozen and cannot be rewritten.
 - **Replay state travels only within one adapter** — assistant replay state rides along only when the same adapter instance owns the historical and target routes; otherwise it is dropped before dispatch.
 - **Prepared calls are one-shot** — a prepared call can be dispatched exactly once, and its call-config fields must match the prepared config.
 - **Image projection follows the captured route** — durable `ImageBlock` references become route-specific request versions only for image-capable models; text-only models receive stable placeholders.

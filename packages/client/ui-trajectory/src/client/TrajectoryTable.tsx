@@ -905,12 +905,6 @@ function messageSourceLabel(source: unknown, t: TrajectoryTranslate): string {
   const properties = source as Record<string, unknown>
   const kind = properties.kind
   if (kind === 'user') return t('source.user')
-  if (kind === 'plugin') {
-    const plugin = properties.plugin
-    return typeof plugin === 'string' && plugin !== ''
-      ? t('source.pluginNamed', { plugin })
-      : t('source.plugin')
-  }
   if (kind === 'goal') {
     const round = properties.round
     return typeof round === 'number' && round > 0

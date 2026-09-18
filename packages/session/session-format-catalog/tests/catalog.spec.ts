@@ -134,7 +134,7 @@ describe('first-party Session format catalog', () => {
             turn: 1, step: 1,
             message: {
               id: 'v2-to-v3-system-9673c4ed630de6c21ea6bd6b573094ea8e5e216843a1b572a68657499ad9667b',
-              role: 'system', source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' }, content: [],
+              role: 'system', source: { kind: 'system-prompt' }, content: [],
             },
           },
         },
@@ -187,7 +187,7 @@ describe('first-party Session format catalog', () => {
     const restore = createSessionFormatCatalogWithChildren([]).createRestore(sourceHeader, { recovery: 'strict', validation: 'current' })
     for (const row of rows) restore.decodeRow(row)
     const artifact = restore.finish()
-    const renamedMessage = (id: string) => ({ ...message(id), source: { kind: 'plugin', plugin: 'tools-ptc' } })
+    const renamedMessage = (id: string) => ({ ...message(id), source: { kind: 'code-mode' } })
     const expected = [
       rows[0], rows[1],
       expect.objectContaining({ type: 'system/message', seq: 2 }),

@@ -15,12 +15,8 @@
   - img
   - text: System prompt
 - text: Stream one TypeScript fence for the highlighting snapshot. {{clock}}
-- button "Copy":
-  - img
-- button "Context injection @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: Context injection @mutantcat/dsh-system-prompt
+- button "Copy"
+- button "Context injection runtime-context"
 - text: ts
 - button "Copy"
 - code: "const first: number = 1 const second = \"two\" let tail"

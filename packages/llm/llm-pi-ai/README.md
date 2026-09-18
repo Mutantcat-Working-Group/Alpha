@@ -27,6 +27,8 @@ English | [中文](README.zh.md)
 
 Mount this plugin when a composition routes model requests through pi-ai's provider catalogs or through gateways that pi-ai's installed catalog does not describe. The `providers` dictionary is the whole configuration surface: each key is the provider route name a request selects with `GenerateOptions.provider`.
 
+The adapter accepts the LLM service's [request-only user inputs](../llm/README.md#use-this-package) alongside durable history. User identity and attribution do not enter pi-ai content; assistant replay metadata and tool-call correlation remain attached to durable messages.
+
 ### When to choose it
 
 Choose this adapter when the same composition serves several providers, when a route needs pi-ai's catalog defaults with a few fields corrected, or when a hand-declared gateway must be reached through its own endpoint and protocol. `dsh-llm-deepseek` is an opt-in twin that serves the direct DeepSeek route for a deployment that wants that adapter and nothing else; no shipped profile mounts either adapter. Both can be mounted together because their route names do not collide; registering a route another adapter already owns fails plugin loading.

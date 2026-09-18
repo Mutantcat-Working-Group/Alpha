@@ -26,15 +26,21 @@ import { Context, Service } from '@mutantcat/cordis'
 import { brandString } from '@mutantcat/dsh-brand'
 import { z as zod } from 'zod'
 import type { ZodType } from 'zod'
-import type { Agent, PreStepDecision } from '@mutantcat/dsh-agent'
-import { createUserMessage } from '@mutantcat/dsh-llm'
-import type { Session, UserMessage } from '@mutantcat/dsh-session'
-import { defineTool } from '@mutantcat/dsh-tools'
-import { UserQuestionError } from '@mutantcat/dsh-user-questions'
-import type { CommandDefinitionId, CommandId } from '@mutantcat/dsh-commands'
-import type {} from '@mutantcat/dsh-session-projection'
-import type { ProjectionDefinition } from '@mutantcat/dsh-session-projection'
+import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+import { UserQuestionError } from '@deepseek-ai/dsh-user-questions'
+import type { CommandDefinitionId, CommandId } from '@deepseek-ai/dsh-commands'
+import type {} from '@deepseek-ai/dsh-session-projection'
+import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
 import type { PlanProjection, PlanUnitState } from './types.ts'
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'plan-mode': { kind: 'plan-mode' } & ContextFormed
+  }
+}
 export type * from './types.ts'
 
 declare module '@mutantcat/dsh-session/types' {
@@ -458,7 +464,7 @@ export class PlanModeController extends Service {
     return createUserMessage({
       content: [{ type: 'text', text }],
       // The narration is already one sentence, so it is its own summary.
-      source: { kind: 'plugin', plugin: 'plan-mode', form: 'notice', summary: text },
+      source: { kind: 'plan-mode', form: 'notice', summary: text },
     })
   }
 }

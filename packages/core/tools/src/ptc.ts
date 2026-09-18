@@ -6,14 +6,20 @@
  * @module @mutantcat/dsh-tools/src/ptc
  */
 
-import { brandString } from '@mutantcat/dsh-brand'
-import { createUserMessage, HarnessError } from '@mutantcat/dsh-llm'
-import type { ContentBlock, ToolCallId, ToolSchema } from '@mutantcat/dsh-llm'
-import type { PtcBindingFunction, PtcRunResult, PtcRunSandbox, PtcRuntime } from '@mutantcat/dsh-ptc-runtime'
-import { approveEscalation, ESCALATION_TARGETS, validateEscalationArgs } from '@mutantcat/dsh-sandbox'
-import type { SandboxExecutionPolicy } from '@mutantcat/dsh-sandbox'
-import type { ApprovalService } from '@mutantcat/dsh-user-approval'
-import { deepFreeze, snapshotJsonValue, type JsonValue } from '@mutantcat/dsh-util-values'
+import { brandString } from '@deepseek-ai/dsh-brand'
+import { createUserMessage, HarnessError } from '@deepseek-ai/dsh-llm'
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'code-mode': { kind: 'code-mode' }
+  }
+}
+
+import type { ContentBlock, ToolCallId, ToolSchema } from '@deepseek-ai/dsh-llm'
+import type { PtcBindingFunction, PtcRunResult, PtcRunSandbox, PtcRuntime } from '@deepseek-ai/dsh-ptc-runtime'
+import { approveEscalation, ESCALATION_TARGETS, validateEscalationArgs } from '@deepseek-ai/dsh-sandbox'
+import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
+import type { ApprovalService } from '@deepseek-ai/dsh-user-approval'
+import { deepFreeze, snapshotJsonValue, type JsonValue } from '@deepseek-ai/dsh-util-values'
 import { defineTool, parameterSchemaSpecToJsonSchema } from './schema.ts'
 import { TOOL_RUNTIME_SCHEDULER } from './index.ts'
 import type { PtcDispatchLog, ToolDefinition, ToolExecutionResult, ToolRuntime, ToolRunContext } from './index.ts'
@@ -632,7 +638,7 @@ export function createRunCodeTool(registry: ToolRuntime, options: RunCodeBridgeO
               if (!result.isError && result.content.some(block => block.type === 'image')) {
                 exec.deferContext(createUserMessage({
                   content: result.content,
-                  source: { kind: 'plugin', plugin: 'tools-ptc' },
+                  source: { kind: 'code-mode' },
                 }))
               }
               for (const context of result.additionalContexts ?? []) {

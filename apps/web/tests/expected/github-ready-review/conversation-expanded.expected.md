@@ -21,21 +21,10 @@
   - tablist:
     - tab "Chat" [selected]
     - tab "Trajectory"
-- button "System prompt":
-  - img
-  - img
-  - text: System prompt
-- button "Thought for a while" [expanded]:
-  - text: Thought for a while
-  - img
-- button "Context injection webhook github webhook handled by review-pr-when-ready":
-  - img
-  - img
-  - text: Context injection webhook github webhook handled by review-pr-when-ready
-- button "Context injection @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: Context injection @mutantcat/dsh-system-prompt
+- button "System prompt"
+- button "Thought for a while" [expanded]
+- button "Context injection webhook github webhook handled by review-pr-when-ready"
+- button "Context injection runtime-context"
 - paragraph: "Review complete: no actionable findings."
 - button "Copy":
   - img

@@ -292,7 +292,7 @@ class Relationships {
       case 'compaction/start': case 'compaction/summary': case 'compaction/end': case 'compaction/prune': this.compact(event, data); break
       case 'user/message': {
         const source = record(data['source'], 'user message source')
-        if (event['surfaceOp'] !== 'append' && source['kind'] === 'plugin' && source['plugin'] === 'compact') this.compactionOwner(source, 'compaction checkpoint')
+        if (event['surfaceOp'] !== 'append' && source['kind'] === 'compact-checkpoint') this.compactionOwner(source, 'compaction checkpoint')
         break
       }
       case 'session/end-seed': this.compaction = undefined; break
@@ -339,7 +339,7 @@ function titleSources(
   const content = array(message['content'], 'title content')
   const block = content[0]
   if (references.length === 0 || messages.length !== 1 || message['role'] !== 'user'
-    || (record(message['source'], 'title source')['kind'] !== 'plugin' || record(message['source'], 'title source')['plugin'] !== 'dsh-session-title-llm')
+    || record(message['source'], 'title source')['kind'] !== 'dsh-session-title-llm'
     || content.length !== 1 || !isSessionFormatJsonObject(block) || block['type'] !== 'text') {
     throw new SessionFormatError('session/title-llm-request messages do not represent messageSeqs')
   }

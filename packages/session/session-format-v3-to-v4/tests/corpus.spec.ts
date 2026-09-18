@@ -2,8 +2,9 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { expect, it } from 'vitest'
 import { createSessionFormatCatalogWithChildren, historicalSessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
-import { isSessionFormatJsonObject, type SessionFormatArtifact, type SessionFormatJsonObject, type SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
+import { isSessionFormatJsonObject, type SessionFormatArtifact, type SessionFormatEvent, type SessionFormatJsonObject, type SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
 import { historicalChildCatalogSource } from '../src/index.ts'
+import { mapEventMessages, rewritePluginSource } from '../src/sources.ts'
 import { liftToolResult } from '../src/tool-role.ts'
 
 const root = resolve(import.meta.dirname, '../../../..')
@@ -35,6 +36,15 @@ function migrate(parent: SessionFormatArtifact, children: SessionFormatArtifact[
   return restore.finish()
 }
 
+function migrateEvent(event: SessionFormatEvent): SessionFormatEvent {
+  const rewritten = mapEventMessages(event, (message) => {
+    const source = message['source']
+    if (!isSessionFormatJsonObject(source) || source['kind'] !== 'plugin') return message
+    return { ...message, source: rewritePluginSource(source, event.seq, message['role']) }
+  })
+  return liftToolResult(rewritten)
+}
+
 it('refuses recorded parent/child clock conflicts and migrates consistent copies including failed startup', () => {
   const conflicts: string[] = []
   let pairs = 0
@@ -64,13 +74,13 @@ it('refuses recorded parent/child clock conflicts and migrates consistent copies
           expect(() => migrate(parent.artifact, children.map(child => child.artifact)), parent.path).toThrow('conflicts with its parent catalog')
         } else {
           expect(migrate(parent.artifact, children.map(child => child.artifact)).events, parent.path).toEqual(
-            parent.artifact.events.map(liftToolResult),
+            parent.artifact.events.map(migrateEvent),
           )
         }
         expect(migrate(parent.artifact, aligned), parent.path).toEqual({
           ...parent.artifact,
           header: { ...parent.artifact.header, version: 4 },
-          events: parent.artifact.events.map(liftToolResult),
+          events: parent.artifact.events.map(migrateEvent),
         })
       }
     }

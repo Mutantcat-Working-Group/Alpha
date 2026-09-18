@@ -21,10 +21,21 @@
 import type { Context, LoggerService } from '@mutantcat/cordis'
 import z from '@mutantcat/schemastery'
 import { z as zod } from 'zod'
-import type { PreStepDecision } from '@mutantcat/dsh-agent'
-import type {} from '@mutantcat/dsh-session-projection'
-import type { ShellExecutor, ShellRunResult } from '@mutantcat/dsh-shell'
-import { createUserMessage } from '@mutantcat/dsh-llm'
+import type { PreStepDecision } from '@deepseek-ai/dsh-agent'
+import type {} from '@deepseek-ai/dsh-session-projection'
+import type { ShellExecutor, ShellRunResult } from '@deepseek-ai/dsh-shell'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    /** Location attribution; readers preserve the content without this producer.
+     * Its projection uses the kind to avoid repeated injection.
+     * @persistenceAttribution
+     */
+    'tmux-context': { kind: 'tmux-context' } & ContextFormed
+  }
+}
+
 
 /** Cordis plugin name used by loader diagnostics. */
 export const name = 'tmux-context'
@@ -223,8 +234,7 @@ export function apply(ctx: Context, config: Config): void {
     init: () => null,
     apply: (state, event) => {
       if (event.type !== 'user/message'
-        || event.data.source.kind !== 'plugin'
-        || event.data.source.plugin !== name) return state
+        || event.data.source.kind !== name) return state
       const [block] = event.data.content
       if (block?.type !== 'text') return state
       const newline = block.text.indexOf('\n')
@@ -256,7 +266,7 @@ export function apply(ctx: Context, config: Config): void {
       messages: [
         createUserMessage({
           content: [{ type: 'text', text }],
-          source: { kind: 'plugin', plugin: name, form: 'snapshot', sections: [{ name, text }] },
+          source: { kind: name, form: 'snapshot', sections: [{ name, text }] },
         }),
         ...decision.messages,
       ],

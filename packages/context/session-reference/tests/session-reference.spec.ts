@@ -1,13 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import { agentEvents, installModelSelection, type Agent, type ModelSelectionRef } from '@mutantcat/dsh-agent'
-import { CompactionId, compactCheckpointSource } from '@mutantcat/dsh-compaction'
-import LlmRuntime, { createMessage, createSystemMessage, createToolResultMessage, createUserMessage, LlmError, ToolCallId } from '@mutantcat/dsh-llm'
-import SessionStore, { Session, SessionId, SessionSeq } from '@mutantcat/dsh-session'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import SessionQueryEngine from '@mutantcat/dsh-session-query'
-import SessionTitleService from '@mutantcat/dsh-session-title'
-import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import { Context } from '@deepseek-ai/cordis'
+import { agentEvents, installModelSelection, type Agent, type ModelSelectionRef } from '@deepseek-ai/dsh-agent'
+import { CompactionId, compactCheckpointSource } from '@deepseek-ai/dsh-compaction'
+import LlmRuntime, { createMessage, createSystemMessage, createToolResultMessage, createUserMessage, LlmError, ToolCallId } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import SessionStore, { Session, SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import SessionQueryEngine from '@deepseek-ai/dsh-session-query'
+import SessionTitleService from '@deepseek-ai/dsh-session-title'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import SessionReferenceResolver, {
   decodeSessionReferenceUri,
   encodeSessionReferenceUri,
@@ -18,6 +19,15 @@ import SessionReferenceResolver, {
 } from '@mutantcat/dsh-session-reference'
 import { stringifyTagSafeJson } from '../src/serialization.ts'
 import { SpillLocator, SpillStore, type SaveTextSpill, type SpillRef } from '@mutantcat/dsh-spill'
+
+import type { MessageSource } from '@deepseek-ai/dsh-llm'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+    'workspace': { kind: 'workspace' } & ContextFormed
+  }
+}
 
 class TestSessionQueryEngine extends SessionQueryEngine {
   override searchSessions(
@@ -92,7 +102,7 @@ function checkpointSource(id: string) {
 function appendConversation(session: Session): void {
   session.append(
     'system/message',
-    { turn: 1, step: 1, message: createSystemMessage('system prompt secret', 'system-prompt') },
+    { turn: 1, step: 1, message: createSystemMessage('system prompt secret') },
     { surfaceOp: 'append' },
   )
   const oldUser = session.append(
@@ -140,7 +150,7 @@ function appendConversation(session: Session): void {
   session.append(
     'user/message',
     createUserMessage({
-      content: [{ type: 'text', text: 'workspace secret' }], source: { kind: 'plugin', plugin: 'workspace' },
+      content: [{ type: 'text', text: 'workspace secret' }], source: { kind: 'workspace' },
     }),
     { surfaceOp: 'append' },
   )
@@ -156,7 +166,7 @@ function appendConversation(session: Session): void {
     'user/message',
     createUserMessage({
       content: [{ type: 'text', text: 'plugin steer' }],
-      source: { kind: 'plugin', plugin: 'goal' },
+      source: { kind: 'goal' } as unknown as MessageSource,
     }),
     { surfaceOp: 'append' },
   )
@@ -192,7 +202,7 @@ function appendConversation(session: Session): void {
   session.append(
     'user/message',
     createUserMessage({
-      content: [{ type: 'text', text: 'plugin-generated user' }], source: { kind: 'plugin', plugin: 'goal' },
+      content: [{ type: 'text', text: 'plugin-generated user' }], source: { kind: 'goal' } as unknown as MessageSource,
     }),
     { surfaceOp: 'append' },
   )
@@ -863,7 +873,7 @@ describe('session reference discovery and preparation', () => {
     })
     const plugin = createUserMessage({
       content: [{ type: 'text', text: formatSessionReferenceMention({ sessionId: source.id, label: 'Ignored' }) }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })
     const signal = new AbortController().signal
 

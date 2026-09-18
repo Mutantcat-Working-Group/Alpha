@@ -5,14 +5,21 @@
  */
 
 import { randomUUID } from 'node:crypto'
-import { Context, Service } from '@mutantcat/cordis'
-import z from '@mutantcat/schemastery'
-import type { Agent } from '@mutantcat/dsh-agent'
-import { createUserMessage, type ToolCallId } from '@mutantcat/dsh-llm'
-import { scopeTarget } from '@mutantcat/dsh-scope'
-import type { Session } from '@mutantcat/dsh-session'
-import { SessionSeq } from '@mutantcat/dsh-session'
-import type {} from '@mutantcat/dsh-system-prompt'
+import { Context, Service } from '@deepseek-ai/cordis'
+import z from '@deepseek-ai/schemastery'
+import type { Agent } from '@deepseek-ai/dsh-agent'
+import { createUserMessage, type ToolCallId } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'user-approval': { kind: 'user-approval' } & ContextFormed
+  }
+}
+
+import { scopeTarget } from '@deepseek-ai/dsh-scope'
+import type { Session } from '@deepseek-ai/dsh-session'
+import { SessionSeq } from '@deepseek-ai/dsh-session'
+import type {} from '@deepseek-ai/dsh-system-prompt'
 
 declare module '@mutantcat/cordis' {
   interface Context {
@@ -183,7 +190,7 @@ export class ApprovalService extends Service {
         type: 'text',
         text: `The approval policy changed from "${previous}" to "${policy}" (changed by the user).`,
       }],
-      source: { kind: 'plugin', plugin: 'user-approval' },
+      source: { kind: 'user-approval' },
     }))
   }
 

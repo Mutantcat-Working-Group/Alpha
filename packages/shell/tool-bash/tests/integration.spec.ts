@@ -199,7 +199,7 @@ describe('bash tool through the agent loop', () => {
     expect(resultText(firstResult)).toBe('started background job bash-1')
     // The turn closed with the task still running, so the notice cannot exist yet.
     const isNotice = (e: SessionEvent): e is SessionEvent<'user/message'> =>
-      e.type === 'user/message' && e.data.source.kind === 'plugin'
+      e.type === 'user/message' && e.data.source.kind !== 'user'
     expect(events(agent).some(isNotice)).toBe(false)
 
     // Releasing the command now settles it against a provably idle owner. No
@@ -222,8 +222,7 @@ describe('bash tool through the agent loop', () => {
     expect(noticeText).toContain('background job bash-1 (bash: ')
     expect(noticeText).toContain('finished [status: completed, exit code: 0]')
     expect(notice.data.source).toMatchObject({
-      kind: 'plugin',
-      plugin: 'tool-jobs',
+      kind: 'tool-jobs',
       form: 'notice',
     })
     const readResult = findEvent(events(agent), 'tool/result', 'last')

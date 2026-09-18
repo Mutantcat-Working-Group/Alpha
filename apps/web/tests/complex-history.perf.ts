@@ -201,10 +201,7 @@ function appendSystemPrompt(session: Session, turn: number, step: number): void 
   session.append('system/message', {
     turn,
     step,
-    message: createSystemMessage(
-      'Synthetic performance system prompt.',
-      '@mutantcat/dsh-system-prompt',
-    ),
+    message: createSystemMessage('Synthetic performance system prompt.'),
   }, { surfaceOp: 'append' })
 }
 

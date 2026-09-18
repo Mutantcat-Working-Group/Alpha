@@ -81,8 +81,7 @@
             }
           ],
           "source": {
-            "kind": "plugin",
-            "plugin": "@mutantcat/dsh-system-prompt"
+            "kind": "system-prompt"
           },
           "id": "{{messageId}}"
         }
@@ -103,8 +102,7 @@
           }
         ],
         "source": {
-          "kind": "plugin",
-          "plugin": "serial-created-fixture"
+          "kind": "serial-created-fixture"
         }
       },
       "surfaceOp": "append"
@@ -140,8 +138,7 @@
           }
         ],
         "source": {
-          "kind": "plugin",
-          "plugin": "@mutantcat/dsh-system-prompt",
+          "kind": "runtime-context",
           "form": "snapshot",
           "sections": [
             {
@@ -179,8 +176,7 @@
           }
         ],
         "source": {
-          "kind": "plugin",
-          "plugin": "python-snapshot-image-offload"
+          "kind": "python-snapshot-image-offload"
         }
       },
       "surfaceOp": "append"
@@ -1760,8 +1756,7 @@
                 }
               ],
               "source": {
-                "kind": "plugin",
-                "plugin": "@mutantcat/dsh-system-prompt"
+                "kind": "system-prompt"
               },
               "id": "{{messageId}}"
             }
@@ -1788,8 +1783,7 @@
               }
             ],
             "source": {
-              "kind": "plugin",
-              "plugin": "serial-created-fixture"
+              "kind": "serial-created-fixture"
             }
           },
           "surfaceOp": "append"
@@ -1837,8 +1831,7 @@
               }
             ],
             "source": {
-              "kind": "plugin",
-              "plugin": "@mutantcat/dsh-system-prompt",
+              "kind": "runtime-context",
               "form": "snapshot",
               "sections": [
                 {
@@ -1882,8 +1875,7 @@
               }
             ],
             "source": {
-              "kind": "plugin",
-              "plugin": "python-snapshot-image-offload"
+              "kind": "python-snapshot-image-offload"
             }
           },
           "surfaceOp": "append"
@@ -3037,8 +3029,7 @@
                   }
                 ],
                 "source": {
-                  "kind": "plugin",
-                  "plugin": "serial-created-fixture"
+                  "kind": "serial-created-fixture"
                 }
               }
             ]
@@ -3201,8 +3192,7 @@
                 }
               ],
               "source": {
-                "kind": "plugin",
-                "plugin": "@mutantcat/dsh-system-prompt"
+                "kind": "system-prompt"
               },
               "id": "{{messageId}}"
             }
@@ -3229,8 +3219,7 @@
               }
             ],
             "source": {
-              "kind": "plugin",
-              "plugin": "serial-created-fixture"
+              "kind": "serial-created-fixture"
             }
           },
           "surfaceOp": "append"
@@ -3278,8 +3267,7 @@
               }
             ],
             "source": {
-              "kind": "plugin",
-              "plugin": "@mutantcat/dsh-system-prompt",
+              "kind": "runtime-context",
               "form": "snapshot",
               "sections": [
                 {
@@ -3834,8 +3822,7 @@
                   }
                 ],
                 "source": {
-                  "kind": "plugin",
-                  "plugin": "serial-created-fixture"
+                  "kind": "serial-created-fixture"
                 }
               }
             ]
@@ -4014,8 +4001,7 @@
                 }
               ],
               "source": {
-                "kind": "plugin",
-                "plugin": "@mutantcat/dsh-system-prompt"
+                "kind": "system-prompt"
               },
               "id": "{{messageId}}"
             }
@@ -4042,8 +4028,7 @@
               }
             ],
             "source": {
-              "kind": "plugin",
-              "plugin": "serial-created-fixture"
+              "kind": "serial-created-fixture"
             }
           },
           "surfaceOp": "append"
@@ -4091,8 +4076,7 @@
               }
             ],
             "source": {
-              "kind": "plugin",
-              "plugin": "@mutantcat/dsh-system-prompt",
+              "kind": "runtime-context",
               "form": "snapshot",
               "sections": [
                 {

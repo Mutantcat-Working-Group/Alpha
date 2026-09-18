@@ -287,7 +287,7 @@ describe('dsh-tool-team', () => {
         if (identity === undefined) throw new Error('expected initial teammate reminder')
         agent.session.append('user/message', createUserMessage({
           content: [{ type: 'text', text: 'Compacted earlier context.' }],
-          source: { kind: 'plugin', plugin: 'test-compaction' },
+          source: { kind: 'test-compaction' },
         }), {
           surfaceOp: { op: 'replace', startSeq: identity.seq, endSeq: identity.seq },
           sourceEventSeqs: [identity.seq],
@@ -309,7 +309,7 @@ describe('dsh-tool-team', () => {
     await using persisted = await ctx.sessionPersistence.open(childId, 'read')
     const { events } = await persisted.read()
     expect(events.filter(event => event.type === 'user/message'
-      && event.data.source.kind === 'plugin' && event.data.source.plugin === toolTeam.name)).toHaveLength(0)
+      && (event.data.source as { readonly kind?: unknown }).kind === toolTeam.name)).toHaveLength(0)
   })
 
   it.each(['reject', 'empty', 'abort'] as const)('does not revive a teammate step after %s', async (mode) => {

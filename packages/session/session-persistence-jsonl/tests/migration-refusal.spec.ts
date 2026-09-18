@@ -46,7 +46,7 @@ const nativePrefix: readonly SessionFormatJsonObject[] = [
   ...prefix.slice(0, 2),
   { type: 'system/message', surfaceOp: 'append', data: {
     turn: 1, step: 1, message: {
-      id: 'native-system', role: 'system', source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' },
+      id: 'native-system', role: 'system', source: { kind: 'system-prompt' },
       content: [{ type: 'text', text: 'Inspect the durable audit.' }],
     },
   } },

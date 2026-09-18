@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { createUserMessage, ToolCallId, createMessage } from '@deepseek-ai/dsh-llm'
+import type { MessageSource } from '@deepseek-ai/dsh-llm'
 import SessionStore, { Session, SessionForkError, SessionId, SessionLogOffset, SessionSeq, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from '@deepseek-ai/dsh-session'
 import type { SessionEvent, SurfaceEvent, TurnEndReason } from '@deepseek-ai/dsh-session'
 
@@ -434,7 +435,10 @@ describe('fork boundaries around a surface replacement', () => {
     source.append('turn/start', { turn: 2 })
     const replacement = source.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'summary of earlier work' }],
-      source: { kind: 'plugin', plugin: 'compaction' },
+      source: {
+        kind: 'compact-checkpoint',
+        compactionId: 'open-bracket' as Extract<MessageSource, { readonly kind: 'compact-checkpoint' }>['compactionId'],
+      },
     }), {
       surfaceOp: { op: 'replace', startSeq: replacedSeq, endSeq: replacedSeq },
       sourceEventSeqs: [replacedSeq],

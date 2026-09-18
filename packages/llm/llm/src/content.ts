@@ -1,6 +1,7 @@
 /** Content-block structure helpers. @module @mutantcat/dsh-llm/content */
 
 import type { ContentBlock, ImageBlock, LlmImageRequestBudget } from './types.ts'
+import type { RequestMessage } from './types.ts'
 import type { Message } from './message.ts'
 import type {
   AttachmentStore, FileAttachmentRef, ImageAttachmentRef, ImageMediaType, RequestImageAttachment,
@@ -174,7 +175,7 @@ function replaceFilesWithHandles(
 }
 
 /**
- * Project durable file history into deterministic handle text for every model
+ * Project request file content into deterministic handle text for every model
  * route. Unlike images, no provider receives file blocks natively, so this
  * projection is unconditional in request assembly.
  * @param messages - complete request history.
@@ -184,7 +185,21 @@ function replaceFilesWithHandles(
 export function projectFilesToText(
   messages: readonly Message[],
   resolvePath: (ref: FileAttachmentRef) => string | undefined,
-): readonly Message[] {
+): readonly Message[]
+/**
+ * Project file content in mixed durable and request-only inputs.
+ * @param messages - complete request inputs.
+ * @param resolvePath - resolve a reference's execution-world read path.
+ * @returns original inputs without files, otherwise copies with handle text.
+ */
+export function projectFilesToText(
+  messages: readonly RequestMessage[],
+  resolvePath: (ref: FileAttachmentRef) => string | undefined,
+): readonly RequestMessage[]
+export function projectFilesToText(
+  messages: readonly RequestMessage[],
+  resolvePath: (ref: FileAttachmentRef) => string | undefined,
+): readonly RequestMessage[] {
   if (!messages.some(message => contentHasFile(message.content))) return messages
   return messages.map((message) => {
     const content = replaceFilesWithHandles(message.content, resolvePath)
@@ -236,7 +251,21 @@ function replaceOffloadedImages(
 export function projectOffloadedImages(
   messages: readonly Message[],
   placeholder: (ref: ImageAttachmentRef) => string,
-): readonly Message[] {
+): readonly Message[]
+/**
+ * Project offloaded images in mixed durable and request-only inputs.
+ * @param messages - complete request inputs.
+ * @param placeholder - replacement text for an offloaded attachment.
+ * @returns original messages or shallow copies with placeholders.
+ */
+export function projectOffloadedImages(
+  messages: readonly RequestMessage[],
+  placeholder: (ref: ImageAttachmentRef) => string,
+): readonly RequestMessage[]
+export function projectOffloadedImages(
+  messages: readonly RequestMessage[],
+  placeholder: (ref: ImageAttachmentRef) => string,
+): readonly RequestMessage[] {
   return messages.map((message) => {
     const content = replaceOffloadedImages(message.content, placeholder)
     return content === message.content ? message : { ...message, content }
@@ -287,7 +316,7 @@ function offloadedImagePrefixCount(
  * @returns how many more leading retained occurrences to offload.
  */
 export function requiredImageOffload(
-  messages: readonly Message[],
+  messages: readonly RequestMessage[],
   budget: Pick<LlmImageRequestBudget, 'representation' | 'maxBytes' | 'maxImages' | 'byteQuantum' | 'countQuantum'>,
   versionBytes: (block: ImageBlock) => number,
 ): number {
@@ -317,11 +346,18 @@ function replaceImagesForTextModel(blocks: readonly ContentBlock[]): ContentBloc
 }
 
 /**
- * Project durable image history into deterministic text for an exact text-only model.
+ * Project request image content into deterministic text for an exact text-only model.
  * @param messages - complete request history.
  * @returns the original list without images, otherwise shallow message copies with stable placeholders.
  */
-export function projectImagesForTextModel(messages: readonly Message[]): readonly Message[] {
+export function projectImagesForTextModel(messages: readonly Message[]): readonly Message[]
+/**
+ * Project image content in mixed durable and request-only inputs for a text-only model.
+ * @param messages - complete request inputs.
+ * @returns original inputs without images, otherwise copies with stable placeholders.
+ */
+export function projectImagesForTextModel(messages: readonly RequestMessage[]): readonly RequestMessage[]
+export function projectImagesForTextModel(messages: readonly RequestMessage[]): readonly RequestMessage[] {
   if (!messages.some(message => contentHasImage(message.content))) return messages
   return messages.map((message) => {
     const content = replaceImagesForTextModel(message.content)

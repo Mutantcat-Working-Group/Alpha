@@ -1,4 +1,5 @@
-import { createUserMessage } from '@mutantcat/dsh-llm'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync, writeFileSync, chmodSync, existsSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -14,6 +15,12 @@ import { LocalBashExecutor } from '@mutantcat/dsh-bash-local'
 import LocalSubprocessRuntime from '@mutantcat/dsh-subprocess-local'
 import * as HooksCodex from '@mutantcat/dsh-hooks-codex'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'policy': { kind: 'policy' } & ContextFormed
+  }
+}
 
 const testToolSignal = new AbortController().signal
 
@@ -133,7 +140,7 @@ export function defineCoverageCases(groups: CoverageGroup | readonly CoverageGro
           content: [{ type: 'text' as const, text: 'rewritten-prompt' }],
         }, createUserMessage({
           content: [{ type: 'text' as const, text: 'from-downstream' }],
-          source: { kind: 'plugin' as const, plugin: 'policy' },
+          source: { kind: 'policy' as const },
         })],
       }))
       const agent = await ctx.agentLoop.create(SessionId('a1'), { provider: 'mock', model: 'mock' })
@@ -144,8 +151,8 @@ export function defineCoverageCases(groups: CoverageGroup | readonly CoverageGro
       expect(req).toContain('rewritten-prompt')
       const contexts = events(agent).filter(event => event.type === 'user/message' && event.data.source.kind !== 'user')
       expect(contexts.map(event => event.type === 'user/message' && event.data.source)).toEqual([
-        { kind: 'plugin', plugin: 'policy' },
-        { kind: 'plugin', plugin: 'hooks-codex' },
+        { kind: 'policy' },
+        { kind: 'hooks-codex' },
       ])
     })
   })
@@ -175,7 +182,7 @@ export function defineCoverageCases(groups: CoverageGroup | readonly CoverageGro
         kind: 'accept' as const,
         additionalContexts: [createUserMessage({
           content: [{ type: 'text' as const, text: 'downstream-note' }],
-          source: { kind: 'plugin' as const, plugin: 'policy' },
+          source: { kind: 'policy' as const },
         })],
       }))
       const agent = await ctx.agentLoop.create(SessionId('a1'), { provider: 'mock', model: 'mock' })
@@ -183,8 +190,8 @@ export function defineCoverageCases(groups: CoverageGroup | readonly CoverageGro
 
       const contexts = events(agent).filter(event => event.type === 'user/message' && event.data.source.kind !== 'user')
       expect(contexts.map(event => event.type === 'user/message' && event.data.source)).toEqual([
-        { kind: 'plugin', plugin: 'hooks-codex' },
-        { kind: 'plugin', plugin: 'policy' },
+        { kind: 'hooks-codex' },
+        { kind: 'policy' },
       ])
     })
 

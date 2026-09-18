@@ -15,12 +15,13 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import { createUserMessage } from '@mutantcat/dsh-llm'
-import type { ContentBlock, Message } from '@mutantcat/dsh-llm'
-import { deriveEventMessage, SessionId } from '@mutantcat/dsh-session'
-import type { SessionEvent } from '@mutantcat/dsh-session'
-import type { TokenMeter } from '@mutantcat/dsh-token-meter'
-import type {} from '@mutantcat/dsh-api-terminal-controller'
+import { createLaunchEnvironmentSnapshot } from '@deepseek-ai/dsh-launch-environment'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, ContextFormed, Message, MessageSource } from '@deepseek-ai/dsh-llm'
+import { deriveEventMessage, SessionId } from '@deepseek-ai/dsh-session'
+import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import type { TokenMeter } from '@deepseek-ai/dsh-token-meter'
+import type {} from '@deepseek-ai/dsh-api-terminal-controller'
 import { join } from 'node:path'
 import {
   acknowledgeReloadConnectionLoss, assertFixtureInventory, captureExpandedTurnProcessAria, captureStableAria,
@@ -29,6 +30,15 @@ import {
   webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
 import { expandOwningTurnProcess, newEnglishPage, saveFailureShot } from './support.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'fixture': { kind: 'fixture' } & ContextFormed
+  }
+}
+
+type CheckpointSource = Extract<MessageSource, { readonly kind: 'compact-checkpoint' }>
+type CheckpointCommandId = NonNullable<CheckpointSource['sourceCommandId']>
 
 const SNAPSHOT_DIR = fileURLToPath(new URL('../../../snapshots/web/seeded-history', import.meta.url))
 const SEED = fileURLToPath(new URL('../../../snapshots/web/seeded-history/session.v3.jsonl', import.meta.url))
@@ -104,8 +114,8 @@ function withCompaction(raw: string, meter: TokenMeter): string {
     events.push({ ...event, seq: taken, time: time++ })
     return taken
   }
-  const commandId = 'cmd-seeded-manual-compact'
-  const compactionId = 'compact-seeded-manual-compact'
+  const commandId = 'cmd-seeded-manual-compact' as CheckpointCommandId
+  const compactionId = 'compact-seeded-manual-compact' as CheckpointSource['compactionId']
   at({
     type: 'command/run',
     data: { commandId, name: 'compact', args: '', source: { kind: 'user' } },
@@ -172,7 +182,7 @@ function withCompaction(raw: string, meter: TokenMeter): string {
         text: '<context_checkpoint>Model-only compact checkpoint.</context_checkpoint>',
       }],
       source: {
-        kind: 'plugin', plugin: 'compact', compactionId, sourceCommandId: commandId,
+        kind: 'compact-checkpoint', compactionId, sourceCommandId: commandId,
       },
     }),
     surfaceOp: { op: 'replace', startSeq: first, endSeq: last },
@@ -754,7 +764,7 @@ describe('web e2e: seeded history renders through cold resume', () => {
     if (agent === undefined) throw new Error('seeded session did not attach an agent')
     agent.session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'Short injected context.' }],
-      source: { kind: 'plugin', plugin: 'fixture' },
+      source: { kind: 'fixture' },
     }), { surfaceOp: 'append' })
 
     const disclosure = page.getByRole('button', { name: 'Context injection fixture', exact: true })

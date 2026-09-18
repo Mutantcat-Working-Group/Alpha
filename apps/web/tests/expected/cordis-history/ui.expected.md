@@ -17,30 +17,13 @@
   - img
   - text: System prompt
 - text: "Use only Cordis tools. First call cordis_inspect_self with no arguments. Then call cordis_define with plugin kind \"new\", idPrefix \"snap\", name \"snapshot noop\", purpose \"does nothing, for the snapshot\", code.host exactly \"return { name: \\\"snapshot-noop\\\", apply(ctx) {} }\" and code.client exactly \"return { inject: [\\\"slots\\\"], apply(ctx) { ctx.slots.register({ name: \\\"shell.overlay\\\", id: \\\"snapshot-probe\\\" }, () => React.createElement(\\\"div\\\", { \\\"data-snapshot-probe\\\": \\\"loaded\\\" })) } }\". Read its returned pluginId and packageId, then call cordis_run with those exact IDs and mode \"run\". After the run request returns, reply exactly CORDIS_UI_READY and stop. 9/1 {{clock}}"
-- button "Copy":
-  - img
-- button "3 tool calls" [expanded]:
-  - text: 3 tool calls
-  - img
-- button "Context injection @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: Context injection @mutantcat/dsh-system-prompt
-- button "Think I will inspect the current Session's dynamic Cordis Plugins before defining the snapshot Package.":
-  - img
-  - img
-  - text: Think I will inspect the current Session's dynamic Cordis Plugins before defining the snapshot Package.
-- 'button "Tool call cordis_inspect_self · {}"':
-  - img
-  - img
-  - text: "Tool call cordis_inspect_self · {}"
-- button "Think No dynamic Plugins are present, so I will define the requested Host and Client Package.":
-  - img
-  - img
-  - text: Think No dynamic Plugins are present, so I will define the requested Host and Client Package.
-- button "Register Cordis Plugin snapshot noop does nothing, for the snapshot Ready" [expanded]:
-  - img
-  - text: Register Cordis Plugin snapshot noop does nothing, for the snapshot Ready
+- button "Copy"
+- button "3 tool calls" [expanded]
+- button "Context injection runtime-context"
+- button "Think I will inspect the current Session's dynamic Cordis Plugins before defining the snapshot Package."
+- button "Inspect plugins 0 dynamic plugins"
+- button "Think No dynamic Plugins are present, so I will define the requested Host and Client Package."
+- button "Register Cordis Plugin snapshot noop does nothing, for the snapshot Ready" [expanded]
 - tablist "Plugin source":
   - tab "Client"
   - tab "Host" [selected]

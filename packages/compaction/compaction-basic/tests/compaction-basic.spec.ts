@@ -11,9 +11,10 @@ import {
   resolveCompactSpec,
   resolveConfig,
   resolveTargetPolicy,
-} from '@mutantcat/dsh-compaction-basic/src/config.ts'
-import type { CompactionResult } from '@mutantcat/dsh-compaction'
-import LlmRuntime, { createUserMessage, ToolCallId, CONTEXT_WINDOW_EXCEEDED_CODE, createSystemMessage, createToolResultMessage, LlmAdapter , createMessage } from '@mutantcat/dsh-llm'
+} from '@deepseek-ai/dsh-compaction-basic/src/config.ts'
+import type { CompactionResult } from '@deepseek-ai/dsh-compaction'
+import LlmRuntime, { createUserMessage, ToolCallId, CONTEXT_WINDOW_EXCEEDED_CODE, createSystemMessage, createToolResultMessage, LlmAdapter , createMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import type {
   ContentBlock,
   GenerateOptions,
@@ -28,6 +29,12 @@ import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
 import TokenMeter from '@mutantcat/dsh-token-meter'
 import { agentEvents, type Agent, type RequestErrorAction } from '@mutantcat/dsh-agent'
 import ToolResultPruner from '@mutantcat/dsh-compaction-tool-result-pruner'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 const SIGNAL = new AbortController().signal
 const MODEL = 'test-model'
@@ -100,11 +107,9 @@ function summarizedText(input: SummarizationInput): string {
 function promptInput(text: string): SummarizationInput {
   return { messages: [createUserMessage({
     content: [{ type: 'text', text }],
-    source: { kind: 'plugin', plugin: 'test' },
+    source: { kind: 'test' },
   })] }
 }
-
-const SYSTEM_PROMPT_PLUGIN = '@mutantcat/dsh-system-prompt'
 
 /**
  * Closed two-message turns followed by one open turn for durable compaction events.
@@ -118,7 +123,7 @@ function conversation(turns = 4, text = 'fixture '.repeat(40).trim(), system?: s
       session.append('system/message', {
         turn,
         step: 1,
-        message: createSystemMessage(system, SYSTEM_PROMPT_PLUGIN),
+        message: createSystemMessage(system),
       }, { surfaceOp: 'append' })
     }
     session.append('user/message', createUserMessage({
@@ -1132,7 +1137,7 @@ describe('compaction region transaction', () => {
     compact.mutateDuringSummary = () => {
       session.append('user/message', createUserMessage({
         content: [{ type: 'text', text: 'concurrent surface mutation' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       }), { surfaceOp: 'append' })
     }
     const nodes = session.surface.nodes
@@ -1272,7 +1277,12 @@ describe('default one-shot summarizer', () => {
     expect(adapter.lastOptions).not.toHaveProperty('system')
     expect(adapter.lastOptions?.tools).toEqual(tools)
     expect(adapter.lastOptions?.messages.slice(0, -1)).toEqual(prefix)
-    expect(adapter.lastOptions?.messages.at(-1)).toMatchObject({ role: 'user' })
+    const instruction = adapter.lastOptions?.messages.at(-1)
+    expect(instruction).toMatchObject({ role: 'user' })
+    expect(instruction).not.toHaveProperty('id')
+    expect(instruction).not.toHaveProperty('source')
+    expect(Object.isFrozen(instruction)).toBe(true)
+    expect(Object.isFrozen(instruction?.content[0])).toBe(true)
     expect(result.shadowedSeqs).toEqual(nodes.slice(start, start + 2))
     if (system !== undefined) expect(session.surface.nodes[0]).toBe(nodes[0])
   })
@@ -1343,9 +1353,9 @@ describe('default one-shot summarizer', () => {
           },
         },
       ],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })
-    const system = createSystemMessage('REPLAYED SYSTEM', SYSTEM_PROMPT_PLUGIN)
+    const system = createSystemMessage('REPLAYED SYSTEM')
     await compact.runSummarize({
       tools,
       messages: [system, prefix],
@@ -1383,10 +1393,10 @@ describe('default one-shot summarizer', () => {
     ctx.llm.registerAdapter(['policy-summary'], policyAdapter)
     const prefix: Message = createUserMessage({
       content: [{ type: 'text', text: 'warm prefix' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })
 
-    const system = createSystemMessage('WARM SYSTEM', SYSTEM_PROMPT_PLUGIN)
+    const system = createSystemMessage('WARM SYSTEM')
     const output = await compact.runSummarize({
       messages: [system, prefix],
     }, agent(conversation(1), 'fallback'))
@@ -2091,7 +2101,7 @@ describe('route-priced image pressure', () => {
     }]
     const framed = ctx.tokenMeter.estimateMessage(createUserMessage({
       content: frameSummary(compact.summary),
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     }))
     expect(framed).toBeGreaterThan(imageNode.heuristicTokens)
     expect(framed).toBeLessThan(imageNode.tokens)

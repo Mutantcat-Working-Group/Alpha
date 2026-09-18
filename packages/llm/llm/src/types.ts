@@ -7,7 +7,7 @@
 import type { Branded } from '@mutantcat/dsh-brand'
 import type { FileAttachmentRef, ImageAttachmentRef } from '@mutantcat/dsh-attachment'
 import type { ToolCallId, ProviderRequestId, ReasoningEffortId } from './brand.ts'
-import type { Message } from './message.ts'
+import type { Message, UserMessage } from './message.ts'
 
 declare module '@mutantcat/cordis' {
   interface Events {
@@ -442,6 +442,17 @@ export interface ToolSchema {
   parameters: Record<string, unknown>
 }
 
+/** User input for one LLM request; it has no durable Session identity or source. */
+export interface RequestUserInput {
+  readonly role: 'user'
+  readonly content: UserMessage['content']
+  readonly id?: never
+  readonly source?: never
+}
+
+/** A durable conversation message or a user input used only for one request. */
+export type RequestMessage = Message | RequestUserInput
+
 /** A single model request, fully assembled. */
 export interface GenerateOptions {
   /** Registered provider route selecting the adapter instance. */
@@ -453,9 +464,9 @@ export interface GenerateOptions {
    * Ordered conversation messages, exactly as the provider sees them. A
    * loop-built request passes the derived history (dsh-agent-loop), whose
    * leading system-role message carries the system prompt; a hand-built
-   * one-shot passes any list.
+   * one-shot may include identity-free user inputs.
    */
-  messages: Message[]
+  messages: RequestMessage[]
   /**
    * System prompt text for one-shot callers; adapters map it to the provider's
    * system slot ahead of `messages`. Loop-built requests leave it undefined.

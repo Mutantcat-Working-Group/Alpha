@@ -31,6 +31,11 @@ export interface ToolMessageSource {
   callId: ToolCallId
 }
 
+/** Required source of a system-role message produced by the system-prompt plugin. */
+export interface SystemPromptMessageSource {
+  kind: 'system-prompt'
+}
+
 /**
  * The kind of information in producer-supplied context, declared by the
  * producer in the same `MessageSource`.
@@ -96,14 +101,17 @@ export type ContextFormed =
   | { readonly form: 'recall' }
 
 /**
- * Where a message (or injected content) came from.
- * Merge-extensible sum type — plugins add their own `kind`s.
+ * Where a message (or injected content) came from, in the harness's own
+ * vocabulary. Merge-extensible sum type — each producer declares its own
+ * `kind` in its own module; there is no shared catch-all `plugin` kind.
+ * Model and tool sources answer their role messages; user messages carry any
+ * producer's kind, and consumers fall through unknown kinds.
  */
 export interface MessageSourceMap {
   user: { kind: 'user' }
-  plugin: { kind: 'plugin'; plugin: string } & ContextFormed
   model: ModelMessageSource
   tool: ToolMessageSource
+  'system-prompt': SystemPromptMessageSource
 }
 
 /**
@@ -133,14 +141,16 @@ interface MessageBase {
   readonly id: MessageId
   /** Exact model-facing blocks. */
   readonly content: readonly ContentBlock[]
-  /** Required source fields supplied by the producer. */
+  /** Required source fields supplied by the producer.
+   * @persistenceSource user
+   */
   readonly source: MessageSource
 }
 
-/** A rendered system prompt attributed to its assembling plugin; empty content sends no prompt. */
+/** A rendered system prompt attributed to the system-prompt producer; empty content sends no prompt. */
 export interface SystemMessage extends MessageBase {
   readonly role: 'system'
-  readonly source: MessageSourceMap['plugin']
+  readonly source: MessageSourceMap['system-prompt']
 }
 
 /** A user-role specialization of the shared message representation. */
@@ -246,14 +256,13 @@ export function createAssistantMessage(
  * Create and freeze one identified system-role message holding a rendered
  * system prompt.
  * @param text - the complete rendered prompt; `''` records "no system prompt".
- * @param plugin - the plugin that assembled the prompt.
  * @returns an immutable system message with a fresh stable identity.
  */
-export function createSystemMessage(text: string, plugin: string): SystemMessage {
+export function createSystemMessage(text: string): SystemMessage {
   return createMessage({
     role: 'system',
     content: text.length === 0 ? [] : [{ type: 'text', text }],
-    source: { kind: 'plugin', plugin },
+    source: { kind: 'system-prompt' },
   })
 }
 

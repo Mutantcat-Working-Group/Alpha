@@ -43,7 +43,7 @@ class ControlSurfaceAdapter extends LlmAdapter {
   }
 
   override async * stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
-    const lastUserIndex = options.messages.findLastIndex(message => message.source.kind === 'user')
+    const lastUserIndex = options.messages.findLastIndex(message => message.role === 'user' && message.source?.kind === 'user')
     const current = options.messages.slice(lastUserIndex)
     const userText = current.flatMap(message => message.content)
       .flatMap(block => block.type === 'text' ? [block.text] : [])

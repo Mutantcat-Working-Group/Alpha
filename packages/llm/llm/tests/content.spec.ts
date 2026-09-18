@@ -15,9 +15,9 @@ import {
   resolveImageAttachmentAccess,
   requestImageHandleText,
 } from '../src/index.ts'
-import type { ContentBlock } from '../src/index.ts'
+import type { ContentBlock, RequestUserInput } from '../src/index.ts'
 
-const source = { kind: 'plugin' as const, plugin: 'test' }
+const source = { kind: 'test' as const }
 
 const OMITTED = '[omitted]'
 
@@ -61,6 +61,17 @@ describe('requiredImageOffload traversal', () => {
 })
 
 describe('projectOffloadedImages', () => {
+  it('keeps request-only inputs identity-free when replacing image content', () => {
+    const input: RequestUserInput = { role: 'user', content: [image(3, true)] }
+    expect(projectOffloadedImages([input], () => OMITTED)).toEqual([
+      { role: 'user', content: [{ type: 'text', text: OMITTED }] },
+    ])
+    expect(projectImagesForTextModel([input])).toEqual([
+      { role: 'user', content: [{ type: 'text', text: '[image omitted because this model accepts text only; attachment sha256:aaaaaaaa]' }] },
+    ])
+    expect(input.content).toEqual([image(3, true)])
+  })
+
   it('keeps messages without offloaded occurrences by identity', () => {
     const messages = [createUserMessage({ content: [image(300)], source })]
     const projected = projectOffloadedImages(messages, () => OMITTED)
@@ -312,6 +323,15 @@ describe('file projection', () => {
       },
     }
   }
+
+  it('keeps request-only inputs identity-free when replacing file content', () => {
+    const block = fileBlock('review.txt')
+    const input: RequestUserInput = { role: 'user', content: [block] }
+    expect(projectFilesToText([input], () => '/copies/review.txt')).toEqual([
+      { role: 'user', content: [{ type: 'text', text: fileHandleText(block.attachment, '/copies/review.txt') }] },
+    ])
+    expect(input.content).toEqual([block])
+  })
 
   it('detects file blocks anywhere in message content', () => {
     expect(contentHasFile([{ type: 'text', text: 'x' }])).toBe(false)

@@ -15,19 +15,10 @@
   - img
   - text: System prompt
 - text: Use the ask_user_question tool to ask me exactly one question with id "checkpoint", question "Ready to continue?", header "Checkpoint", and options labeled "Yes" and "No". After I answer, reply with one short sentence acknowledging my answer and stop. {{clock}}
-- button "Copy":
-  - img
-- button "1 tool call" [expanded]:
-  - text: 1 tool call
-  - img
-- button "Context injection @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: Context injection @mutantcat/dsh-system-prompt
-- button "Ask question 1/1 answered":
-  - img
-  - img
-  - text: Ask question 1/1 answered
+- button "Copy"
+- button "1 tool call" [expanded]
+- button "Context injection runtime-context"
+- button "Ask question 1/1 answered"
 - text: "Interjection: include the word BANANA in your final reply. {{clock}}"
 - button "Copy":
   - img

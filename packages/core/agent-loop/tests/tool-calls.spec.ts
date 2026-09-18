@@ -4,18 +4,25 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import { createUserMessage, ToolCallId, StreamChunk  } from '@mutantcat/dsh-llm'
-import SessionStore, { SessionEvent, SessionId } from '@mutantcat/dsh-session'
-import SystemPrompt from '@mutantcat/dsh-system-prompt'
-import LlmRuntime from '@mutantcat/dsh-llm'
-import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type PostToolDecision, type PreToolDecision } from '@mutantcat/dsh-tools'
-import AgentRegistry, { type Agent } from '@mutantcat/dsh-agent'
-import AgentLoop, { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from '@mutantcat/dsh-agent-loop'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import { Context } from '@deepseek-ai/cordis'
+import { createUserMessage, ToolCallId, StreamChunk  } from '@deepseek-ai/dsh-llm'
+import SessionStore, { SessionEvent, SessionId } from '@deepseek-ai/dsh-session'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
+import LlmRuntime from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type PostToolDecision, type PreToolDecision } from '@deepseek-ai/dsh-tools'
+import AgentRegistry, { type Agent } from '@deepseek-ai/dsh-agent'
+import AgentLoop, { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from '@deepseek-ai/dsh-agent-loop'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
 import { MockAdapter, textResponse } from './mock-adapter.ts'
 import { PtcRuntime } from '@mutantcat/dsh-ptc-runtime'
 import type { PtcRunRequest, PtcRunResult } from '@mutantcat/dsh-ptc-runtime'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'p': { kind: 'p' } & ContextFormed
+  }
+}
 
 async function harness(adapter: MockAdapter, maxParallelToolCalls?: number) {
   const ctx = new Context()
@@ -406,7 +413,7 @@ describe('tool-call scheduler: ordered middleware and additional contexts', () =
     ctx.tools.register(gated.tool)
     ctx.on('tools/post-execute', async (exec, _result): Promise<PostToolDecision> =>
       ({ kind: 'accept', additionalContexts: [createUserMessage({
-        content: [{ type: 'text', text: `ctx-${exec.callId}` }], source: { kind: 'plugin', plugin: 'p' },
+        content: [{ type: 'text', text: `ctx-${exec.callId}` }], source: { kind: 'p' },
       })] }))
     const agent = await ctx.agentLoop.create(SessionId('a1'), { provider: 'mock', model: 'mock' })
 
@@ -416,11 +423,11 @@ describe('tool-call scheduler: ordered middleware and additional contexts', () =
     await waitForIdle(ctx, agent)
 
     const log = events(agent)
-    const contextTexts = log.filter(e => e.type === 'user/message' && e.data.source.kind === 'plugin')
+    const contextTexts = log.filter(e => e.type === 'user/message' && e.data.source.kind !== 'user')
       .map(e => ((e.data as { content: { text: string }[] }).content[0]!).text)
     expect(contextTexts).toEqual(['ctx-c1', 'ctx-c2'])
     const lastResult = log.findLastIndex(e => e.type === 'tool/result')
-    const firstContext = log.findIndex(e => e.type === 'user/message' && e.data.source.kind === 'plugin')
+    const firstContext = log.findIndex(e => e.type === 'user/message' && e.data.source.kind !== 'user')
     expect(lastResult).toBeLessThan(firstContext)
   })
 
@@ -546,7 +553,7 @@ describe('tool-call scheduler: abort handling', () => {
     ctx.on('tools/post-execute', async (exec, _result, next): Promise<PostToolDecision> => ({
       ...await next(),
       additionalContexts: [createUserMessage({
-        content: [{ type: 'text', text: `ctx-${exec.callId}` }], source: { kind: 'plugin', plugin: 'p' },
+        content: [{ type: 'text', text: `ctx-${exec.callId}` }], source: { kind: 'p' },
       })],
     }))
     const agent = await ctx.agentLoop.create(SessionId('a1'), { provider: 'mock', model: 'mock' })
@@ -581,7 +588,7 @@ describe('tool-call scheduler: abort handling', () => {
         },
       ])
     const settled = events(agent).filter(e => e.type === 'tool/result'
-      || (e.type === 'user/message' && e.data.source.kind === 'plugin'))
+      || (e.type === 'user/message' && e.data.source.kind !== 'user'))
     expect(settled.map(e => e.type))
       .toEqual(['tool/result', 'tool/result', 'tool/result', 'tool/result'])
     expect(agent.inbox.nextStep.map(message => message.content[0]))
@@ -596,7 +603,7 @@ describe('tool-call scheduler: abort handling', () => {
 
     expect(events(agent).flatMap(e =>
       e.type === 'user/message'
-        && e.data.source.kind === 'plugin'
+        && e.data.source.kind !== 'user'
         && e.data.content[0]?.type === 'text'
         ? [e.data.content[0].text]
         : []))

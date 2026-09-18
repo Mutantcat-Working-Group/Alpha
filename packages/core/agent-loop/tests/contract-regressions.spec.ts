@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import LlmRuntime, { type Message, createUserMessage, ToolCallId, LlmError, MessageSource, ProviderRequestId, StreamChunk  } from '@deepseek-ai/dsh-llm'
+import LlmRuntime, { type RequestMessage, createUserMessage, ToolCallId, LlmError, MessageSource, ProviderRequestId, StreamChunk  } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import SessionStore, { Session, SessionEvent, SessionId, TurnEndReason, type UserMessage } from '@deepseek-ai/dsh-session'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineContentToolFixture, type PostToolDecision } from '@deepseek-ai/dsh-tools'
@@ -12,6 +13,12 @@ import * as SessionInvariant from '@deepseek-ai/dsh-session/invariant'
 import * as AgentInvariant from '@deepseek-ai/dsh-agent/invariant'
 import * as AgentLoopInvariant from '@deepseek-ai/dsh-agent-loop/invariant'
 import { MockAdapter, textResponse, toolCallResponse } from './mock-adapter.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 async function mountInvariants(ctx: Context): Promise<void> {
   await ctx.plugin(InvariantRegistry)
@@ -95,7 +102,7 @@ describe('abort during tool execution ends the turn', () => {
       description: '',
       parameters: {},
       async execute() {
-        agent.inject(createUserMessage({ content: [{ type: 'text', text: 'accepted before abort' }], source: { kind: 'plugin', plugin: 'test' } }))
+        agent.inject(createUserMessage({ content: [{ type: 'text', text: 'accepted before abort' }], source: { kind: 'test' } }))
         agent.cancel({ kind: 'user' })
         return [{ type: 'text', text: 'done' }]
       },
@@ -104,7 +111,7 @@ describe('abort during tool execution ends the turn', () => {
       kind: 'accept',
       additionalContexts: [createUserMessage({
         content: [{ type: 'text', text: 'accepted result context after abort' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
     }))
 
@@ -113,7 +120,7 @@ describe('abort during tool execution ends the turn', () => {
 
     expect(agent.session.snapshotEvents()
       .filter(event => event.type === 'tool/result'
-        || (event.type === 'user/message' && event.data.source.kind === 'plugin')
+        || (event.type === 'user/message' && event.data.source.kind !== 'user')
         || event.type === 'step/end' || event.type === 'turn/end')
       .map(event => event.type))
       .toEqual(['tool/result', 'step/end', 'turn/end'])
@@ -125,7 +132,7 @@ describe('abort during tool execution ends the turn', () => {
     await idle
 
     expect(agent.session.snapshotEvents()
-      .flatMap(event => event.type === 'user/message' && event.data.source.kind === 'plugin'
+      .flatMap(event => event.type === 'user/message' && event.data.source.kind !== 'user'
         ? [event.data.content]
         : []))
       .toEqual([
@@ -166,7 +173,7 @@ describe('abort during tool execution ends the turn', () => {
         kind: 'accept',
         additionalContexts: [createUserMessage({
           content: [{ type: 'text', text: 'accepted after first result' }],
-          source: { kind: 'plugin', plugin: 'test' },
+          source: { kind: 'test' },
         })],
       }
     })
@@ -177,12 +184,12 @@ describe('abort during tool execution ends the turn', () => {
     const events = agent.session.snapshotEvents()
     expect(events
       .filter(event => event.type === 'tool/result'
-        || (event.type === 'user/message' && event.data.source.kind === 'plugin')
+        || (event.type === 'user/message' && event.data.source.kind !== 'user')
         || event.type === 'step/end' || event.type === 'turn/end')
       .map(event => event.type))
       .toEqual(['tool/result', 'tool/result', 'step/end', 'turn/end'])
     expect(events.flatMap(event =>
-      event.type === 'user/message' && event.data.source.kind === 'plugin'
+      event.type === 'user/message' && event.data.source.kind !== 'user'
         ? [event.data.content]
         : [])[0])
       .toBeUndefined()
@@ -220,7 +227,7 @@ describe('abort during tool execution ends the turn', () => {
       description: '',
       parameters: {},
       async execute(_args, exec) {
-        agent.inject(createUserMessage({ content: [{ type: 'text', text: 'accepted before disposal' }], source: { kind: 'plugin', plugin: 'test' } }))
+        agent.inject(createUserMessage({ content: [{ type: 'text', text: 'accepted before disposal' }], source: { kind: 'test' } }))
         started.resolve(undefined)
         const signal = exec.signal
         if (!signal) throw new Error('tool execution signal is missing')
@@ -235,7 +242,7 @@ describe('abort during tool execution ends the turn', () => {
       kind: 'accept',
       additionalContexts: [createUserMessage({
         content: [{ type: 'text', text: 'accepted result context during disposal' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
     }))
 
@@ -244,7 +251,7 @@ describe('abort during tool execution ends the turn', () => {
     await fiber.dispose()
 
     expect(agent.session.snapshotEvents()
-      .flatMap(event => event.type === 'user/message' && event.data.source.kind === 'plugin'
+      .flatMap(event => event.type === 'user/message' && event.data.source.kind !== 'user'
         ? [event.data.content]
         : []))
       .toEqual([])
@@ -301,7 +308,7 @@ describe('abort during tool execution ends the turn', () => {
           kind: 'enter' as const,
           messages: [...decision.messages, createUserMessage({
             content: [{ type: 'text', text: 'new turn context' }],
-            source: { kind: 'plugin', plugin: 'test' },
+            source: { kind: 'test' },
           })],
         }
       }
@@ -311,7 +318,7 @@ describe('abort during tool execution ends the turn', () => {
     await waitForIdle(ctx, agent)
 
     expect(agent.session.snapshotEvents().flatMap(event =>
-      event.type === 'user/message' && event.data.source.kind === 'plugin'
+      event.type === 'user/message' && event.data.source.kind !== 'user'
         ? [event.data.content]
         : [])[0])
       .toEqual([{ type: 'text', text: 'new turn context' }])
@@ -481,7 +488,7 @@ describe('adapter registration, routing, and accepted-input ownership', () => {
       description: '',
       parameters: {},
       async execute() {
-        agent.steer(createUserMessage({ content: [{ type: 'text', text: 's' }], source: { kind: 'plugin', plugin: 'goal' } }))
+        agent.steer(createUserMessage({ content: [{ type: 'text', text: 's' }], source: { kind: 'goal' } as unknown as MessageSource }))
         return []
       },
     }))
@@ -503,7 +510,7 @@ describe('adapter registration, routing, and accepted-input ownership', () => {
 
     expect(insertedSources).toEqual([
       { kind: 'user' },
-      { kind: 'plugin', plugin: 'goal' },
+      { kind: 'goal' },
     ])
     expect(insertedShapes).toEqual([
       ['content', 'id', 'role', 'source'],
@@ -511,8 +518,8 @@ describe('adapter registration, routing, and accepted-input ownership', () => {
     ])
     expect(targets).toEqual(['next-turn', 'next-step'])
     const steeringSources = agent.session.snapshotEvents().flatMap(e =>
-      e.type === 'user/message' && e.data.source.kind === 'plugin' ? [e.data.source] : [])
-    expect(steeringSources).toEqual([{ kind: 'plugin', plugin: 'goal' }])
+      e.type === 'user/message' && e.data.source.kind !== 'user' ? [e.data.source] : [])
+    expect(steeringSources).toEqual([{ kind: 'goal' }])
   })
 
   it('records each admitted next-step batch before the following claim', async () => {
@@ -655,11 +662,12 @@ describe('turn numbering continues across seeded sessions', () => {
 })
 
 /** Assert the call/result ordering delivered to the model, including missing results. */
-function expectPairedTools(messages: readonly Message[]): void {
+function expectPairedTools(messages: readonly RequestMessage[]): void {
   const pending = new Set<ToolCallId>()
   for (const message of messages) {
-    if (pending.size > 0) expect(message.source.kind).toBe('tool')
+    if (pending.size > 0) expect(message.role).toBe('tool')
     if (message.role === 'tool') {
+      expect(message.source.kind).toBe('tool')
       expect(pending.delete(message.toolCallId)).toBe(true)
       continue
     }
@@ -734,11 +742,11 @@ describe('forked tool history reaches the next model request', () => {
       const request = adapter.requests[2]
       if (request === undefined) throw new Error('child never reached the adapter')
       expectPairedTools(request.messages)
-      expect(request.messages.filter(message => message.source.kind === 'tool')).toEqual(expectedResults)
+      expect(request.messages.filter(message => message.role === 'tool')).toEqual(expectedResults)
       expect(expectedResults.map(message => message.source.callId)).toEqual([ToolCallId('call-first'), ToolCallId('call-second')])
       expect(() => {
         expectPairedTools(request.messages.filter(message => (
-          message.source.kind !== 'tool' || message.source.callId !== ToolCallId('call-second')
+          message.role !== 'tool' || message.source.callId !== ToolCallId('call-second')
         )))
       }).toThrow()
       expect(executions).toEqual(['first', 'second'])

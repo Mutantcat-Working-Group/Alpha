@@ -41,13 +41,15 @@ const targetHeader = sessionFormatV3ToV4.migrateHeader(sourceHeader)
 <a id="v3-to-v4-specification"></a>
 ## V3 到 V4 规范
 
-逻辑头部只将 `version: 3` 改为 `version: 4`。已发布的用户角色工具结果包装转换为工具角色消息，包含 `toolCallId`、可选的 `isError` 和直接结果内容。每个获准源事件都保留其类型、时间戳、序号、消息身份、surface 操作、引用和所有未迁移的载荷字段；Stage 处理源事件之后只追加缺失的自身父目录记录。已发布 V3 编解码器仍由 [V2 到 V3](../session-format-v2-to-v3/README.zh.md)拥有；本包复用它，不改变较早迁移的语义。
+逻辑头部只将 `version: 3` 改为 `version: 4`。已发布的用户角色工具结果包装转换为工具角色消息，包含 `toolCallId`、可选的 `isError` 和直接结果内容。已发布的 `{ kind: 'plugin', plugin }` 消息来源通过 [sources.ts](src/sources.ts) 中的冻结重命名表转换为生产者自有 kind，并保留生产者专属字段。每个获准源事件都保留其类型、时间戳、序号、消息身份、surface 操作、引用和所有未迁移的载荷字段；Stage 处理源事件之后只追加缺失的自身父目录记录。已发布 V3 编解码器仍由 [V2 到 V3](../session-format-v2-to-v3/README.zh.md)拥有；本包仅在历史源端复用它，不改变较早迁移的语义。
 
 源事件必须从零开始连续编号。带种子的 Session 中，最后一个携带 `inherited: true` 的 `session/end-seed` 决定继承事件数，不包含该标记本身。传入的源切分点必须与之相符。带种子却缺少标记，或不带种子却出现继承标记的 Session 均被拒绝。每个 Stage 独立拥有计数器和切分点；带种子的 Stage 在 EOF 前保持切分点未知，包括前序迁移改变事件数的情况。
 
 完整恢复校验原生 V4 工具与 fork 结果、turn/step 顺序、工具与 PTC 生命周期、重试、标题引用、命令、压缩归属与区间、受保护的 system 首节点、投递、目录成员关系、继承切分点及已安装的事件词表。它允许未完成的尾部，但会拒绝带有未结算工具或事务不匹配的关闭事件。已安装的 Session 恢复器负责通用事件行和消息的接纳。[原生校验决策](../../../.agents/notes/implemented/architecture/2026-09-17-native-v4-read-validation.zh.md)记录了职责划分。V3 语义校验器永远不会接收 V4 事件。
 
 `session-log-deepseek/delivery-accepted` 事件必须标识非负安全整数代际；省略时表示 V0。声称属于 V4 的源标记会被拒绝，因为推进头部会使它生效。源 V3 标记要求非空 Session id，以及指向较早事件的 `throughSeq`。属于其他 Session 的 V3 标记只允许出现在带有 `parentSession` 的 Session 的继承前缀中。其他代际保留记录的坐标和 id。任何投递载荷都不会被重写。
+
+V4 消息源准入在可恢复扫描丢弃行之前拒绝 surface、inbox 和标题请求消息中的退役 plugin 包装。目录和原生 JSONL 扫描器在公开恢复数据之前校验所有已知消息源槽位。未知的非空归属 kind 和所有自有 JSON 元数据字段保持不变；`constructor`、`__proto__` 等外部名字只是普通的生产者字符串。
 
 V4 恢复按相同规则校验 V4 投递坐标和归属。V3 投递在 V4 中属于历史数据，不会成为 V4 水位。V4 编解码器只复用已发布 V2 的物理分帧，并在恢复前直接执行原生工具结果和 system 消息字段准入；完整的词表、投递和关系校验需要目标恢复器或目录的 `validation: 'current'`。即使位于可恢复的后缀，退役的 `header.system` 字段和必需的前代 PTC 标签也会被拒绝；可忽略的前代 PTC 记录保持不透明。仅执行可恢复编解码读取不能证明严格恢复成功。
 
@@ -78,7 +80,7 @@ V4 还接受 fork 生成的 `TOOL_NOT_STARTED` 结果，使用确定性的 `fork
 <details>
 <summary>实现内部机制 — 点击展开</summary>
 
-迁移声明创建相互独立的流式 Stage。紧凑事件段通过迭代器展开，不生成中间事件数组。V4 编解码器只为物理头部和源范围分帧使用已发布 V2 编解码器，并直接校验原生工具角色行。JSONL 扫描器在抑制可恢复行之前调用 `assertV4RowAdmission`，并在返回完整逻辑前缀之前调用共用的强制关系校验器。
+迁移声明创建相互独立的流式 Stage。紧凑事件段通过迭代器展开，不生成中间事件数组。V3 到 V4 Stage 在发出 V4 事件时一次性重写历史消息来源并提升历史工具结果包装。V4 编解码器只为物理头部和源范围分帧使用已发布 V2 编解码器，并直接校验原生工具角色行；它不会调用已发布 V3 校验器或源转换视图。JSONL 扫描器在抑制可恢复行之前调用 `assertV4RowAdmission`，并在返回完整逻辑前缀之前调用共用的强制关系校验器。
 
 目标恢复器校验原生字段和强制跨事件关系，然后返回原始产物。未知的可忽略事件保持不透明，未完成的继承压缩事务在 end-seed 标记处结束。本包不发布运行时不变量伴随插件，因为这个纯函数库不拥有独立维护的运行时观测。
 

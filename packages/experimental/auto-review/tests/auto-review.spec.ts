@@ -278,7 +278,7 @@ describe('native review request', () => {
     })
     appendHeader(session, [loggedSchema])
     session.append('system/message', {
-      turn: 1, step: 1, message: createSystemMessage('main-system secret', 'main'),
+      turn: 1, step: 1, message: createSystemMessage('main-system secret'),
     }, { surfaceOp: 'append' })
     session.append('user/message', createUserMessage({
       content: [
@@ -298,7 +298,7 @@ describe('native review request', () => {
     appendUser(session, 'parent-authored evidence', { kind: 'user' })
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'plugin evidence' }],
-      source: { kind: 'plugin', plugin: 'evidence' },
+      source: { kind: 'test' },
     }), { surfaceOp: 'append' })
     appendUser(session, 'checkpoint authority', compactCheckpointSource(CompactionId('checkpoint-1')))
     appendUser(session, 'project authority', {
@@ -382,7 +382,9 @@ describe('native review request', () => {
     expect(request.maxTokens).toBeUndefined()
     expect(request.tools).toBeUndefined()
     expect(request.messages).toHaveLength(1)
-    expect(request.messages[0]?.source).toEqual({ kind: 'plugin', plugin: 'dsh-experimental-auto-review' })
+    expect(request.messages[0]).not.toHaveProperty('source')
+    expect(request.messages[0]).not.toHaveProperty('id')
+    expect(Object.isFrozen(request.messages[0]?.content[0])).toBe(true)
     expect(Object.isFrozen(request)).toBe(true)
 
     const sections = requestSections(request)
@@ -420,7 +422,7 @@ describe('native review request', () => {
         source: compactCheckpointSource(CompactionId('checkpoint-1')),
       }),
       expect.objectContaining({
-        kind: 'user-message', role: 'fact', source: { kind: 'plugin', plugin: 'evidence' },
+        kind: 'user-message', role: 'fact', source: { kind: 'test' },
         content: [{ type: 'text', text: 'plugin evidence' }],
       }),
       expect.objectContaining({

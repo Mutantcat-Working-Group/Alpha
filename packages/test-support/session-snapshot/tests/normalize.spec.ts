@@ -708,7 +708,7 @@ describe('normalizeSessionSnapshot', () => {
           message: {
             id: 'v2-to-v3-system-590b72aa4994fd6d3c6e61bb4bf5bf2f80bae0bc7564d388378ba4f51b816fd6',
             role: 'system',
-            source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' },
+            source: { kind: 'system-prompt' },
             content: [],
           },
         },

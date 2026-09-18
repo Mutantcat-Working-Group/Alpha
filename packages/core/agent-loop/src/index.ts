@@ -34,6 +34,7 @@ import type { SessionHandle, SessionPersistence } from '@mutantcat/dsh-session-p
 import { ReactLoopAgent } from './agent.ts'
 import { inboxProjectionDefinition } from './inbox.ts'
 import { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from './constants.ts'
+import type {} from './runtime-context.ts'
 
 /** Fiber states that cannot own or serve a new lifecycle. */
 const INACTIVE_STATES: ReadonlySet<FiberState> = new Set([

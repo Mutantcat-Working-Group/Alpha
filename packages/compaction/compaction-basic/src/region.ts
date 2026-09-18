@@ -23,7 +23,6 @@ import { SessionSeq, type Session, type SessionEvent } from '@mutantcat/dsh-sess
 import type { Agent } from '@mutantcat/dsh-agent'
 import { frameSummary } from './summarizer.ts'
 import type { SummarizationInput, SummaryResult } from './summarizer.ts'
-
 interface RegionDependencies {
   readonly meter: TokenMeter
   summarize(input: SummarizationInput, agent: Agent, signal?: AbortSignal): Promise<SummaryResult>

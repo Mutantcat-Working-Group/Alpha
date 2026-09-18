@@ -1,16 +1,23 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import type { Agent, PreStepDecision } from '@mutantcat/dsh-agent'
-import { agentEvents } from '@mutantcat/dsh-agent'
-import AgentLoop from '@mutantcat/dsh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@mutantcat/dsh-agent-loop-testkit'
-import GoalService, { GoalId } from '@mutantcat/dsh-goal'
-import type { GoalView } from '@mutantcat/dsh-goal'
-import { createUserMessage, LlmAdapter, LlmError  } from '@mutantcat/dsh-llm'
-import type { GenerateOptions, StreamChunk } from '@mutantcat/dsh-llm'
-import { SessionId } from '@mutantcat/dsh-session'
-import type { UserMessage } from '@mutantcat/dsh-session'
+import { Context } from '@deepseek-ai/cordis'
+import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
+import { agentEvents } from '@deepseek-ai/dsh-agent'
+import AgentLoop from '@deepseek-ai/dsh-agent-loop'
+import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
+import GoalService, { GoalId } from '@deepseek-ai/dsh-goal'
+import type { GoalView } from '@deepseek-ai/dsh-goal'
+import { createUserMessage, LlmAdapter, LlmError  } from '@deepseek-ai/dsh-llm'
+import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { SessionId } from '@deepseek-ai/dsh-session'
+import type { UserMessage } from '@deepseek-ai/dsh-session'
 import * as goalSession from '../src/index.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 type ScriptEntry = StreamChunk[] | Error | 'hang' | ((options: GenerateOptions) => StreamChunk[])
 
@@ -481,7 +488,7 @@ describe('same-session goal driving', () => {
     const test = await harness([textResponse('side contexts'), textResponse('revised goal')])
     const claimedContext = createUserMessage({
       content: [{ type: 'text', text: 'claimed context to restore' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })
     const roundZeroContext = createUserMessage({
       content: [{ type: 'text', text: 'obsolete goal context' }],
@@ -489,11 +496,11 @@ describe('same-session goal driving', () => {
     })
     const queuedStepContext = createUserMessage({
       content: [{ type: 'text', text: 'context already queued for the next step' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })
     const queuedTurnContext = createUserMessage({
       content: [{ type: 'text', text: 'context already queued for the next turn' }],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })
     let staged = false
     const stopInserted = onInboxMessage(test.ctx, test.agent, (message) => {

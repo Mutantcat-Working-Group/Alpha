@@ -1,7 +1,8 @@
-import { Context } from '@mutantcat/cordis'
-import type { Agent, Inbox, InboxState } from '@mutantcat/dsh-agent'
-import { createUserMessage } from '@mutantcat/dsh-llm'
-import { SessionId } from '@mutantcat/dsh-session'
+import { Context } from '@deepseek-ai/cordis'
+import type { Agent, Inbox, InboxState } from '@deepseek-ai/dsh-agent'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { SessionId } from '@deepseek-ai/dsh-session'
 import { afterEach, describe, expect, it } from 'vitest'
 import { SessionControlController } from '../src/control.ts'
 import type { SessionControlFrame } from '../src/types.ts'
@@ -9,6 +10,12 @@ import {
   mountAgentLoopTestDependencies,
   mountAgentLoopTestHarness,
 } from '@mutantcat/dsh-agent-loop-testkit'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'fixture': { kind: 'fixture' } & ContextFormed
+  }
+}
 
 const ownedContexts = new Set<Context>()
 afterEach(async () => {
@@ -33,7 +40,7 @@ async function harness(): Promise<{
 function message(text: string, source: 'user' | 'plugin' = 'user') {
   return createUserMessage({
     content: [{ type: 'text', text }],
-    source: source === 'user' ? { kind: 'user' } : { kind: 'plugin', plugin: 'fixture' },
+    source: source === 'user' ? { kind: 'user' } : { kind: 'fixture' },
   })
 }
 

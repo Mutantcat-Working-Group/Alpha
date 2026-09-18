@@ -4,13 +4,20 @@
  * @module @mutantcat/dsh-session-title-llm
  */
 
-import type { Context } from '@mutantcat/cordis'
-import z from '@mutantcat/schemastery'
-import { createUserMessage, BlockAssembler } from '@mutantcat/dsh-llm'
-import type { FinishReason, GenerateOptions, Message } from '@mutantcat/dsh-llm'
-import { deadline, MAX_TIMER_DELAY_MS } from '@mutantcat/dsh-timeout'
-import { deepFreeze } from '@mutantcat/dsh-util-values'
-import type { SessionSeq } from '@mutantcat/dsh-session'
+import type { Context } from '@deepseek-ai/cordis'
+import z from '@deepseek-ai/schemastery'
+import { createUserMessage, BlockAssembler } from '@deepseek-ai/dsh-llm'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'dsh-session-title-llm': { kind: 'dsh-session-title-llm' } & ContextFormed
+  }
+}
+
+import type { FinishReason, GenerateOptions, Message } from '@deepseek-ai/dsh-llm'
+import { deadline, MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import { deepFreeze } from '@deepseek-ai/dsh-util-values'
+import type { SessionSeq } from '@deepseek-ai/dsh-session'
 import {
   normalizeSessionTitle,
   SessionTitleProviderId,
@@ -247,7 +254,7 @@ export async function generateSessionTitleWithLlm(
   const route = resolveRoute(config, request)
   const messages: Message[] = [createUserMessage({
     content: [{ type: 'text', text: framedInput }],
-    source: { kind: 'plugin', plugin: 'dsh-session-title-llm' },
+    source: { kind: 'dsh-session-title-llm' },
   })]
   const system = systemPrompt(config)
   using callDeadline = deadline(request.signal, config.timeoutMs, SESSION_TITLE_TIMEOUT_CODE)

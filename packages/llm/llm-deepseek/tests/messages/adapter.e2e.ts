@@ -50,7 +50,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('DeepSeek Messages real API', () 
     const model = IN_HISTORY_MODEL as string
     // Each case owns the capability, even for a model with an in-history catalog default.
     const ctx = await boot([{ id: model, ...inHistory ? { systemPromptUpdate: 'in-history' as const } : {} }])
-    const history: Message[] = [createSystemMessage('Reply to every user message with exactly PROMPT_FIRST.', 'test'), user('Answer now.')]
+    const history: Message[] = [createSystemMessage('Reply to every user message with exactly PROMPT_FIRST.'), user('Answer now.')]
     const reply = async (expected: string) => {
       const saved = JSON.stringify(history)
       const response = await assemble(ctx.llm.stream(options({ model, messages: history, reasoningEffort: ReasoningEffortId('high') })), model)
@@ -60,10 +60,10 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('DeepSeek Messages real API', () 
       history.push(response.message)
     }
     await reply('PROMPT_FIRST')
-    history.push(createSystemMessage('Reply to every user message with exactly PROMPT_SECOND.', 'test'), user('Answer again.'))
+    history.push(createSystemMessage('Reply to every user message with exactly PROMPT_SECOND.'), user('Answer again.'))
     await reply('PROMPT_SECOND')
     const withoutSystem = history.filter(message => message.role !== 'system')
-    history.splice(0, history.length, createSystemMessage('', 'test'), ...withoutSystem, user('Reply with exactly PROMPT_CLEARED.'))
+    history.splice(0, history.length, createSystemMessage(''), ...withoutSystem, user('Reply with exactly PROMPT_CLEARED.'))
     await reply('PROMPT_CLEARED')
   })
 

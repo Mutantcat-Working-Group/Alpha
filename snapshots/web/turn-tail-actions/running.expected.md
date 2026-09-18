@@ -18,14 +18,8 @@
 - button "Copy":
   - img
 - tooltip "Copy"
-- button "Context injection @mutantcat/dsh-system-prompt":
-  - img
-  - img
-  - text: Context injection @mutantcat/dsh-system-prompt
-- button "Think The user wants me to begin with \"Reading the workspace now.\" and call bash with \"echo alpha\" in the same message. Then after the tool result, reply with the single word DONE and stop.":
-  - img
-  - img
-  - text: Think The user wants me to begin with "Reading the workspace now." and call bash with "echo alpha" in the same message. Then after the tool result, reply with the single word DONE and stop.
+- button "Context injection runtime-context"
+- button "Think The user wants me to begin with \"Reading the workspace now.\" and call bash with \"echo alpha\" in the same message. Then after the tool result, reply with the single word DONE and stop."
 - paragraph: Reading the workspace now.
 - button "Bash Print alpha to stdout":
   - img

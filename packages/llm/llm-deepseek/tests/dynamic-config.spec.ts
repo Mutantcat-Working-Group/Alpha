@@ -12,13 +12,20 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@mutantcat/dsh-attachment'
-import { credentialRef } from '@mutantcat/dsh-credentials'
-import { LocalCredentialProvider } from '@mutantcat/dsh-credentials-local'
-import { FileSettingsProvider } from '@mutantcat/dsh-settings-file'
-import * as LlmDeepSeek from '@mutantcat/dsh-llm-deepseek'
+} from '@deepseek-ai/dsh-attachment'
+import { credentialRef } from '@deepseek-ai/dsh-credentials'
+import { LocalCredentialProvider } from '@deepseek-ai/dsh-credentials-local'
+import { FileSettingsProvider } from '@deepseek-ai/dsh-settings-file'
+import * as LlmDeepSeek from '@deepseek-ai/dsh-llm-deepseek'
+import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'test': { kind: 'test' } & ContextFormed
+  }
+}
 
 const NS = 'llm-deepseek'
 const KEY_REF = credentialRef('DEEPSEEK_API_KEY')
@@ -214,7 +221,7 @@ describe('request-level dynamic configuration', () => {
         { type: 'image', attachment: IMAGE_REF },
         { type: 'image', attachment: IMAGE_REF },
       ],
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'test' },
     })]
 
     await assemble(ctx, { model: 'deepseek-flash', messages })
@@ -232,7 +239,7 @@ describe('request-level dynamic configuration', () => {
           { type: 'image', attachment: IMAGE_REF, offloaded: true },
           { type: 'image', attachment: IMAGE_REF },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'test' },
       })],
     })
 

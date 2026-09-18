@@ -167,7 +167,7 @@ function systemMessage(text: string) {
     id: `system-${text}`,
     role: 'system',
     content: [{ type: 'text', text }],
-    source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' },
+    source: { kind: 'system-prompt' },
   }
 }
 
@@ -506,7 +506,7 @@ describe('Trajectory conversation Definitions', () => {
         id: 'checkpoint',
         role: 'user',
         content: [{ type: 'text', text: 'summary checkpoint' }],
-        source: { kind: 'plugin', plugin: 'compact', compactionId: 'complete' },
+        source: { kind: 'compact-checkpoint', compactionId: 'complete' },
       }),
       at(4, 'compaction/end', { compactionId: 'complete', turn: null }),
       at(5, 'compaction/start', { compactionId: 'orphan', turn: null }),
@@ -799,7 +799,7 @@ describe('Trajectory conversation Definitions', () => {
       at(11, 'step/start', { turn: 1, step: 3 }),
       at(12, 'user/message', {
         turn: 1, step: 3, id: 'summary', role: 'user',
-        content: [{ type: 'text', text: 'summary' }], source: { kind: 'plugin', plugin: 'compaction' },
+        content: [{ type: 'text', text: 'summary' }], source: { kind: 'compact-checkpoint', compactionId: 'compaction-1' },
       }, { surfaceOp: { op: 'replace', startSeq: 5, endSeq: 9 }, sourceEventSeqs: [5, 8, 9] }),
       at(13, 'request/header', {
         reason: 'series', header: { config: { provider: 'test', model: 'test' }, tools: [] },
@@ -852,7 +852,7 @@ describe('Trajectory conversation Definitions', () => {
       at(6, 'system/message', { turn: 1, step: 1, message: systemMessage('B') }, { surfaceOp: 'append' }),
       at(7, 'request/header', { reason: 'resume', header: { config: { provider: 'test', model: 'test' } } }),
       at(8, 'user/message', {
-        ...systemMessage('summary'), role: 'user', source: { kind: 'plugin', plugin: 'compaction' },
+        ...systemMessage('summary'), role: 'user', source: { kind: 'compact-checkpoint', compactionId: 'compaction-1' },
       }, { surfaceOp: { op: 'replace', startSeq: 2, endSeq: 6 } }),
       at(9, 'assistant/message', { turn: 1, step: 1, message: assistantMessage('reply', 'reply') }),
     ])

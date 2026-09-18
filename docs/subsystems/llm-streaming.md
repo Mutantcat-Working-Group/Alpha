@@ -2,7 +2,7 @@
 
 English | [中文](llm-streaming.zh.md)
 
-The conversation and streaming types from [`packages/llm`](../../packages/llm/README.md): the `Message`/`ContentBlock` variants every request and durable history share, the fully assembled model request, the raw `StreamChunk` protocol, the adapter contract every adapter must implement, and the shared assembler. The [core packages](core.md) hold and log these values on every turn; this page declares them.
+The conversation and streaming types from [`packages/llm`](../../packages/llm/README.md): durable `Message` values, request-only user inputs, shared `ContentBlock` variants, the fully assembled model request, the raw `StreamChunk` protocol, the adapter contract every adapter must implement, and the shared assembler. The [core packages](core.md) hold and log these values on every turn; this page declares them.
 
 Source: [`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
 
@@ -71,14 +71,17 @@ Where a message came from is itself a merge-extensible sum type:
 
 ```ts type-equiv
 /**
- * Where a message (or injected content) came from.
- * Merge-extensible sum type — plugins add their own `kind`s.
+ * Where a message (or injected content) came from, in the harness's own
+ * vocabulary. Merge-extensible sum type — each producer declares its own
+ * `kind` in its own module; there is no shared catch-all `plugin` kind.
+ * Model and tool sources answer their role messages; user messages carry any
+ * producer's kind, and consumers fall through unknown kinds.
  */
 interface MessageSourceMap {
   user: { kind: 'user' }
-  plugin: { kind: 'plugin'; plugin: string } & ContextFormed
   model: ModelMessageSource
   tool: ToolMessageSource
+  'system-prompt': SystemPromptMessageSource
 }
 ```
 
@@ -567,6 +570,23 @@ interface LlmResolvedModelInfo extends LlmModelInfo {
 }
 ```
 
+Auxiliary callers can provide user content without a durable identity or source. Existing `Message[]` histories remain valid request inputs. Session writes, Agent delivery, and recorded title requests continue to require durable messages.
+
+```ts type-equiv
+/** User input for one LLM request; it has no durable Session identity or source. */
+interface RequestUserInput {
+  readonly role: 'user'
+  readonly content: UserMessage['content']
+  readonly id?: never
+  readonly source?: never
+}
+```
+
+```ts type-equiv
+/** A durable conversation message or a user input used only for one request. */
+type RequestMessage = Message | RequestUserInput
+```
+
 ```ts type-equiv
 /** A single model request, fully assembled. */
 interface GenerateOptions {
@@ -579,9 +599,9 @@ interface GenerateOptions {
    * Ordered conversation messages, exactly as the provider sees them. A
    * loop-built request passes the derived history (dsh-agent-loop), whose
    * leading system-role message carries the system prompt; a hand-built
-   * one-shot passes any list.
+   * one-shot may include identity-free user inputs.
    */
-  messages: Message[]
+  messages: RequestMessage[]
   /**
    * System prompt text for one-shot callers; adapters map it to the provider's
    * system slot ahead of `messages`. Loop-built requests leave it undefined.
@@ -1079,8 +1099,8 @@ Waterfall around every streaming model call (retry, replay, routing). Bound to t
  *   process-local {@link markAgentLoopRequest} identity and arrives deep-frozen
  *   (mutation throws): its content is a pure function of the session log (the
  *   reconstructability Agent Note), so listeners read it, never rewrite it.
- *   Hand-built calls do not carry that marker; their messages already obey
- *   the immutable creation contract.
+ *   Hand-built calls do not carry that marker; callers own their request
+ *   inputs and must keep them unchanged until the stream settles.
  * @mode waterfall
  */
 'llm/stream'(this: LlmRuntime, options: GenerateOptions, next: () => AsyncIterable<StreamChunk>): AsyncIterable<StreamChunk>

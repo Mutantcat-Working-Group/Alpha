@@ -2,7 +2,7 @@
 
 [English](llm-streaming.md) | 中文
 
-[`packages/llm`](../../packages/llm/README.zh.md) 提供对话与流式输出类型：每个请求和持久历史共用的 `Message`/`ContentBlock` 变体、完整组装的模型请求、原始 `StreamChunk` 协议、每个适配器必须实现的适配器约定（adapter contract），以及共享的 assembler。[核心包](core.zh.md)在每个轮次持有并记录这些值；本页声明它们。
+[`packages/llm`](../../packages/llm/README.zh.md) 提供对话与流式输出类型：持久 `Message` 值、仅供请求使用的 user 输入、共用的 `ContentBlock` 变体、完整组装的模型请求、原始 `StreamChunk` 协议、每个适配器必须实现的适配器约定（adapter contract），以及共享的 assembler。[核心包](core.zh.md)在每个轮次持有并记录这些值；本页声明它们。
 
 源码：[`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
 
@@ -71,14 +71,17 @@ type Message = MessageRoleMap[keyof MessageRoleMap]
 
 ```ts type-equiv
 /**
- * Where a message (or injected content) came from.
- * Merge-extensible sum type — plugins add their own `kind`s.
+ * Where a message (or injected content) came from, in the harness's own
+ * vocabulary. Merge-extensible sum type — each producer declares its own
+ * `kind` in its own module; there is no shared catch-all `plugin` kind.
+ * Model and tool sources answer their role messages; user messages carry any
+ * producer's kind, and consumers fall through unknown kinds.
  */
 interface MessageSourceMap {
   user: { kind: 'user' }
-  plugin: { kind: 'plugin'; plugin: string } & ContextFormed
   model: ModelMessageSource
   tool: ToolMessageSource
+  'system-prompt': SystemPromptMessageSource
 }
 ```
 
@@ -573,6 +576,23 @@ interface LlmResolvedModelInfo extends LlmModelInfo {
 }
 ```
 
+辅助调用方可以提供不含持久身份或来源的 user 内容。既有 `Message[]` 历史仍然是有效的请求输入。Session 写入、Agent 投递和已记录的标题请求仍然要求持久消息。
+
+```ts type-equiv
+/** User input for one LLM request; it has no durable Session identity or source. */
+interface RequestUserInput {
+  readonly role: 'user'
+  readonly content: UserMessage['content']
+  readonly id?: never
+  readonly source?: never
+}
+```
+
+```ts type-equiv
+/** A durable conversation message or a user input used only for one request. */
+type RequestMessage = Message | RequestUserInput
+```
+
 ```ts type-equiv
 /** A single model request, fully assembled. */
 interface GenerateOptions {
@@ -585,9 +605,9 @@ interface GenerateOptions {
    * Ordered conversation messages, exactly as the provider sees them. A
    * loop-built request passes the derived history (dsh-agent-loop), whose
    * leading system-role message carries the system prompt; a hand-built
-   * one-shot passes any list.
+   * one-shot may include identity-free user inputs.
    */
-  messages: Message[]
+  messages: RequestMessage[]
   /**
    * System prompt text for one-shot callers; adapters map it to the provider's
    * system slot ahead of `messages`. Loop-built requests leave it undefined.
@@ -1085,8 +1105,8 @@ Waterfall around every streaming model call (retry, replay, routing). Bound to t
  *   process-local {@link markAgentLoopRequest} identity and arrives deep-frozen
  *   (mutation throws): its content is a pure function of the session log (the
  *   reconstructability Agent Note), so listeners read it, never rewrite it.
- *   Hand-built calls do not carry that marker; their messages already obey
- *   the immutable creation contract.
+ *   Hand-built calls do not carry that marker; callers own their request
+ *   inputs and must keep them unchanged until the stream settles.
  * @mode waterfall
  */
 'llm/stream'(this: LlmRuntime, options: GenerateOptions, next: () => AsyncIterable<StreamChunk>): AsyncIterable<StreamChunk>

@@ -672,7 +672,7 @@ describe('completion notice delivery', () => {
     emitAgentEvent(ctx, owner, 'agent/inbox/claimed', {
       message: createUserMessage({
         content: [{ type: 'text', text: 'background job bash-1 finished' }],
-        source: { kind: 'plugin', plugin: 'tool-jobs', form: 'notice', summary: 'bash' },
+        source: { kind: 'tool-jobs', form: 'notice', summary: 'bash' },
       }),
       turn: 1,
     })
@@ -697,8 +697,7 @@ describe('completion notices', () => {
       role: 'user',
       content: [{ type: 'text', text: 'background job bash-1 (bash: pnpm test) finished [status: completed, exit code: 0]. Read its output with job_output.' }],
       source: {
-        kind: 'plugin',
-        plugin: 'tool-jobs',
+        kind: 'tool-jobs',
         form: 'notice',
         summary: 'bash pnpm test [status: completed, exit code: 0]',
       },
@@ -728,8 +727,7 @@ describe('completion notices', () => {
         // The label and status detail are unbounded caller text, so the durable
         // one-line account caps itself rather than committing their full length.
         source: {
-          kind: 'plugin',
-          plugin: 'tool-jobs',
+          kind: 'tool-jobs',
           form: 'notice',
           summary: `subagent ${'x'.repeat(110)}…`,
         },

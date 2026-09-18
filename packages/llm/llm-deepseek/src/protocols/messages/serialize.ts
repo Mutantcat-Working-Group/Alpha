@@ -1,8 +1,8 @@
 /** Map system snapshots and conversation turns to Messages using the configured route capability. */
 
-import { LlmError, requestImageHandleText } from '@mutantcat/dsh-llm'
-import type { ContentBlock, GenerateOptions, ImageAttachmentAccessResolver, Message } from '@mutantcat/dsh-llm'
-import type { ImageAttachmentRef, RequestImageAttachment } from '@mutantcat/dsh-attachment'
+import { LlmError, requestImageHandleText } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, GenerateOptions, ImageAttachmentAccessResolver, Message, RequestMessage } from '@deepseek-ai/dsh-llm'
+import type { ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
 import type { DeepSeekConnectionOptions as Connection } from '../../common/types.ts'
 import type { DeepSeekFileId } from '../../common/file-id.ts'
 import { readReplay } from './replay.ts'
@@ -49,7 +49,7 @@ function assistant(message: Message, model: string, onReplayDegrade?: (reason: s
  * @returns the Messages API JSON body.
  */
 export function serialize(
-  options: GenerateOptions, connection: Connection, history: readonly Message[],
+  options: GenerateOptions, connection: Connection, history: readonly RequestMessage[],
   images: ReadonlyMap<ImageAttachmentRef['attachmentId'], RequestImageAttachment>, access: ImageAttachmentAccessResolver,
   onReplayDegrade?: (reason: string) => void,
   fileIds?: ReadonlyMap<ImageAttachmentRef['attachmentId'], DeepSeekFileId>,

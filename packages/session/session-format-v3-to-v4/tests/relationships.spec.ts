@@ -40,7 +40,7 @@ const compact = (): Row[] => [
   row('compaction/start', { compactionId: 'c', turn: 1, sourceCommandId: 'cmd' }),
   row('compaction/summary', { compactionId: 'c', sourceCommandId: 'cmd', summary: [{ type: 'text', text: 'summary' }], shadowedRange: { start: 1, end: 1 }, shadowedSeqs: [1], shadowedTokenCount: 1, provider: 'mock', model: 'mock' }),
   { ...input('compact-checkpoint'), data: {
-    ...user('compact-checkpoint'), id: 'checkpoint', source: { kind: 'plugin', plugin: 'compact', compactionId: 'c', sourceCommandId: 'cmd' },
+    ...user('compact-checkpoint'), id: 'checkpoint', source: { kind: 'compact-checkpoint', compactionId: 'c', sourceCommandId: 'cmd' },
   }, surfaceOp: { op: 'replace', startSeq: 1, endSeq: 1 }, sourceEventSeqs: [1, 2, 3] },
   row('compaction/end', { compactionId: 'c', sourceCommandId: 'cmd', turn: 1 }),
   row('turn/end', { turn: 1, reason: { kind: 'completed' } }),
@@ -108,7 +108,7 @@ describe('mandatory V4 lifecycle restoration', () => {
 
 describe('mandatory V4 compaction restoration', () => {
   it('retains matching checkpoint sources and inherited unfinished compactions', () => {
-    expect(reopen(compact()).messages[0]?.source).toEqual({ kind: 'plugin', plugin: 'compact', compactionId: 'c', sourceCommandId: 'cmd' })
+    expect(reopen(compact()).messages[0]?.source).toEqual({ kind: 'compact-checkpoint', compactionId: 'c', sourceCommandId: 'cmd' })
     const inherited = [row('compaction/start', { compactionId: 'old', turn: null }), ...begin(), ...end(), row('session/end-seed', { inherited: true })]
     expect(() => reopen(inherited, 5, true)).not.toThrow()
     expect(() => reopen([row('compaction/start', { compactionId: 'c', turn: null }), row('compaction/end', { compactionId: 'c', turn: null, error: 'cancelled' })])).not.toThrow()
@@ -116,8 +116,8 @@ describe('mandatory V4 compaction restoration', () => {
   })
 
   it.each([
-    ['checkpoint identity', change(compact(), 4, { source: { kind: 'plugin', plugin: 'compact', compactionId: 'WRONG', sourceCommandId: 'cmd' } })],
-    ['checkpoint command', change(compact(), 4, { source: { kind: 'plugin', plugin: 'compact', compactionId: 'c', sourceCommandId: 'WRONG' } })],
+    ['checkpoint identity', change(compact(), 4, { source: { kind: 'compact-checkpoint', compactionId: 'WRONG', sourceCommandId: 'cmd' } })],
+    ['checkpoint command', change(compact(), 4, { source: { kind: 'compact-checkpoint', compactionId: 'c', sourceCommandId: 'WRONG' } })],
     ['summary identity', change(compact(), 3, { compactionId: 'WRONG' })],
     ['end identity', change(compact(), 5, { compactionId: 'WRONG' })],
     ['end turn', change(compact(), 5, { turn: null })],
@@ -177,7 +177,7 @@ describe('mandatory V4 dependent event restoration', () => {
 
   it('requires titles and durable title requests to cite earlier human messages', () => {
     const title = row('session/title', { title: 'Example', source: { kind: 'generated' }, messageSeqs: [0] })
-    const requestTitle = row('session/title-llm-request', { messageSeqs: [0], messages: [{ ...user(), source: { kind: 'plugin', plugin: 'dsh-session-title-llm' }, content: [{ type: 'text', text: 'historical frame with original coordinates' }] }] })
+    const requestTitle = row('session/title-llm-request', { messageSeqs: [0], messages: [{ ...user('dsh-session-title-llm'), content: [{ type: 'text', text: 'historical frame with original coordinates' }] }] })
     expect(() => reopen([input(), title, requestTitle, row('session/title', { title: 'Manual', source: { kind: 'user' }, messageSeqs: [] })])).not.toThrow()
     for (const rows of [[input('external'), title], [input(), { ...title, data: { ...title.data, source: { kind: 'user' } } }], [input(), { ...title, data: { ...title.data, messageSeqs: [0, 0] } }], [input(), { ...title, data: { ...title.data, messageSeqs: [1] } }], [input(), { ...requestTitle, data: { ...requestTitle.data, messages: [user()] } }], [input(), { ...requestTitle, data: { ...requestTitle.data, messageSeqs: [] } }]]) {
       expect(() => reopen(rows)).toThrow()
@@ -187,7 +187,7 @@ describe('mandatory V4 dependent event restoration', () => {
 
 
 describe('V4 protected system surface and malformed relationship inputs', () => {
-  const system = (): Row => ({ ...row('system/message', { ...step, message: { id: 'system', role: 'system', source: { kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }, content: [{ type: 'text', text: 'system' }] } }), surfaceOp: 'append' })
+  const system = (): Row => ({ ...row('system/message', { ...step, message: { id: 'system', role: 'system', source: { kind: 'system-prompt' }, content: [{ type: 'text', text: 'system' }] } }), surfaceOp: 'append' })
   it('keeps the first system head protected across exact replacements', () => {
     const replacement = { ...system(), surfaceOp: { op: 'replace', startSeq: 2, endSeq: 2 }, sourceEventSeqs: [2] }
     expect(() => reopen([...begin(), system(), input(), replacement, system(), ...end()])).not.toThrow()

@@ -433,6 +433,13 @@ describe('parseSessionLog', () => {
     },
     surfaceOp: 'append',
   }
+  const migratedSystemHead = {
+    ...emptySystemHead,
+    data: {
+      ...emptySystemHead.data,
+      message: { ...emptySystemHead.data.message, source: { kind: 'system-prompt' } },
+    },
+  }
 
   it('reports invalid JSON at its physical source line', () => {
     const header = JSON.stringify({ type: 'session', version: 0, id: 's1', createdAt: 0 })
@@ -535,7 +542,7 @@ describe('parseSessionLog', () => {
       type: 'text-chunks', seq0: 2, time0: 0,
       data: { turn: 1, step: 1, index: 0, dt: [0, 0], texts: ['a', 'b', 'c'] },
     })
-    expect(parseSessionLog(`${header}\n${turn}\n${step}\n${row}\n`).slice(2)).toEqual([emptySystemHead, {
+    expect(parseSessionLog(`${header}\n${turn}\n${step}\n${row}\n`).slice(2)).toEqual([migratedSystemHead, {
       type: 'assistant/attempt',
       seq: 3,
       time: 0,
@@ -558,7 +565,7 @@ describe('parseSessionLog', () => {
     expect(parseSessionLog(`${header}\n${ordinary}\n${step}\n${packed}\n`)).toEqual([
       { type: 'turn/start', seq: 0, time: 0, data: { turn: 1 } },
       { type: 'step/start', seq: 1, time: 0, data: { turn: 1, step: 1 } },
-      emptySystemHead,
+      migratedSystemHead,
       {
         type: 'assistant/attempt',
         seq: 3,
@@ -587,13 +594,13 @@ describe('parseSessionLog', () => {
     ].join('\n')
 
     expect(parseSessionLog(source).slice(2)).toEqual([
-      emptySystemHead,
+      migratedSystemHead,
       {
-        ...emptySystemHead,
+        ...migratedSystemHead,
         seq: 3,
         data: {
-          ...emptySystemHead.data,
-          message: { ...emptySystemHead.data.message, content: [{ type: 'text', text: '{{system}}' }] },
+          ...migratedSystemHead.data,
+          message: { ...migratedSystemHead.data.message, content: [{ type: 'text', text: '{{system}}' }] },
         },
         surfaceOp: { op: 'replace', startSeq: 2, endSeq: 2 },
         sourceEventSeqs: [2],
@@ -713,7 +720,7 @@ describe('parseSessionLog', () => {
       }),
     ].join('\n')
 
-    expect(parseSessionLog(source).slice(2)).toEqual([emptySystemHead, {
+    expect(parseSessionLog(source).slice(2)).toEqual([migratedSystemHead, {
       type: 'assistant/attempt',
       seq: 3,
       time: 0,
