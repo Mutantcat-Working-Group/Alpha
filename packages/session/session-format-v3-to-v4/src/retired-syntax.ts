@@ -37,7 +37,7 @@ export function assertV4RetiredSyntax(row: unknown): void {
     return
   }
   if (!isSessionFormatJsonObject(data)) return
-  const subject = `format v4 ${row['type']} at seq ${row['seq']} content`
+  const subject = `format v4 ${String(row['type'])} at seq ${String(row['seq'])} content`
   switch (row['type']) {
     case 'user/message':
       assertContent(data['content'], subject)
