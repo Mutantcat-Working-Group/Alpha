@@ -44,7 +44,10 @@ export const releasedV4SessionFormatCodec = Object.freeze({
     return { ...releasedV2SessionFormatCodec.encodeHeader({ ...header, version: 2 }, inheritedEventCount), version: 4 }
   },
   encodeEvent(event: SessionFormatEvent) {
-    if (event.type === 'developer/message' && event['ignorable'] === true) assertV4DeveloperData(event)
+    if (event.type === 'developer/message' && event['ignorable'] === true) {
+      assertV4DeveloperData(event)
+      assertV4RetiredSyntax(event)
+    }
     assertV4RowAdmission(event)
     return releasedV2SessionFormatCodec.encodeEvent(event)
   },

@@ -18,6 +18,10 @@ An unfinished tail may retain an open turn, step, tool call, or compaction. A cl
 
 Installed Session adoption continues to own event envelopes, message roles and metadata, canonical request headers, and surface replacement reference coverage. Optional runtime invariants provide diagnostics; their installation is not required for durable admission. Native system-message admission also validates coordinates, identity, content blocks, and known image/tool-call fields before physical recovery can discard rows. Additional JSON fields and unknown nonempty content tags remain intact; retired tool-result wrappers are refused. Retired `request/header.header.system` and required `tool/code-dispatch*` tags remain hard refusals before recovery; obsolete ignorable PTC records remain opaque. Physical framing alone does not establish semantic validity.
 
+A retired tool-result wrapper outside its owning `tool/result` row would require changing the event, role, or source to represent it in V4. The adjacent migration lifts only the canonical owned wrapper; target restoration refuses wrappers remaining in interpreted content. Native row admission applies the same refusal before recoverable tail suppression. The check follows declared message, content, and Assistant-stream slots instead of recursively inspecting JSON, so tool arguments, replay state, schema parameters, nested extensions, and unknown ignorable payloads retain their recorded values.
+
+`EpochHeader.system` explicitly reserves the retired key as `system?: never` with `@persistenceReserved`. The catalog retains its empty value set so permitting a value is a change to a forbidden field, rather than an ordinary optional-field addition. The native reader and Session adoption continue to reject that key; system prompts remain `system/message` events.
+
 ## Alternatives considered
 
 **Project V4 back into a frozen V3 validation view.** This couples current acceptance to retired representations and invites new fields to disappear in the projection. Frozen generations remain independently readable, while the current restorer interprets its own fields.
@@ -26,4 +30,4 @@ Installed Session adoption continues to own event envelopes, message roles and m
 
 ## Consequences
 
-The native restorer maintains one bounded state machine per read and rejects contradictions before successor publication. Frozen V0–V3 validators and committed Session generations remain unchanged. Public catalog regressions cover invalid relationships alongside partial tails, inherited cuts, immutable unknown attribution, and complete tool exchanges; these checks do not require a new Session version because V4 is unreleased.
+The native restorer maintains one bounded state machine per read and rejects contradictions before successor publication. Frozen V0–V3 validators and committed Session generations remain unchanged. Public catalog regressions cover invalid relationships alongside partial tails, inherited cuts, immutable unknown attribution, and complete tool exchanges; these checks enforce the declared V4 representation without changing its schemas. Breaking changes require a successor; compatible additions use new acknowledgements, and implementation fixes preserve the declared meaning.
