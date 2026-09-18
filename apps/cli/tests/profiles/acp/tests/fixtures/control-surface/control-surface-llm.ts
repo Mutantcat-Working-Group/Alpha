@@ -48,7 +48,7 @@ class ControlSurfaceAdapter extends LlmAdapter {
     const userText = current.flatMap(message => message.content)
       .flatMap(block => block.type === 'text' ? [block.text] : [])
       .join('')
-    const hasToolResult = current.some(message => message.content.some(block => block.type === 'tool-result'))
+    const hasToolResult = current.some(message => message.role === 'tool')
     if (!hasToolResult) {
       const callId = ToolCallId(userText.includes('cancel') ? 'control-cancel-add' : 'control-add')
       yield { type: 'block-start', index: 0, blockType: 'reasoning' }

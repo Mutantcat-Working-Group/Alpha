@@ -101,7 +101,7 @@ class ShippedAutoAdapter extends LlmAdapter {
       }))
       return
     }
-    if (options.messages.some(message => message.content.some(block => block.type === 'tool-result'))) {
+    if (options.messages.some(message => message.role === 'tool')) {
       yield* textChunks(AUTO_FINAL_TEXT)
       return
     }
@@ -429,10 +429,9 @@ function toolOutcomes(events: readonly SessionEvent[]): Array<{ name: string; co
   }
   return events.flatMap((event) => {
     if (event.type !== 'tool/result') return []
-    const block = event.data.message.content.find(item => item.type === 'tool-result')
-    if (block === undefined) return []
-    const name = names.get(block.toolCallId)
-    if (name === undefined) throw new Error(`tool result ${block.toolCallId} has no matching call`)
+    const { toolCallId } = event.data.message
+    const name = names.get(toolCallId)
+    if (name === undefined) throw new Error(`tool result ${toolCallId} has no matching call`)
     return [{ name, ...event.data.error === undefined ? {} : { code: event.data.error.code } }]
   })
 }
@@ -794,7 +793,7 @@ it('routes one browser-authored Auto request through the same model before a rea
   expect(prompt).toBeDefined()
   const result = events.find((event): event is Extract<SessionEvent, { type: 'tool/result' }> => (
     event.type === 'tool/result'
-      && event.data.message.content.some(block => block.toolCallId === AUTO_CALL_ID)
+      && event.data.message.toolCallId === AUTO_CALL_ID
   ))
   expect(result?.data.error).toEqual({
     name: 'AutoReviewDeniedError',

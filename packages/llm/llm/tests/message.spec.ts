@@ -83,14 +83,11 @@ describe('message construction', () => {
     })
 
     expect(message).toMatchObject({
-      role: 'user',
+      role: 'tool',
+      toolCallId: callId,
+      isError: false,
       source: { kind: 'tool', callId },
-      content: [{
-        type: 'tool-result',
-        toolCallId: callId,
-        content: [{ type: 'text', text: 'result' }],
-        isError: false,
-      }],
+      content: [{ type: 'text', text: 'result' }],
     })
     expect(message.id).not.toHaveLength(0)
     expect(Object.isFrozen(message)).toBe(true)

@@ -17,7 +17,8 @@ import LlmRuntime, {
   GenerateOptions,
   LlmAdapter,
   StreamChunk,
-} from '@mutantcat/dsh-llm'
+  type ToolResultMessage,
+} from '@deepseek-ai/dsh-llm'
 import {
   type Config,
   type ReplayEntry,
@@ -76,6 +77,25 @@ function sessionJsonl(
   return [headerLine, ...events.map(event => JSON.stringify(event))].join('\n') + '\n'
 }
 
+/**
+ * Released v2 canonical tool-result message: a user-role wrapper row.
+ * @param callId - the released tool call the result answers.
+ * @returns JSON-only wrapper shape for historical fixtures.
+ */
+function releasedV2ResultMessage(callId: ToolCallId): ToolResultMessage {
+  return {
+    id: `${callId}-result`,
+    role: 'user',
+    source: { kind: 'tool', callId },
+    content: [{
+      type: 'tool-result',
+      toolCallId: callId,
+      content: [],
+      isError: false,
+    }],
+  } as unknown as ToolResultMessage
+}
+
 /** Build a valid one-turn Session around recorded model calls. */
 function replaySessionJsonl(
   calls: readonly StreamChunk[][],
@@ -102,15 +122,14 @@ function replaySessionJsonl(
           name: chunk.block.name,
           arguments: chunk.block.arguments,
         })
+        const message = version >= 3
+          ? createToolResultMessage({ callId: chunk.block.id, content: [], isError: false })
+          : releasedV2ResultMessage(chunk.block.id)
         events.push({
           type: 'tool/result',
           seq: SessionSeq(seq++),
           time: 0,
-          data: {
-            turn: 1,
-            step,
-            message: createToolResultMessage({ callId: chunk.block.id, content: [], isError: false }),
-          },
+          data: { turn: 1, step, message },
           surfaceOp: 'append',
         })
       }

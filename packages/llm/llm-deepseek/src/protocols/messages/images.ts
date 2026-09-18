@@ -23,7 +23,6 @@ function bounds(connection: Connection, representation: 'raw' | 'base64') {
 function* imageRefs(blocks: readonly ContentBlock[]): Generator<ImageAttachmentRef> {
   for (const block of blocks) {
     if (block.type === 'image') yield block.attachment
-    else if (block.type === 'tool-result') yield* imageRefs(block.content)
   }
 }
 
@@ -47,7 +46,7 @@ export async function prepareImages(
   if (model?.inputModalities?.includes('image') !== true || attachments === undefined) {
     throw new LlmError('DeepSeek Messages image input requires a vision model and attachment service', 'UNSUPPORTED_CONTENT')
   }
-  if (messages.some(message => message.role !== 'user' && contentHasImage(message.content))) {
+  if (messages.some(message => message.role !== 'user' && message.role !== 'tool' && contentHasImage(message.content))) {
     throw new LlmError('DeepSeek Messages supports images only in user messages and tool results', 'UNSUPPORTED_CONTENT')
   }
   for (const message of messages) {

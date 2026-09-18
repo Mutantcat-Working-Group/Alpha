@@ -11,14 +11,14 @@ import type {
   AssistantStreamFrame,
   CreateAgentOptions,
   ResumeAgentOptions,
-} from '@mutantcat/dsh-agent'
-import AgentDefaultModelConfig from '@mutantcat/dsh-agent-default-model'
-import { LlmAttemptId, ToolCallId, createAssistantMessage, createToolResultMessage, type StreamChunk } from '@mutantcat/dsh-llm'
-import SessionStore from '@mutantcat/dsh-session'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import type { Session, SessionId, UserMessage } from '@mutantcat/dsh-session'
-import { SessionQueryError } from '@mutantcat/dsh-session-query'
-import { createInboxStub } from '@mutantcat/dsh-agent-loop-testkit'
+} from '@deepseek-ai/dsh-agent'
+import AgentDefaultModelConfig from '@deepseek-ai/dsh-agent-default-model'
+import { LlmAttemptId, ToolCallId, createAssistantMessage, createToolResultMessage, type MessageId, type StreamChunk } from '@deepseek-ai/dsh-llm'
+import SessionStore from '@deepseek-ai/dsh-session'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import type { Session, SessionId, UserMessage } from '@deepseek-ai/dsh-session'
+import { SessionQueryError } from '@deepseek-ai/dsh-session-query'
+import { createInboxStub } from '@deepseek-ai/dsh-agent-loop-testkit'
 import { apply, Config } from '../src/index.ts'
 import { internals } from '../src/runner-internals.ts'
 
@@ -263,8 +263,8 @@ describe('headless runner', () => {
     const test = await bench({
       before(session) {
         const setupMessage = {
-          role: 'user', content: [{ type: 'text', text: 'setup' }], source: { kind: 'user' }, id: 'setup',
-        } as UserMessage
+          role: 'user', content: [{ type: 'text', text: 'setup' }], source: { kind: 'user' }, id: brandString<MessageId>('setup'),
+        } satisfies UserMessage
         appendTurn(session, 0, setupMessage, 'pre-task noise', true)
       },
       async afterPrompt(session, message) {
@@ -607,8 +607,8 @@ describe('headless runner', () => {
     })
     const session = test.ctx.sessions.create(brandString<SessionId>('session-exact'), { meta: { cwd: process.cwd() } })
     const history = {
-      role: 'user', content: [{ type: 'text', text: 'earlier' }], source: { kind: 'user' }, id: 'history',
-    } as UserMessage
+      role: 'user', content: [{ type: 'text', text: 'earlier' }], source: { kind: 'user' }, id: brandString<MessageId>('history'),
+    } satisfies UserMessage
     appendTurn(session, 0, history, 'earlier answer', true)
     const before = session.seq
     expect(await test.run()).toMatchObject({ code: 0, out: 'resumed answer\n', err: '' })
@@ -789,8 +789,8 @@ describe('headless runner', () => {
     const test = await bench({
       before(session) {
         const history = {
-          role: 'user', content: [{ type: 'text', text: 'earlier' }], source: { kind: 'user' }, id: 'history',
-        } as UserMessage
+          role: 'user', content: [{ type: 'text', text: 'earlier' }], source: { kind: 'user' }, id: brandString<MessageId>('history'),
+        } satisfies UserMessage
         appendTurn(session, 0, history, 'earlier answer', true)
         selectPreset(session, 'minimal')
       },
@@ -845,8 +845,8 @@ describe('headless runner', () => {
     const test = await bench({
       before(session) {
         const history = {
-          role: 'user', content: [{ type: 'text', text: 'earlier' }], source: { kind: 'user' }, id: 'history',
-        } as UserMessage
+          role: 'user', content: [{ type: 'text', text: 'earlier' }], source: { kind: 'user' }, id: brandString<MessageId>('history'),
+        } satisfies UserMessage
         appendTurn(session, 0, history, 'earlier answer', true)
         capturedLength = session.seq
         Object.defineProperty(session, 'eventAt', { value: () => undefined })

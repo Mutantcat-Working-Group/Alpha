@@ -98,10 +98,17 @@ describe.each(causes)('openTurnClosers (cause %o)', (cause) => {
       message: {
         id: `${cause.kind}-tool-result-call-1-3`,
         source: { callId: ToolCallId('call-1') },
-        content: [{ isError: true }],
+        role: 'tool',
+        toolCallId: ToolCallId('call-1'),
+        isError: true,
       },
       error: { code: TOOL_NOT_STARTED },
     })
+    expect(result.type === 'tool/result' && result.data.message.content).toEqual([{
+      type: 'text', text: cause.kind === 'forked'
+        ? 'The history inherited by this branch has no record of this tool call starting. The parent session may have executed it after the fork point. Decide whether to retry from the tool semantics: retry only if the operation is read-only or idempotent; if it may have side effects, first verify external state or ask the user. Do not retry blindly.'
+        : 'The tool call was interrupted before the Harness recorded it as started. Retry it if it is still needed.',
+    }])
   })
 
   it('does NOT synthesize a result for a tool-call that already has one', () => {
@@ -273,6 +280,11 @@ describe.each(causes)('openTurnClosers (cause %o)', (cause) => {
     expect(result.type === 'tool/result' && result.data.error).toEqual({
       name: 'ToolOutcomeUnknownError', code: TOOL_OUTCOME_UNKNOWN,
     })
+    if (result.type !== 'tool/result' || result.data.message.content[0]?.type !== 'text') {
+      throw new Error('expected a text tool result')
+    }
+    expect(result.data.message.content[0].text).toContain('retry only if the operation is read-only or idempotent')
+    expect(result.data.message.content[0].text).toContain('first verify external state or ask the user')
   })
 
   it('handles tool/call without a matching assistant/message entry gracefully', () => {
@@ -317,10 +329,10 @@ describe('openTurnClosers model-visible wording', () => {
 
   function resultText(closers: LogicalSessionEvent[]): string {
     const result = closers[0]
-    if (result?.type !== 'tool/result' || result.data.message.content[0].content[0]?.type !== 'text') {
+    if (result?.type !== 'tool/result' || result.data.message.content[0]?.type !== 'text') {
       throw new Error('expected a text tool result')
     }
-    return result.data.message.content[0].content[0].text
+    return result.data.message.content[0].text
   }
 
   // The exact wording is model-visible: pinned verbatim per cause and lifecycle.

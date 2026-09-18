@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { SessionFormatEventCollector } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent, SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import { sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
-import { releasedV3SessionFormatCodec as previousCodec } from '@deepseek-ai/dsh-session-format-v2-to-v3'
-import { assertReleasedV4Header, assertV4RowAdmission, releasedV3SessionFormatCodec, releasedV4SessionFormatCodec, restoreReleasedV4Artifact } from '../src/index.ts'
+import { releasedV2SessionFormatCodec } from '@deepseek-ai/dsh-session-format-v2-to-v3'
+import { assertReleasedV4Header, assertV4RowAdmission, releasedV4SessionFormatCodec, restoreReleasedV4Artifact } from '../src/index.ts'
 
 const header = { version: 4, id: 'parent', createdAt: 1, isSeeded: false, delegationDepth: 0 }
 const fact: SessionFormatEvent = { type: 'feedback/record', seq: 0, time: 1, data: { text: 'retained' } }
@@ -19,8 +19,7 @@ function restore(events: readonly SessionFormatEvent[], sourceHeader = header) {
 }
 
 describe('V4 framing and restoration', () => {
-  it('reuses the released V3 codec and round trips unchanged V3 event encoding', () => {
-    expect(releasedV3SessionFormatCodec).toBe(previousCodec)
+  it('reuses released V2 physical framing and round trips native V4 rows', () => {
     const physical = releasedV4SessionFormatCodec.encodeHeader(header, 0)
     expect(physical).toEqual({ type: 'session', ...header })
     expect(releasedV4SessionFormatCodec.decodeHeader(physical)).toEqual(header)
@@ -28,7 +27,7 @@ describe('V4 framing and restoration', () => {
     const output = new SessionFormatEventCollector()
     expect(decoder.header).toEqual(header)
     const row = releasedV4SessionFormatCodec.encodeEvent(fact)
-    expect(row).toEqual(releasedV3SessionFormatCodec.encodeEvent(fact))
+    expect(row).toEqual(releasedV2SessionFormatCodec.encodeEvent(fact))
     decoder.decodeRow(row, output)
     expect(decoder.finish(output)).toBe(0)
     expect(output.values).toEqual([fact])
@@ -42,6 +41,24 @@ describe('V4 framing and restoration', () => {
     expect(() => releasedV4SessionFormatCodec.decodeHeader(null)).toThrow('v4 physical')
     expect(() => releasedV4SessionFormatCodec.createDecoder({ ...header, version: 3 }, 'strict')).toThrow('v4 physical')
     expect(() => releasedV4SessionFormatCodec.decodeHeader({ type: 'session', ...header, extra: 1 })).toThrow(/field|member/)
+  })
+
+  it('rejects malformed optional and required native header fields', () => {
+    const { id: _id, ...missingId } = header
+    const malformed = [
+      [missingId, 'lacks required field id'],
+      [{ ...header, extra: true }, 'unexpected field extra'],
+      [{ ...header, id: 7 }, 'id must be a string'],
+      [{ ...header, isSeeded: 'no' }, 'isSeeded must be boolean'],
+      [{ ...header, cwd: 'relative' }, 'cwd must be absolute'],
+      [{ ...header, cwd: 7 }, 'cwd must be absolute'],
+      [{ ...header, parentSession: 7 }, 'parentSession must be a string'],
+      [{ ...header, agentPreset: 7 }, 'agentPreset must be a string'],
+      [{ ...header, origin: 'parent' }, 'origin must be "subagent"'],
+    ] as const
+    for (const [value, message] of malformed) {
+      expect(() => { assertReleasedV4Header(value) }).toThrow(message)
+    }
   })
 
   it('retains predecessor and future delivery generations without activating their watermarks', () => {
@@ -83,6 +100,18 @@ describe('V4 framing and restoration', () => {
     expect(() => restoreReleasedV4Artifact({ ...artifact, inheritedEventCount: 1 }, types)).toThrow('marker')
   })
 
+  it('rejects invalid inherited cuts, sparse rows, and unseeded inherited markers', () => {
+    expect(() => restoreReleasedV4Artifact({ header, inheritedEventCount: 1, events: [] }, types))
+      .toThrow('exceeds its events')
+    expect(() => restoreReleasedV4Artifact({ header, inheritedEventCount: 1, events: [fact] }, types))
+      .toThrow('unseeded format v4 Session has inherited events')
+    expect(() => restoreReleasedV4Artifact({ header, inheritedEventCount: 0,
+      events: [{ ...fact, seq: 1 }] }, types)).toThrow('not dense')
+    expect(() => restoreReleasedV4Artifact({ header, inheritedEventCount: 0,
+      events: [{ type: 'session/end-seed', seq: 0, time: 1, data: { inherited: true } }] }, types))
+      .toThrow('unseeded Session contains an inherited end-seed marker')
+  })
+
   it('preserves unknown ignorable values and requires installed vocabulary for unknown required events', () => {
     const opaque = { type: 'external/opaque', seq: 0, time: 1, data: { untouched: ['a', 3] }, ignorable: true }
     expect(restore([opaque]).events[0]).toBe(opaque)
@@ -92,16 +121,16 @@ describe('V4 framing and restoration', () => {
     expect(restoreReleasedV4Artifact(artifact, new Set([required.type]))).toBe(artifact)
   })
 
-  it.each([
-    { type: 'request/header', seq: 0, time: 1, data: { header: { system: '' } } },
-    { type: 'system/message', seq: 0, time: 1, data: {} },
-    { type: 'tool/code-dispatch', seq: 0, time: 1, data: null },
-  ])('refuses structural $type violations even after recoverable corruption', (row) => {
-    expect(() => { assertV4RowAdmission(row) }).toThrow()
-    const decoder = releasedV4SessionFormatCodec.createDecoder({ type: 'session', ...header }, 'recoverable')
-    const output = new SessionFormatEventCollector()
-    decoder.decodeRow(null, output)
-    expect(() => { decoder.decodeRow(row, output) }).toThrow()
+  it('refuses wrapper-shaped and malformed native tool results before recovery', () => {
+    const wrapper = { type: 'tool/result', seq: 0, time: 1, data: { message: { id: 'result', role: 'user', source: { kind: 'tool', callId: 'call' }, content: [] } } }
+    const malformed = { type: 'tool/result', seq: 0, time: 1, data: { message: { id: 'result', role: 'tool', source: { kind: 'tool', callId: 'call' }, toolCallId: 'call', content: [], isError: 'yes' } } }
+    for (const row of [wrapper, malformed]) {
+      expect(() => { assertV4RowAdmission(row) }).toThrow()
+      const decoder = releasedV4SessionFormatCodec.createDecoder({ type: 'session', ...header }, 'recoverable')
+      const output = new SessionFormatEventCollector()
+      decoder.decodeRow(null, output)
+      expect(() => { decoder.decodeRow(row, output) }).toThrow()
+    }
   })
 
   it('leaves ordinary framing recovery to the released decoder', () => {

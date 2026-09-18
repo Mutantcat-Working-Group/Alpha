@@ -242,8 +242,7 @@ function filteredUserEntries(
   initialPromptSeq: SessionEvent['seq'] | undefined,
   parentSession: string | undefined,
 ): HistoricalUserMessage[] {
-  const retained = content.filter(block => block.type !== 'tool-result')
-  return retained.map(block => ({
+  return content.map(block => ({
     kind: 'user-message',
     role: block.type === 'text'
       ? textRole(source, seq, initialPromptSeq, parentSession)
@@ -424,7 +423,7 @@ function snapshotAutoReview(agent: Agent, exec: ToolExecution): ReviewSnapshot {
     if (event.type === 'user/message') {
       if (event.data.source.kind === 'tool') continue
       if (isProjectInstruction(event.data.source)) {
-        const content = event.data.content.filter(block => block.type !== 'tool-result')
+        const content = event.data.content
         if (content.length > 0) {
           projectInstructions.push({
             kind: 'user-message',

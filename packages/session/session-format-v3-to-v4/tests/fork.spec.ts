@@ -4,15 +4,15 @@ import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
 import TokenMeter from '@deepseek-ai/dsh-token-meter'
 import ToolResultPruner from '@deepseek-ai/dsh-compaction-tool-result-pruner'
 import { SessionFormatEventCollector, type SessionFormatEvent, type SessionFormatArtifact, type SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
-import { releasedV3SessionFormatCodec, restoreReleasedV3Artifact } from '@deepseek-ai/dsh-session-format-v2-to-v3'
 import { Session, SessionId, SessionLogOffset, SessionSeq } from '@deepseek-ai/dsh-session'
 import { buildForkSeed } from '@deepseek-ai/dsh-session/fork'
 import { createMessage, ToolCallId } from '@deepseek-ai/dsh-llm'
 import { releasedV4SessionFormatCodec as codec, assertV4RowAdmission, restoreReleasedV4Artifact } from '../src/index.ts'
+import { assertV4ForkResult } from '../src/fork-result.ts'
 
 type MutableResult = {
   data: {
-    message: { id: string; content: { toolCallId: string; isError: boolean; content: unknown[] }[] }
+    message: { id: string; role: 'tool'; toolCallId: string; isError: boolean; content: unknown[] }
     error: { name: string }
   }
   sourceEventSeqs?: number[]
@@ -44,6 +44,19 @@ function restore(events: readonly SessionFormatEvent[]) {
 }
 
 describe('V4 fork results', () => {
+  it('ignores non-object fork-result data and validates non-object sources', () => {
+    expect(() => { assertV4ForkResult({ type: 'tool/result', data: null }) }).not.toThrow()
+    expect(() => { assertV4ForkResult({
+      type: 'tool/result', seq: 0, surfaceOp: 'append', data: {
+        error: { code: 'TOOL_NOT_STARTED', name: 'ToolNotStartedError' },
+        message: {
+          id: 'forked-tool-result-undefined-0', role: 'tool', toolCallId: 'call-1', isError: true,
+          source: null, content: [{ type: 'text', text: 'not started' }],
+        },
+      },
+    }) }).toThrow('invalid V4 not-started fork result')
+  })
+
   it('persists original fork IDs and wording, restores relationships and retains nested inherited cuts', () => {
     const child = fork()
     const original = artifact(child).events
@@ -63,9 +76,6 @@ describe('V4 fork results', () => {
     const result = child.snapshotEvents().find(event => event.type === 'tool/result')!
     expect(result.data.message.id).toBe(`forked-tool-result-read-one-${result.seq}`)
     expect(JSON.stringify(result)).toContain('The parent session may have executed it after the fork point.')
-    expect(() => restoreReleasedV3Artifact({ header: { ...artifact(child).header, version: 3 }, events: original, inheritedEventCount: 3 }, new Set(original.map(event => event.type)))).toThrow('TOOL_NOT_STARTED')
-    // V3 framing alone does not validate advertised-tool relationships.
-    expect(releasedV3SessionFormatCodec.encodeEvent(original[result.seq]!)).toBeDefined()
     const nested = Session.create(SessionId('fork-grandchild'), buildForkSeed(child.snapshotEvents(), result.seq), {
       version: 4, id: SessionId('fork-grandchild'), createdAt: 1, delegationDepth: 0, isSeeded: true, parentSession: child.id,
     }, SessionLogOffset(result.seq + 1))
@@ -118,10 +128,7 @@ describe('V4 fork results', () => {
     const message = data['message'] as SessionFormatJsonObject
     const variants = [
       null,
-      { message },
       { ...data, message: { ...message, source: null } },
-      { ...data, message: { ...message, content: [] } },
-      { ...data, message: { ...message, content: [null] } },
     ]
     for (const invalid of variants) {
       const events = original.map(event => event === result ? { ...event, data: invalid } : event)
@@ -132,10 +139,10 @@ describe('V4 fork results', () => {
   it.each([
     ['ID sequence', (row: MutableResult) => { row.data.message.id = 'forked-tool-result-read-one-0' }],
     ['error name', (row: MutableResult) => { row.data.error.name = 'OtherError' }],
-    ['call ID', (row: MutableResult) => { row.data.message.content[0]!.toolCallId = 'different' }],
-    ['error result', (row: MutableResult) => { row.data.message.content[0]!.isError = false }],
+    ['call ID', (row: MutableResult) => { row.data.message.toolCallId = 'different' }],
+    ['error result', (row: MutableResult) => { row.data.message.isError = false }],
     ['source references', (row: MutableResult) => { row.sourceEventSeqs = [2] }],
-    ['content', (row: MutableResult) => { row.data.message.content[0]!.content = [] }],
+    ['content', (row: MutableResult) => { row.data.message.content = [] }],
   ] as const)('rejects malformed fork %s', (_name, mutate) => {
     const events = structuredClone(artifact().events)
     const result = events.find(event => event.type === 'tool/result')!
@@ -143,4 +150,5 @@ describe('V4 fork results', () => {
     expect(() => restore(events)).toThrow()
     expect(() => { assertV4RowAdmission(result) }).toThrow()
   })
+
 })

@@ -72,7 +72,7 @@ const invalidData = [
     rule: /must omit header.system/,
   })),
   { name: 'successful tool has failure metadata', event: toolEvent({ ...toolData(false), error: failure }), rule: /error requires/ },
-  ...[undefined, null, [], {}, { content: null }, { content: [] }, { content: [null] }, { content: [{ isError: 'true' }] }].map(message => ({
+  ...[undefined, null, [], {}, { isError: 'true' }, { content: [{ isError: true }] }].map(message => ({
     name: 'malformed tool message with failure metadata',
     event: toolEvent({ turn: 1, step: 1, ...message === undefined ? {} : { message }, error: failure }),
     rule: /error requires/,

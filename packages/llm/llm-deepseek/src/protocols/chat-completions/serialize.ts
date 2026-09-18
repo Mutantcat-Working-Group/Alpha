@@ -1,8 +1,9 @@
 /**
  * Serialize harness messages into DeepSeek chat completions. Text-only
  * requests retain string user content; the image path resolves durable
- * attachments into ordered file-id or inline parts. Tool-result images follow their
- * string-only tool messages in a separate user message.
+ * attachments into ordered file-id or inline parts. Tool-role messages map to
+ * string-only `tool` wire messages; their image parts follow in one shared
+ * trailing user message.
  * @module dsh-llm-deepseek/serialize
  */
 
@@ -91,8 +92,8 @@ function resolveThinking(options: GenerateOptions, defaults: RequestDefaults): R
   return defaults.thinking === undefined ? {} : { thinking: defaults.thinking }
 }
 
-/** Join the text blocks of a message (used for user/tool-result content). */
-function flattenText(blocks: ContentBlock[]): string {
+/** Join the text blocks of a message (used for user and tool-role content). */
+function flattenText(blocks: readonly ContentBlock[]): string {
   return blocks
     .filter(block => block.type === 'text')
     .map(block => block.text)
@@ -109,7 +110,7 @@ function assertTextOnly(blocks: readonly ContentBlock[]): void {
 /** Reject roles whose DeepSeek history format cannot carry image input. */
 function assertSupportedImageRoles(messages: readonly Message[]): void {
   for (const message of messages) {
-    if (message.role !== 'user' && contentHasImage(message.content)) {
+    if (message.role !== 'user' && message.role !== 'tool' && contentHasImage(message.content)) {
       throw new LlmError(
         `The DeepSeek chat-completions adapter cannot represent image content in a ${message.role} message.`,
         'UNSUPPORTED_CONTENT',
@@ -154,7 +155,7 @@ async function imageParts(
   return [imageHandle(block.attachment, version, images.resolveImageAccess, precededByContent), image]
 }
 
-/** Convert user or nested tool-result blocks into ordered wire parts. */
+/** Convert one message's content blocks into ordered wire parts. */
 async function contentParts(
   blocks: readonly ContentBlock[],
   images: ImageSerializationOptions,
@@ -170,9 +171,6 @@ async function contentParts(
       case 'image':
         nextImage.value += 1
         parts.push(...await imageParts(block, images, { message, image: nextImage.value }, parts.length > 0))
-        break
-      case 'tool-result':
-        parts.push(...await contentParts(block.content, images, message, nextImage))
         break
       default:
         // Other merge-extensible blocks are not DeepSeek user-input vocabulary.
@@ -229,12 +227,11 @@ function serializeAssistant(message: Message): WireMessage {
 }
 
 /**
- * Serialize the conversation. `tool-result` blocks become standalone
- * `{role: 'tool'}` messages; the harness puts each tool result in its own
- * user-role message, so a mixed user message contributes its text first and
- * its tool results as separate wire messages after.
+ * Serialize the conversation. Tool-role messages map one-to-one onto
+ * `{role: 'tool'}` wire messages; user messages contribute their text as a
+ * plain `{role: 'user'}` wire message.
  * @param messages - the harness conversation, in order.
- * @returns the wire messages; order preserved, each tool result expanded into its own entry.
+ * @returns the wire messages; order preserved.
  */
 export function serializeMessages(messages: Message[]): WireMessage[] {
   const wire: WireMessage[] = []
@@ -248,29 +245,25 @@ export function serializeMessages(messages: Message[]): WireMessage[] {
       wire.push(serializeAssistant(message))
       continue
     }
-    // user role: tool results ride in user messages in the harness
-    // vocabulary, but DeepSeek wants them as role:'tool' messages.
-    const toolResults = message.content.filter(block => block.type === 'tool-result')
-    const text = flattenText(message.content)
-    if (text.length > 0 || toolResults.length === 0) {
-      wire.push({ role: 'user', content: text })
-    }
-    for (const result of toolResults) {
+    if (message.role === 'tool') {
       wire.push({
         role: 'tool',
-        tool_call_id: result.toolCallId,
+        tool_call_id: message.toolCallId,
         // Empty tool output still needs SOME content on the wire.
-        content: flattenText(result.content) || '(no output)',
+        content: flattenText(message.content) || '(no output)',
       })
+      continue
     }
+    // User text always lands on the wire, including empty ones.
+    wire.push({ role: 'user', content: flattenText(message.content) })
   }
   return wire
 }
 
 /**
  * Serialize image-capable history after resolving durable attachments.
- * Consecutive tool results keep string `tool` messages and share one following
- * user message containing their images.
+ * Consecutive tool messages keep string `tool` wire messages and share one
+ * following user message containing their images.
  * @param messages - request history whose offloaded occurrences are already placeholder text.
  * @param images - prepared request versions, one provider representation, and its budget.
  * @returns ordered DeepSeek wire messages.
@@ -303,30 +296,23 @@ export async function serializeMessagesWithImages(
       wire.push(serializeAssistant(message))
       continue
     }
-
-    const regular = message.content.filter(block => block.type !== 'tool-result')
-    const toolResults = message.content.filter((block): block is Extract<ContentBlock, { type: 'tool-result' }> => (
-      block.type === 'tool-result'
-    ))
-    const content = userContent(await contentParts(regular, images, messageIndex + 1, nextImage))
-    if (content.length > 0 || toolResults.length === 0) {
-      flushToolImages()
-      wire.push({
-        role: 'user',
-        content,
-      })
-    }
-    for (const result of toolResults) {
-      const parts = await contentParts(result.content, images, messageIndex + 1, nextImage)
+    if (message.role === 'tool') {
+      const parts = await contentParts(message.content, images, messageIndex + 1, nextImage)
       const imageParts = parts.filter((part): part is WireImageContentPart => part.type !== 'text')
       const text = parts.filter(part => part.type === 'text').map(part => part.text).join('')
       wire.push({
         role: 'tool',
-        tool_call_id: result.toolCallId,
+        tool_call_id: message.toolCallId,
         content: text || '(no output)',
       })
       pendingToolImages.push(...imageParts)
+      continue
     }
+    // User text serializes as a user message, including empty content. This
+    // keeps the image-capable route aligned with the text-only route.
+    const content = userContent(await contentParts(message.content, images, messageIndex + 1, nextImage))
+    flushToolImages()
+    wire.push({ role: 'user', content })
   }
   flushToolImages()
   return wire

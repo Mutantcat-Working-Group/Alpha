@@ -282,12 +282,12 @@ describe('Remote Agent and Session lookup policy', () => {
       content: [{ type: 'text', text: 'survives restart' }],
       source: { kind: 'user' },
     })
-    const events = [{
+    const events: SessionEvent[] = [{
       type: 'agent/inbox/spliced',
-      seq: 0,
+      seq: SessionSeq(0),
       time: 1001,
       data: { target: 'next-turn', start: 0, inserted: [message] },
-    }] as SessionEvent[]
+    }]
     providePersistence(ctx, {
       list: () => Promise.resolve([meta]),
       inspect: () => Promise.resolve({ meta, events }),

@@ -2,8 +2,9 @@
 
 import { Context } from '@deepseek-ai/cordis'
 import { SESSION_FORMAT_VERSION, SessionId } from '@deepseek-ai/dsh-session'
+import { createSessionFormatCatalogWithChildren } from '@deepseek-ai/dsh-session-format-catalog'
 import type { SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
-import { SessionFormatUnsupportedError } from '@deepseek-ai/dsh-session-persistence'
+import { SessionFormatUnsupportedError, SessionPersistenceCorruptionError } from '@deepseek-ai/dsh-session-persistence'
 import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
@@ -29,6 +30,18 @@ const prefix: readonly SessionFormatJsonObject[] = [
   { type: 'user/message', data: question, surfaceOp: 'append' },
   { type: 'request/header', data: { header: { config, system: 'Inspect the durable audit.' }, reason: 'initial' } },
 ]
+/** Released V3 files still carry plugin attribution; current V4 files are producer-owned. */
+const releasedPrefix: readonly SessionFormatJsonObject[] = [
+  ...prefix.slice(0, 2),
+  { type: 'system/message', surfaceOp: 'append', data: {
+    turn: 1, step: 1, message: {
+      id: 'native-system', role: 'system', source: { kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' },
+      content: [{ type: 'text', text: 'Inspect the durable audit.' }],
+    },
+  } },
+  { type: 'user/message', data: question, surfaceOp: 'append' },
+  { type: 'request/header', data: { header: { config }, reason: 'initial' } },
+]
 const nativePrefix: readonly SessionFormatJsonObject[] = [
   ...prefix.slice(0, 2),
   { type: 'system/message', surfaceOp: 'append', data: {
@@ -40,6 +53,58 @@ const nativePrefix: readonly SessionFormatJsonObject[] = [
   { type: 'user/message', data: question, surfaceOp: 'append' },
   { type: 'request/header', data: { header: { config }, reason: 'initial' } },
 ]
+
+
+function checkpointSource(): SessionFormatJsonObject {
+  const restore = createSessionFormatCatalogWithChildren([]).createRestore({
+    type: 'session', version: 3, id: 'checkpoint-source', createdAt: 0, isSeeded: false, delegationDepth: 0,
+  }, { recovery: 'strict', validation: 'current' })
+  restore.decodeRow({ type: 'user/message', seq: 0, time: 0, surfaceOp: 'append', data: {
+    ...question, source: { kind: 'plugin', plugin: 'compact' },
+  } })
+  return (restore.finish().events[0]?.data as SessionFormatJsonObject)['source'] as SessionFormatJsonObject
+}
+
+function nativeCheckpoint(compactionId: string): readonly SessionFormatJsonObject[] {
+  return [
+    ...nativePrefix,
+    { type: 'compaction/start', data: { compactionId: 'owner', turn: 1 } },
+    { type: 'compaction/summary', data: {
+      compactionId: 'owner', summary: [{ type: 'text', text: 'Summary' }], shadowedRange: { start: 3, end: 3 },
+      shadowedSeqs: [3], shadowedTokenCount: 1, provider: config.provider, model: config.model,
+    } },
+    { type: 'user/message', surfaceOp: { op: 'replace', startSeq: 3, endSeq: 3 }, sourceEventSeqs: [3, 5, 6], data: {
+      ...question, id: 'checkpoint', source: { ...checkpointSource(), compactionId },
+    } },
+    { type: 'compaction/end', data: { compactionId: 'owner', turn: 1 } },
+    { type: 'step/end', data: { turn: 1, step: 1 } },
+    { type: 'turn/end', data: { turn: 1, reason: { kind: 'completed' } } },
+  ]
+}
+
+function releasedToolRows(
+  messageFields: SessionFormatJsonObject = {}, wrapperFields: SessionFormatJsonObject = {},
+): SessionFormatJsonObject[] {
+  return [
+    ...releasedPrefix,
+    { type: 'assistant/message', surfaceOp: 'append', data: {
+      turn: 1, step: 1, stream: [], message: {
+        id: 'assistant', role: 'assistant', source: { kind: 'model', provider: config.provider, model: config.model },
+        content: [{ type: 'tool-call', id: 'outer-call', name: 'example', arguments: '{}' }],
+      },
+    } },
+    { type: 'tool/call', data: { turn: 1, step: 1, callId: 'outer-call', name: 'example', arguments: '{}' } },
+    { type: 'tool/result', surfaceOp: 'append', data: {
+      turn: 1, step: 1, message: {
+        ...messageFields, id: 'result', role: 'user', source: { kind: 'tool', callId: 'outer-call' },
+        content: [{ type: 'tool-result', toolCallId: 'outer-call', isError: false,
+          content: [{ type: 'text', text: 'result' }], ...wrapperFields }],
+      },
+    } },
+    { type: 'step/end', data: { turn: 1, step: 1 } },
+    { type: 'turn/end', data: { turn: 1, reason: { kind: 'completed' } } },
+  ]
+}
 
 function ptcRow(type: string): SessionFormatJsonObject {
   return { type, data: type.endsWith('-start') ? dispatch : {
@@ -76,6 +141,8 @@ const nativeRefusals = [
     name: type,
     tail: ptcRow(type),
     diagnostic: 'format v3 contains unknown event type ' + JSON.stringify(type) + ' at seq ' + String(nativePrefix.length),
+    currentError: 'unsupported' as const,
+    currentSubject: type,
   })),
   {
     name: 'retired request/header.system',
@@ -83,8 +150,16 @@ const nativeRefusals = [
       header: { config, system: 'This prompt must not be discarded.' }, reason: 'change',
     } },
     diagnostic: 'format v3 request/header rejects retired header.system',
+    currentError: 'corruption' as const,
+    currentSubject: 'header.system',
   },
-] satisfies readonly { name: string; tail: SessionFormatJsonObject; diagnostic: string }[]
+] satisfies readonly {
+  name: string
+  tail: SessionFormatJsonObject
+  diagnostic: string
+  currentError: 'unsupported' | 'corruption'
+  currentSubject: string
+}[]
 
 const modes = (['none', 'zstd'] as const).flatMap(compression =>
   (['read', 'write'] as const).map(access => ({ compression, access })),
@@ -148,6 +223,23 @@ async function expectRefusal(ctx: Context, access: 'read' | 'write', path: strin
   await expect(opened).rejects.toMatchObject({ message, location: { kind: 'jsonl', path } })
 }
 
+async function expectCurrentRefusal(
+  ctx: Context,
+  access: 'read' | 'write',
+  path: string,
+  kind: 'unsupported' | 'corruption',
+  subject: string,
+) {
+  // Close an unexpectedly successful open before the rejection assertion fails.
+  const opened = ctx.sessionPersistence.open(id, access).then(async (handle) => { await handle.close() })
+  const expected = kind === 'unsupported' ? SessionFormatUnsupportedError : SessionPersistenceCorruptionError
+  await expect(opened).rejects.toBeInstanceOf(expected)
+  await expect(opened).rejects.toThrow(subject)
+  if (kind === 'unsupported') {
+    await expect(opened).rejects.toMatchObject({ location: { kind: 'jsonl', path } })
+  }
+}
+
 async function expectOnlyGenerations(paths: readonly string[]) {
   const directory = dirname(paths[0]!)
   // A released write lease keeps session.lock; every other extra entry is forbidden.
@@ -174,8 +266,135 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     }
   })
 
+  it('refuses a V3 watermark claiming V4 without publishing a successor', async () => {
+    const marker = { type: 'session-log-deepseek/delivery-accepted', data: {
+      sessionId: id, throughSeq: 0, sessionFormatVersion: 4,
+    } }
+    const path = await store(3, compression, [...releasedPrefix, marker])
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectRefusal(ctx, access, path,
+      'format v3 delivery marker claims target format v4; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it.each(['tool/code-dispatch-start', 'tool/code-dispatch'])('keeps %s unsupported beyond a damaged native suffix', async (type) => {
+    const path = await store(SESSION_FORMAT_VERSION, compression, [...nativePrefix, {}, ptcRow(type)])
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectCurrentRefusal(ctx, access, path, 'unsupported', type)
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it('refuses a native checkpoint owned by a different compaction before exposing a handle', async () => {
+    const path = await store(SESSION_FORMAT_VERSION, compression, nativeCheckpoint('wrong-owner'))
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectCurrentRefusal(ctx, access, path, 'corruption', 'matching compaction/start')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it('refuses a native tool result without its advertised call before exposing a handle', async () => {
+    const path = await store(SESSION_FORMAT_VERSION, compression, [...nativePrefix, {
+      type: 'tool/result', surfaceOp: 'append', data: { turn: 1, step: 1, message: {
+        id: 'orphan', role: 'tool', toolCallId: 'missing', source: { kind: 'tool', callId: 'missing' },
+        content: [{ type: 'text', text: 'orphan result' }],
+      } },
+    }])
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectCurrentRefusal(ctx, access, path, 'corruption', 'advertised tool lifecycle')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it.each([false, true])('reopens native matching checkpoints with unfinished tail=%s without changing records', async (unfinished) => {
+    const rows = nativeCheckpoint('owner')
+    const path = await store(SESSION_FORMAT_VERSION, compression, unfinished ? rows.slice(0, 8) : rows)
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    const handle = await ctx.sessionPersistence.open(id, access)
+    try {
+      const restored = await handle.read()
+      expect(restored.events.find(event => event.type === 'user/message' && event.data.id === 'checkpoint')?.data)
+        .toMatchObject({ source: { ...checkpointSource(), compactionId: 'owner' } })
+    } finally {
+      await handle.close()
+    }
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it('preserves a V3 nested tool result when its identity and error status cannot migrate', async () => {
+    const rows = releasedToolRows({}, { content: [
+      { type: 'tool-result', toolCallId: 'nested-call', isError: true, content: [{ type: 'text', text: 'inner failure' }] },
+    ] })
+    const path = await store(3, compression, rows)
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectRefusal(ctx, access, path,
+      'format v3 tool/result at seq 7 contains a nested tool-result; migration cannot preserve its call identity and error status'
+      + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it.each(['extension', '__proto__', 'constructor'])('refuses a V3 wrapper with unmapped %s metadata without publishing', async (field) => {
+    const rows = releasedToolRows({}, Object.fromEntries([[field, { saved: true }]]))
+    const path = await store(3, compression, rows)
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectRefusal(ctx, access, path,
+      `format v3 tool/result at seq 7 has unmapped tool-result field ${JSON.stringify(field)}`
+      + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it.each([
+    { field: 'toolCallId', value: 'conflicting-call' },
+    { field: 'isError', value: true },
+  ])('refuses a conflicting outer $field before publishing', async ({ field, value }) => {
+    const rows = releasedToolRows({ [field]: value })
+    const path = await store(3, compression, rows)
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectRefusal(ctx, access, path, `format v3 tool/result at seq 7 has conflicting outer ${field}`
+      + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it('preserves outer V3 tool-message metadata through migration and native reopening', async () => {
+    const metadata = JSON.parse('{"__proto__":{"saved":"prototype"},"constructor":{"saved":"constructor"},"extension":{"saved":true}}') as SessionFormatJsonObject
+    const path = await store(3, compression, releasedToolRows({ ...metadata, toolCallId: 'outer-call', isError: false }))
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    const expected = {
+      ...metadata, id: 'result', role: 'tool', source: { kind: 'tool', callId: 'outer-call' },
+      toolCallId: 'outer-call', isError: false, content: [{ type: 'text', text: 'result' }],
+    }
+    for (const mode of [access, 'read'] as const) {
+      const handle = await ctx.sessionPersistence.open(id, mode)
+      try {
+        const restored = await handle.read()
+        const result = restored.events.find(event => event.type === 'tool/result')
+        expect(result?.data.message).toEqual(expected)
+        expect(Object.hasOwn(result!.data.message, '__proto__')).toBe(true)
+        expect(Object.getPrototypeOf(result!.data.message)).toBe(Object.prototype)
+      } finally {
+        await handle.close()
+      }
+    }
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations(access === 'read' ? [path] : [path, generationLogPath(root, undefined, id, SESSION_FORMAT_VERSION, compression)])
+  })
+
   it.each(nativeRefusals.flatMap(refusal => ([3, SESSION_FORMAT_VERSION] as const).map(version => ({ ...refusal, version }))))(
-    'refuses V$version $name instead of falling back to readable V2', async ({ tail, diagnostic, version }) => {
+    'refuses V$version $name instead of falling back to readable V2', async ({ tail, diagnostic, currentError, currentSubject, version }) => {
       const lowerPath = await store(2, compression, prefix)
       const lower = await observe(lowerPath)
       const ctx = await mount(compression)
@@ -193,12 +412,15 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
       expect(await observe(lowerPath)).toEqual(lower)
       await expectOnlyGenerations([lowerPath])
 
-      const path = await store(version, compression, [...nativePrefix, tail])
+      const path = await store(version, compression, [...(version === 3 ? releasedPrefix : nativePrefix), tail])
       const original = await observe(path)
-      const message = diagnostic + (version < SESSION_FORMAT_VERSION ? `; source v${version} artifact remains unchanged` : '')
-        + ' (raw log: ' + path + ')'
       for (let attempt = 0; attempt < 2; attempt += 1) {
-        await expectRefusal(ctx, access, path, message)
+        if (version === 3) {
+          await expectRefusal(ctx, access, path,
+            diagnostic + `; source v${version} artifact remains unchanged (raw log: ${path})`)
+        } else {
+          await expectCurrentRefusal(ctx, access, path, currentError, currentSubject)
+        }
         expect(await observe(path)).toEqual(original)
         expect(await observe(lowerPath)).toEqual(lower)
         await expectOnlyGenerations([lowerPath, path])

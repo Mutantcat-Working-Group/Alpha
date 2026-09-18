@@ -227,7 +227,7 @@ function outcome(events: readonly SessionEvent[], path: Path): { denied: boolean
   const starts = events.filter(event => event.type === 'tool/ptc-dispatch-start')
   expect(starts).toHaveLength(inner.length)
   const result = path === 'native' ? native[0]?.data : inner[0]?.data
-  const isError = path === 'native' ? native[0]?.data.message.content[0]?.isError : inner[0]?.data.isError
+  const isError = path === 'native' ? native[0]?.data.message.isError : inner[0]?.data.isError
   return { denied: result?.error?.code === DENIED && isError === true, success: isError === false }
 }
 

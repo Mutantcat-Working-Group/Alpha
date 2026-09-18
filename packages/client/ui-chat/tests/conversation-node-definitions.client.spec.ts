@@ -208,14 +208,11 @@ function assistantMessage(id: string, text: string) {
 function toolResult(callId: string, text: string, isError = false) {
   return {
     id: `result-${callId}`,
-    role: 'user',
+    role: 'tool',
+    toolCallId: callId,
     source: { kind: 'tool', callId },
-    content: [{
-      type: 'tool-result',
-      toolCallId: callId,
-      content: [{ type: 'text', text }],
-      isError,
-    }],
+    content: [{ type: 'text', text }],
+    isError,
   }
 }
 

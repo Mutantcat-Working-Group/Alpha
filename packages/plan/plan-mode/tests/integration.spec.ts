@@ -122,7 +122,7 @@ describe('plan mode through the agent loop', () => {
     // guidance alone (enforcement lives on the independent sandbox/approval
     // axes). The mode itself stays plan throughout.
     const result = findEvent(log, 'tool/result')
-    expect(result.data.message.content[0].isError).toBe(false)
+    expect(result.data.message.isError).toBe(false)
     expect(planActive(ctx, agent)).toBe(true)
     expect(log.some(event => event.type === 'user/message' && event.data.source.kind === 'plugin')).toBe(false)
   })

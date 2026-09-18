@@ -251,7 +251,7 @@ function stubToolExecution(
   }
 }
 
-function blocksText(blocks: { type: string; text?: string }[] | undefined): string {
+function blocksText(blocks: readonly { type: string; text?: string }[] | undefined): string {
   return blocks?.map(block => block.type === 'text' ? block.text ?? '' : '').join('\n') ?? ''
 }
 

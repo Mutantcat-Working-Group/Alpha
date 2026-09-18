@@ -441,17 +441,17 @@ describe('Agent.cancel()', () => {
     expect(call?.type === 'tool/call' ? call.data.callId : undefined).toBe('c1')
     expect(result?.type === 'tool/result' ? result.data : undefined).toMatchObject({
       message: {
+        role: 'tool',
         source: { kind: 'tool', callId: 'c1' },
-        content: [{ type: 'tool-result', toolCallId: 'c1', isError: true }],
+        content: [{ type: 'text' }],
+        isError: true,
       },
       error: { name: 'AbortError', code: TOOL_ABORTED_BEFORE_DISPATCH },
     })
 
     send(agent, 'continue safely')
     await waitForIdle(ctx, agent)
-    const replayedResult = adapter.requests[1]!.messages
-      .flatMap(message => message.content)
-      .find(block => block.type === 'tool-result')
+    const replayedResult = adapter.requests[1]!.messages.find(message => message.role === 'tool')
     expect(replayedResult).toMatchObject({ toolCallId: 'c1', isError: true })
     expect(reasons).toEqual([
       { kind: 'aborted', reason: { kind: 'user' } },

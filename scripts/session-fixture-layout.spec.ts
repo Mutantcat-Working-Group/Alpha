@@ -130,7 +130,7 @@ describe('canonicalSessionFixture', () => {
     ].join('\n')
     const canonical = canonicalSessionFixture(source)
     expect(canonical).toBe(source)
-    expect(() => decodedBody(canonical!)).toThrow(/session snapshot line 3:.*empty optional header fields must be omitted/)
+    expect(() => decodedBody(canonical!)).toThrow(/session snapshot line 1:.*seed request\/header.*empty tools/)
   })
 
   it.each([0, 1, 2])('preserves physically valid v%i bytes without requiring migration to current', (version) => {

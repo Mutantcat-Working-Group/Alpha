@@ -8,6 +8,7 @@ import type { AttachmentStore, ImageAttachmentRef, RequestImageAttachment } from
 import { createLaunchEnvironmentSnapshot } from '@mutantcat/dsh-launch-environment'
 import LlmRuntime, { ToolCallId, createUserMessage,
   CONTEXT_WINDOW_EXCEEDED_CODE,
+  createToolResultMessage,
   LlmError,
   ProviderRequestId,
   QUOTA_EXCEEDED_CODE,
@@ -348,7 +349,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-pro',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     })
     expect(result.message.content).toEqual([{ type: 'text', text: 'hello' }])
@@ -392,7 +393,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'text', text: 'describe ' },
           { type: 'image', attachment: imageRef },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -438,7 +439,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'image', attachment: imageRef },
           { type: 'image', attachment: secondRef },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -464,7 +465,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash-vision-exp',
       messages: [createUserMessage({
         content: Array.from({ length: 21 }, () => ({ type: 'image' as const, attachment: imageRef })),
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))).rejects.toMatchObject({ code: 'IMAGE_OFFLOAD_REQUIRED', message: expect.stringContaining('11 more') as string })
     expect(server.requests).toHaveLength(0)
@@ -493,7 +494,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'image', attachment: imageRef },
           { type: 'image', attachment: secondRef },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -525,7 +526,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash-vision-exp',
       messages: [createUserMessage({
         content: [{ type: 'image', attachment: imageRef }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
     await started.promise
@@ -557,7 +558,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       signal: controller.signal,
       messages: [createUserMessage({
         content: [{ type: 'image', attachment: imageRef }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
     await started.promise
@@ -586,7 +587,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash-vision-exp',
       messages: [createUserMessage({
         content: [{ type: 'image', attachment: imageRef }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))).rejects.toMatchObject({ code: 'SERVER', message: 'chat unavailable' })
 
@@ -616,7 +617,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'image', attachment: old, offloaded: true },
           { type: 'image', attachment: recent },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -658,13 +659,10 @@ describe('DeepSeekAdapter against a mock server', () => {
         },
       ],
     }, attachmentMocks.store)
-    const nested = createUserMessage({
-      content: [{
-        type: 'tool-result',
-        toolCallId: ToolCallId('image-result'),
-        content: [{ type: 'image', attachment: imageRef }],
-      }],
-      source: { kind: 'plugin', plugin: 'test' },
+    const nested = createToolResultMessage({
+      callId: ToolCallId('image-result'),
+      content: [{ type: 'image', attachment: imageRef }],
+      isError: false,
     })
 
     await drain(adapter.stream({ provider: 'deepseek-official', model: 'vision-low', messages: [nested] }))
@@ -731,7 +729,7 @@ describe('DeepSeekAdapter against a mock server', () => {
         model: 'deepseek-v4-flash-vision-exp',
         messages: [createUserMessage({
           content: [{ type: 'image', attachment: imageRef }],
-          source: { kind: 'plugin', plugin: 'test' },
+          source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
         })],
       }))
     } catch (error: unknown) {
@@ -763,7 +761,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash-vision-exp',
       messages: [createUserMessage({
         content: [{ type: 'image', attachment: imageRef }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))).rejects.toMatchObject({
       message: expect.stringContaining(`normalized image "${imageRef.attachmentId}"`) as string,
@@ -799,7 +797,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'image', attachment: imageRef },
           { type: 'image', attachment: secondRef },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))).rejects.toMatchObject({
       code: 'INVALID_REQUEST',
@@ -872,7 +870,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash-vision-exp',
       messages: [createUserMessage({
         content: [{ type: 'image', attachment: imageRef }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -912,7 +910,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'image', attachment: imageRef },
           { type: 'image', attachment: secondRef },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -969,7 +967,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'image', attachment: secondRef },
           { type: 'image', attachment: thirdRef },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -1019,7 +1017,7 @@ describe('DeepSeekAdapter against a mock server', () => {
           { type: 'image', attachment: imageRef },
           { type: 'image', attachment: secondRef },
         ],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))
 
@@ -1046,7 +1044,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash-vision-exp',
       messages: [createUserMessage({
         content: [{ type: 'image', attachment: imageRef }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))).rejects.toMatchObject({ code: 'INVALID_REQUEST', message: 'file_id file-api-1 expired' })
     expect(server.requests).toHaveLength(2)
@@ -1072,7 +1070,7 @@ describe('DeepSeekAdapter against a mock server', () => {
         model,
         messages: [createUserMessage({
           content: [{ type: 'image', attachment: imageRef }],
-          source: { kind: 'plugin', plugin: 'test' },
+          source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
         })],
       }))).rejects.toMatchObject({ code: 'UNSUPPORTED_CONTENT' })
       expect(resolveApiKey).not.toHaveBeenCalled()
@@ -1100,7 +1098,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash-vision-exp',
       messages: [createUserMessage({
         content: [{ type: 'image', attachment: imageRef }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     }))).rejects.toMatchObject({ code: 'UNSUPPORTED_CONTENT' })
     expect(resolveApiKey).not.toHaveBeenCalled()
@@ -1117,7 +1115,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     })) {
       kinds.push(chunk.type)
@@ -1133,7 +1131,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
       sessionId: SessionId('child-session'),
     })
@@ -1150,7 +1148,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
       purpose: 'compaction',
     })
@@ -1170,7 +1168,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     })
     await assemble(ctx,{
@@ -1178,7 +1176,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       reasoningEffort: ReasoningEffortId('off'),
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi again' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     })
     await assemble(ctx,{
@@ -1186,7 +1184,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       reasoningEffort: ReasoningEffortId('max'),
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'one more time' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     })
     expect(server.requests[0]).toMatchObject({
@@ -1225,7 +1223,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       model: 'deepseek-v4-flash',
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     })
     expect(server.requests[0]).toMatchObject({
@@ -1254,7 +1252,7 @@ describe('DeepSeekAdapter against a mock server', () => {
       reasoningEffort: ReasoningEffortId('high'),
       messages: [createUserMessage({
         content: [{ type: 'text', text: 'hi' }],
-        source: { kind: 'plugin', plugin: 'test' },
+        source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
       })],
     })
     expect(result.finish).toMatchObject({
@@ -1276,7 +1274,7 @@ describe('DeepSeekAdapter against a mock server', () => {
         reasoningEffort: ReasoningEffortId(effort),
         messages: [createUserMessage({
           content: [{ type: 'text', text: 'hi' }],
-          source: { kind: 'plugin', plugin: 'test' },
+          source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' },
         })],
       })
       await expect(async () => {

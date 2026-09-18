@@ -106,7 +106,7 @@ fs.appendFileSync(${JSON.stringify(openLog)}, JSON.stringify({ path, action, con
       }
     }
     expect(events.some(event => event.type === 'tool/ptc-dispatch' && event.data.name === 'present' && event.data.isError)).toBe(true)
-    expect(events.some(event => event.type === 'tool/result' && event.data.message.content[0].isError)).toBe(true)
+    expect(events.some(event => event.type === 'tool/result' && event.data.message.isError)).toBe(true)
   }, 200_000)
 
   it('opens current source files after edits and reload, and reports deletion without downloading', async () => {

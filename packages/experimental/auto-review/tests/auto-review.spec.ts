@@ -297,37 +297,15 @@ describe('native review request', () => {
     } as never)
     appendUser(session, 'parent-authored evidence', { kind: 'user' })
     session.append('user/message', createUserMessage({
-      content: [
-        { type: 'text', text: 'plugin evidence' },
-        {
-          type: 'tool-result',
-          toolCallId: ToolCallId('result-source'),
-          content: [{ type: 'text', text: 'tool result secret' }],
-          isError: false,
-        },
-      ],
+      content: [{ type: 'text', text: 'plugin evidence' }],
       source: { kind: 'plugin', plugin: 'evidence' },
-    }), { surfaceOp: 'append' })
-    session.append('user/message', createUserMessage({
-      content: [{
-        type: 'tool-result',
-        toolCallId: ToolCallId('result-only-source'),
-        content: [{ type: 'text', text: 'tool-result-only secret' }],
-        isError: false,
-      }],
-      source: { kind: 'plugin', plugin: 'tool-result-only' },
     }), { surfaceOp: 'append' })
     appendUser(session, 'checkpoint authority', compactCheckpointSource(CompactionId('checkpoint-1')))
     appendUser(session, 'project authority', {
       kind: 'agent-instructions', form: 'instructions', changes: [],
     })
     session.append('user/message', createUserMessage({
-      content: [{
-        type: 'tool-result',
-        toolCallId: ToolCallId('project-result-only'),
-        content: [{ type: 'text', text: 'project-tool-result-only secret' }],
-        isError: false,
-      }],
+      content: [],
       source: { kind: 'agent-instructions', form: 'instructions', changes: [] },
     }), { surfaceOp: 'append' })
     appendUser(session, 'tool-source secret', { kind: 'tool', callId: ToolCallId('result-source') })
@@ -342,6 +320,22 @@ describe('native review request', () => {
     appendNativeCall(session, oldCallId, 'old_probe', '{ "old": true }')
     appendNativeCall(session, outerCallId, RUN_CODE_NAME, '{"code":"call probe"}')
     appendNativeCall(session, currentCallId, 'probe', '{"path":"target"}')
+    for (const [callId, text] of [
+      ['result-source', 'tool result secret'],
+      ['result-only-source', 'tool-result-only secret'],
+      ['project-result-only', 'project-tool-result-only secret'],
+    ] as const) {
+      appendNativeCall(session, ToolCallId(callId), 'probe', '{"path":"target"}')
+      session.append('tool/result', {
+        turn: 1,
+        step: 1,
+        message: createToolResultMessage({
+          callId: ToolCallId(callId),
+          content: [{ type: 'text', text }],
+          isError: false,
+        }),
+      }, { surfaceOp: 'append' })
+    }
     session.append('tool/result', {
       turn: 1,
       step: 1,

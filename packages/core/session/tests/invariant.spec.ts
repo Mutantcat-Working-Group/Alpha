@@ -288,10 +288,7 @@ describe('session-log invariants', () => {
       ...original.data,
       message: freezeMessage({
         ...original.data.message,
-        content: [{
-          ...original.data.message.content[0],
-          content: [{ type: 'text', text: 'pruned' }],
-        }] satisfies typeof original.data.message.content,
+        content: [{ type: 'text', text: 'pruned' }],
       }),
     }, {
       surfaceOp: { op: 'replace', startSeq: original.seq, endSeq: original.seq },
@@ -327,10 +324,7 @@ describe('session-log invariants', () => {
       ...original.data,
       message: freezeMessage({
         ...original.data.message,
-        content: [{
-          ...original.data.message.content[0],
-          content: [{ type: 'text', text: 'pruned' }],
-        }] satisfies typeof original.data.message.content,
+        content: [{ type: 'text', text: 'pruned' }],
       }),
     }, {
       surfaceOp: { op: 'replace', startSeq: original.seq, endSeq: original.seq },

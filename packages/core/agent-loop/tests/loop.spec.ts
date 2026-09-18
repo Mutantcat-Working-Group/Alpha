@@ -496,12 +496,11 @@ describe('agent loop', () => {
 
     // the second request's derived history contains the tool result
     const secondMessages = adapter.requests[1]!.messages
-    const toolResultMessage = secondMessages.find(m =>
-      m.content.some(b => b.type === 'tool-result'))
+    const toolResultMessage = secondMessages.find(m => m.role === 'tool')
     expect(toolResultMessage).toBeDefined()
-    const block = toolResultMessage!.content.find(b => b.type === 'tool-result')!
-    expect(block).toMatchObject({ toolCallId: 'c1', isError: false })
-    expect((block).content).toEqual([{ type: 'text', text: 'echo: ping' }])
+    const message = toolResultMessage!
+    expect(message).toMatchObject({ toolCallId: 'c1', isError: false })
+    expect(message.content).toEqual([{ type: 'text', text: 'echo: ping' }])
 
     // session log records call + result
     const types = agent.session.snapshotEvents().map(e => e.type)
@@ -1045,8 +1044,7 @@ describe('agent loop', () => {
       ])
 
     const secondRequest = adapter.requests[1]!.messages
-    const resultIndex = secondRequest.findIndex(message =>
-      message.content.some(block => block.type === 'tool-result'))
+    const resultIndex = secondRequest.findIndex(message => message.role === 'tool')
     const contextIndexes = secondRequest.flatMap((message, index) =>
       message.content.some(block => block.type === 'text'
         && (block.text.includes('mid-turn notice') || block.text.includes('second notice')))

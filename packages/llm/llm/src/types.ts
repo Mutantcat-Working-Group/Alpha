@@ -110,14 +110,6 @@ export interface ToolCallBlock {
   arguments: string
 }
 
-/** The result of a tool invocation, sent back to the model. */
-export interface ToolResultBlock {
-  type: 'tool-result'
-  toolCallId: ToolCallId
-  content: ContentBlock[]
-  isError?: boolean
-}
-
 /**
  * Merge-extensible content blocks keyed by `type`. New core blocks must land
  * with adapter, UI, and compaction support.
@@ -128,7 +120,6 @@ export interface ContentBlockMap {
   'image': ImageBlock
   'file': FileBlock
   'tool-call': ToolCallBlock
-  'tool-result': ToolResultBlock
 }
 
 /** The block `type` tag vocabulary; widens as plugins add entries to {@link ContentBlockMap}. */

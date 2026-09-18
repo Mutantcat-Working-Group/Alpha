@@ -1,25 +1,21 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import { AssistantStreamAccumulator, createUserMessage, createSystemMessage, ToolCallId, createMessage } from '@mutantcat/dsh-llm'
-import type { ContentBlock, Message, TokenUsage } from '@mutantcat/dsh-llm'
-import SessionStore, { Session, SessionId, SessionSeq, canonicalHeader } from '@mutantcat/dsh-session'
-import type { EpochHeader, SessionEvent, SessionSeq as SessionSeqType } from '@mutantcat/dsh-session'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import TokenMeter from '@mutantcat/dsh-token-meter'
-import type { TokenMeasurement, TokenMeterConfig } from '@mutantcat/dsh-token-meter'
+import { Context } from '@deepseek-ai/cordis'
+import { AssistantStreamAccumulator, createAssistantMessage, createUserMessage, createSystemMessage, ToolCallId, createMessage } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, Message, TokenUsage } from '@deepseek-ai/dsh-llm'
+import SessionStore, { Session, SessionId, SessionSeq, canonicalHeader } from '@deepseek-ai/dsh-session'
+import type { EpochHeader, SessionEvent, SessionSeq as SessionSeqType } from '@deepseek-ai/dsh-session'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import TokenMeter from '@deepseek-ai/dsh-token-meter'
+import type { TokenMeasurement, TokenMeterConfig } from '@deepseek-ai/dsh-token-meter'
 
 function header(model: string, extras: Omit<EpochHeader, 'config'> = {}): EpochHeader {
   return canonicalHeader({ config: { provider: 'mock', model }, ...extras })
 }
 
-function textMessage(text: string, role: Message['role'] = 'user'): Message {
-  return createMessage({
-    role,
-    content: [{ type: 'text', text }],
-    source: role === 'assistant'
-      ? { kind: 'model', provider: 'mock', model: 'mock' }
-      : { kind: 'user' },
-  })
+function textMessage(text: string, role: 'user' | 'assistant' = 'user'): Message {
+  return role === 'assistant'
+    ? createAssistantMessage({ content: [{ type: 'text', text }], source: { provider: 'mock', model: 'mock' } })
+    : createUserMessage({ content: [{ type: 'text', text }], source: { kind: 'user' } })
 }
 
 function appendHeader(session: Session, value: EpochHeader): void {
@@ -148,17 +144,12 @@ describe('TokenMeter pricing', () => {
       { type: 'text', text: 'abcd' },
       { type: 'reasoning', text: 'ab' },
       { type: 'tool-call', id: ToolCallId('c'), name: 'read', arguments: '{"x":1}' },
-      {
-        type: 'tool-result',
-        toolCallId: ToolCallId('c'),
-        content: [{ type: 'text', text: 'xy' }],
-        isError: false,
-      },
+      { type: 'text', text: 'xy' },
       { type: 'future-block', payload: 'abcd' } as unknown as ContentBlock,
     ]
     const estimated = service.estimateMessage(createMessage({
       role: 'assistant', content: blocks,
-      source: { kind: 'plugin', plugin: 'test' },
+      source: { kind: 'model', provider: 'mock', model: 'mock' },
     }))
     expect(estimated).toBeGreaterThan(30)
     expect(service.estimateMessage(textMessage('abcd'))).toBe(9)

@@ -85,7 +85,8 @@ describe('SessionStore.fork', () => {
     expect(child.snapshotEvents()).not.toBe(source.snapshotEvents())
     expect(child.snapshotEvents()[1]).not.toBe(source.snapshotEvents()[1])
     expect(() => {
-      firstUserMessage(child.snapshotEvents()).data.content[0] = { type: 'text', text: 'child mutation' }
+      (firstUserMessage(child.snapshotEvents()).data as unknown as { content: { type: string; text?: string }[] }).content[0]
+        = { type: 'text', text: 'child mutation' }
     }).toThrow(TypeError)
     expect(firstUserMessage(source.snapshotEvents()).data.content).toEqual([{ type: 'text', text: 'hello' }])
     expect(firstUserMessage(child.snapshotEvents()).data.content).toEqual([{ type: 'text', text: 'hello' }])
@@ -339,9 +340,11 @@ describe('fork boundaries inside an open turn', () => {
     // request-time patch: the derived messages end with the error tool result.
     const derived = child.deriveMessages()
     expect(derived.at(-1)).toMatchObject({
-      role: 'user',
+      role: 'tool',
       source: { kind: 'tool', callId: ToolCallId('call-ns') },
-      content: [{ type: 'tool-result', isError: true }],
+      toolCallId: ToolCallId('call-ns'),
+      isError: true,
+      content: [{ type: 'text' }],
     })
   })
 

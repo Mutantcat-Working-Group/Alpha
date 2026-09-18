@@ -324,7 +324,7 @@ const MESSAGE_ROLE_BY_TYPE: Record<SurfaceEventType, Message['role']> = {
   'system/message': 'system',
   'user/message': 'user',
   'assistant/message': 'assistant',
-  'tool/result': 'user',
+  'tool/result': 'tool',
 }
 
 /** Validate only the event-specific invariants needed to safely replay a message. */
@@ -375,14 +375,7 @@ function assertMessageEventShape(event: Record<string, unknown>, subject: string
     || sourceRecord['callId'] === '') {
     throw new Error(`${subject} message must have tool source`)
   }
-  const content = messageRecord['content'] as unknown[]
-  const block = content[0]
-  if (content.length !== 1 || typeof block !== 'object' || block === null
-    || (block as Record<string, unknown>)['type'] !== 'tool-result'
-    || !Array.isArray((block as Record<string, unknown>)['content'])) {
-    throw new Error(`${subject} message must contain one tool-result block`)
-  }
-  if ((block as Record<string, unknown>)['toolCallId'] !== sourceRecord['callId']) {
+  if (messageRecord['toolCallId'] !== sourceRecord['callId']) {
     throw new Error(`${subject} message has mismatched tool call ids`)
   }
 }

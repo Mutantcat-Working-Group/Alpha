@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { isSessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
-import { catalogFact, childCatalogFact } from '../src/facts.ts'
+import { catalogFact, childCatalogFact, childCatalogSubject } from '../src/facts.ts'
 import type { SessionFormatEvent, SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
 import { createSessionFormatV3ToV4, historicalChildCatalogSource, sessionFormatV3ToV4 } from '../src/index.ts'
 
@@ -26,6 +26,15 @@ function migrate(events: SessionFormatEvent[], facts: readonly SessionFormatJson
 }
 
 describe('V3 parent catalog completion', () => {
+  it('interprets V1 descriptors and includes an evidence source path in diagnostics', () => {
+    expect(childCatalogFact({
+      childId: 'child', childCreatedAt: 2, descriptorCount: 1,
+      descriptor: { version: 1, provider: 'spawn', label: 'legacy child' },
+    })).toEqual({ version: 0, childId: 'child', childCreatedAt: 2, mode: 'continuable', label: 'legacy child' })
+    expect(childCatalogSubject({ childId: 'child', sourcePath: '/tmp/session.v3.jsonl' }))
+      .toBe('Session child (raw log: /tmp/session.v3.jsonl)')
+  })
+
   it('appends deterministic child facts without changing source events', () => {
     const source = [{ type: 'feedback/record', seq: 0, time: 10, data: { text: 'retained' } }]
     const result = migrate(source, [child])

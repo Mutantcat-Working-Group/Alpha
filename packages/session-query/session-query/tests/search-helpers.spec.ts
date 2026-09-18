@@ -38,12 +38,7 @@ describe('session-query semantic extraction', () => {
       { type: 'text', text: ' visible ' },
       { type: 'reasoning', text: 'thought' },
       { type: 'tool-call', id: callId, name: 'read', arguments: '{"path":"a"}' },
-      {
-        type: 'tool-result',
-        toolCallId: callId,
-        content: [{ type: 'text', text: 'nested' }],
-        isError: false,
-      },
+      { type: 'text', text: 'nested' },
       { type: 'future-content', payload: 'hidden' } as never,
     ]
     const events: SessionEvent[] = [

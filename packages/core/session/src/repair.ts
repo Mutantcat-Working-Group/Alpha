@@ -128,16 +128,13 @@ export function openTurnClosers(events: readonly SessionEvent[], cause: OpenTurn
     const started = callSeq !== undefined
     const message: ToolResultMessage = deepFreeze({
       id: brandString<MessageId>(`${cause.kind}-tool-result-${callId}-${seq}`),
-      role: 'user',
+      role: 'tool',
+      toolCallId: callId,
+      isError: true,
       source: { kind: 'tool', callId },
       content: [{
-        type: 'tool-result',
-        toolCallId: callId,
-        isError: true,
-        content: [{
-          type: 'text',
-          text: started ? text.started : text.notStarted,
-        }],
+        type: 'text',
+        text: started ? text.started : text.notStarted,
       }],
     })
     closers.push({

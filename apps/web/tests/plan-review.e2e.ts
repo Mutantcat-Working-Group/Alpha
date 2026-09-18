@@ -246,7 +246,7 @@ describe('web e2e: dismissed plan history', () => {
       expect(call).toBeDefined()
       const results = events.filter(event => event.type === 'tool/result')
       const result = results.find(event => event.data.message.source.callId === call?.data.callId)
-      expect(result?.data.message.content[0]).toMatchObject({ type: 'tool-result', isError: true })
+      expect(result?.data.message).toMatchObject({ role: 'tool', toolCallId: call?.data.callId, isError: true })
       expect(JSON.stringify(result)).toContain('dismissed the plan review')
       expect(results.some(event => JSON.stringify(event).includes('Plan approved'))).toBe(false)
       const modes = events.filter(event => event.type === 'plan/mode')

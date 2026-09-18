@@ -89,7 +89,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('compaction: a long session compa
     expect(summaryData.shadowedSeqs.length).toBeGreaterThan(0)
     expect(events.some(event => event.type === 'tool/result'
       && summaryData.shadowedSeqs.includes(event.seq)
-      && event.data.message.content[0].content.some(block => block.type === 'text'
+      && event.data.message.content.some(block => block.type === 'text'
         && block.text.includes('This is file number')))).toBe(true)
 
     // The conversation survived compaction: the agent produced a final answer

@@ -1012,9 +1012,9 @@ async function continueConversation(
       if (toolResult?.type !== 'tool/result') {
         throw new Error(`continued turn ${String(index)} did not log its tool result`)
       }
-      const resultBlock = toolResult.data.message.content.find(block => block.type === 'tool-result')
-      expect(resultBlock?.isError).toBe(false)
-      expect(resultBlock?.content
+      const message = toolResult.data.message
+      expect(message.isError).toBe(false)
+      expect(message.content
         .filter(block => block.type === 'text')
         .map(block => block.text)
         .join('')).toContain(spec.toolResultMarker)

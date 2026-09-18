@@ -94,13 +94,16 @@ export function serialize(
       continue
     }
     if (message.role === 'assistant') flushSystemUpdates()
-    const content: WireBlock[] = message.role === 'assistant' ? assistant(message, options.model, onReplayDegrade) : message.content.flatMap((block): WireBlock[] => {
-      if (block.type !== 'tool-result') return input([block])
-      return [{ type: 'tool_result', tool_use_id: block.toolCallId, content: input(block.content), ...block.isError === undefined ? {} : { is_error: block.isError } }]
-    })
+    const content: WireBlock[] = message.role === 'assistant'
+      ? assistant(message, options.model, onReplayDegrade)
+      : message.role === 'tool'
+        ? [{ type: 'tool_result', tool_use_id: message.toolCallId, content: input(message.content), ...message.isError === undefined ? {} : { is_error: message.isError } }]
+        : message.content.flatMap((block): WireBlock[] => input([block]))
+    if (message.role === 'user' && content.length === 0) continue
+    const wireRole = message.role === 'tool' ? 'user' : message.role
     const previous = messages.at(-1)
-    if (previous?.role === message.role) previous.content.push(...content)
-    else messages.push({ role: message.role, content })
+    if (previous?.role === wireRole) previous.content.push(...content)
+    else messages.push({ role: wireRole, content })
   }
   flushSystemUpdates()
   let pending = new Set<string>()

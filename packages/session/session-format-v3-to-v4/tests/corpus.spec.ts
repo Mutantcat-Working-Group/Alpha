@@ -4,6 +4,7 @@ import { expect, it } from 'vitest'
 import { createSessionFormatCatalogWithChildren, historicalSessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
 import { isSessionFormatJsonObject, type SessionFormatArtifact, type SessionFormatJsonObject, type SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
 import { historicalChildCatalogSource } from '../src/index.ts'
+import { liftToolResult } from '../src/tool-role.ts'
 
 const root = resolve(import.meta.dirname, '../../../..')
 
@@ -62,10 +63,14 @@ it('refuses recorded parent/child clock conflicts and migrates consistent copies
         if (children.some(child => conflicts.includes(child.path))) {
           expect(() => migrate(parent.artifact, children.map(child => child.artifact)), parent.path).toThrow('conflicts with its parent catalog')
         } else {
-          expect(migrate(parent.artifact, children.map(child => child.artifact)).events, parent.path).toEqual(parent.artifact.events)
+          expect(migrate(parent.artifact, children.map(child => child.artifact)).events, parent.path).toEqual(
+            parent.artifact.events.map(liftToolResult),
+          )
         }
         expect(migrate(parent.artifact, aligned), parent.path).toEqual({
-          ...parent.artifact, header: { ...parent.artifact.header, version: 4 },
+          ...parent.artifact,
+          header: { ...parent.artifact.header, version: 4 },
+          events: parent.artifact.events.map(liftToolResult),
         })
       }
     }

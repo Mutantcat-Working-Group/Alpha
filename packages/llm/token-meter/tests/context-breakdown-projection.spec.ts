@@ -494,10 +494,7 @@ describe('shared estimator', () => {
     expect(estimateContent([{ type: 'text', text: 'abcd' }])).toBe(5)
     expect(estimateContent([{ type: 'reasoning', text: 'abcdefgh' }] as ContentBlock[])).toBe(6)
     expect(estimateContent([{ type: 'tool-call', id: 'c' as never, name: 'bash', arguments: '{"a":1}' }])).toBe(7)
-    expect(estimateContent([{
-      type: 'tool-result', toolCallId: 'c' as never,
-      content: [{ type: 'text', text: 'abcd' }],
-    }])).toBe(9)
+    expect(estimateContent([{ type: 'text', text: 'abcd' }])).toBe(5)
     const unknown = { type: 'mystery', payload: 'abc' } as unknown as ContentBlock
     expect(estimateContent([unknown])).toBe(4 + Math.ceil(JSON.stringify(unknown).length / 4))
   })

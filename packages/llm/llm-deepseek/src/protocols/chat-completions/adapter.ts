@@ -50,7 +50,6 @@ function collectImageRefs(
 ): void {
   for (const block of content) {
     if (block.type === 'image' && block.offloaded !== true) refs.set(block.attachment.attachmentId, block.attachment)
-    else if (block.type === 'tool-result') collectImageRefs(block.content, refs)
   }
 }
 

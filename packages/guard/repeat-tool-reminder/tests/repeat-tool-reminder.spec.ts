@@ -338,8 +338,8 @@ describe('fold onto the downstream decision', () => {
     expect(found[2]).toEqual({ text: 'downstream-ctx', source: { kind: 'plugin', plugin: 'test' } })
     // The block's feedback reached the tool result unchanged.
     const results = agent.session.snapshotEvents().filter((e): e is SessionEvent<'tool/result'> => e.type === 'tool/result')
-    expect(results.every(r => r.data.message.content[0].isError)).toBe(true)
-    expect(results[1]!.data.message.content[0].content).toEqual([{ type: 'text', text: 'nope' }])
+    expect(results.every(r => r.data.message.isError)).toBe(true)
+    expect(results[1]!.data.message.content).toEqual([{ type: 'text', text: 'nope' }])
   })
 
   it('preserves a downstream canonical value replacement while folding', async () => {
@@ -362,7 +362,7 @@ describe('fold onto the downstream decision', () => {
     expect(found).toHaveLength(1)
     expect(found[0]!.text).toContain('repeating the exact same tool call')
     const results = agent.session.snapshotEvents().filter((e): e is SessionEvent<'tool/result'> => e.type === 'tool/result')
-    expect(results[1]!.data.message.content[0].content).toEqual([{ type: 'text', text: 'replaced' }])
+    expect(results[1]!.data.message.content).toEqual([{ type: 'text', text: 'replaced' }])
   })
 })
 

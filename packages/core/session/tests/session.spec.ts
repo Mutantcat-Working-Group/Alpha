@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
-import { Context } from '@mutantcat/cordis'
-import { createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, MessageId, ReasoningEffortId } from '@mutantcat/dsh-llm'
+import { Context } from '@deepseek-ai/cordis'
+import { createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, MessageId, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock } from '@deepseek-ai/dsh-llm'
 import SessionStore, {
   adoptSessionEvent,
   SESSION_FORMAT_VERSION,
@@ -58,10 +59,10 @@ describe('Session', () => {
     session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
 
     const messages = session.deriveMessages()
-    expect(messages.map(m => m.role)).toEqual(['user', 'assistant', 'user'])
+    expect(messages.map(m => m.role)).toEqual(['user', 'assistant', 'tool'])
     // raw chunks must NOT appear in derived history
     expect(messages[1]!.content).toHaveLength(2)
-    expect(messages[2]!.content[0]).toMatchObject({ type: 'tool-result', toolCallId: ToolCallId('c1') })
+    expect(messages[2]).toMatchObject({ role: 'tool', content: [{ type: 'text', text: 'ok' }] })
   })
 
   it('accepts and round-trips a max-tokens turn/end reason', () => {
@@ -290,12 +291,9 @@ describe('Session', () => {
     }
     const tool = {
       id: 'tool',
-      role: 'user',
-      content: [{
-        type: 'tool-result',
-        toolCallId: 'call',
-        content: [{ type: 'text', text: 'result' }],
-      }],
+      role: 'tool',
+      toolCallId: 'call',
+      content: [{ type: 'text', text: 'result' }],
       source: { kind: 'tool', callId: 'call' },
     }
     const invalid = [
@@ -380,16 +378,16 @@ describe('Session', () => {
         message: 'message must have plugin source',
       },
       {
-        name: 'tool tuple',
+        name: 'tool role',
         event: {
           type: 'tool/result', seq: 0, time: 1, surfaceOp: 'append',
           data: {
             turn: 1,
             step: 1,
-            message: { ...tool, content: [{ type: 'text', text: 'not a result' }] },
+            message: { ...tool, role: 'user' },
           },
         },
-        message: 'message must contain one tool-result block',
+        message: 'message must have role "tool"',
       },
       {
         name: 'tool correlation',
@@ -458,7 +456,7 @@ describe('Session', () => {
         content: [{ type: 'text', text: 'owned' }],
         source: { kind: 'user' },
       },
-    } as SessionEvent<'user/message'>
+    } as unknown as SessionEvent<'user/message'>
     expect(adoptSessionEvent(owned)).toBe(owned)
     expect(Object.isFrozen(owned.data)).toBe(true)
     expect(Object.isFrozen(owned.data.content)).toBe(true)
@@ -585,11 +583,11 @@ describe('Session', () => {
     const messages = session.deriveMessages()
     const userBlock = messages[0]!.content[0]!
     expect(() => { if (userBlock.type === 'text') userBlock.text = 'HACKED' }).toThrow(TypeError)
-    const toolBlock = messages[1]!.content[0]!
+    const toolMessage = messages[1]!
     expect(() => {
-      if (toolBlock.type === 'tool-result') toolBlock.content.push({ type: 'text', text: 'injected' })
+      if (toolMessage.role === 'tool') (toolMessage.content as ContentBlock[]).push({ type: 'text', text: 'injected' })
     }).toThrow(TypeError)
-    expect(() => { messages[0]!.content.push({ type: 'text', text: 'extra' }) }).toThrow(TypeError)
+    expect(() => { (messages[0]!.content as ContentBlock[]).push({ type: 'text', text: 'extra' }) }).toThrow(TypeError)
     // The returned ARRAY is the caller's own snapshot, though — reordering it
     // is the caller's business and never reaches the cache or the log.
     messages.reverse()

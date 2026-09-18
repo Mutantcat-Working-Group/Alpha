@@ -174,11 +174,11 @@ describe('Messages Files requests', () => {
     const prepared = await prepareImages(messages, resolveAdapterOptions({}), 'text-model', undefined,
       () => ({ readonlyPath: '/workspace/image.png' }), new AbortController().signal)
     expect(prepared.versions.size).toBe(0)
-    expect(prepared.messages[0]?.content).toMatchObject([{ type: 'tool-result', content: [
+    expect(prepared.messages[0]?.content).toMatchObject([
       { type: 'text', text: expect.stringContaining('image omitted to fit request image limits') as string },
-    ] }])
+    ])
     expect(JSON.stringify(prepared.messages)).toContain('/workspace/image.png')
-    expect(messages[0]?.content).toMatchObject([{ type: 'tool-result', content: [{ type: 'image', offloaded: true }] }])
+    expect(messages[0]?.content).toMatchObject([{ type: 'image', offloaded: true }])
   })
 
   it('falls back when the Files deadline expires but never converts caller cancellation into another request', async () => {

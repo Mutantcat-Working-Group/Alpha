@@ -79,7 +79,7 @@ export function format(template: unknown, ...args: unknown[]): string {
 }
 
 /**
- * Structural deep equality, as `isDeepStrictEqual` defines it for plain data.
+ * Structural deep equality over own enumerable properties, as `isDeepStrictEqual` defines it for plain data.
  * @param left - first value.
  * @param right - second value.
  * @returns true when both sides are structurally identical.
@@ -95,7 +95,7 @@ export function isDeepStrictEqual(left: unknown, right: unknown): boolean {
   const leftKeys = Object.keys(left)
   const rightKeys = Object.keys(right)
   if (leftKeys.length !== rightKeys.length) return false
-  return leftKeys.every(key => key in right
+  return leftKeys.every(key => Object.hasOwn(right, key)
     && isDeepStrictEqual((left as Record<string, unknown>)[key], (right as Record<string, unknown>)[key]))
   /* jscpd:ignore-end */
 }

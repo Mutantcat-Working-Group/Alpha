@@ -73,7 +73,6 @@ function toolResultTexts(agent: Agent): string[] {
   return agent.session.snapshotEvents()
     .filter((event): event is SessionEvent<'tool/result'> => event.type === 'tool/result')
     .map(event => event.data.message.content
-      .flatMap(block => block.content)
       .filter((block): block is Extract<ContentBlock, { type: 'text' }> => block.type === 'text')
       .map(block => block.text)
       .join(''))

@@ -1,57 +1,61 @@
-/** V4 framing retains released V3 event encoding and structural admission. */
+/** V4 framing with native tool-role admission and released physical rows. */
 
-import { SessionFormatError, isSessionFormatJsonObject, snapshotSessionFormatJson } from '@deepseek-ai/dsh-session-format'
+import { SessionFormatError, isSessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatCodec, SessionFormatCurrentEncoder, SessionFormatHeader, SessionFormatEvent } from '@deepseek-ai/dsh-session-format'
-import { assertV3RowAdmission, releasedV3SessionFormatCodec } from '@deepseek-ai/dsh-session-format-v2-to-v3'
+import { releasedV2SessionFormatCodec } from '@deepseek-ai/dsh-session-format-v2-to-v3'
+import { assertV4RetiredSyntax } from './retired-syntax.ts'
+import { assertV4SystemMessageFields } from './system-message.ts'
+import { assertV4ForkResult } from './fork-result.ts'
+import { assertV4ToolResultMessage } from './tool-role.ts'
 import { assertReleasedV4Header } from './validation.ts'
-import { forkResultValidationView } from './fork-result.ts'
 
-/** V4 codec preserves the released V3 physical event representation. */
+function physicalV2(value: unknown): SessionFormatHeader {
+  if (!isSessionFormatJsonObject(value) || value['version'] !== 4) throw new SessionFormatError('expected format v4 physical header')
+  return { ...value, version: 2 } as SessionFormatHeader
+}
+
+/**
+ * V4 physical encoder and decoder retain the released row framing while
+ * validating the native tool-role message directly.
+ */
 export const releasedV4SessionFormatCodec = Object.freeze({
   version: 4,
   decodeHeader(value: unknown) {
-    return { ...releasedV3SessionFormatCodec.decodeHeader(physicalV3(value)), version: 4 }
+    return { ...releasedV2SessionFormatCodec.decodeHeader(physicalV2(value)), version: 4 }
   },
   createDecoder(value, recovery) {
-    const decoder = releasedV3SessionFormatCodec.createDecoder(physicalV3(value), recovery)
+    const decoder = releasedV2SessionFormatCodec.createDecoder(physicalV2(value), recovery)
     return {
       ...decoder,
       header: { ...decoder.header, version: 4 },
       decodeRow(row, context) {
-        const view = forkResultValidationView(row)
-        decoder.decodeRow(view, {
+        assertV4RowAdmission(row)
+        decoder.decodeRow(row, {
           emitRun: context.emitRun.bind(context),
-          emitEvent(event) {
-            context.emitEvent(view === row ? event : {
-              ...event, data: snapshotSessionFormatJson((row as SessionFormatEvent).data, 'V4 fork result data'),
-            })
-          },
+          emitEvent: context.emitEvent.bind(context),
         })
       },
     }
   },
   encodeHeader(header, inheritedEventCount) {
     assertReleasedV4Header(header)
-    return { ...releasedV3SessionFormatCodec.encodeHeader({ ...header, version: 3 }, inheritedEventCount), version: 4 }
+    return { ...releasedV2SessionFormatCodec.encodeHeader({ ...header, version: 2 }, inheritedEventCount), version: 4 }
   },
-  encodeEvent(event) {
-    const view = forkResultValidationView(event)
-    const encoded = releasedV3SessionFormatCodec.encodeEvent(view)
-    return view === event ? encoded : { ...encoded, data: snapshotSessionFormatJson(event.data, 'V4 fork result data') }
+  encodeEvent(event: SessionFormatEvent) {
+    assertV4RowAdmission(event)
+    return releasedV2SessionFormatCodec.encodeEvent(event)
   },
 } satisfies SessionFormatCodec & SessionFormatCurrentEncoder)
 
 /**
- * Apply V4 structural admission before a scanner discards a recoverable suffix.
+ * Apply native V4 admission before a scanner discards a recoverable suffix.
  * @param row - parsed physical row before framing and source-event range decoding.
  */
 export function assertV4RowAdmission(row: unknown): void {
-  assertV3RowAdmission(forkResultValidationView(row))
-}
-
-function physicalV3(value: unknown): SessionFormatHeader {
-  if (!isSessionFormatJsonObject(value) || value['version'] !== 4) {
-    throw new SessionFormatError('expected format v4 physical Session header')
-  }
-  return { ...value, version: 3 } as SessionFormatHeader
+  assertV4RetiredSyntax(row)
+  assertV4SystemMessageFields(row)
+  if (!isSessionFormatJsonObject(row) || row['type'] !== 'tool/result') return
+  const event = row as unknown as SessionFormatEvent
+  assertV4ToolResultMessage(event)
+  assertV4ForkResult(event)
 }

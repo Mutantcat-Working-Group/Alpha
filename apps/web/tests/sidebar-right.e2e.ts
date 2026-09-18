@@ -297,9 +297,11 @@ describe('web e2e: shipped right Sidebar', () => {
         step: 1,
         message: {
           id: 'result-call-write-1',
-          role: 'user',
+          role: 'tool',
           source: { kind: 'tool', callId: 'call-write-1' },
-          content: [{ type: 'tool-result', toolCallId: 'call-write-1', content: [{ type: 'text', text: 'ok' }] }],
+          toolCallId: 'call-write-1',
+          content: [{ type: 'text', text: 'ok' }],
+          isError: false,
         },
       } as never, { surfaceOp: 'append' })
       agent.session.append('assistant/message', {

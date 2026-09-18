@@ -49,7 +49,7 @@ function continuationScript(): ReplayEntry[] {
 }
 
 function toolResultText(event: SessionEvent<'tool/result'>): string {
-  return event.data.message.content[0].content
+  return event.data.message.content
     .filter(block => block.type === 'text')
     .map(block => block.text)
     .join('')

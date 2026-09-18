@@ -258,7 +258,7 @@ describe('tool-call scheduler: model-order results despite out-of-order settleme
     await waitForIdle(ctx, agent)
 
     const messages = agent.session.deriveMessages()
-    const toolResults = messages.flatMap(m => m.content.filter(b => b.type === 'tool-result'))
+    const toolResults = messages.filter(m => m.role === 'tool')
     expect(toolResults.map(b => b.toolCallId)).toEqual([ToolCallId('c1'), ToolCallId('c2')])
   })
 })
@@ -463,11 +463,11 @@ describe('tool-call scheduler: ordered middleware and additional contexts', () =
     expect(post).toEqual(['c1', 'c2'])
     const results = events(agent).filter(e => e.type === 'tool/result')
     expect(results.map(e => e.data.message.source.callId)).toEqual([ToolCallId('c1'), ToolCallId('c2'), ToolCallId('c3')])
-    expect((results[1]!.data.message.content[0].content[0] as { text: string }).text).toContain('blocked by policy')
+    expect((results[1]!.data.message.content[0] as { text: string }).text).toContain('blocked by policy')
     expect(results[1]!.data.error).toEqual({
       name: 'AutoReviewDeniedError', code: 'AUTO_REVIEW_DENIED', reason: 'exact scope was not authorized',
     })
-    expect((results[2]!.data.message.content[0].content[0] as { text: string }).text).toContain('pre exploded')
+    expect((results[2]!.data.message.content[0] as { text: string }).text).toContain('pre exploded')
   })
 })
 
@@ -495,7 +495,7 @@ describe('tool-call scheduler: abort handling', () => {
       .toEqual([ToolCallId('c1'), ToolCallId('c2')])
     expect(events(agent).filter(e => e.type === 'tool/result').map(e => ({
       callId: e.data.message.source.callId,
-      isError: e.data.message.content[0].isError,
+      isError: e.data.message.isError,
       error: e.data.error,
     }))).toEqual([
       { callId: ToolCallId('c1'), isError: true, error: { name: 'AbortError', code: TOOL_ABORTED_BEFORE_DISPATCH } },
@@ -527,7 +527,7 @@ describe('tool-call scheduler: abort handling', () => {
       .toEqual([ToolCallId('c1'), ToolCallId('c2')])
     expect(events(agent).filter(e => e.type === 'tool/result').map(e => ({
       callId: e.data.message.source.callId,
-      isError: e.data.message.content[0].isError,
+      isError: e.data.message.isError,
       error: e.data.error,
     }))).toEqual([
       { callId: ToolCallId('c1'), isError: true, error: { name: 'AbortError', code: TOOL_ABORTED_BEFORE_DISPATCH } },
@@ -565,7 +565,7 @@ describe('tool-call scheduler: abort handling', () => {
       .toEqual([ToolCallId('c1'), ToolCallId('c2'), ToolCallId('c3'), ToolCallId('c4')])
     expect(events(agent).filter(e => e.type === 'tool/result').slice(-2).map(e => ({
       callId: e.data.message.source.callId,
-      isError: e.data.message.content[0].isError,
+      isError: e.data.message.isError,
       error: e.data.error,
     })))
       .toEqual([
@@ -638,7 +638,8 @@ describe('tool-call scheduler: abort handling', () => {
       .toMatchObject({
         message: {
           source: { kind: 'tool', callId: ToolCallId('c3') },
-          content: [{ isError: true }],
+          content: [{ type: 'text', text: 'Error: tool call aborted before dispatch' }],
+          isError: true,
         },
         error: { name: 'AbortError', code: TOOL_ABORTED_BEFORE_DISPATCH },
       })

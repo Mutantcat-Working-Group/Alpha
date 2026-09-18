@@ -82,7 +82,7 @@ describe('Messages request conversion', () => {
   it('preserves empty results without inventing model-visible output', () => {
     const response = body([user(), assistant([call()]), result('a', [])])
     expect(response.messages[2]?.content[0]).toMatchObject({ content: [] })
-    const minimal = createMessage({ role: 'user', source: { kind: 'user' }, content: [{ type: 'tool-result', toolCallId: ToolCallId('a'), content: [{ type: 'text', text: '' }] }] })
+    const { isError: _isError, ...minimal } = createToolResultMessage({ callId: ToolCallId('a'), content: [{ type: 'text', text: '' }], isError: false })
     expect(body([assistant([call()]), minimal]).messages[1]?.content[0]).toEqual({ type: 'tool_result', tool_use_id: 'a', content: [] })
   })
 
@@ -290,14 +290,14 @@ describe('Messages images', () => {
     })
     const history = [result('a', [image, image])]
     const prepared = await prepareImages(history, config, model, attachments, access, signal)
-    expect(prepared.messages[0]?.content[0]).toMatchObject({ content: [image, image] })
+    expect(prepared.messages[0]?.content).toMatchObject([image, image])
     expect(() => inlineImages(prepared.messages, prepared.versions, config)).toThrow(expect.objectContaining({
       failure: expect.objectContaining({ code: 'IMAGE_OFFLOAD_REQUIRED', offloadImages: 1 }) as unknown,
     }))
     const offloaded: ImageBlock = { ...image, offloaded: true }
     const retry = await prepareImages([result('a', [offloaded, image])], config, model, attachments, access, signal)
-    expect(inlineImages(retry.messages, retry.versions, config)[0]?.content[0]).toMatchObject({ content: [{ type: 'text' }, { type: 'image' }] })
-    expect(history[0]?.content[0]).toMatchObject({ content: [image, image] })
+    expect(inlineImages(retry.messages, retry.versions, config)[0]?.content).toMatchObject([{ type: 'text' }, { type: 'image' }])
+    expect(history[0]?.content).toMatchObject([image, image])
     expect(imagePricing(config, model, access).priceImages([image, image]).map(entry => entry.visualTokens))
       .toEqual([expect.any(Number), expect.any(Number)])
     const large = { readImageRequest: async () => ({ ...version, bytes: 30, data: new Uint8Array(30) }) } as unknown as AttachmentStore
@@ -313,7 +313,9 @@ describe('Messages images', () => {
     await expect(prepareImages([assistant([image])], connection, model, attachments, access, signal)).rejects.toMatchObject({ code: 'UNSUPPORTED_CONTENT' })
     expect(() => body([result('a', [image])])).toThrow(/image/)
     expect(() => body([assistant([image])])).toThrow(/assistant/)
-    expect(() => body([result('a', [{ type: 'reasoning', text: 'bad' }])])).toThrow(/user/)
+    // @ts-expect-error -- malformed provider input can carry a retired nested result block.
+    expect(() => body([result('a', [{ type: 'tool-result', toolCallId: ToolCallId('nested'), content: [] }])]))
+      .toThrow(/user\/tool-result content tool-result/)
     expect(() => serialize(options({ model }), connection, [result('a', [image])], new Map([[ref.attachmentId, version]]), access, undefined, new Map()))
       .toThrow(/request file id is missing/)
   })

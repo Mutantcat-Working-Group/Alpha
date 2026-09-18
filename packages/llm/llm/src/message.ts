@@ -4,7 +4,7 @@ import { randomUUID } from '@mutantcat/dsh-util-crypto'
 import { brandString } from '@mutantcat/dsh-brand'
 import { deepFreeze } from '@mutantcat/dsh-util-values'
 import type { MessageId, ToolCallId } from './brand.ts'
-import type { ContentBlock, ToolResultBlock } from './types.ts'
+import type { ContentBlock } from './types.ts'
 
 /** Provider/model identity and adapter-private replay data for an assistant message. */
 export interface AssistantProviderMetadata {
@@ -25,7 +25,7 @@ export interface ModelMessageSource extends AssistantProviderMetadata {
   kind: 'model'
 }
 
-/** Required source of a user-role message carrying one tool result. */
+/** Required source of a tool-role message carrying one tool result. */
 export interface ToolMessageSource {
   kind: 'tool'
   callId: ToolCallId
@@ -107,9 +107,9 @@ export interface MessageSourceMap {
 }
 
 /**
- * Bound for a `notice` summary. The account rides a collapsed transcript row
- * and is committed to the durable log, while its inputs — task labels, goal
- * objectives, tool arguments — are caller text with no length of their own.
+ * Bound for a `notice` summary. Producers commit the one-line account to the
+ * durable log; its inputs — task labels, goal objectives, tool arguments —
+ * are caller text with no length of their own.
  */
 export const CONTEXT_SUMMARY_MAX_CHARS = 120
 
@@ -127,47 +127,61 @@ export function boundContextSummary(summary: string): string {
 /** Any known message source, derived from {@link MessageSourceMap}; switch on `kind` and fall through unknowns (merge-extensible). */
 export type MessageSource = MessageSourceMap[keyof MessageSourceMap]
 
-/** One immutable message representation shared by delivery, durable history, and model requests. */
-export interface Message {
+/** Shared immutable fields of every conversation message. */
+interface MessageBase {
   /** Stable identity preserved across every representation boundary. */
   readonly id: MessageId
-  /** Provider-neutral conversation role. */
-  readonly role: 'system' | 'user' | 'assistant'
   /** Exact model-facing blocks. */
-  readonly content: ContentBlock[]
+  readonly content: readonly ContentBlock[]
   /** Required source fields supplied by the producer. */
   readonly source: MessageSource
 }
 
-/** A user-role specialization of the one shared message representation. */
-export interface UserMessage extends Message {
-  readonly role: 'user'
-}
-
-/** A model-produced assistant specialization of the shared message representation. */
-export interface AssistantMessage extends Message {
-  readonly role: 'assistant'
-  readonly source: ModelMessageSource
-}
-
-/**
- * A system-role specialization of the shared message representation: one
- * rendered system prompt attributed to the plugin that assembled it. Empty
- * `content` means "no system prompt" and projects to no wire message.
- */
-export interface SystemMessage extends Message {
+/** A rendered system prompt attributed to its assembling plugin; empty content sends no prompt. */
+export interface SystemMessage extends MessageBase {
   readonly role: 'system'
   readonly source: MessageSourceMap['plugin']
 }
 
-/** A tool-result specialization whose model-facing block retains call correlation. */
-export interface ToolResultMessage extends Message {
+/** A user-role specialization of the shared message representation. */
+export interface UserMessage extends MessageBase {
   readonly role: 'user'
-  readonly content: [ToolResultBlock]
-  readonly source: ToolMessageSource
 }
 
-type NewMessage = Omit<Message, 'id'>
+/** A model-produced assistant specialization of the shared message representation. */
+export interface AssistantMessage extends MessageBase {
+  readonly role: 'assistant'
+  readonly source: ModelMessageSource
+}
+
+/** A first-class tool-role message carrying the result of one tool invocation. */
+export interface ToolResultMessage extends MessageBase {
+  readonly role: 'tool'
+  readonly source: ToolMessageSource
+  /** Provider-issued id of the tool call this message answers. */
+  readonly toolCallId: ToolCallId
+  /** Whether the tool invocation failed. */
+  readonly isError?: boolean
+}
+
+/**
+ * The conversation messages persisted by Session, keyed by role. This map is
+ * closed because every model-visible role must have a durable Session event
+ * and an adapter projection.
+ */
+export interface MessageRoleMap {
+  system: SystemMessage
+  user: UserMessage
+  assistant: AssistantMessage
+  tool: ToolResultMessage
+}
+
+/** Any persisted conversation message, discriminated by its `role`. */
+export type Message = MessageRoleMap[keyof MessageRoleMap]
+
+type NewMessage = {
+  [Role in keyof MessageRoleMap]: Omit<MessageRoleMap[Role], 'id'>
+}[keyof MessageRoleMap]
 type NewUserMessage = Omit<UserMessage, 'id' | 'role'>
 type NewAssistantMessage = Omit<AssistantMessage, 'id' | 'role' | 'source'> & {
   readonly source: Omit<ModelMessageSource, 'kind'> & { readonly kind?: never }
@@ -190,10 +204,10 @@ export function freezeMessage<T extends Message>(message: T): T {
 export function createMessage<T extends NewMessage>(
   input: T & { readonly id?: never },
 ): T & Pick<Message, 'id'> {
-  return freezeMessage({
+  return deepFreeze(structuredClone({
     ...input,
     id: brandString<MessageId>(randomUUID()),
-  })
+  }))
 }
 
 /**
@@ -246,23 +260,21 @@ export function createSystemMessage(text: string, plugin: string): SystemMessage
 /** Input whose acceptance creates one tool-result message. */
 export interface ToolResultMessageInput {
   readonly callId: ToolCallId
-  readonly content: ContentBlock[]
+  readonly content: readonly ContentBlock[]
   readonly isError: boolean
 }
 
 /**
  * Create and freeze one identified tool-result message.
  * @param input - call identity, raw result blocks, and outcome.
- * @returns an immutable user-role tool-result message.
+ * @returns an immutable tool-role message that answers the tool call.
  */
 export function createToolResultMessage(input: ToolResultMessageInput): ToolResultMessage {
-  return createUserMessage({
+  return createMessage({
+    role: 'tool',
     source: { kind: 'tool', callId: input.callId },
-    content: [{
-      type: 'tool-result',
-      toolCallId: input.callId,
-      content: input.content,
-      isError: input.isError,
-    }],
+    toolCallId: input.callId,
+    content: input.content,
+    isError: input.isError,
   })
 }

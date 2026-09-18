@@ -5,9 +5,9 @@ import type {
   ImageAttachmentRef,
   ImageRequestTarget,
   RequestImageAttachment,
-} from '@mutantcat/dsh-attachment'
-import { ToolCallId, createMessage, createUserMessage, offloadedImageText } from '@mutantcat/dsh-llm'
-import type { ContentBlock, GenerateOptions, Message } from '@mutantcat/dsh-llm'
+} from '@deepseek-ai/dsh-attachment'
+import { ToolCallId, createAssistantMessage, createMessage, createToolResultMessage, createUserMessage, offloadedImageText } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, GenerateOptions, Message } from '@deepseek-ai/dsh-llm'
 import { toPiContext } from '../src/context.ts'
 import type { PiImageRequestContext } from '../src/context.ts'
 import { toPiAssistant } from '../src/replay.ts'
@@ -71,7 +71,9 @@ function user(content: ContentBlock[]): Message {
 }
 
 function history(role: 'system' | 'assistant', content: ContentBlock[]): Message {
-  return createMessage({ role, content, source: { kind: 'plugin', plugin: 'test' } })
+  return role === 'system'
+    ? createMessage({ role, content, source: { kind: 'plugin', plugin: 'test' } })
+    : createMessage({ role, content, source: { kind: 'model', provider: 'openai', model: 'gpt-4.1' } })
 }
 
 describe('pi-ai request context conversion', () => {
@@ -81,19 +83,13 @@ describe('pi-ai request context conversion', () => {
     expect(toPiContext({ ...base, tools: [] })).toEqual({ messages: [] })
   })
 
-  it('converts complete text-only history and rejects nested images without storage', () => {
+  it('converts complete text-only history and rejects tool images without storage', () => {
     const callId = ToolCallId('call-1')
     expect(toPiContext(request([
       history('system', [{ type: 'text', text: 'history system' }]),
       history('assistant', [{ type: 'tool-call', id: callId, name: 'lookup', arguments: '{}' }]),
-      user([
-        { type: 'text', text: 'after tool' },
-        {
-          type: 'tool-result',
-          toolCallId: callId,
-          content: [{ type: 'text', text: '' }],
-        },
-      ]),
+      user([{ type: 'text', text: 'after tool' }]),
+      createToolResultMessage({ callId, content: [{ type: 'text', text: '' }], isError: false }),
     ]))).toMatchObject({
       systemPrompt: 'system prompt',
       tools: [{ name: 'lookup' }],
@@ -111,11 +107,9 @@ describe('pi-ai request context conversion', () => {
       ],
     })
 
-    expect(() => toPiContext(request([user([{
-      type: 'tool-result',
-      toolCallId: callId,
-      content: [{ type: 'image', attachment: ref }],
-    }])]))).toThrow(/durable attachment service/)
+    expect(() => toPiContext(request([
+      createToolResultMessage({ callId, content: [{ type: 'image', attachment: ref }], isError: false }),
+    ]))).toThrow(/durable attachment service/)
   })
 
   it('resolves user and tool-result images while preserving explicit fallbacks', async () => {
@@ -132,20 +126,12 @@ describe('pi-ai request context conversion', () => {
         { type: 'text', text: 'caption' },
         { type: 'reasoning', text: 'ignored' },
       ]),
-      user([{
-        type: 'tool-result',
-        toolCallId: knownCallId,
-        content: [{ type: 'text', text: '' }],
-      }]),
-      user([{
-        type: 'tool-result',
-        toolCallId: callId,
+      createToolResultMessage({ callId: knownCallId, content: [{ type: 'text', text: '' }], isError: false }),
+      createToolResultMessage({
+        callId,
+        content: [{ type: 'image', attachment: ref }],
         isError: true,
-        content: [
-          { type: 'tool-result', toolCallId: callId, content: [] },
-          { type: 'image', attachment: ref },
-        ],
-      }]),
+      }),
     ]), imageContext(attachments))
 
     expect(context.messages).toEqual([
@@ -203,24 +189,30 @@ describe('pi-ai request context conversion', () => {
     expect(JSON.stringify(context.messages[0])).toContain('request preview 1130x565px')
   })
 
-  it('recursively converts nested tool-result text and images', async () => {
-    const callId = ToolCallId('nested-call')
-    const context = await toPiContext(request([user([{
-      type: 'tool-result',
+  it('treats a tool message without isError as a successful result', () => {
+    const callId = ToolCallId('default-success')
+    const message = createMessage({
+      role: 'tool',
+      source: { kind: 'tool', callId },
       toolCallId: callId,
+      content: [{ type: 'text', text: 'result' }],
+    })
+    expect(toPiContext(request([message])).messages).toEqual([{
+      role: 'toolResult', toolCallId: callId, toolName: 'unknown',
+      content: [{ type: 'text', text: 'result' }], isError: false, timestamp: 0,
+    }])
+  })
+
+  it('converts tool text and images on the image path', async () => {
+    const callId = ToolCallId('nested-call')
+    const context = await toPiContext(request([createToolResultMessage({
+      callId,
       content: [
-        {
-          type: 'tool-result',
-          toolCallId: callId,
-          content: [{ type: 'text', text: 'nested text' }],
-        },
-        {
-          type: 'tool-result',
-          toolCallId: callId,
-          content: [{ type: 'image', attachment: ref }],
-        },
+        { type: 'text', text: 'nested text' },
+        { type: 'image', attachment: ref },
       ],
-    }])]), imageContext(attachments))
+      isError: false,
+    })]), imageContext(attachments))
 
     expect(context.messages).toEqual([{
       role: 'toolResult',
@@ -236,20 +228,18 @@ describe('pi-ai request context conversion', () => {
     }])
   })
 
-  it('flattens nested text-only tool results and ignores other block types without storage', () => {
+  it('flattens tool text and ignores other block types without storage', () => {
     const callId = ToolCallId('nested-text')
-    expect(toPiContext(request([user([{
-      type: 'tool-result',
-      toolCallId: callId,
-      content: [
-        { type: 'chart', data: 'ignored' } as unknown as ContentBlock,
-        {
-          type: 'tool-result',
-          toolCallId: callId,
-          content: [{ type: 'text', text: 'nested' }],
-        },
-      ],
-    }])]))).toMatchObject({
+    expect(toPiContext(request([
+      createToolResultMessage({
+        callId,
+        content: [
+          { type: 'chart', data: 'ignored' } as unknown as ContentBlock,
+          { type: 'text', text: 'nested' },
+        ],
+        isError: false,
+      }),
+    ]))).toMatchObject({
       messages: [{
         role: 'toolResult',
         content: [{ type: 'text', text: 'nested' }],
@@ -264,14 +254,14 @@ describe('pi-ai request context conversion', () => {
     const store = projectionStore(readImageRequest)
     const sized: ImageAttachmentRef = { ...ref, bytes: 3 }
     const callId = ToolCallId('shot-call')
-    // The nested occurrence is offloaded on the surface; the two retained 3-byte images cost
+    // The tool-result occurrence is offloaded on the surface; the two retained 3-byte images cost
     // 4 base64 characters each and fit the 8-byte bound exactly.
     const context = await toPiContext(request([
-      user([{
-        type: 'tool-result',
-        toolCallId: callId,
+      createToolResultMessage({
+        callId,
         content: [{ type: 'image', attachment: sized, offloaded: true }],
-      }]),
+        isError: false,
+      }),
       user([{ type: 'image', attachment: sized }, { type: 'text', text: 'newer' }]),
       user([{ type: 'image', attachment: sized }]),
     ]), imageContext(store, { maxRequestImageBytes: 8 }))
@@ -426,11 +416,7 @@ describe('pi-ai request context conversion', () => {
         { type: 'text', text: 'answer' },
         { type: 'tool-call', id: ToolCallId('other-call'), name: 'lookup', arguments: '{}' },
       ]),
-      user([{
-        type: 'tool-result',
-        toolCallId: callId,
-        content: [{ type: 'text', text: 'result' }],
-      }]),
+      createToolResultMessage({ callId, content: [{ type: 'text', text: 'result' }], isError: false }),
     ]))).toMatchObject({
       messages: [
         { role: 'user', content: '' },
@@ -463,7 +449,10 @@ describe('pi-ai request context conversion', () => {
     })
 
     expect(() => toPiAssistant(
-      history('assistant', [{ type: 'image', attachment: ref }]),
+      createAssistantMessage({
+        content: [{ type: 'image', attachment: ref }],
+        source: { provider: 'openai', model: 'gpt-4.1' },
+      }),
     )).toThrow(/assistant image output/)
   })
 
@@ -477,14 +466,6 @@ describe('pi-ai system prompt source', () => {
   it.each<{ label: string; content: ContentBlock[] }>([
     { label: 'image-only', content: [{ type: 'image', attachment: ref }] },
     { label: 'text and image', content: [{ type: 'text', text: 'rule' }, { type: 'image', attachment: ref }] },
-    {
-      label: 'nested image',
-      content: [{
-        type: 'tool-result',
-        toolCallId: ToolCallId('system-image'),
-        content: [{ type: 'image', attachment: ref }],
-      }],
-    },
   ])('rejects a leading system $label on both conversion paths', async ({ content }) => {
     const options: GenerateOptions = { ...base, messages: [history('system', content), question] }
     const error = {

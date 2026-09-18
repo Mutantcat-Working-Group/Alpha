@@ -204,7 +204,6 @@ describe('foldSurface tool-result rewrites', () => {
   ] as const)('rejects a replacement that changes the result block %s', (_field, patch) => {
     const original = toolResultEvent(SessionSeq(0), 'original')
     const data = original.data as Extract<SessionEvent, { type: 'tool/result' }>['data']
-    const result = data.message.content[0]
     const replacement = {
       ...original,
       seq: SessionSeq(1),
@@ -213,7 +212,7 @@ describe('foldSurface tool-result rewrites', () => {
         ...data,
         message: freezeMessage({
           ...data.message,
-          content: [{ ...result, ...patch }] as [typeof result],
+          ...patch,
         }),
       },
       surfaceOp: surfaceOp({ op: 'replace', startSeq: 0, endSeq: 0 }),

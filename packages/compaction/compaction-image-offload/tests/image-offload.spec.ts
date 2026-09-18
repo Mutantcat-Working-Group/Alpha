@@ -87,13 +87,11 @@ function image(name: string): Extract<ContentBlock, { type: 'image' }> {
 
 function offloadedNames(options: GenerateOptions): string[] {
   const names: string[] = []
-  const visit = (blocks: readonly ContentBlock[]): void => {
-    for (const block of blocks) {
+  for (const message of options.messages) {
+    for (const block of message.content) {
       if (block.type === 'image' && block.offloaded === true) names.push(block.attachment.name ?? '')
-      if (block.type === 'tool-result') visit(block.content)
     }
   }
-  for (const message of options.messages) visit(message.content)
   return names
 }
 
@@ -235,7 +233,7 @@ describe('compaction-image-offload', () => {
     })
 
     agent.followup(createUserMessage({
-      content: [image('a'), { type: 'tool-result', toolCallId: ToolCallId('shot'), content: [image('b')] }, image('c')],
+      content: [image('a'), image('b'), image('c')],
       source: { kind: 'user' },
     }))
     await agent.whenIdle()
@@ -297,20 +295,36 @@ describe('compaction-image-offload', () => {
     ]])
   })
 
-  it('offloads a nested tool-result occurrence and leaves later images untouched', async () => {
+  it('offloads a tool-result image and leaves later images untouched', async () => {
     const adapter = new ScriptedAdapter([offloadRequired(1), textResponse('sent')])
     const ctx = await harness(adapter)
     const agent = await ctx.agentLoop.create(SessionId('offload-tool-result'), { provider: 'mock', model: 'mock' })
+    const emptyCallId = ToolCallId('empty')
     const callId = ToolCallId('shot')
+    const innerCallId = ToolCallId('inner')
     agent.session.append('turn/start', { turn: 0 })
     agent.session.append('assistant/message', {
       turn: 0,
       step: 1,
       message: createAssistantMessage({
-        content: [{ type: 'tool-call', id: callId, name: 'read_image', arguments: '{}' }],
+        content: [
+          { type: 'tool-call', id: emptyCallId, name: 'read_image', arguments: '{}' },
+          { type: 'tool-call', id: callId, name: 'read_image', arguments: '{}' },
+          { type: 'tool-call', id: innerCallId, name: 'read_image', arguments: '{}' },
+        ],
         source: { provider: 'mock', model: 'mock' },
       }),
       stream: [],
+    }, { surfaceOp: 'append' })
+    agent.session.append('tool/call', { turn: 0, step: 1, callId: emptyCallId, name: 'read_image', arguments: '{}' })
+    agent.session.append('tool/result', {
+      turn: 0,
+      step: 1,
+      message: createToolResultMessage({
+        callId: emptyCallId,
+        content: [{ type: 'text', text: 'no image' }],
+        isError: false,
+      }),
     }, { surfaceOp: 'append' })
     agent.session.append('tool/call', { turn: 0, step: 1, callId, name: 'read_image', arguments: '{}' })
     const result = agent.session.append('tool/result', {
@@ -318,11 +332,17 @@ describe('compaction-image-offload', () => {
       step: 1,
       message: createToolResultMessage({
         callId,
-        content: [
-          { type: 'tool-result', toolCallId: ToolCallId('empty'), content: [{ type: 'text', text: 'no image' }] },
-          image('first'),
-          { type: 'tool-result', toolCallId: ToolCallId('inner'), content: [image('second')] },
-        ],
+        content: [image('first')],
+        isError: false,
+      }),
+    }, { surfaceOp: 'append' })
+    agent.session.append('tool/call', { turn: 0, step: 1, callId: innerCallId, name: 'read_image', arguments: '{}' })
+    agent.session.append('tool/result', {
+      turn: 0,
+      step: 1,
+      message: createToolResultMessage({
+        callId: innerCallId,
+        content: [image('second')],
         isError: false,
       }),
     }, { surfaceOp: 'append' })

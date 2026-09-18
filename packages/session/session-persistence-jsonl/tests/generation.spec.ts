@@ -398,7 +398,10 @@ describe('JSONL immutable generation publication', () => {
       ...boundaryBase,
       data: { ...boundaryBase.data, text: 'x'.repeat(1024 * 1024 - JSON.stringify(boundaryBase).length) },
     }
-    const largeEvent = { ...event0, seq: 1, data: { turn: 1, text: 'y'.repeat(1024 * 1024) } }
+    const largeEvent = { type: 'user/message', seq: 1, time: 3, surfaceOp: 'append', data: {
+      id: 'large-message', role: 'user', source: { kind: 'user' },
+      content: [{ type: 'text', text: 'y'.repeat(1024 * 1024) }],
+    } }
     const finalEvent = { ...event1, seq: 2 }
     await writeFile(request.sourcePath, line(header(0)) + line(boundaryEvent) + line(largeEvent) + line(finalEvent))
     let now = 0

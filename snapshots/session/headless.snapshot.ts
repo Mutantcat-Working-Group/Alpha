@@ -557,9 +557,7 @@ function pinOf(scenario: HeadlessScenario): HeadlessScenario {
 /** Require successful verification and the complete canonical event before refresh can write a fixture. */
 async function verifySessionQuerySpill(log: string, spillRoot: string, locatorRoot: string): Promise<void> {
   const events = parseSessionLog(log)
-  const results = events.flatMap(event => event.type === 'tool/result'
-    ? event.data.message.content.filter(block => block.type === 'tool-result')
-    : [])
+  const results = events.flatMap(event => event.type === 'tool/result' ? [event.data.message] : [])
   const readResult = results.find(result => result.toolCallId === 'call_session_query_spill')
   const verification = results.find(result => result.toolCallId === 'call_verify_session_query_spill')
   expect(readResult?.isError).toBe(false)
@@ -584,9 +582,7 @@ async function verifySessionQuerySpill(log: string, spillRoot: string, locatorRo
 /** Require real resource results and literal instructions before recording or replay succeeds. */
 function verifyMcpResources(log: string, ptc: boolean): void {
   const events = parseSessionLog(log)
-  const nativeResults = events.flatMap(event => event.type === 'tool/result'
-    ? event.data.message.content.filter(block => block.type === 'tool-result')
-    : [])
+  const nativeResults = events.flatMap(event => event.type === 'tool/result' ? [event.data.message] : [])
   const dispatches = events.flatMap(event => event.type === 'tool/ptc-dispatch' ? [event.data] : [])
   const results = ptc ? dispatches : nativeResults
   expect(results.length).toBeGreaterThanOrEqual(5)
@@ -635,8 +631,7 @@ function verifyNoMcpServers(log: string, ptc: boolean): void {
 
 /** Require an admitted failed job and zero process allocations before updating its recorded oracle. */
 async function verifyBackgroundConfinementFailure(log: string, cwd: string): Promise<void> {
-  const results = parseSessionLog(log).flatMap(event => event.type === 'tool/result'
-    ? event.data.message.content.filter(block => block.type === 'tool-result') : [])
+  const results = parseSessionLog(log).flatMap(event => event.type === 'tool/result' ? [event.data.message] : [])
   const started = results.find(result => result.toolCallId === 'async-confinement-start')
   const inspected = results.find(result => result.toolCallId === 'async-confinement-result')
   expect(started).toMatchObject({ isError: false, content: [{ type: 'text', text: 'started background job bash-1' }] })

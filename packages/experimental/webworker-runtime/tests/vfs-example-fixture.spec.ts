@@ -157,7 +157,7 @@ describe('WebWorker preview VFS example', () => {
       'read', 'write', 'bash', 'glob', 'grep', 'web_search', 'todo_write', 'subagent', 'subagent_fork',
     ]))
     expect(events.some(event => event.type === 'todo/write')).toBe(true)
-    expect(events.some(event => event.type === 'tool/result' && event.data.message.content[0].isError === true)).toBe(true)
+    expect(events.some(event => event.type === 'tool/result' && event.data.message.isError === true)).toBe(true)
   })
 
   it('restores one-shot and continuable child Sessions with durable descriptors', () => {

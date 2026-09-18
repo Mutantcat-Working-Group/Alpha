@@ -237,7 +237,7 @@ describe('structured tool error propagation (the runtime-validation Agent Note, 
     await waitForIdle(ctx, agent)
 
     const toolResult = agent.session.snapshotEvents().find(e => e.type === 'tool/result')
-    expect(toolResult?.type === 'tool/result' && toolResult.data.message.content[0].isError).toBe(true)
+    expect(toolResult?.type === 'tool/result' && toolResult.data.message.isError).toBe(true)
     expect(toolResult?.type === 'tool/result' && toolResult.data.error)
       .toEqual({ name: 'HarnessError', code: 'BOOM' })
   })

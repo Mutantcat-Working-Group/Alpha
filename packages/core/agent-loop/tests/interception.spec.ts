@@ -709,9 +709,9 @@ describe('tools/pre-execute gate (native-plugin permission pattern, end-to-end t
 
     expect(ran).toBe(false)
     const result = events(agent).find(e => e.type === 'tool/result')
-    expect(result?.type === 'tool/result' && result.data.message.content[0].isError).toBe(true)
+    expect(result?.type === 'tool/result' && result.data.message.isError).toBe(true)
     expect(result?.type === 'tool/result'
-      && result.data.message.content[0].content.some(b => b.type === 'text' && b.text.includes('blocked dangerous tool'))).toBe(true)
+      && result.data.message.content.some(b => b.type === 'text' && b.text.includes('blocked dangerous tool'))).toBe(true)
   })
 })
 
@@ -773,7 +773,7 @@ describe('worked example: a native hook plugin is just a cordis plugin on the se
     // prompt allowed → user-sourced user/message recorded
     expect(log.some(e => e.type === 'user/message' && e.data.source.kind === 'user')).toBe(true)
     // tool ran (echo allowed) and post-execute attached "audited" context
-    expect(log.some(e => e.type === 'tool/result' && !e.data.message.content[0].isError)).toBe(true)
+    expect(log.some(e => e.type === 'tool/result' && !e.data.message.isError)).toBe(true)
     expect(log.some(e => e.type === 'user/message' && e.data.source.kind === 'plugin'
       && e.data.content.some(b => b.type === 'text' && b.text === 'audited'))).toBe(true)
     // NO hook/* events — a native plugin needs none

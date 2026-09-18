@@ -482,6 +482,147 @@ def test_snapshot_comparison_accepts_current_output_against_v2_without_rewriting
     assert SMOKE["selected_snapshot_session_files"](tmp_path) == {0: tmp_path / successor_name}
 
 
+def native_delivery_snapshot(version: int) -> dict[str, str]:
+    event = {
+        "type": "session-log-deepseek/delivery-accepted",
+        "data": {"sessionId": "s", "throughSeq": 0, "sessionFormatVersion": version},
+    }
+    return {
+        "result.json": json.dumps({
+            "events": [event],
+            "notifications": [{"method": "session.event", "payload": {"sessionId": "s", "event": event}}],
+        }) + "\n",
+        f"session.v{version}.jsonl": SMOKE["render_jsonl"]([
+            {"type": "session", "version": version, "id": "s"},
+            {"type": "turn/start", "data": {"turn": 1}},
+            event,
+        ]),
+    }
+
+
+def test_native_writer_comparison_requires_opt_in_and_preserves_written_generations(tmp_path: Path) -> None:
+    golden = native_delivery_snapshot(3)
+    fresh = native_delivery_snapshot(SESSION_FORMAT_VERSION)
+    for name, content in golden.items():
+        (tmp_path / name).write_text(content, encoding="utf-8")
+    compare = SMOKE["compare_snapshot_files"]
+    with pytest.raises(AssertionError, match="executable snapshot mismatch"):
+        compare(fresh, False, tmp_path, tuple(golden))
+    compare(fresh, False, tmp_path, tuple(golden), native_writer_output=True)
+    assert {path.name: path.read_text(encoding="utf-8") for path in tmp_path.iterdir()} == golden
+    compare(fresh, True, tmp_path, tuple(golden), native_writer_output=True)
+    assert (tmp_path / "session.v3.jsonl").read_text(encoding="utf-8") == golden["session.v3.jsonl"]
+    for name, content in fresh.items():
+        assert (tmp_path / name).read_text(encoding="utf-8") == content
+        assert "{{sourceSessionFormatVersion}}" not in content
+
+
+@pytest.mark.parametrize("surface", ["session", "events", "notifications"])
+def test_native_writer_comparison_rejects_stale_current_delivery(tmp_path: Path, surface: str) -> None:
+    golden = native_delivery_snapshot(3)
+    fresh = native_delivery_snapshot(SESSION_FORMAT_VERSION)
+    for name, content in golden.items():
+        (tmp_path / name).write_text(content, encoding="utf-8")
+    if surface == "session":
+        name = f"session.v{SESSION_FORMAT_VERSION}.jsonl"
+        records = [json.loads(line) for line in fresh[name].splitlines()]
+        records[-1]["data"]["sessionFormatVersion"] = 3
+        fresh[name] = SMOKE["render_jsonl"](records)
+    else:
+        result = json.loads(fresh["result.json"])
+        event = result["events"][0] if surface == "events" else result["notifications"][0]["payload"]["event"]
+        event["data"]["sessionFormatVersion"] = 3
+        fresh["result.json"] = json.dumps(result) + "\n"
+    with pytest.raises(AssertionError, match="executable snapshot mismatch"):
+        SMOKE["compare_snapshot_files"](fresh, False, tmp_path, tuple(golden), native_writer_output=True)
+
+
+def test_native_writer_comparison_preserves_captured_and_nested_delivery_values() -> None:
+    delivery = {
+        "type": "session-log-deepseek/delivery-accepted",
+        "data": {"sessionId": "s", "throughSeq": 0, "sessionFormatVersion": 3},
+    }
+    captured = {"type": "custom/event", "data": {
+        "capturedFormatVersion": 3, "sessionFormatVersion": 3, "nested": delivery,
+    }}
+    value = {
+        "events": [delivery, captured, {**delivery, "data": {**delivery["data"], "sessionFormatVersion": 2}}],
+        "notifications": [
+            {"method": "session.event", "params": {"event": delivery}},
+            {"method": "other.event", "payload": {"event": delivery}},
+        ],
+    }
+    normalized = json.loads(SMOKE["normalize_snapshot_comparison_text"]("result.json", json.dumps(value), 3))
+    assert normalized["events"][0]["data"]["sessionFormatVersion"] == "{{sourceSessionFormatVersion}}"
+    assert normalized["events"][1] == captured
+    assert normalized["events"][2]["data"]["sessionFormatVersion"] == 2
+    assert normalized["notifications"][0]["params"]["event"]["data"]["sessionFormatVersion"] == "{{sourceSessionFormatVersion}}"
+    assert normalized["notifications"][1] == value["notifications"][1]
+    assert SMOKE["normalize_session_format_comparison"](delivery) == delivery
+
+
+def test_default_comparison_keeps_a_migrated_delivery_generation_exact() -> None:
+    source = native_delivery_snapshot(3)["session.v3.jsonl"]
+    target_records = [json.loads(line) for line in source.splitlines()]
+    target_records[0]["version"] = SESSION_FORMAT_VERSION
+    target = SMOKE["render_jsonl"](target_records)
+    normalize = SMOKE["normalize_snapshot_comparison_text"]
+    assert normalize("session.v3.jsonl", source) == normalize(f"session.v{SESSION_FORMAT_VERSION}.jsonl", target)
+    assert '"sessionFormatVersion":3' in normalize(f"session.v{SESSION_FORMAT_VERSION}.jsonl", target)
+
+
+def test_native_writer_comparison_rejects_mixed_expected_role_generations(tmp_path: Path) -> None:
+    golden = {"session.v2.jsonl": 2, "session.1.v3.jsonl": 3}
+    fresh = {}
+    for index, (name, version) in enumerate(golden.items()):
+        (tmp_path / name).write_text(SMOKE["render_jsonl"]([
+            {"type": "session", "version": version},
+        ]), encoding="utf-8")
+        fresh[SMOKE["snapshot_session_filename"](index, SESSION_FORMAT_VERSION)] = SMOKE["render_jsonl"]([
+            {"type": "session", "version": SESSION_FORMAT_VERSION},
+        ])
+    with pytest.raises(AssertionError, match="requires one Session generation across all roles"):
+        SMOKE["compare_snapshot_files"](fresh, False, tmp_path, tuple(golden), native_writer_output=True)
+
+
+@pytest.mark.parametrize("scenario", ["ADVANCED", "RESTART"])
+def test_committed_python_native_goldens_compare_current_output_without_rewriting(scenario: str) -> None:
+    directory = SMOKE[f"{scenario}_SNAPSHOT_DIRECTORY"]
+    filenames = SMOKE[f"{scenario}_SNAPSHOT_FILENAMES"]
+    before = {path.name: path.read_bytes() for path in directory.iterdir() if path.is_file()}
+    selected = SMOKE["selected_snapshot_session_files"](directory)
+    first = next(iter(selected.values()))
+    source_version = SMOKE["session_header_version"](before[first.name].decode("utf-8"), first.name)
+
+    def current_writer(value: object) -> object:
+        if isinstance(value, list):
+            return [current_writer(item) for item in value]
+        if not isinstance(value, dict):
+            return value
+        result = {key: current_writer(item) for key, item in value.items()}
+        if result.get("type") == "session":
+            assert result["version"] == source_version
+            result["version"] = SESSION_FORMAT_VERSION
+        if result.get("type") == "session-log-deepseek/delivery-accepted":
+            assert result["data"]["sessionFormatVersion"] == source_version
+            result["data"]["sessionFormatVersion"] = SESSION_FORMAT_VERSION
+        return result
+
+    fresh = {}
+    for name in filenames:
+        parsed = SMOKE["parse_snapshot_session_filename"](name)
+        source_name = selected[parsed[0]].name if parsed is not None else name
+        content = before[source_name].decode("utf-8")
+        if parsed is not None:
+            fresh[SMOKE["snapshot_session_filename"](parsed[0], SESSION_FORMAT_VERSION)] = SMOKE["render_jsonl"]([
+                current_writer(json.loads(line)) for line in content.splitlines() if line
+            ])
+        else:
+            fresh[name] = json.dumps(current_writer(json.loads(content)), indent=2, ensure_ascii=False) + "\n"
+    SMOKE["compare_snapshot_files"](fresh, False, directory, filenames, native_writer_output=True)
+    assert {path.name: path.read_bytes() for path in directory.iterdir() if path.is_file()} == before
+
+
 @pytest.mark.parametrize("filenames", [
     ("session.1.v2.jsonl", "session.v2.jsonl"),
     ("session.v2.jsonl",),

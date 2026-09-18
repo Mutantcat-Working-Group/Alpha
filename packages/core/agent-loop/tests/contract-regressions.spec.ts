@@ -659,12 +659,14 @@ function expectPairedTools(messages: readonly Message[]): void {
   const pending = new Set<ToolCallId>()
   for (const message of messages) {
     if (pending.size > 0) expect(message.source.kind).toBe('tool')
+    if (message.role === 'tool') {
+      expect(pending.delete(message.toolCallId)).toBe(true)
+      continue
+    }
     for (const block of message.content) {
       if (block.type === 'tool-call') {
         expect(pending.has(block.id)).toBe(false)
         pending.add(block.id)
-      } else if (block.type === 'tool-result') {
-        expect(pending.delete(block.toolCallId)).toBe(true)
       }
     }
   }
@@ -716,7 +718,7 @@ describe('forked tool history reaches the next model request', () => {
       expect(closers.filter(event => event.type === 'step/end')).toHaveLength(type === 'step/end' ? 0 : 1)
       expect(closers.at(-1)).toMatchObject({ type: 'turn/end', data: { reason: { kind: 'forked' } } })
       for (const result of results) {
-        const text = result.data.message.content[0].content[0]
+        const text = result.data.message.content[0]
         if (text?.type !== 'text') throw new Error('fork result has no text')
         expect(text.text).toContain('The parent session may have')
       }
@@ -1287,12 +1289,10 @@ describe('tool result call identity', () => {
     // And deriveMessages pairs the tool-result with the assistant tool-call:
     // the derived tool-result block's toolCallId equals the original call.id.
     const messages = agent.session.deriveMessages()
-    const toolResultBlock = messages
-      .flatMap(m => m.content)
-      .find(b => b.type === 'tool-result')
-    expect(toolResultBlock?.type).toBe('tool-result')
-    if (toolResultBlock?.type === 'tool-result') {
-      expect(toolResultBlock.toolCallId).toBe(ToolCallId('c1'))
+    const toolResultMessage = messages.find(m => m.role === 'tool')
+    expect(toolResultMessage?.role).toBe('tool')
+    if (toolResultMessage?.role === 'tool') {
+      expect(toolResultMessage.toolCallId).toBe(ToolCallId('c1'))
     }
   })
 })

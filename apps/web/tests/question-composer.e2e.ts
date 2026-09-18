@@ -278,11 +278,10 @@ describe('web e2e: resident question composer round trip', () => {
     answeredSession = sessionId
     // World state: the tool result carries the chosen answer, and DONE lands.
     const results = sessionEvents.filter(e => e.type === 'tool/result')
-    const answerText = results.flatMap(event => event.data.message.content.flatMap(block =>
-      block.type === 'tool-result'
-        ? block.content.filter(item => item.type === 'text').map(item => item.text)
-        : [],
-    )).at(-1)
+    const answerText = results.flatMap(event => event.data.message.content
+      .filter(item => item.type === 'text')
+      .map(item => item.text),
+    ).at(-1)
     expect(JSON.parse(answerText ?? '')).toEqual({
       answers: [{ id: 'color', selected: ['Blue'], custom: 'Include accessibility notes' }],
     })

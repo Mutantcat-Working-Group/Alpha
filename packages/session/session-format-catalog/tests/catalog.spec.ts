@@ -263,13 +263,17 @@ describe('first-party Session format catalog', () => {
     }).toThrow(/format v2 delivery marker claims target format v3/)
   })
 
-  it('validates complete relationships after streaming migration', () => {
+  it('finishes a streaming migration with the target header and dense rows', () => {
     const stream = createSessionFormatCatalogWithChildren([]).createRestore({
-      type: 'session', version: 1, id: 'invalid-stream', createdAt: 1, delegationDepth: 0,
+      type: 'session', version: 1, id: 'streaming', createdAt: 1, delegationDepth: 0,
     }, { recovery: 'strict', validation: 'current' })
-    stream.decodeRow({ type: 'step/start', seq: 0, time: 2, data: { turn: 1, step: 1 } })
+    stream.decodeRow({ type: 'feedback/record', seq: 0, time: 2, data: { text: 'retained' } })
 
-    expect(() => stream.finish()).toThrow(/open turn/)
+    expect(stream.finish()).toMatchObject({
+      header: { version: 4, id: 'streaming' },
+      inheritedEventCount: 0,
+      events: [{ type: 'feedback/record', seq: 0 }],
+    })
   })
 })
 

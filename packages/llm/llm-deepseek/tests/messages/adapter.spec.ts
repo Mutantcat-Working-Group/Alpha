@@ -4,23 +4,23 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context, LoggerLevel, Service } from '@mutantcat/cordis'
-import LocalAttachments from '@mutantcat/dsh-attachment-local'
-import AgentRegistry, { installModelSelection } from '@mutantcat/dsh-agent'
-import type { Agent, ModelSelectionRef } from '@mutantcat/dsh-agent'
-import AgentLoop from '@mutantcat/dsh-agent-loop'
-import SystemPrompt from '@mutantcat/dsh-system-prompt'
-import ToolRuntime from '@mutantcat/dsh-tools'
-import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
-import { AttachmentId } from '@mutantcat/dsh-attachment'
-import Loader from '@mutantcat/cordis-plugin-loader'
-import Include from '@mutantcat/cordis-plugin-include'
-import LlmRuntime, { createAssistantMessage, createSystemMessage } from '@mutantcat/dsh-llm'
-import type { Message } from '@mutantcat/dsh-llm'
-import { credentialRef } from '@mutantcat/dsh-credentials'
-import LocalCredentials from '@mutantcat/dsh-credentials-local'
-import FileSettings from '@mutantcat/dsh-settings-file'
-import SessionStore, { SessionId } from '@mutantcat/dsh-session'
+import { Context, LoggerLevel, Service } from '@deepseek-ai/cordis'
+import LocalAttachments from '@deepseek-ai/dsh-attachment-local'
+import AgentRegistry, { installModelSelection } from '@deepseek-ai/dsh-agent'
+import type { Agent, ModelSelectionRef } from '@deepseek-ai/dsh-agent'
+import AgentLoop from '@deepseek-ai/dsh-agent-loop'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
+import ToolRuntime from '@deepseek-ai/dsh-tools'
+import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import { AttachmentId } from '@deepseek-ai/dsh-attachment'
+import Loader from '@deepseek-ai/cordis-plugin-loader'
+import Include from '@deepseek-ai/cordis-plugin-include'
+import LlmRuntime, { createAssistantMessage, createSystemMessage, createToolResultMessage, createUserMessage, ToolCallId } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, Message } from '@deepseek-ai/dsh-llm'
+import { credentialRef } from '@deepseek-ai/dsh-credentials'
+import LocalCredentials from '@deepseek-ai/dsh-credentials-local'
+import FileSettings from '@deepseek-ai/dsh-settings-file'
+import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
 import { DeepSeekMessagesAdapter } from '../../src/protocols/messages/adapter.ts'
 import { DeepSeekFileStore } from '../../src/common/file-store.ts'
 import * as Messages from '../../src/index.ts'
@@ -341,7 +341,19 @@ describe('Cordis provider composition', () => {
     const records = fixture.trim().split('\n').map(line => JSON.parse(line) as { type: string; data: { message?: Message } })
     const assistant = records.find(record => record.type === 'assistant/message')!.data.message!
     if (assistant.source.kind === 'model') assistant.source.provider = 'deepseek-official'
-    const result = records.find(record => record.type === 'tool/result')!.data.message!
+    // The released v2 row still wraps its tool result inside a user message.
+    const released = records.find(record => record.type === 'tool/result')!.data.message! as unknown as {
+      readonly content: readonly {
+        readonly type: string
+        readonly toolCallId: ToolCallId
+        readonly content: readonly ContentBlock[]
+        readonly isError?: boolean
+      }[]
+    }
+    const releasedBlock = released.content[0]!
+    const result = createToolResultMessage({
+      callId: releasedBlock.toolCallId, content: [...releasedBlock.content], isError: releasedBlock.isError === true,
+    })
     const saved = JSON.stringify([assistant, result])
     const response = await assemble(ctx.llm.stream(options({ messages: [user(), assistant, result] })))
     expect(response.assembler.finish.kind).toBe('stop')
