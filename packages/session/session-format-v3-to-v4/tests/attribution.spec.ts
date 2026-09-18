@@ -9,16 +9,16 @@ import { releasedV4SessionFormatCodec as codec, restoreReleasedV4Artifact } from
 const header = { version: 4, id: 'unknown-attribution', createdAt: 1, isSeeded: false, delegationDepth: 0 }
 
 describe('uninstalled producer attribution', () => {
-  it('preserves user source metadata through decoding, adoption and derivation', () => {
+  it.each(['user', 'developer'] as const)('preserves %s source metadata through decoding, adoption and derivation', (role) => {
     const message = {
-      id: 'attributed-message', role: 'user',
+      id: 'attributed-message', role,
       source: { kind: 'external-attribution', location: { file: 'notes.txt', lines: [2, 5] }, enabled: false },
       content: [{ type: 'text', text: 'Retain this context.' }],
     }
     const input: SessionFormatEvent[] = [
       { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
       { type: 'step/start', seq: 1, time: 2, data: { turn: 1, step: 1 } },
-      { type: 'user/message', seq: 2, time: 3, surfaceOp: 'append', data: message },
+      { type: `${role}/message`, seq: 2, time: 3, surfaceOp: 'append', data: role === 'user' ? message : { turn: 1, step: 1, message } },
       { type: 'step/end', seq: 3, time: 4, data: { turn: 1, step: 1 } },
       { type: 'turn/end', seq: 4, time: 5, data: { turn: 1, reason: { kind: 'completed' } } },
     ]

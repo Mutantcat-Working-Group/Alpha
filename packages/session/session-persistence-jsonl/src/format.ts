@@ -490,7 +490,7 @@ export class SessionLogScanner {
     // This scanner accepts only current-generation files. Owned structural refusal must
     // precede its recoverable-tail suppression, independently of the strict decoder state.
     try {
-      assertV4RowAdmission(decoded)
+      assertV4RowAdmission(decoded, KNOWN_SESSION_EVENT_TYPES)
     } catch (error: unknown) {
       if (error instanceof SessionFormatUnsupportedMigrationError) throw new SessionFormatUnsupportedError(error.message)
       throw error

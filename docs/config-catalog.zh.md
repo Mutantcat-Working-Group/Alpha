@@ -3532,7 +3532,7 @@ export interface Config {
 export type ToolPresentationMode = 'native' | 'ptc' | 'both'
 ```
 
-来源：[`packages/core/tools/src/index.ts:656`](../packages/core/tools/src/index.ts)
+来源：[`packages/core/tools/src/index.ts:663`](../packages/core/tools/src/index.ts)
 
 <a id="mutantcatdsh-typert-loader"></a>
 

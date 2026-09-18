@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { agentEvents, installModelSelection, type Agent, type ModelSelectionRef } from '@deepseek-ai/dsh-agent'
 import { CompactionId, compactCheckpointSource } from '@deepseek-ai/dsh-compaction'
-import LlmRuntime, { createMessage, createSystemMessage, createToolResultMessage, createUserMessage, LlmError, ToolCallId } from '@deepseek-ai/dsh-llm'
+import LlmRuntime, { createDeveloperMessage, createMessage, createSystemMessage, createToolResultMessage, createUserMessage, LlmError, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import SessionStore, { Session, SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
 import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
@@ -1017,6 +1017,12 @@ describe('session reference discovery and preparation', () => {
     const ctx = await harness()
     const target = ctx.sessions.create(SessionId('target'))
     const source = ctx.sessions.create(SessionId('source'))
+    source.append('developer/message', {
+      turn: 1, step: 1,
+      message: createDeveloperMessage({
+        content: [{ type: 'tool-removal', toolName: 'private_tool' }], source: { kind: 'test' },
+      }),
+    }, { surfaceOp: 'append' })
     source.append('user/message', createUserMessage({
       content: [{ type: 'text', text: 'nested referenced snapshot must not propagate' }],
       source: {

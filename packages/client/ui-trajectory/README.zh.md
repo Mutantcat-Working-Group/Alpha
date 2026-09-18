@@ -94,6 +94,8 @@ Trajectory 要求会话壳把 composer 作为浮层置于全高记录表上方�
 
 <a id="known-limitations-and-deferred-work"></a>
 
+- **不展示 developer 消息** — 展示能力有意留待后续实现；遇到 `developer/message` 时抛出错误，不渲染回退行。
+
 
 这些限制定义工作仍在进行时视图能显示什么；它们是当前包约束。
 

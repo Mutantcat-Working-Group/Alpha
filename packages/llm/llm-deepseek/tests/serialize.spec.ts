@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { AttachmentId, ImageVariantId } from '@deepseek-ai/dsh-attachment'
 import type { ImageAttachmentRef, ImageMediaType, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
-import { createToolResultMessage, createUserMessage, ToolCallId, ReasoningEffortId, createMessage } from '@deepseek-ai/dsh-llm'
+import { createDeveloperMessage, createToolResultMessage, createUserMessage, ToolCallId, ReasoningEffortId, createMessage } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, GenerateOptions, Message, RequestUserInput } from '@deepseek-ai/dsh-llm'
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import {
@@ -84,6 +84,18 @@ function inlineImageOptions(
     byteQuantum,
   }
 }
+
+it.each(['user', 'system', 'assistant', 'tool'] as const)('rejects tool-change blocks in %s history', (role) => {
+  for (const type of ['tool-addition', 'tool-removal'] as const) {
+    const message = { id: 'invalid', role, source: { kind: 'test' }, content: [{ type, toolName: 'search' }] } as unknown as Message
+    expect(() => serializeMessages([message])).toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
+  }
+})
+
+it('rejects deferred tool definitions until provider loading is implemented', () => {
+  expect(() => serializeRequest(request({ tools: [{ name: 'search', description: '', parameters: {}, deferLoading: true }] })))
+    .toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
+})
 
 describe('request-only user input', () => {
   it('preserves the exact text request and durable tool-result prefix', () => {
@@ -672,6 +684,19 @@ describe('image serialization', () => {
     })
   })
 
+  it('uses the configured image-count quantum before resolving files', async () => {
+    const ref = imageRef()
+    const resolveFileId = fileResolver()
+    const messages = [createUserMessage({
+      content: Array.from({ length: 3 }, () => ({ type: 'image' as const, attachment: ref })),
+      source: { kind: 'test' },
+    })]
+    await expect(serializeRequestWithImages(request({ messages }), {
+      ...imageOptions([ref], resolveFileId), maxImagesPerRequest: 2, countQuantum: 2,
+    })).rejects.toMatchObject({ code: 'IMAGE_OFFLOAD_REQUIRED', failure: { offloadImages: 2 } })
+    expect(resolveFileId).not.toHaveBeenCalled()
+  })
+
   it('counts only retained occurrences against the bound', async () => {
     const ref = imageRef('image/png', 3)
     const wire = await serializeRequestWithImages(request({
@@ -707,6 +732,21 @@ describe('image serialization', () => {
       : createMessage({ role, content, source: { kind: 'model', provider: 'deepseek-official', model: 'deepseek-v4-flash' } })
     await expect(serializeMessagesWithImages([message], imageOptions([imageRef()], resolveFileId)))
       .rejects.toMatchObject({ code: 'UNSUPPORTED_CONTENT' })
+    expect(resolveFileId).not.toHaveBeenCalled()
+  })
+
+  it('rejects developer history on text and image paths before reading attachments', async () => {
+    const resolveFileId = fileResolver()
+    const message = createDeveloperMessage({
+      content: [{ type: 'tool-addition', toolName: 'search' }],
+      source: { kind: 'test' },
+    })
+    const failure = { code: 'UNSUPPORTED_CONTENT', message: 'Developer messages are not supported yet' }
+    expect(() => serializeMessages([message])).toThrow(expect.objectContaining(failure))
+    await expect(serializeMessagesWithImages([message], imageOptions([], resolveFileId)))
+      .rejects.toMatchObject(failure)
+    await expect(serializeRequestWithImages(request({ messages: [message] }), imageOptions([], resolveFileId)))
+      .rejects.toMatchObject(failure)
     expect(resolveFileId).not.toHaveBeenCalled()
   })
 

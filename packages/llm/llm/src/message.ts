@@ -142,7 +142,7 @@ interface MessageBase {
   /** Exact model-facing blocks. */
   readonly content: readonly ContentBlock[]
   /** Required source fields supplied by the producer.
-   * @persistenceSource user
+   * @persistenceSource user developer
    */
   readonly source: MessageSource
 }
@@ -151,6 +151,11 @@ interface MessageBase {
 export interface SystemMessage extends MessageBase {
   readonly role: 'system'
   readonly source: MessageSourceMap['system-prompt']
+}
+
+/** Incremental agent session changes in conversation order, currently tool additions and removals. */
+export interface DeveloperMessage extends MessageBase {
+  readonly role: 'developer'
 }
 
 /** A user-role specialization of the shared message representation. */
@@ -181,6 +186,7 @@ export interface ToolResultMessage extends MessageBase {
  */
 export interface MessageRoleMap {
   system: SystemMessage
+  developer: DeveloperMessage
   user: UserMessage
   assistant: AssistantMessage
   tool: ToolResultMessage
@@ -192,6 +198,7 @@ export type Message = MessageRoleMap[keyof MessageRoleMap]
 type NewMessage = {
   [Role in keyof MessageRoleMap]: Omit<MessageRoleMap[Role], 'id'>
 }[keyof MessageRoleMap]
+type NewDeveloperMessage = Omit<DeveloperMessage, 'id' | 'role'>
 type NewUserMessage = Omit<UserMessage, 'id' | 'role'>
 type NewAssistantMessage = Omit<AssistantMessage, 'id' | 'role' | 'source'> & {
   readonly source: Omit<ModelMessageSource, 'kind'> & { readonly kind?: never }
@@ -218,6 +225,17 @@ export function createMessage<T extends NewMessage>(
     ...input,
     id: brandString<MessageId>(randomUUID()),
   }))
+}
+
+/**
+ * Create an identified, immutable developer message.
+ * @param input - content and producer source for the new message.
+ * @returns a detached developer message with a fresh identity.
+ */
+export function createDeveloperMessage<T extends NewDeveloperMessage>(
+  input: T & { readonly id?: never; readonly role?: never },
+): T & Pick<DeveloperMessage, 'id' | 'role'> {
+  return createMessage({ ...input, role: 'developer' })
 }
 
 /**

@@ -1,6 +1,6 @@
 /** Request conversion and durable replay validation. */
 import { describe, expect, it, vi } from 'vitest'
-import { createUserMessage, createAssistantMessage, createMessage, createSystemMessage, createToolResultMessage, ReasoningEffortId, ToolCallId } from '@deepseek-ai/dsh-llm'
+import { createDeveloperMessage, createUserMessage, createAssistantMessage, createMessage, createSystemMessage, createToolResultMessage, ReasoningEffortId, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, GenerateOptions, ImageBlock, Message, RequestMessage, RequestUserInput } from '@deepseek-ai/dsh-llm'
 import { AttachmentId, ImageVariantId } from '@deepseek-ai/dsh-attachment'
 import type { AttachmentStore, ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
@@ -23,6 +23,18 @@ const capable = resolveAdapterOptions({ models: [{ id: MODEL, systemPromptUpdate
 const nativeBody = (messages: Message[]) => serialize(options({ messages }), capable, messages, new Map(), () => undefined)
 
 describe('Messages request conversion', () => {
+  it.each(['user', 'system', 'assistant', 'tool'] as const)('rejects tool-change blocks in %s history', (role) => {
+    for (const type of ['tool-addition', 'tool-removal'] as const) {
+      const message = { id: 'invalid', role, source: { kind: 'test' }, content: [{ type, toolName: 'search' }] } as unknown as Message
+      expect(() => body([message])).toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
+    }
+  })
+
+  it('rejects deferred tool definitions until provider loading is implemented', () => {
+    expect(() => body([], { tools: [{ name: 'search', description: '', parameters: {}, deferLoading: true }] }))
+      .toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
+  })
+
   it('preserves the exact request with request-only text after durable tool results', () => {
     const prefix = [user(), assistant([call()]), result()]
     const input: RequestUserInput = { role: 'user', content: [{ type: 'text', text: 'review or summarize this input' }] }
@@ -51,6 +63,11 @@ describe('Messages request conversion', () => {
     expect(actual.messages[0]).toBe(input)
     expect(input).not.toHaveProperty('id')
     expect(input).not.toHaveProperty('source')
+  })
+
+  it('rejects developer history while provider serialization is unsupported', () => {
+    const message = createDeveloperMessage({ content: [{ type: 'tool-addition', toolName: 'search' }], source: { kind: 'tool-registry' } })
+    expect(() => body([message])).toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
   })
 
   it('keeps the original top-level prompt and cached prefix while appending native system updates', () => {

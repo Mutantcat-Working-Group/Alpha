@@ -47,7 +47,9 @@ session.append('user/message', { role: 'user', content: [{ type: 'text', text: '
 session.deriveMessages()         // the derived model history
 ```
 
-Surface events (`system/message`, `user/message`, `assistant/message`, `tool/result`) require `surfaceOp` in both typed events and append input. A replacement uses exactly `{ op: 'replace', startSeq, endSeq }`, with inclusive `SessionSeq` endpoints in current surface order. An Assistant message embeds its exact compact provider stream and forbids `sourceEventSeqs`. Known log-only events forbid both metadata fields and never produce a message.
+Surface events (`system/message`, `developer/message`, `user/message`, `assistant/message`, `tool/result`) require `surfaceOp` in both typed events and append input. A replacement uses exactly `{ op: 'replace', startSeq, endSeq }`, with inclusive `SessionSeq` endpoints in current surface order. An Assistant message embeds its exact compact provider stream and forbids `sourceEventSeqs`. Known log-only events forbid both metadata fields and never produce a message.
+
+`developer/message` stores tool-addition names and a `headerSeq` reference to an earlier `request/header`. The reference is required exactly when additions are present, and each name must identify exactly one complete schema in that header. Removals name the tool without a header reference. Historical headers remain available across restart, fork, and surface replacement; the current registry and latest header do not select an earlier addition's definition. `sourceEventSeqs` continues to describe derivation and replaced nodes.
 
 Plugins declare content-changing events with `@messageProjection` and register a pure definition through `ctx.sessions.registerMessageProjection()`. Session calls the definition before accepting an event and caches its immutable message updates. Missing definitions reject append and restore; unloading a used definition also blocks cached reads. Detached constructors and `foldSurface(events, projections)` require explicit definitions. Reconstructors pass the fold's `projectedMessages` to `deriveEventMessage()`; live instance methods apply the same projections automatically. [Plugin-owned message projections](../../../.agents/notes/implemented/architecture/2026-09-11-plugin-owned-message-projections.md) defines ownership and offline assembly.
 
@@ -107,7 +109,7 @@ Every append uses the shared iterative `snapshotJsonValue()` pass, which reads, 
 
 ### Derived history
 
-`deriveMessages()` caches deep-frozen projections and returns a fresh array per call. The four surface event types (`system/message`, `user/message`, `assistant/message`, `tool/result`) supply their recorded message identities and content; an empty-content system node projects to no message. Plugin-owned projections change derived content without mutating recorded messages. Replacements and projection decisions invalidate the cache. Embedded Assistant streams and `assistant/attempt` events remain replay and diagnostic data only.
+`deriveMessages()` caches deep-frozen projections and returns a fresh array per call. The surface event types (`system/message`, `developer/message`, `user/message`, `assistant/message`, `tool/result`) supply their recorded message identities and content; empty-content system and developer nodes project to no message. Plugin-owned projections change derived content without mutating recorded messages. Replacements and projection decisions invalidate the cache. Embedded Assistant streams and `assistant/attempt` events remain replay and diagnostic data only.
 
 ### The request header
 
@@ -137,7 +139,7 @@ The package-level contract is enough for most consumers; read these when you nee
 
 #### What the model sees
 
-The model receives the complete messages from `system/message`, `user/message`, `assistant/message`, and `tool/result` surface entries with logged projections applied, the system prompt first. Identities, roles, sources, and unmodified blocks retain their original values; projections never mint identities. Direct prompts and injected context remain separate `user/message` events whose sources preserve their attribution. Embedded streams, `assistant/attempt`, boundaries, and other log-only facts add no message.
+The model receives the complete messages from `system/message`, `developer/message`, `user/message`, `assistant/message`, and `tool/result` surface entries with logged projections applied, the system prompt first. Identities, roles, sources, and unmodified blocks retain their original values; projections never mint identities. Direct prompts and injected context remain separate `user/message` events whose sources preserve their attribution. Embedded streams, `assistant/attempt`, boundaries, and other log-only facts add no message.
 
 #### Token effect
 

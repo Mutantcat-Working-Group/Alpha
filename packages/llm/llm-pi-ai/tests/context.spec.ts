@@ -6,7 +6,7 @@ import type {
   ImageRequestTarget,
   RequestImageAttachment,
 } from '@deepseek-ai/dsh-attachment'
-import { ToolCallId, createAssistantMessage, createMessage, createToolResultMessage, createUserMessage, offloadedImageText } from '@deepseek-ai/dsh-llm'
+import { createDeveloperMessage, ToolCallId, createAssistantMessage, createMessage, createToolResultMessage, createUserMessage, offloadedImageText } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, GenerateOptions, Message, RequestUserInput } from '@deepseek-ai/dsh-llm'
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import { toPiContext } from '../src/context.ts'
@@ -84,6 +84,18 @@ function history(role: 'system' | 'assistant', content: ContentBlock[]): Message
 }
 
 describe('pi-ai request context conversion', () => {
+  it.each(['user', 'system', 'assistant', 'tool'] as const)('rejects tool-change blocks in %s history', (role) => {
+    for (const type of ['tool-addition', 'tool-removal'] as const) {
+      const message = { id: 'invalid', role, source: { kind: 'test' }, content: [{ type, toolName: 'search' }] } as unknown as Message
+      expect(() => toPiContext(request([message]))).toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
+    }
+  })
+
+  it('rejects deferred tool definitions until provider loading is implemented', () => {
+    expect(() => toPiContext({ ...request([]), tools: [{ name: 'search', description: '', parameters: {}, deferLoading: true }] }))
+      .toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
+  })
+
   it('preserves the exact context for request-only input after durable tool history', async () => {
     const prefix = [
       history('assistant', [{ type: 'tool-call', id: ToolCallId('lookup'), name: 'lookup', arguments: '{}' }]),
@@ -100,6 +112,15 @@ describe('pi-ai request context conversion', () => {
       .toEqual(await toPiContext(request([...prefix, durableImage]), imageContext(attachments)))
     expect(withImage).not.toHaveProperty('id')
     expect(withImage).not.toHaveProperty('source')
+  })
+
+  it('rejects developer history before reading image attachments', async () => {
+    const read = vi.fn((value: ImageAttachmentRef) => Promise.resolve(requestImage(value, Uint8Array.of(1))))
+    const message = createDeveloperMessage({ content: [{ type: 'tool-addition', toolName: 'search' }], source: { kind: 'test' } })
+    const failure = { code: 'UNSUPPORTED_CONTENT', message: 'Developer messages are not supported yet' }
+    expect(() => toPiContext(request([message]))).toThrow(expect.objectContaining(failure))
+    await expect(toPiContext(request([message]), imageContext(projectionStore(read)))).rejects.toMatchObject(failure)
+    expect(read).not.toHaveBeenCalled()
   })
 
   it('omits absent and empty request-level optional fields', () => {

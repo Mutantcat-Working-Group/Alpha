@@ -445,6 +445,7 @@ export class SessionCommandController {
    */
   async updateQueue(request: SessionUpdateQueueRequest): Promise<SessionUpdateQueueValue> {
     if (request.action.kind === 'edit') {
+      // oxlint-disable-next-line typescript/no-unnecessary-condition -- Remote callers can submit untyped JSON.
       if (request.action.content.some(block => block.type !== 'text')) {
         throw new RemoteError(
           'session/attachment-invalid',

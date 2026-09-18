@@ -46,9 +46,14 @@ function toolResultOf(
   }
 }
 
-/** Reject image roles that pi-ai cannot replay before request-size offloading can replace them. */
-function assertSupportedImageRoles(messages: readonly RequestMessage[]): void {
+/** Reject unsupported roles, tool-change blocks, and image roles before replay or image offloading. */
+function assertSupportedHistory(messages: readonly RequestMessage[]): void {
   for (const message of messages) {
+    // Developer history is persisted for V4; provider serialization is intentionally deferred.
+    if (message.role === 'developer') throw new LlmError('Developer messages are not supported yet', 'UNSUPPORTED_CONTENT')
+    if (message.content.some(block => block.type === 'tool-addition' || block.type === 'tool-removal')) {
+      throw new LlmError('Tool-change blocks require developer role', 'UNSUPPORTED_CONTENT')
+    }
     if (message.role !== 'user' && message.role !== 'tool' && contentHasImage(message.content)) {
       throw new LlmError(
         `pi-ai cannot represent an image in an in-history ${message.role} message`,
@@ -122,6 +127,10 @@ async function prepareRequestImages(
 }
 
 function toolsOf(options: GenerateOptions): PiTool[] | undefined {
+  // Deferred definitions are persisted for V4; provider loading is intentionally deferred.
+  if (options.tools?.some(tool => tool.deferLoading === true)) {
+    throw new LlmError('Deferred tool loading is not supported yet', 'UNSUPPORTED_CONTENT')
+  }
   return options.tools?.map(tool => ({
     name: tool.name,
     description: tool.description,
@@ -198,7 +207,7 @@ function appendSystemOrAssistant(
 }
 
 function textOnlyContext(options: GenerateOptions, onReplayDegrade?: (reason: string) => void): PiContext {
-  assertSupportedImageRoles(options.messages)
+  assertSupportedHistory(options.messages)
   const split = splitSystemPrompt(options)
   const toolNames = new Map<ToolCallId, string>()
   const messages: PiMessage[] = []
@@ -292,7 +301,7 @@ async function toPiContextWithImages(
     maxPixels: DEFAULT_REQUEST_IMAGE_PIXEL_BUDGET,
     maxBytes: DEFAULT_REQUEST_IMAGE_MAX_BYTES,
   }
-  assertSupportedImageRoles(options.messages)
+  assertSupportedHistory(options.messages)
   const split = splitSystemPrompt(options)
   const requestImages = await prepareRequestImages(split.messages, attachments, requestImagePolicy, options.signal)
   if (maxRequestImageBytes !== undefined) {

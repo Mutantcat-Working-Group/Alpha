@@ -104,6 +104,10 @@ function validateEvent(
       openStep = event.data.step
       break
     }
+    case 'developer/message': {
+      requireOpenStep(trace, 'developer/message', event.data.turn, event.data.step, fail)
+      break
+    }
     case 'step/end': {
       requireOpenStep(trace, 'step/end', event.data.turn, event.data.step, fail)
       pendingCalls = { kind: 'clear' }

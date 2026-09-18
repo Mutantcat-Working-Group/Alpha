@@ -9,7 +9,7 @@ English | [中文](2026-09-16-session-format-v4.zh.md)
 
 ## Summary
 
-Advances the declared SessionHeader.version from 3 to 4 for the V4 integration writer, records first-class tool-role results and producer-owned sources, and adds the forked variant to turn/end.reason.
+Advances the declared SessionHeader.version from 3 to 4 for the V4 integration writer, records first-class tool-role results and producer-owned sources, and adds the forked variant to turn/end.reason. Adds developer-role Session changes with name-only tool additions bound to historical request headers, tool removals, and deferred-loading schema markers.
 
 ## Table of Contents
 
@@ -32,39 +32,47 @@ changes:
     decision: version-bump
   - root: "event:agent/inbox/spliced"
     previous: "2026-09-14-image-offload"
-    after: "3aa732b3400e924132366555c88618f62232b41c1e56b86beee05fd7edc24367"
+    after: "1506a9b8224986c83015ae99d2cb5ede705538c58c063d6a48ef6d761a31ba6c"
     decision: version-bump
   - root: "event:assistant/attempt"
     previous: "2026-09-14-image-offload"
-    after: "2f1565d92801f4334f8dc34fbb980890eef621e81a7c90ed0fd8d0a6db2ec3b2"
+    after: "15d5dfdd822aa35e115afd74a8982825a493880457774e6850bc1520b50875e4"
     decision: version-bump
   - root: "event:assistant/message"
     previous: "2026-09-14-image-offload"
-    after: "f219a9f66fcc92ffec27bbd96fa21ffc2cffbaf2ad1de05757ec37205b1a0b58"
+    after: "1033093edd0db80ff410e00830b523405e00bb0c7684948e531ff65095799625"
     decision: version-bump
   - root: "event:compaction/summary"
     previous: "2026-09-14-image-offload"
-    after: "86c1ee9c8ab6c6e160d4ccc00b3d9ad5a6c687938b552d55eec528279baa1559"
+    after: "e2f9a41e0989f54ed8cee80f8db2bcf9d60a5c810dc9d45b83fa050b9dce7602"
+    decision: version-bump
+  - root: "event:developer/message"
+    previous: null
+    after: "eef4ef54dc7a133d47448a4ee822e45a351314923ef5f66db34c8b24e4b32d80"
+    decision: version-bump
+  - root: "event:request/header"
+    previous: "2026-09-11-initial"
+    after: "4208123b50df5006b181481ab45fcf1cde807b88d3fd4d340090bc2e202fac41"
     decision: version-bump
   - root: "event:session/title-llm-request"
     previous: "2026-09-14-image-offload"
-    after: "4eeb9bb8f9c35f59b3020a07113f256c363a504983aecbe33e57fd1ab4f03b19"
+    after: "fa8f7d3ebf08a76c7f7a8b0781873c4d819b964da5dbb52cd3cdfa5da34f452d"
     decision: version-bump
   - root: "event:system/message"
     previous: "2026-09-14-image-offload"
-    after: "54a8682615a7ffc3e1e3c41ab003ae61082ae2792c57407f5bd8bb38fded3f0e"
+    after: "69081694be231d56fd9580ba14645fd5e35373202605d5c5c841a9435b5fa3b1"
     decision: version-bump
   - root: "event:team/message/queued"
     previous: "2026-09-14-image-offload"
-    after: "9a25c2e889855516a531dc906905ec1d88157f7c2651aed27ac4f754bb128240"
+    after: "21fb6a90d5068f6a0003b7ab316ed2f56342477146a65c00db0f13c4d8df667d"
     decision: version-bump
   - root: "event:tool/ptc-dispatch"
     previous: "2026-09-14-image-offload"
-    after: "75f1d59512dd2e6468bed27c6203a721b116ef7869e291e3fee34c977d013185"
+    after: "100f6dca1468538239522cde3533e5bd721d0f1a7b50bea8b0eb533ea6c96163"
     decision: version-bump
   - root: "event:tool/result"
     previous: "2026-09-14-image-offload"
-    after: "f4c6f3eae6607f412a9023406c8c3bd351a02451848bb78c2436f409447dd60c"
+    after: "7c9f44e90a0058f4cc532ae20dad0c10afa6eba22e70a6c79fc79490bad64397"
     decision: version-bump
   - root: "event:turn/end"
     previous: "2026-09-14-image-offload"
@@ -72,7 +80,7 @@ changes:
     decision: version-bump
   - root: "event:user/message"
     previous: "2026-09-14-image-offload"
-    after: "c3a5c8d0f1bc05ab074fdb086da866eece51dd573ae0c30b17a52bb76dec8836"
+    after: "3f72db3d87a0c5c43e68be467b4cca728eaf5adc1d5d2b6975ff42bfbd961761"
     decision: version-bump
 ```
 
@@ -91,6 +99,8 @@ Producer-owned sources replace released plugin wrappers through the [V3-to-V4 mi
 
 The core-owned user source property records the attribution-preservation policy; tmux-context qualifies its location attribution while retaining producer-local duplicate suppression. Auto Review and the compaction summarizer use request-only user inputs, removing their active source registrations without removing historical migration support. These inputs cannot be written as durable Session messages. Catalog formatVersion 2 stores the policy metadata; it does not change the Session version or rewrite frozen schema records. System, model, and tool sources retain their strict semantic rules.
 
+Developer events retain their original role and require an open step. Each addition stores toolName; developer/message.headerSeq identifies an earlier known request/header containing exactly one complete matching ToolSchema. All additions in one event share that historical header revision, while removal-only and other developer messages omit headerSeq. Native and Session admission reject absent, forward, non-header, unknown-header, ambiguous, incomplete-definition and retired inline-definition forms without interpreting unknown ignorable records or dropping unrelated JSON metadata. Same-name replacement, restart, fork, surface replacement and compaction retain historical schema identity without consulting the latest header or registry. Generic sourceEventSeqs remains independent. Developer sources use the same recorded attribution-preservation policy as user sources. The optional deferLoading marker is independent of addition history. No shipped profile emits developer records; provider serialization, automatic emission and UI support remain deferred.
+
 The PTC producer writes `source.kind: 'ptc-mode'`. The V3-to-V4 edge retains `tools-code-mode` and `tools-ptc` as historical plugin lookup keys and maps both to that current kind. The source policy reserves `ptc-mode` against attribution-only qualification.
 
 <a id="verification"></a>
@@ -101,6 +111,8 @@ The focused Session, agent-loop, Session Controller, V4, chat-view, and compacti
 The generated request-header reservation regression and existing retired-syntax and Session surface tests pass 65 tests across three files. The generated field retains optional `never`; permitting an optional string produces a version-bump diagnostic while the native reader still refuses the retired key.
 
 The producer-source and request-input checks pass 447 tests across 12 files, including provider equality, request-only type rejection, user-attribution retention, source migration, and native source admission. Comparing the generated inventories with the tool-role parent reports four changed roots and 447 unchanged type fingerprints.
+
+The focused Session, V4 and request-input suite passes 884 tests across 38 files, with 100% statements, branches, functions and lines for the complete V3-to-V4 package and Session surface. Coverage includes historical same-name schema binding, compound additions/removals, malformed references and definitions, unknown-header refusal, opaque unknown records, metadata preservation, forks, replacements, compaction references, and native plain/zstd read/write admission without rewriting the generation.
 
 <a id="dev-note"></a>
 ## Dev Note

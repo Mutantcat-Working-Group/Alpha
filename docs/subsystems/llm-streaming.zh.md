@@ -17,7 +17,9 @@
 ```ts type-equiv
 /**
  * Merge-extensible content blocks keyed by `type`. New core blocks must land
- * with adapter, UI, and compaction support.
+ * with adapter, UI, and compaction support. Developer tool-change blocks are
+ * reserved for Session V4 persistence; providers and UI reject them until
+ * their producers and consumers are implemented together.
  */
 interface ContentBlockMap {
   'text': TextBlock
@@ -25,10 +27,12 @@ interface ContentBlockMap {
   'image': ImageBlock
   'file': FileBlock
   'tool-call': ToolCallBlock
+  'tool-addition': ToolAdditionBlock
+  'tool-removal': ToolRemovalBlock
 }
 ```
 
-各块接口（完整字段见源码）：`TextBlock`（`text`）、`ReasoningBlock`（thinking，区别于可见文本）、`ImageBlock`（一个持久的[图片附件](attachment.zh.md)）、`FileBlock`（一个持久的原样[文件附件](attachment.zh.md)，请求组装对每条路由都把它投影为 handle 文本）和 `ToolCallBlock`（`id: ToolCallId`、`name`、原始 JSON `arguments`）。工具结果是一等 `ToolResultMessage`，含有 `toolCallId`、结果 `content` 与可选的 `isError`；它不是内容块。`ContentBlock = ContentBlockMap[ContentBlockType]`。仅当适配器、UI、压缩（compaction）和持久回放路径均支持某种新模态时，才将其纳入可合并扩展的 map。
+各块接口（完整字段见源码）：`TextBlock`（`text`）、`ReasoningBlock`（thinking，区别于可见文本）、`ImageBlock`（一个持久的[图片附件](attachment.zh.md)）、`FileBlock`（一个持久的原样[文件附件](attachment.zh.md)，请求组装对每条路由都把它投影为 handle 文本）和 `ToolCallBlock`（`id: ToolCallId`、`name`、原始 JSON `arguments`）。工具结果是一等 `ToolResultMessage`，含有 `toolCallId`、结果 `content` 与可选的 `isError`；它不是内容块。`ContentBlock = ContentBlockMap[ContentBlockType]`。仅当适配器、UI、压缩（compaction）和持久回放路径均支持某种新模态时，才将其纳入可合并扩展的 map。 Developer 工具变更块属于仅持久化的例外，见[决策](../../.agents/notes/implemented/architecture/2026-09-17-developer-session-changes.zh.md)。
 
 图片访问方式属于请求序列化，不属于持久附件或确定性请求图片版本。`resolveImageAttachmentAccess()` 把附件提供方可选的宿主对象路径，与消费方为当前工具执行文件系统提供的映射组合起来。结果只适用于本次请求，不参与 `variantId`。
 
@@ -66,6 +70,8 @@ interface AssistantProviderMetadata {
 /** Any persisted conversation message, discriminated by its `role`. */
 type Message = MessageRoleMap[keyof MessageRoleMap]
 ```
+
+`DeveloperMessage` 以 `developer` 角色按对话顺序记录增量智能体 Session 变更。`ToolAdditionBlock.toolName` 激活由所在 Session 事件的历史请求头引用所选定的定义；`ToolRemovalBlock.toolName` 移除当前生效的定义。其他消息角色拒绝这两种内容块。`deferLoading` 独立控制工具定义的加载请求，不要求存在添加记录。请求头绑定见 [Session](../../packages/core/session/README.zh.md)，提供方支持限制见 [LLM 包](../../packages/llm/llm/README.zh.md#known-limitations-and-deferred-work)。
 
 消息来源本身也是一个可合并扩展的和类型：
 
@@ -667,6 +673,12 @@ interface FinishReasonMap {
  * it from this package.
  */
 interface ToolSchema {
+  /**
+   * Requests deferred loading of the tool definition into model context,
+   * independently of whether a tool-addition block records the tool.
+   * Uses Anthropic's defer_loading terminology.
+   */
+  deferLoading?: true
   name: string
   description: string
   /** JSON Schema object for the arguments. */

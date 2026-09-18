@@ -4,8 +4,8 @@ import { isDeepStrictEqual } from 'node:util'
 import { SessionFormatError, isSessionFormatJsonObject, sessionFormatCount } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatArtifact, SessionFormatEvent, SessionFormatJsonObject, SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
 
-const SURFACE_TYPES = new Set(['system/message', 'user/message', 'assistant/message', 'tool/result'])
-const STEP_EVENT_TYPES = new Set(['system/message', 'assistant/attempt'])
+const SURFACE_TYPES = new Set(['system/message', 'user/message', 'developer/message', 'assistant/message', 'tool/result'])
+const STEP_EVENT_TYPES = new Set(['system/message', 'developer/message', 'assistant/attempt'])
 const RELATIONSHIP_TYPES = new Set([
   ...SURFACE_TYPES, ...STEP_EVENT_TYPES, 'turn/start', 'turn/end', 'step/start', 'step/end',
   'tool/call', 'request/header', 'request/context', 'tool/ptc-dispatch-start', 'tool/ptc-dispatch',
@@ -91,6 +91,34 @@ class Relationships {
   closeTools(type: string): void {
     if (this.tools.size !== 0) throw new SessionFormatError(`${type} leaves unresolved tool call ${String(this.tools.keys().next().value)}`)
     this.tools.clear()
+  }
+
+  developer(event: SessionFormatEvent, data: SessionFormatJsonObject): void {
+    if (data['headerSeq'] === undefined) return
+    const headerSeq = earlier(data['headerSeq'], event.seq, 'developer/message headerSeq')
+    const headerEvent = this.artifact.events[headerSeq]
+    if (headerEvent?.type !== 'request/header') {
+      throw new SessionFormatError('developer/message headerSeq must reference an earlier request/header')
+    }
+    if (!this.knownEventTypes.has(headerEvent.type)) {
+      throw new SessionFormatError('developer/message headerSeq must reference a known request/header')
+    }
+    const tools = record(record(headerEvent.data, 'request/header data')['header'], 'request header')['tools']
+    const content = array(record(data['message'], 'developer message')['content'], 'developer content')
+    for (const value of content) {
+      if (!isSessionFormatJsonObject(value) || value['type'] !== 'tool-addition') continue
+      const toolName = value['toolName'] as string
+      const definitions = Array.isArray(tools)
+        ? tools.filter(tool => isSessionFormatJsonObject(tool) && tool['name'] === toolName)
+        : []
+      if (definitions.length !== 1) {
+        throw new SessionFormatError(`developer/message tool-addition "${toolName}" must name exactly one tool in headerSeq ${headerSeq}`)
+      }
+      const definition = definitions[0] as SessionFormatJsonObject
+      if (typeof definition['description'] !== 'string' || !isSessionFormatJsonObject(definition['parameters'])) {
+        throw new SessionFormatError(`developer/message tool-addition "${toolName}" requires a complete tool definition in headerSeq ${headerSeq}`)
+      }
+    }
   }
 
   foldSurface(event: SessionFormatEvent): void {
@@ -267,6 +295,7 @@ class Relationships {
         this.nextStep += 1
         break
       case 'assistant/message': case 'tool/call': case 'tool/result': this.tool(event, data); break
+      case 'developer/message': this.developer(event, data); break
       case 'request/header':
         this.requireTurn(event.type)
         this.provider = record(record(data['header'], 'request header')['config'], 'request config')['provider']

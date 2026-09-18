@@ -2,15 +2,15 @@
 
 import type {
   AttachmentIdType, ImageAttachmentLimits, ImageAttachmentRef, ImageMediaType,
-} from '@mutantcat/dsh-attachment'
-import type { Branded } from '@mutantcat/dsh-brand'
-import type { LlmAttemptId, MessageId } from '@mutantcat/dsh-llm/brand'
-import type { ContentBlock } from '@mutantcat/dsh-llm'
-import type { SessionId, SessionSeqCursor } from '@mutantcat/dsh-session/types'
-import type { SessionProjectionMap } from '@mutantcat/dsh-session-projection/types'
-import type { JobId } from '@mutantcat/dsh-jobs/brand'
-import type { JsonValue } from '@mutantcat/dsh-util-values'
-import type { WorkspaceId } from '@mutantcat/dsh-workspace/types'
+} from '@deepseek-ai/dsh-attachment'
+import type { Branded } from '@deepseek-ai/dsh-brand'
+import type { LlmAttemptId, MessageId } from '@deepseek-ai/dsh-llm/brand'
+import type { TextBlock } from '@deepseek-ai/dsh-llm'
+import type { SessionId, SessionSeqCursor } from '@deepseek-ai/dsh-session/types'
+import type { SessionProjectionMap } from '@deepseek-ai/dsh-session-projection/types'
+import type { JobId } from '@deepseek-ai/dsh-jobs/brand'
+import type { JsonValue } from '@deepseek-ai/dsh-util-values'
+import type { WorkspaceId } from '@deepseek-ai/dsh-workspace/types'
 
 declare module '@mutantcat/dsh-session-projection/types' {
   interface SessionProjectionStateMap {
@@ -155,7 +155,7 @@ export type QueueAction =
   | {
     readonly kind: 'edit'
     /** Non-empty text-only replacement content. */
-    readonly content: readonly ContentBlock[]
+    readonly content: readonly TextBlock[]
   }
   | { readonly kind: 'remove' }
   /** Move the item one position earlier within its own pending list. */

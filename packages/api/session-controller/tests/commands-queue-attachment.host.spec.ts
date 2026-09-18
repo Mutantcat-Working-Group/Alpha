@@ -153,6 +153,7 @@ describe('Session queue commands', () => {
       action: {
         kind: 'edit',
         content: [{
+          // @ts-expect-error -- remote edit payloads can carry unsupported image blocks.
           type: 'image',
           attachment: {
             attachmentId: AttachmentId('att-edit'), mediaType: 'image/png', bytes: 1, width: 1, height: 1,

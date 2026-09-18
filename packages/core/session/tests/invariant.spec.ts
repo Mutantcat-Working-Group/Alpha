@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { createScope, scopeTarget } from '@deepseek-ai/dsh-scope'
-import { createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, freezeMessage } from '@deepseek-ai/dsh-llm'
+import { createDeveloperMessage, createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, freezeMessage } from '@deepseek-ai/dsh-llm'
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import SessionStore, { SessionId, SessionSeq, TOOL_NOT_STARTED } from '@deepseek-ai/dsh-session'
 import * as SessionInvariant from '@deepseek-ai/dsh-session/invariant'
@@ -36,6 +36,27 @@ describe('session-log invariants', () => {
       session.append('turn/start', { turn: 1 })
       session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
     }).not.toThrow()
+  })
+
+  it('requires developer messages to belong to the open turn and step', async () => {
+    const { ctx } = await setup()
+    try {
+      const session = ctx.sessions.create()
+      const message = createDeveloperMessage({ content: [{ type: 'tool-removal', toolName: 'search' }], source: { kind: 'test' } })
+      const append = (turn: number, step: number) => session.append('developer/message', { turn, step, message }, { surfaceOp: 'append' })
+      expect(() => append(1, 1)).toThrow('developer/message names turn 1/step 1')
+      session.append('turn/start', { turn: 1 })
+      expect(() => append(1, 1)).toThrow('developer/message names turn 1/step 1')
+      session.append('step/start', { turn: 1, step: 1 })
+      expect(() => append(2, 1)).toThrow('developer/message names turn 2/step 1')
+      expect(() => append(1, 2)).toThrow('developer/message names turn 1/step 2')
+      expect(() => append(1, 1)).not.toThrow()
+      expect(session.deriveMessages()).toEqual([message])
+      session.append('step/end', { turn: 1, step: 1 })
+      expect(() => append(1, 1)).toThrow('developer/message names turn 1/step 1')
+    } finally {
+      await ctx.fiber.dispose()
+    }
   })
 
   it('accepts a well-formed turn, step, and tool sequence', async () => {

@@ -4,6 +4,7 @@ import {
   boundContextSummary,
   CONTEXT_SUMMARY_MAX_CHARS,
   createAssistantMessage,
+  createDeveloperMessage,
   createSystemMessage,
   createToolResultMessage,
   createUserMessage,
@@ -12,6 +13,16 @@ import {
 } from '@mutantcat/dsh-llm'
 
 describe('message construction', () => {
+  it('detaches and freezes developer tool names without copying their definitions', () => {
+    const content = [{ type: 'tool-addition' as const, toolName: 'search' }]
+    const message = createDeveloperMessage({ content, source: { kind: 'test' } })
+    content[0]!.toolName = 'changed'
+    expect(message.role).toBe('developer')
+    expect(message.content).toEqual([{ type: 'tool-addition', toolName: 'search' }])
+    expect(Object.isFrozen(message.content[0])).toBe(true)
+    expect(freezeMessage(message).id).toBe(message.id)
+  })
+
   it('bounds producer summaries while preserving summaries at the exact limit', () => {
     const exact = 'x'.repeat(CONTEXT_SUMMARY_MAX_CHARS)
     expect(boundContextSummary(exact)).toBe(exact)

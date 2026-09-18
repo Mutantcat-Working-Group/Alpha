@@ -6,6 +6,7 @@ import { releasedV2SessionFormatCodec } from '@deepseek-ai/dsh-session-format-v2
 import { assertV4SourceRowAdmission } from './message-sources.ts'
 import { assertV4RetiredSyntax } from './retired-syntax.ts'
 import { assertV4SystemMessageFields } from './system-message.ts'
+import { assertV4DeveloperData } from './developer.ts'
 import { assertV4ForkResult } from './fork-result.ts'
 import { assertV4ToolResultMessage } from './tool-role.ts'
 import { assertReleasedV4Header } from './validation.ts'
@@ -43,6 +44,7 @@ export const releasedV4SessionFormatCodec = Object.freeze({
     return { ...releasedV2SessionFormatCodec.encodeHeader({ ...header, version: 2 }, inheritedEventCount), version: 4 }
   },
   encodeEvent(event: SessionFormatEvent) {
+    if (event.type === 'developer/message' && event['ignorable'] === true) assertV4DeveloperData(event)
     assertV4RowAdmission(event)
     return releasedV2SessionFormatCodec.encodeEvent(event)
   },
@@ -50,9 +52,16 @@ export const releasedV4SessionFormatCodec = Object.freeze({
 
 /**
  * Apply native V4 admission before a scanner discards a recoverable suffix.
+ * Ignorable developer payloads require reader vocabulary; physical decoding defers them.
  * @param row - parsed physical row before framing and source-event range decoding.
+ * @param knownEventTypes - installed event types, supplied by native readers before tail recovery.
  */
-export function assertV4RowAdmission(row: unknown): void {
+export function assertV4RowAdmission(row: unknown, knownEventTypes?: ReadonlySet<string>): void {
+  if (isSessionFormatJsonObject(row)) {
+    if (row['type'] === 'developer/message' && row['ignorable'] === true
+      && knownEventTypes?.has('developer/message') !== true) return
+    assertV4DeveloperData(row as unknown as SessionFormatEvent)
+  }
   assertV4SourceRowAdmission(row)
   assertV4RetiredSyntax(row)
   assertV4SystemMessageFields(row)

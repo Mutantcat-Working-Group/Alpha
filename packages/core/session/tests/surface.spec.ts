@@ -6,6 +6,7 @@ import {
   SessionLogOffset,
   SessionSeq,
   foldSurface,
+  snapshotSessionEvent,
   isAppendSurfaceEvent,
   isReplacementSurfaceEvent,
   isSurfaceEligibleType,
@@ -16,6 +17,7 @@ import {
   MessageId,
   ToolCallId,
   createMessage,
+  createDeveloperMessage,
   createSystemMessage,
   createToolResultMessage,
   createUserMessage,
@@ -974,5 +976,49 @@ describe('system/message surface node', () => {
     expect(() => Session.create(SessionId('bad-role'), [badRole as SessionEvent])).toThrow(/role "system"/)
     const badSource = { ...good, data: { ...good.data, message: { ...(good.data as { message: object }).message, source: { kind: 'user' } } } }
     expect(() => Session.create(SessionId('bad-source'), [badSource as SessionEvent])).toThrow(/system-prompt source/)
+  })
+})
+
+
+describe('developer message history', () => {
+  it.each(['user/message', 'developer/message'] as const)('rejects a mismatched developer role in %s at event admission', (type) => {
+    const message = createDeveloperMessage({ source: { kind: 'test' }, content: [] })
+    const event = {
+      type, seq: SessionSeq(0), time: 0, surfaceOp: 'append',
+      data: type === 'user/message' ? message : { turn: 1, step: 1, message: { ...message, role: 'user' } },
+    } as unknown as SessionEvent
+    expect(() => snapshotSessionEvent(event)).toThrow('must occur together')
+  })
+
+  it('retains an empty developer node while projecting no message', () => {
+    const session = Session.create(SessionId('empty-developer'))
+    const message = createDeveloperMessage({ source: { kind: 'test' }, content: [] })
+    const event = session.append('developer/message', { turn: 1, step: 1, message }, { surfaceOp: 'append' })
+    expect(session.snapshotEvents()).toContain(event)
+    expect(session.deriveMessages()).toEqual([])
+    const restored = Session.fromRestore(session.id, session.snapshotEvents(), session.header, SessionLogOffset(0), 'shared-frozen')
+    expect(restored.deriveMessages()).toEqual([])
+  })
+
+  it.each(['tool-addition', 'tool-removal'] as const)('rejects %s in user messages at Session admission', (type) => {
+    const session = Session.create(SessionId('invalid-tool-change'))
+    const message = createUserMessage({ source: { kind: 'test' }, content: [{ type, toolName: 'search' }] })
+    expect(() => session.append('user/message', message, { surfaceOp: 'append' })).toThrow('developer role')
+  })
+
+  it('retains developer blocks through append, replacement, and restoration', () => {
+    const session = Session.create(SessionId('developer'))
+    const message = createDeveloperMessage({ source: { kind: 'test' }, content: [{ type: 'tool-addition', toolName: 'search' }] })
+    const headerSeq = session.append('request/header', { reason: 'initial', header: { config: { provider: 'test', model: 'test' }, tools: [{ name: 'search', description: 'Search', parameters: {} }] } }).seq
+    const first = session.append('developer/message', { turn: 1, step: 1, headerSeq, message }, { surfaceOp: 'append' })
+    expect(session.deriveMessages()).toEqual([message])
+    const replacement = createDeveloperMessage({ source: { kind: 'test' }, content: [{ type: 'tool-removal', toolName: 'search' }] })
+    session.append('developer/message', { turn: 1, step: 1, message: replacement }, {
+      surfaceOp: { op: 'replace', startSeq: first.seq, endSeq: first.seq }, sourceEventSeqs: [first.seq],
+    })
+    expect(session.deriveMessages()).toEqual([replacement])
+    expect(isSurfaceEligibleType('developer/message')).toBe(true)
+    const restored = Session.fromRestore(session.id, session.snapshotEvents(), session.header, SessionLogOffset(0), 'shared-frozen')
+    expect(restored.deriveMessages()).toEqual([replacement])
   })
 })

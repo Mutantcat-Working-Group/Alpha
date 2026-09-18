@@ -19,7 +19,7 @@ export function mapEventMessages(
     const message = transform(data)
     return message === data ? event : { ...event, data: message }
   }
-  if (event.type === 'system/message' || event.type === 'assistant/message' || event.type === 'tool/result') {
+  if (event.type === 'developer/message' || event.type === 'system/message' || event.type === 'assistant/message' || event.type === 'tool/result') {
     if (!isSessionFormatJsonObject(data['message'])) throw new SessionFormatError(event.type + ' requires a message')
     const message = transform(data['message'])
     return message === data['message'] ? event : { ...event, data: { ...data, message } }
@@ -46,7 +46,7 @@ const RENAMED_PRODUCERS: Readonly<Record<string, string>> = Object.freeze({
 
 /** Current producer kinds whose names are not released V3 plugin identities. */
 const CURRENT_PRODUCER_KINDS: ReadonlySet<string> = new Set([
-  'user', 'model', 'tool', 'system-prompt',
+  'user', 'model', 'tool', 'system-prompt', 'tool-registry',
   'runtime-context', 'compact-checkpoint', 'ptc-mode', 'compact-basic',
   'agent-instructions', 'session-reference', 'team-message', 'goal',
   'skill-invocation', 'skill-catalog', 'coordinator', 'subagent-report',

@@ -1,6 +1,7 @@
 import { brandNumber, brandString, type Branded, type BrandedNumber } from '@mutantcat/dsh-brand'
 import type {
   AssistantMessage,
+  DeveloperMessage,
   AssistantStreamRecord,
   ToolCallId,
   LlmCallConfig,
@@ -302,6 +303,14 @@ export interface SessionEventMap {
    * project their `content` verbatim; `source` tells them apart.
    */
   'user/message': UserMessage
+  /** An incremental agent session change admitted at the named turn and step. */
+  'developer/message': {
+    turn: number
+    step: number
+    message: DeveloperMessage
+    /** Earlier request/header defining every tool addition; required exactly when additions are present. */
+    headerSeq?: SessionSeq
+  }
   /**
    * The rendered system prompt on the model-visible surface. The loop appends
    * the first one as surface node 0 before the step's first `user/message`.
@@ -423,6 +432,7 @@ export type SessionEventType = keyof SessionEventMap
  */
 export type SurfaceEventType =
   | 'system/message'
+  | 'developer/message'
   | 'user/message'
   | 'assistant/message'
   | 'tool/result'

@@ -496,6 +496,8 @@ export interface DefineToolOptions<S extends ParameterSchemaSpec, O extends Valu
     /** Pure replayable presentation metadata for direct top-level calls. */
     presentationMeta?(args: InferArgs<S>, value: InferValue<NoInfer<O>>): JsonValue
   }
+  /** Requests deferred loading of the tool definition; see {@link @deepseek-ai/dsh-llm#ToolSchema.deferLoading}. */
+  readonly deferLoading?: true
   /** Optional positive cooperative timeout budget in milliseconds. */
   readonly timeoutMs?: number
   /**
@@ -581,6 +583,7 @@ export function defineTool<const S extends ParameterSchemaSpec, const O extends 
         },
       } : {},
     },
+    ...(options.deferLoading === true ? { deferLoading: options.deferLoading } : {}),
     ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
     async execute(args: unknown, exec: ToolRunContext): Promise<JsonValue> {
       const violations = validate(args)

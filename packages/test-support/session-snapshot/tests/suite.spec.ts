@@ -946,6 +946,15 @@ describe('stabilizeFixtureMessageIds', () => {
     }
   })
 
+  it('stabilizes developer message identities through their explicit surface case', () => {
+    const freshId = '11111111-1111-4111-8111-111111111111'
+    const oldId = '22222222-2222-4222-8222-222222222222'
+    const log = (id: string) => JSON.stringify({ type: 'developer/message', data: { turn: 1, step: 1, message: {
+      id, role: 'developer', source: { kind: 'tool-registry' }, content: [{ type: 'tool-addition', toolName: 'search' }],
+    } } }) + '\n'
+    expect(stabilizeFixtureMessageIds([log(freshId)], [log(oldId)])).toEqual([log(oldId)])
+  })
+
   it('rewrites only complete messages carried by surface events or durable inbox splices', () => {
     const ids = {
       freshUser: '11111111-1111-4111-8111-111111111111',

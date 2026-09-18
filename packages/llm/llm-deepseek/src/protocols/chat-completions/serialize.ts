@@ -107,9 +107,19 @@ function assertTextOnly(blocks: readonly ContentBlock[]): void {
   }
 }
 
-/** Reject roles whose DeepSeek history format cannot carry image input. */
-function assertSupportedImageRoles(messages: readonly RequestMessage[]): void {
+/** Reject developer history before text serialization or image offloading. */
+function assertSupportedRole(message: RequestMessage): void {
+  // Developer history is persisted for V4; provider serialization is intentionally deferred.
+  if (message.role === 'developer') throw new LlmError('Developer messages are not supported yet', 'UNSUPPORTED_CONTENT')
+  if (message.content.some(block => block.type === 'tool-addition' || block.type === 'tool-removal')) {
+    throw new LlmError('Tool-change blocks require developer role', 'UNSUPPORTED_CONTENT')
+  }
+}
+
+/** Reject unsupported roles, tool-change blocks, and image roles before history conversion. */
+function assertSupportedHistory(messages: readonly RequestMessage[]): void {
   for (const message of messages) {
+    assertSupportedRole(message)
     if (message.role !== 'user' && message.role !== 'tool' && contentHasImage(message.content)) {
       throw new LlmError(
         `The DeepSeek chat-completions adapter cannot represent image content in a ${message.role} message.`,
@@ -236,6 +246,7 @@ function serializeAssistant(message: Message): WireMessage {
 export function serializeMessages(messages: RequestMessage[]): WireMessage[] {
   const wire: WireMessage[] = []
   for (const message of messages) {
+    assertSupportedRole(message)
     assertTextOnly(message.content)
     if (message.role === 'system') {
       wire.push({ role: 'system', content: flattenText(message.content) })
@@ -272,7 +283,7 @@ export async function serializeMessagesWithImages(
   messages: readonly RequestMessage[],
   images: ImageSerializationOptions,
 ): Promise<WireMessage[]> {
-  assertSupportedImageRoles(messages)
+  assertSupportedHistory(messages)
   const wire: WireMessage[] = []
   let pendingToolImages: WireImageContentPart[] = []
   const flushToolImages = (): void => {
@@ -324,6 +335,10 @@ function requestWithMessages(
   messages: WireMessage[],
   defaults: RequestDefaults,
 ): WireRequest {
+  // Deferred definitions are persisted for V4; provider loading is intentionally deferred.
+  if (options.tools?.some(tool => tool.deferLoading === true)) {
+    throw new LlmError('Deferred tool loading is not supported yet', 'UNSUPPORTED_CONTENT')
+  }
   const tools: WireTool[] | undefined = options.tools?.map(tool => ({
     type: 'function',
     function: {
@@ -414,7 +429,7 @@ export async function serializeRequestWithImages(
   images: ImageSerializationOptions,
   defaults: RequestDefaults = {},
 ): Promise<WireRequest> {
-  assertSupportedImageRoles(options.messages)
+  assertSupportedHistory(options.messages)
   assertRetainedImagesFit(options.messages, images)
   const requestMessages = projectOffloadedImages(
     options.messages,

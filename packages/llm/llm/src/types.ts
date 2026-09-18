@@ -26,6 +26,7 @@ declare module '@mutantcat/cordis' {
 
 export type {
   AssistantMessage,
+  DeveloperMessage,
   AssistantProviderMetadata,
   Message,
   MessageSource,
@@ -110,9 +111,29 @@ export interface ToolCallBlock {
   arguments: string
 }
 
+/** Activates a tool definition from the developer event's referenced request header. */
+export interface ToolAdditionBlock {
+  type: 'tool-addition'
+  /** Name of exactly one tool in the referenced historical header. */
+  toolName: string
+  /**
+   * Reserved against inline definitions; the historical request header owns the schema.
+   * @persistenceReserved
+   */
+  tool?: never
+}
+
+/** Records the dynamic removal of a tool identified by its session-local name. */
+export interface ToolRemovalBlock {
+  type: 'tool-removal'
+  toolName: string
+}
+
 /**
  * Merge-extensible content blocks keyed by `type`. New core blocks must land
- * with adapter, UI, and compaction support.
+ * with adapter, UI, and compaction support. Developer tool-change blocks are
+ * reserved for Session V4 persistence; providers and UI reject them until
+ * their producers and consumers are implemented together.
  */
 export interface ContentBlockMap {
   'text': TextBlock
@@ -120,6 +141,8 @@ export interface ContentBlockMap {
   'image': ImageBlock
   'file': FileBlock
   'tool-call': ToolCallBlock
+  'tool-addition': ToolAdditionBlock
+  'tool-removal': ToolRemovalBlock
 }
 
 /** The block `type` tag vocabulary; widens as plugins add entries to {@link ContentBlockMap}. */
@@ -436,6 +459,12 @@ export type StreamChunk =
  * it from this package.
  */
 export interface ToolSchema {
+  /**
+   * Requests deferred loading of the tool definition into model context,
+   * independently of whether a tool-addition block records the tool.
+   * Uses Anthropic's defer_loading terminology.
+   */
+  deferLoading?: true
   name: string
   description: string
   /** JSON Schema object for the arguments. */

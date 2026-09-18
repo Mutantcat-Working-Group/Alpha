@@ -44,11 +44,15 @@ function isCompactionCheckpoint(event: Parameters<ConversationNodeDefinition['ma
 export const messageDefinition: ConversationNodeDefinition<MessageNode> = {
   kind: 'input-message',
   target: 'chat',
-  match: event => event.type === 'user/message'
-    && isAppendSurfaceEvent(event)
-    && !isCompactionCheckpoint(event)
-    ? { id: String(event.data.id), role: 'start' }
-    : null,
+  match: (event) => {
+    // Developer history is persisted for V4; presentation is intentionally deferred.
+    if (event.type === 'developer/message') throw new Error('Chat developer messages are not supported yet')
+    return event.type === 'user/message'
+      && isAppendSurfaceEvent(event)
+      && !isCompactionCheckpoint(event)
+      ? { id: String(event.data.id), role: 'start' }
+      : null
+  },
   start: (_context, match, reader) => {
     if (match.event.type !== 'user/message') throw new Error('input-message start requires user/message')
     const event = match.event

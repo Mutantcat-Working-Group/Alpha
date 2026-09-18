@@ -12,7 +12,7 @@ import SessionStore, {
 } from '@deepseek-ai/dsh-session'
 import { createSessionFormatCatalogWithChildren } from '@deepseek-ai/dsh-session-format-catalog'
 import DeepSeekLlmApiExtensionRegistry from '@deepseek-ai/dsh-deepseek-llm-api-extensions'
-import { createAssistantMessage, createSystemMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
+import { createDeveloperMessage, createAssistantMessage, createSystemMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { JsonValue } from '@deepseek-ai/dsh-util-values'
 import * as SessionLogDeepSeek from '../src/index.ts'
 import type { DeepSeekSessionLogExtension, DeepSeekSessionLogWireEvent, DeepSeekSessionLogWireSurfaceOp } from '../src/types.ts'
@@ -83,6 +83,19 @@ describe('incremental DeepSeek session-log upload', () => {
       readonly startSeq: number
       readonly endSeq: number
     }>()
+  })
+
+  it('uploads developer changes with their placement and source-event references', async () => {
+    const { ctx, session } = await harness('wire-developer')
+    const message = createDeveloperMessage({ content: [{ type: 'tool-addition', toolName: 'search' }], source: { kind: 'tool-registry' } })
+    const headerSeq = session.append('request/header', { reason: 'initial', header: { config: { provider: 'test', model: 'test' }, tools: [{ name: 'search', description: 'Search', parameters: {} }] } }).seq
+    const first = session.append('developer/message', { turn: 1, step: 1, headerSeq, message }, { surfaceOp: 'append' })
+    session.append('developer/message', {
+      turn: 1, step: 1,
+      message: createDeveloperMessage({ content: [{ type: 'tool-removal', toolName: 'search' }], source: { kind: 'tool-registry' } }),
+    }, { surfaceOp: { op: 'replace', startSeq: first.seq, endSeq: first.seq }, sourceEventSeqs: [first.seq] })
+    const prepared = await ctx.deepseekLlmApiExtensions.prepare({ body: body(), signal: SIGNAL, sessionId: session.id })
+    expect(prepared.fields.dsh_session_log?.events).toEqual(session.snapshotEvents())
   })
 
   it('uploads Assistant provider metadata only through its embedded stream', async () => {

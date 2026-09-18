@@ -42,6 +42,8 @@ const undefinedSource: RequestUserInput = { ...input, source: undefined }
 const assistant: RequestMessage = { role: 'assistant', content: [] }
 // @ts-expect-error -- system prompts retain their durable identity and source.
 const system: RequestMessage = { role: 'system', content: [] }
+// @ts-expect-error -- developer instructions retain their durable identity and source.
+const developer: RequestMessage = { role: 'developer', content: [] }
 // @ts-expect-error -- tool results retain their durable identity and correlation.
 const tool: RequestMessage = { role: 'tool', content: [] }
 // @ts-expect-error -- constructing a durable user message requires its source.

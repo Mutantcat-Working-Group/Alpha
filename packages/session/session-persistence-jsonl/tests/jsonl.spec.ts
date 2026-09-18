@@ -2203,6 +2203,32 @@ describe('JsonlSessionPersistence: scanLog unit', () => {
     expect(() => scanLog(Buffer.from(log))).toThrow(/seq gap/)
   })
 
+  it.each([
+    ['assistant/message', {}, /assistant\/message requires a message/],
+    ['agent/inbox/spliced', { inserted: null }, /agent\/inbox\/spliced requires message array/],
+    ['session/title-llm-request', { messages: [null] }, /session\/title-llm-request requires message objects/],
+  ])('rejects malformed %s message slots before exposing a native scan', (type, data, error) => {
+    const prefix = [
+      { type: 'session', version: SESSION_FORMAT_VERSION, id: 'malformed-tail', createdAt: 1, isSeeded: false, delegationDepth: 0 },
+      { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
+    ].map(row => JSON.stringify(row)).join('\n') + '\n'
+    const malformed = JSON.stringify({ type, seq: 1, time: 2, data }) + '\n'
+    expect(() => scanLog(Buffer.from(prefix + malformed))).toThrow(error)
+    const committed = JSON.stringify({ type: 'turn/end', seq: 2, time: 3, data: { turn: 1, reason: { kind: 'completed' } } }) + '\n'
+    expect(() => scanLog(Buffer.from(prefix + malformed + committed))).toThrow(error)
+  })
+
+  it.each([false, true])('rejects malformed native tool results before recovery (sealed=%s)', (sealed) => {
+    const rows = [
+      { type: 'session', version: SESSION_FORMAT_VERSION, id: 'malformed-tool', createdAt: 1, isSeeded: false, delegationDepth: 0 },
+      { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
+      { type: 'tool/result', seq: 1, time: 2, data: { message: [] } },
+      ...(sealed ? [{ type: 'turn/end', seq: 2, time: 3, data: { turn: 1, reason: { kind: 'completed' } } }] : []),
+    ]
+    const log = rows.map(row => JSON.stringify(row)).join('\n') + '\n'
+    expect(() => scanLog(Buffer.from(log))).toThrow(/tool\/result.*message must be an object/)
+  })
+
   it('rejects malformed records before a later committed turn/end', () => {
     const corruptRecords = [
       ['{not json', /unparsable committed event/],

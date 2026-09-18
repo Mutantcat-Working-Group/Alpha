@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, MessageId, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
+import { createDeveloperMessage, createSystemMessage, createUserMessage, ToolCallId, createMessage, createToolResultMessage, MessageId, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock } from '@deepseek-ai/dsh-llm'
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import SessionStore, {
@@ -475,6 +475,19 @@ describe('Session', () => {
     expect(snapshot).not.toBe(source)
     expect(snapshot.data).not.toBe(source.data)
     expect(snapshot.data.content).not.toBe(source.data.content)
+  })
+
+  it('adopts developer messages in place and freezes their nested tool changes', () => {
+    const event: SessionEvent<'developer/message'> = {
+      type: 'developer/message', seq: SessionSeq(1), time: 1, surfaceOp: 'append',
+      data: { turn: 1, step: 1, headerSeq: SessionSeq(0), message: structuredClone(createDeveloperMessage({
+        content: [{ type: 'tool-addition', toolName: 'search' }], source: { kind: 'test' },
+      })) },
+    }
+    expect(Object.isFrozen(event.data.message)).toBe(false)
+    expect(adoptSessionEvent(event)).toBe(event)
+    expect(Object.isFrozen(event.data.message)).toBe(true)
+    expect(Object.isFrozen(event.data.message.content[0])).toBe(true)
   })
 
   it('adopts a system/message by freezing its message', () => {

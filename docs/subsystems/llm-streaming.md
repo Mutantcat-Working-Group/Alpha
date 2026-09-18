@@ -17,7 +17,9 @@ Source: [`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
 ```ts type-equiv
 /**
  * Merge-extensible content blocks keyed by `type`. New core blocks must land
- * with adapter, UI, and compaction support.
+ * with adapter, UI, and compaction support. Developer tool-change blocks are
+ * reserved for Session V4 persistence; providers and UI reject them until
+ * their producers and consumers are implemented together.
  */
 interface ContentBlockMap {
   'text': TextBlock
@@ -25,10 +27,12 @@ interface ContentBlockMap {
   'image': ImageBlock
   'file': FileBlock
   'tool-call': ToolCallBlock
+  'tool-addition': ToolAdditionBlock
+  'tool-removal': ToolRemovalBlock
 }
 ```
 
-The block interfaces (full fields in source): `TextBlock` (`text`), `ReasoningBlock` (thinking, distinct from visible text), `ImageBlock` (a durable [image attachment](attachment.md)), `FileBlock` (a durable verbatim [file attachment](attachment.md) that request assembly projects to handle text for every route), and `ToolCallBlock` (`id: ToolCallId`, `name`, raw-JSON `arguments`). Tool results are first-class `ToolResultMessage` values with `toolCallId`, result `content`, and optional `isError`; they are not content blocks. `ContentBlock = ContentBlockMap[ContentBlockType]`. A new modality belongs in the merge-extensible map only when its adapter, UI, compaction, and durable replay paths honor it.
+The block interfaces (full fields in source): `TextBlock` (`text`), `ReasoningBlock` (thinking, distinct from visible text), `ImageBlock` (a durable [image attachment](attachment.md)), `FileBlock` (a durable verbatim [file attachment](attachment.md) that request assembly projects to handle text for every route), and `ToolCallBlock` (`id: ToolCallId`, `name`, raw-JSON `arguments`). Tool results are first-class `ToolResultMessage` values with `toolCallId`, result `content`, and optional `isError`; they are not content blocks. `ContentBlock = ContentBlockMap[ContentBlockType]`. A new modality belongs in the merge-extensible map only when its adapter, UI, compaction, and durable replay paths honor it. Developer tool-change blocks are a persistence-only exception described in the [decision](../../.agents/notes/implemented/architecture/2026-09-17-developer-session-changes.md).
 
 Image access belongs to request serialization rather than the durable attachment or deterministic request-image version. `resolveImageAttachmentAccess()` combines the attachment provider's optional host object path with a mapping supplied by the consumer for the current tool execution filesystem. The result is available only for that request and does not participate in `variantId`.
 
@@ -66,6 +70,8 @@ interface AssistantProviderMetadata {
 /** Any persisted conversation message, discriminated by its `role`. */
 type Message = MessageRoleMap[keyof MessageRoleMap]
 ```
+
+`DeveloperMessage` records incremental agent session changes in conversation order with the `developer` role. `ToolAdditionBlock.toolName` activates the definition selected by the containing Session event's historical header reference; `ToolRemovalBlock.toolName` removes the active definition. Both blocks are rejected in other message roles. `deferLoading` independently requests deferred definition loading without requiring an addition record. See [Session](../../packages/core/session/README.md) for header binding and the [LLM package](../../packages/llm/llm/README.md#known-limitations-and-deferred-work) for provider support limits.
 
 Where a message came from is itself a merge-extensible sum type:
 
@@ -661,6 +667,12 @@ interface FinishReasonMap {
  * it from this package.
  */
 interface ToolSchema {
+  /**
+   * Requests deferred loading of the tool definition into model context,
+   * independently of whether a tool-addition block records the tool.
+   * Uses Anthropic's defer_loading terminology.
+   */
+  deferLoading?: true
   name: string
   description: string
   /** JSON Schema object for the arguments. */

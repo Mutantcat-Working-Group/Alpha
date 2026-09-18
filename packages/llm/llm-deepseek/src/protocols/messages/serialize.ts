@@ -80,7 +80,14 @@ export function serialize(
     if (messages.at(-1)?.role !== 'user') return unsupported('system update without a preceding user or tool-result turn')
     messages.push(...systemUpdates.splice(0))
   }
+  // Deferred definitions are persisted for V4; provider loading is intentionally deferred.
+  if (options.tools?.some(tool => tool.deferLoading === true)) return unsupported('deferred tool loading')
   for (const message of history) {
+    // Developer history is persisted for V4; provider serialization is intentionally deferred.
+    if (message.role === 'developer') return unsupported('developer message')
+    if (message.content.some(block => block.type === 'tool-addition' || block.type === 'tool-removal')) {
+      return unsupported('tool-change blocks outside developer messages')
+    }
     if (message.role === 'system') {
       const texts = message.content.filter(block => block.type === 'text')
       if (texts.length !== message.content.length) return unsupported('non-text system message')

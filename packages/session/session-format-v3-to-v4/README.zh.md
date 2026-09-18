@@ -51,7 +51,7 @@ const targetHeader = sessionFormatV3ToV4.migrateHeader(sourceHeader)
 
 V4 消息源准入在可恢复扫描丢弃行之前拒绝 surface、inbox 和标题请求消息中的退役 plugin 包装。目录和原生 JSONL 扫描器在公开恢复数据之前校验所有已知消息源槽位。未知的非空归属 kind 和所有自有 JSON 元数据字段保持不变；`constructor`、`__proto__` 等外部名字只是普通的生产者字符串。
 
-V4 恢复按相同规则校验 V4 投递坐标和归属。V3 投递在 V4 中属于历史数据，不会成为 V4 水位。V4 编解码器只复用已发布 V2 的物理分帧，并在恢复前直接执行原生工具结果和 system 消息字段准入；完整的词表、投递和关系校验需要目标恢复器或目录的 `validation: 'current'`。即使位于可恢复的后缀，退役的 `header.system` 字段和必需的前代 PTC 标签也会被拒绝；可忽略的前代 PTC 记录保持不透明。仅执行可恢复编解码读取不能证明严格恢复成功。
+V4 恢复按相同规则校验 V4 投递坐标和归属。V3 投递在 V4 中属于历史数据，不会成为 V4 水位。V4 编解码器只复用已发布 V2 的物理分帧，并在恢复前直接执行原生工具结果与 system 消息字段准入。物理解码将可忽略的 developer 载荷检查留到读取方词表可用之后；编码器仍校验 developer 载荷。原生 JSONL 扫描器在抑制可恢复后缀前校验已知 developer 载荷。完整的词表、投递和关系校验需要目标恢复器或目录的 `validation: 'current'`。即使位于可恢复的后缀，退役的 `header.system` 字段和必需的前代 PTC 标签也会被拒绝；可忽略的前代 PTC 记录保持不透明。仅执行可恢复编解码读取不能证明严格恢复成功。
 
 -----
 
@@ -73,6 +73,8 @@ const artifact = restore.finish()
 迁移保留每个来源事件及其顺序、序号、时间和 payload，仅按创建时间、子 id 排序追加缺失的自身目录记录。追加时间使用来源最后一个事件的时间，空日志使用 header 创建时间。目录字段与唯一性检查仅作用于最终继承截点之后的记录；继承的 payload 保持不透明，也不计入自身成员关系。已有目录的扩展字段原样保留。
 
 V4 还接受 fork 生成的 `TOOL_NOT_STARTED` 结果，使用确定性的 `forked-tool-result-<callId>-<seq>` ID 和分支专用文案。原生校验直接检查声明的调用、错误结果、身份后缀和 surface 操作；持久化与恢复的数据保留原始 fork ID 和文案。后续 surface 替换（包括工具结果裁剪）保留该身份，并由已安装的 Session 校验其源引用。已发布的 V0–V3 校验器保持不变。
+
+原生 V4 保留携带正整数 turn/step 坐标的 `developer/message` 事件、工具添加/移除块及 `deferLoading: true` 工具模式标记。已知 developer 事件必须匹配打开的 step；未知且可忽略的事件保持不透明。添加块存储 `toolName`，事件必须携带 `headerSeq`，指向包含恰好一个完整同名模式的更早且已知的 `request/header`。移除及不含添加的消息不携带 `headerSeq`。原生验证拒绝内嵌定义、缺失或歧义绑定及无效角色，同时保留无关 JSON 字段、替换坐标和来源引用。空 developer 节点保留其 surface 位置，且不能覆盖受保护的 system 头节点。此格式支持不启用提供方工具加载。
 
 <a id="understand-the-implementation"></a>
 ## 理解实现

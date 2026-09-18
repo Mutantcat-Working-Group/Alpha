@@ -217,6 +217,13 @@ function toolResult(callId: string, text: string, isError = false) {
 }
 
 describe('built-in conversation node Definitions', () => {
+  it('rejects developer history until presentation is implemented', () => {
+    expect(() => assembler([at(0, 'developer/message', { turn: 1, step: 1, message: {
+      id: 'developer', role: 'developer', source: { kind: 'tool-registry' },
+      content: [{ type: 'tool-addition', toolName: 'search' }],
+    } }, { surfaceOp: 'append' })])).toThrow('developer messages are not supported yet')
+  })
+
   it('rejects an unrelated event passed directly to the request-prompt start', () => {
     const input = at(1, 'turn/start', { turn: 1 })
     const invalidStart = {

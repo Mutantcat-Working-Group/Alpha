@@ -9,7 +9,7 @@ kind: persistence-change
 
 ## 概述
 
-将 V4 集成写入方声明的 SessionHeader.version 从 3 推进到 4，记录一等 tool 角色结果与生产者拥有的 source，并向 turn/end.reason 添加 forked 变体。
+将 V4 集成写入方声明的 SessionHeader.version 从 3 推进到 4，记录一等 tool 角色结果与生产者拥有的 source，并向 turn/end.reason 添加 forked 变体。 添加 developer 角色的 Session 变更，工具添加仅记录名称并绑定历史请求头，另含工具移除和延迟加载模式标记。
 
 ## 目录
 
@@ -32,39 +32,47 @@ changes:
     decision: version-bump
   - root: "event:agent/inbox/spliced"
     previous: "2026-09-14-image-offload"
-    after: "3aa732b3400e924132366555c88618f62232b41c1e56b86beee05fd7edc24367"
+    after: "1506a9b8224986c83015ae99d2cb5ede705538c58c063d6a48ef6d761a31ba6c"
     decision: version-bump
   - root: "event:assistant/attempt"
     previous: "2026-09-14-image-offload"
-    after: "2f1565d92801f4334f8dc34fbb980890eef621e81a7c90ed0fd8d0a6db2ec3b2"
+    after: "15d5dfdd822aa35e115afd74a8982825a493880457774e6850bc1520b50875e4"
     decision: version-bump
   - root: "event:assistant/message"
     previous: "2026-09-14-image-offload"
-    after: "f219a9f66fcc92ffec27bbd96fa21ffc2cffbaf2ad1de05757ec37205b1a0b58"
+    after: "1033093edd0db80ff410e00830b523405e00bb0c7684948e531ff65095799625"
     decision: version-bump
   - root: "event:compaction/summary"
     previous: "2026-09-14-image-offload"
-    after: "86c1ee9c8ab6c6e160d4ccc00b3d9ad5a6c687938b552d55eec528279baa1559"
+    after: "e2f9a41e0989f54ed8cee80f8db2bcf9d60a5c810dc9d45b83fa050b9dce7602"
+    decision: version-bump
+  - root: "event:developer/message"
+    previous: null
+    after: "eef4ef54dc7a133d47448a4ee822e45a351314923ef5f66db34c8b24e4b32d80"
+    decision: version-bump
+  - root: "event:request/header"
+    previous: "2026-09-11-initial"
+    after: "4208123b50df5006b181481ab45fcf1cde807b88d3fd4d340090bc2e202fac41"
     decision: version-bump
   - root: "event:session/title-llm-request"
     previous: "2026-09-14-image-offload"
-    after: "4eeb9bb8f9c35f59b3020a07113f256c363a504983aecbe33e57fd1ab4f03b19"
+    after: "fa8f7d3ebf08a76c7f7a8b0781873c4d819b964da5dbb52cd3cdfa5da34f452d"
     decision: version-bump
   - root: "event:system/message"
     previous: "2026-09-14-image-offload"
-    after: "54a8682615a7ffc3e1e3c41ab003ae61082ae2792c57407f5bd8bb38fded3f0e"
+    after: "69081694be231d56fd9580ba14645fd5e35373202605d5c5c841a9435b5fa3b1"
     decision: version-bump
   - root: "event:team/message/queued"
     previous: "2026-09-14-image-offload"
-    after: "9a25c2e889855516a531dc906905ec1d88157f7c2651aed27ac4f754bb128240"
+    after: "21fb6a90d5068f6a0003b7ab316ed2f56342477146a65c00db0f13c4d8df667d"
     decision: version-bump
   - root: "event:tool/ptc-dispatch"
     previous: "2026-09-14-image-offload"
-    after: "75f1d59512dd2e6468bed27c6203a721b116ef7869e291e3fee34c977d013185"
+    after: "100f6dca1468538239522cde3533e5bd721d0f1a7b50bea8b0eb533ea6c96163"
     decision: version-bump
   - root: "event:tool/result"
     previous: "2026-09-14-image-offload"
-    after: "f4c6f3eae6607f412a9023406c8c3bd351a02451848bb78c2436f409447dd60c"
+    after: "7c9f44e90a0058f4cc532ae20dad0c10afa6eba22e70a6c79fc79490bad64397"
     decision: version-bump
   - root: "event:turn/end"
     previous: "2026-09-14-image-offload"
@@ -72,7 +80,7 @@ changes:
     decision: version-bump
   - root: "event:user/message"
     previous: "2026-09-14-image-offload"
-    after: "c3a5c8d0f1bc05ab074fdb086da866eece51dd573ae0c30b17a52bb76dec8836"
+    after: "3f72db3d87a0c5c43e68be467b4cca728eaf5adc1d5d2b6975ff42bfbd961761"
     decision: version-bump
 ```
 
@@ -91,6 +99,8 @@ V3-to-V4 迁移将已发布的 user 角色工具结果提升为 tool 角色消�
 
 核心拥有的 user source 属性记录归属保留策略；tmux-context 将位置归属标记为符合条件，同时保留生产者内部的去重。Auto Review 和压缩摘要器使用仅供请求使用的 user 输入，移除其活动 source 注册，同时保留历史迁移支持。这些输入不能写为持久化 Session 消息。目录 formatVersion 2 保存策略元数据，不改变 Session 版本，也不重写冻结的 schema 记录。System、model 和 tool source 保持严格的语义规则。
 
+Developer 事件保留原始角色，并要求处于打开的 step。每个添加块存储 toolName；developer/message.headerSeq 指向更早且已知的 request/header，其中必须恰好包含一个完整同名 ToolSchema。同一事件的所有添加共用该历史请求头版本，仅移除或其他 developer 消息省略 headerSeq。原生与 Session 接纳拒绝缺失、前向、非请求头、未知请求头、歧义、不完整定义及已退役内嵌定义形式，不解释未知且可忽略的记录，也不丢弃无关 JSON 元数据。同名替换、重启、fork、surface 替换和压缩保留历史模式身份，不查询最新请求头或注册表。通用 sourceEventSeqs 保持独立。Developer source 使用与 user source 相同的已记录归属保留策略。可选的 deferLoading 标记独立于添加历史。已提供的 profile 不发出 developer 记录；提供方序列化、自动发出及 UI 支持仍未启用。
+
 PTC 生产者写入 `source.kind: 'ptc-mode'`。V3→V4 迁入边保留 `tools-code-mode` 和 `tools-ptc` 作为历史 plugin 查找键，并将二者映射到该当前 kind。source 策略保留 `ptc-mode`，不允许将其声明为仅用于归属。
 
 <a id="verification"></a>
@@ -101,6 +111,8 @@ PTC 生产者写入 `source.kind: 'ptc-mode'`。V3→V4 迁入边保留 `tools-c
 生成的请求头保留字段回归测试以及已有的退役语法和 Session surface 测试共通过三个文件中的 65 项测试。生成字段保留可选的 `never`；允许可选字符串会产生必须提升版本的诊断，而原生读取方仍拒绝该退役键。
 
 Producer-source 与 request-input 检查共通过 12 个文件中的 447 项测试，覆盖 provider 等价性、仅供请求使用的输入的类型拒绝、user 归属保留、source 迁移及原生 source 准入。与 tool-role 父层的生成目录相比，有四个 root 发生变化，447 个类型指纹保持不变。
+
+聚焦的 Session、V4 和 request-input 测试共 38 个文件、884 项通过，完整 V3-to-V4 包与 Session surface 的语句、分支、函数及行覆盖率均为 100%。覆盖历史同名模式绑定、复合添加/移除、畸形引用与定义、未知请求头拒绝、未知记录不透明性、元数据保留、fork、替换、压缩引用，以及不重写 generation 的原生 plain/zstd 读写接纳。
 
 <a id="dev-note"></a>
 ## 开发备注

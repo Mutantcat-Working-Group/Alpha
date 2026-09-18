@@ -52,6 +52,17 @@ const echoTool = defineTool({
 })
 
 describe('ToolRuntime', () => {
+  it('preserves deferred loading through registry and prompt schema projection', async () => {
+    const ctx = await setup()
+    try {
+      ctx.tools.register(defineContentToolFixture({ name: 'deferred', description: '', parameters: {}, deferLoading: true, async execute() { return [] } }))
+      expect(ctx.tools.schemas()[0]?.deferLoading).toBe(true)
+      expect((await ctx.systemPrompt.assemble()).tools[0]?.deferLoading).toBe(true)
+    } finally {
+      await ctx.fiber.dispose()
+    }
+  })
+
   it('registers tools, exposes schemas, and feeds the system-prompt assembly', async () => {
     const ctx = await setup()
     ctx.tools.register(echoTool)

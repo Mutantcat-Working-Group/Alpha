@@ -26,7 +26,7 @@ export { buildForkSeed } from './fork.ts'
 export * from './types.ts'
 export { SessionPreparation } from './preparation.ts'
 export type { SessionPreparationOptions } from './preparation.ts'
-export type { AssistantMessage, SystemMessage, ToolResultMessage, UserMessage } from '@mutantcat/dsh-llm'
+export type { AssistantMessage, DeveloperMessage, SystemMessage, ToolResultMessage, UserMessage } from '@deepseek-ai/dsh-llm'
 export { interruptedTurnClosers, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from './repair.ts'
 export type { SessionSurface, SurfaceFoldReplacement, SurfaceFoldResult, SessionMessageProjection, SessionMessageProjectionContext } from './surface.ts'
 export { deriveEventMessage, foldSurface, isAppendSurfaceEvent, isReplacementSurfaceEvent, isSurfaceEvent, isSurfaceEligibleType } from './surface.ts'
@@ -177,6 +177,7 @@ export function adoptSessionEvent<T extends SessionEvent>(event: T): T {
     case 'user/message':
       deepFreeze(event.data)
       break
+    case 'developer/message':
     case 'system/message':
     case 'assistant/message':
     case 'tool/result':
@@ -231,6 +232,7 @@ function assertSessionEventEnvelope(value: unknown, index: number): asserts valu
   validateSessionEventData(event as SessionEvent, `seed ${type} at index ${index}`)
   switch (type) {
     case 'request/header':
+    case 'developer/message':
     case 'system/message':
     case 'user/message':
     case 'assistant/attempt':
@@ -314,14 +316,15 @@ function assertAdapterDefaults(
   }
 }
 
-/** The four surface event types whose payload carries an identified message. */
+/** The surface event types whose payload carries an identified message. */
 function isMessageEventType(type: unknown): type is SurfaceEventType {
-  return type === 'system/message' || type === 'user/message'
+  return type === 'developer/message' || type === 'system/message' || type === 'user/message'
     || type === 'assistant/message' || type === 'tool/result'
 }
 
 const MESSAGE_ROLE_BY_TYPE: Record<SurfaceEventType, Message['role']> = {
   'system/message': 'system',
+  'developer/message': 'developer',
   'user/message': 'user',
   'assistant/message': 'assistant',
   'tool/result': 'tool',

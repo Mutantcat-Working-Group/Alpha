@@ -44,6 +44,10 @@ Fork copies the exact inclusive event prefix selected by `atSeq`, including a cu
 
 A resume blocked by an existing write handle returns `session/writer-held` with the Session id; other resume failures retain `gateway/internal`.
 
+`loadThrough(seq)` retains older pages privately until its shared target is covered or loading ends, then publishes the successful pages as one ordered prepend. Live events remain visible while history loads. A later page failure retains the successful prefix; replacing the history window discards buffered pages from the replaced window. Ordinary `loadOlder()` still publishes its single page directly.
+
+Queue edits replace pending content with non-empty text only.
+
 <a id="client-references"></a>
 ## Client references
 
