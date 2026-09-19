@@ -86,16 +86,13 @@ describe('V3 to V4 source preservation', () => {
     expect(() => migrate([fact, { ...seed, data: {} }], { ...header, isSeeded: true })).toThrow('inherited event count')
   })
 
-  it('keeps higher-generation delivery records inactive without changing prior generation markers', () => {
-    for (const version of [4, 5, 99]) {
-      const marker = delivery(version)
-      const expected = { ...marker, type: 'plugin:session-log-deepseek/delivery-accepted', ignorable: true }
-      expect(migrate([fact, marker]).events[1]).toEqual(expected)
-      expect(restore([fact, marker]).events[1]).toEqual(expected)
-    }
-    for (const version of [undefined, 0, 1, 2, 3]) {
+  it('refuses target-generation delivery while retaining other generations unchanged', () => {
+    expect(() => migrate([fact, delivery(4)])).toThrow('claims target format v4')
+    expect(() => restore([fact, delivery(4)])).toThrow('claims target format v4')
+    for (const version of [undefined, 0, 1, 2, 3, 5, 99]) {
       const marker = delivery(version)
       expect(migrate([fact, marker]).events[1]).toBe(marker)
+      expect(restore([fact, marker]).events[1]).toEqual(marker)
     }
   })
 

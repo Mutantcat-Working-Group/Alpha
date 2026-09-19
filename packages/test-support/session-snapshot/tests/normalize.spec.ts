@@ -792,23 +792,23 @@ describe('normalizeSessionSnapshot', () => {
     expect(staleCurrent).toContain('"sessionFormatVersion":3')
   })
 
-  it('keeps a higher-generation V3 delivery opaque before creating comparison tokens', () => {
-    const source = deliveryLog(3, 4, 'recorded-session')
+  it('refuses source delivery claiming V4 before creating comparison tokens', () => {
+    expect(() => normalizeSessionSnapshots([deliveryLog(3, 4)], ctx, { nativeWriterOutput: true }))
+      .toThrow('format v3 delivery marker claims target format v4')
+  })
+
+  it('retains future delivery generations without renaming their event identity', () => {
+    const source = deliveryLog(3, 99, 'recorded-session')
     const target = prepareSessionSnapshotFixtureForComparison(source)
     const marker = JSON.parse(target.trimEnd().split('\n').at(-1)!) as unknown
     expect(marker).toEqual({
-      type: 'plugin:session-log-deepseek/delivery-accepted', seq: 1, time: 2, ignorable: true,
-      data: { sessionId: 'recorded-session', throughSeq: 0, sessionFormatVersion: 4 },
+      type: 'session-log-deepseek/delivery-accepted', seq: 1, time: 2,
+      data: { sessionId: 'recorded-session', throughSeq: 0, sessionFormatVersion: 99 },
     })
-    const [historical, migrated, native] = normalizeSessionSnapshots(
-      [source, target, deliveryLog(SESSION_FORMAT_VERSION, SESSION_FORMAT_VERSION, 'recorded-session')], ctx, { nativeWriterOutput: true },
-    )
+    const [historical, migrated] = normalizeSessionSnapshots([source, target], ctx, { nativeWriterOutput: true })
     expect(historical).toBe(migrated)
-    expect(historical).not.toBe(native)
-    expect(historical).toContain('"type":"plugin:session-log-deepseek/delivery-accepted"')
-    expect(historical).toContain('"throughSeq":0,"sessionFormatVersion":4')
+    expect(historical).toContain('"sessionFormatVersion":99')
     expect(historical).not.toContain('{{sourceSessionFormatVersion}}')
-    expect(native).toContain('"sessionFormatVersion":"{{sourceSessionFormatVersion}}"')
   })
 
   it('keeps captured generations and delivery lookalikes numeric in versioned inputs', () => {

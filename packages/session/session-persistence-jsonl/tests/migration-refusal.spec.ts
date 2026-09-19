@@ -289,15 +289,25 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     }
   })
 
-  it.each([4, 99])('preserves a V3 watermark claiming V%s as an opaque extension through native reopening', async (sessionFormatVersion) => {
+  it('refuses a V3 watermark claiming V4 without publishing a successor', async () => {
+    const marker = { type: 'session-log-deepseek/delivery-accepted', data: {
+      sessionId: id, throughSeq: 0, sessionFormatVersion: 4,
+    } }
+    const path = await store(3, compression, [...releasedPrefix, marker])
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectRefusal(ctx, access, path,
+      'format v3 delivery marker claims target format v4; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it.each([5, 99])('retains a V3 watermark claiming V%s unchanged through native reopening', async (sessionFormatVersion) => {
     const marker = { type: 'session-log-deepseek/delivery-accepted', data: {
       sessionId: id, throughSeq: 0, sessionFormatVersion,
     } }
     await expectV3Conversion([...releasedPrefix, marker], (events) => {
-      expect(events).toEqual([
-        ...nativePrefix,
-        { ...marker, type: 'plugin:session-log-deepseek/delivery-accepted', ignorable: true },
-      ].map((row, seq) => ({ ...row, seq, time: 1001 + seq })))
+      expect(events).toEqual([...nativePrefix, marker].map((row, seq) => ({ ...row, seq, time: 1001 + seq })))
     })
   })
 

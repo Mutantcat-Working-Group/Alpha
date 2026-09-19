@@ -1,6 +1,5 @@
 /** Fixed V3 event vocabulary and reversible namespaces for historical extension identities. */
 
-import { isSessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent } from '@deepseek-ai/dsh-session-format'
 
 // This historical list must not inherit additions or removals from the current Session event list.
@@ -79,15 +78,12 @@ export function v3ExtensionIdentity(namespace: 'plugin' | 'source', name: string
 }
 
 /**
- * Keep unknown events and higher-generation delivery records opaque after header promotion.
- * @param event - source event after V3 vocabulary and delivery-generation admission.
+ * Keep unknown ignorable events opaque after header promotion.
+ * @param event - original V3 event; this incoming identity conversion is applied once.
  * @returns the same event or an ignorable namespaced event retaining its payload and coordinates.
  */
 export function namespaceV3OpaqueEvent(event: SessionFormatEvent): SessionFormatEvent {
-  const inactiveDelivery = event.type === 'session-log-deepseek/delivery-accepted'
-    && isSessionFormatJsonObject(event.data) && typeof event.data['sessionFormatVersion'] === 'number'
-    && event.data['sessionFormatVersion'] > 3
-  return inactiveDelivery || event['ignorable'] === true && !RELEASED_V3_EVENT_TYPES.has(event.type)
+  return event['ignorable'] === true && !RELEASED_V3_EVENT_TYPES.has(event.type)
     ? { ...event, type: `plugin:${event.type}`, ignorable: true }
     : event
 }

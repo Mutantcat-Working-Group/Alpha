@@ -150,13 +150,13 @@ For a seeded Session, the last `session/end-seed` carrying `inherited: true` ide
 | Delivery record | Admission and preservation |
 |---|---|
 | Any interpreted `session-log-deepseek/delivery-accepted` | Generation must be a nonnegative safe integer; omission identifies V0. |
-| V3 source marker claiming any generation above 3 | Namespace its event type as `plugin:session-log-deepseek/delivery-accepted` and set `ignorable: true`; keep the inactive payload and coordinates unchanged. |
+| V3 source marker claiming generation 4 | Refuse: advancing the header must not activate a target-generation watermark. |
 | V3 source marker for generation 3 | Require a nonempty Session id and nonnegative safe-integer `throughSeq` before the marker; a foreign id is allowed only before the inherited cut with `parentSession`. |
-| Source generations below 3 | Retain their ids, generation, and coordinates without activating them. |
+| Other source generations, including values above 4 | Retain their event type, payload, and coordinates unchanged; they remain inactive in V4. |
 | Native V4 marker for generation 4 | Apply the same earlier-coordinate and Session-ownership checks using V4 as current. |
 | Native V4 historical marker, including generation 3 | Retain recorded coordinates and identity; it is not a V4 acceptance watermark. |
 
-No delivery payload is rewritten. Namespacing higher-generation records preserves their inactive V3 meaning after this and future header promotions; it does not acknowledge delivery. The marker’s envelope sequence remains unchanged.
+No delivery payload or event type is rewritten. Higher-version migrations own any future activation checks; this edge checks only promotion to V4. The marker’s envelope sequence remains unchanged.
 
 <a id="source-audit"></a>
 ### Source audit and refusal
@@ -247,7 +247,9 @@ The edge preserves the recorded request prefix. Provider cache availability and 
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **Unreleased integration format** — integrate and validate the selected structural changes before releasing V4; already-written V4 files do not rerun this incoming edge. Use disposable integration homes and retain the original historical inputs.
+- **Historical converter coverage** — Unsupported source forms may fail without publishing a successor or changing the source. First-party recordings do not enumerate third-party extensions. Later converter fixes may add support after V4 publication if their V4 output remains compatible. Interpreting extra stream-start fields and preparing future delivery generations require a concrete format change.
+- **Accepted V4 transition** — the [checkpoint](../../../docs/session-format-status.md#finalization-record) protects the accepted history. Backward-compatible additions can remain V4 through new acknowledgements; breaking changes require a successor. Already-written V4 files do not rerun this incoming edge, and historical inputs remain intact.
+- **V5 prerequisite readers** — V4 child evidence currently goes through the installed catalog. A future writer must bind fixed-generation V4 prerequisite reading before changing that catalog. The exported V4 restorer supplies generation-owned checks; full common message admission additionally uses installed Session validation.
 - **Nested historical tool results** — migration refuses results containing another tool-result wrapper because flattening loses its call identity and error status. The original generation remains intact and no V4 successor is published; those histories need a preserving conversion before they can resume.
 - **Historical tool-result extensions** — outer message JSON properties remain own data properties, including `__proto__` and `constructor`. Unknown wrapper fields have no defined V4 destination and refuse migration. Existing outer `toolCallId` or `isError` fields must agree with the lifted result; conflicts refuse without publishing a successor.
 - **Retained child logs required** — a parent alone cannot recover unrecorded child ids, creation times, or descriptors. Deleted children cannot be reconstructed from tool arguments; existing parent catalog records remain.

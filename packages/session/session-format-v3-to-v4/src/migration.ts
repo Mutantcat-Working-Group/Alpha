@@ -67,6 +67,9 @@ class ReleasedV3ToV4Stage implements SessionFormatMigrationStage {
     }
     const deliveryId = validateDeliveryAccepted(event, 3)
     if (event.type === 'session-log-deepseek/delivery-accepted') {
+      if ((event.data as SessionFormatJsonObject)['sessionFormatVersion'] === 4) {
+        throw new SessionFormatUnsupportedMigrationError('format v3 delivery marker claims target format v4')
+      }
       if (deliveryId !== undefined && deliveryId !== this.input.sourceHeader.id) this.foreignDeliverySeq = event.seq
     }
     const opaque = namespaceV3OpaqueEvent(event)
