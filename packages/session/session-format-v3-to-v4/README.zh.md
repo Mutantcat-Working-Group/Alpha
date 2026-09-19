@@ -83,7 +83,9 @@ Wrapper 只允许 `type`、`toolCallId`、`content` 和 `isError`。未知 wrapp
 <a id="extension-data"></a>
 ### 扩展数据
 
-V3 未知内容标签变为 `plugin:<original-type>`，其他字段原样保留且不作解释。流起始块的 `blockType` 使用相同标签，其他字段的原始键和值均保留。请求工具定义保留 `name`、`description` 和 `parameters`，其他自有字段名称同样添加 `plugin:`；历史 `deferLoading` 因此变为 `plugin:deferLoading`，不会启用 V4 能力。已有前缀会再次添加，使不同旧名称保持不同。不遍历参数、实参、回放状态和插件内容字段。这些名称保留数据身份，不会加载或执行插件。
+V3 未知内容标签变为 `plugin:<original-type>`，其他字段原样保留且不作解释。流起始块的 `blockType` 使用相同标签，其他字段的原始键和值均保留。内容标签的已有前缀会再次添加，使不同旧名称保持不同。不遍历实参、回放状态和插件内容字段。这些名称不会加载或执行插件。
+
+请求工具定义保留自有字段的原始名称和值，包括普通扩展元数据。若定义拥有顶层 `deferLoading` 字段，则拒绝 V3 迁移：该字段仅在 V4 中定义，因此本迁移边不为它赋予历史含义。嵌套参数数据保持不变。原生 V4 对 `deferLoading: true` 的接纳规则不变。
 
 <a id="message-sources"></a>
 ### 消息来源转换

@@ -327,25 +327,33 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     })
   })
 
-  it.each([false, true])('preserves V3 tool-definition deferLoading=%s and extension fields under plugin-prefixed keys', async (deferLoading) => {
+  it.each([false, true])('refuses own V3 tool-definition deferLoading=%s without publishing a successor', async (deferLoading) => {
+    const tool = { name: 'example', description: 'Saved tool definition.', parameters: { type: 'object' }, deferLoading }
+    const request = { type: 'request/header', data: { header: { config, tools: [tool] }, reason: 'change' } }
+    const path = await store(3, compression, [...releasedPrefix, request])
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectRefusal(ctx, access, path,
+      `format v3 request/header at seq ${releasedPrefix.length}.header.tools[0] contains deferLoading, which is only defined in V4`
+      + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    await ctx.sessionPersistence.flush()
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
+  it('preserves ordinary V3 tool-definition extension fields unchanged', async () => {
     const parameters = {
-      type: 'object', properties: { deferLoading: { type: 'boolean' } },
+      type: 'object', properties: { deferLoading: { type: 'boolean' } }, deferLoading: true,
       default: { type: 'tool-result', toolCallId: 'opaque-call', content: [{ type: 'text', text: 'schema data' }] },
     }
-    const fields = JSON.parse('{"metadata":{"saved":"original metadata"},"__proto__":{"saved":"prototype"},"constructor":{"saved":"constructor"}}') as SessionFormatJsonObject
-    const tool = { name: 'example', description: 'Saved tool definition.', parameters, deferLoading, ...fields }
+    const fields = JSON.parse('{"metadata":{"saved":"original metadata"},"__proto__":{"saved":"prototype"},"constructor":{"saved":"constructor"},"plugin:deferLoading":true}') as SessionFormatJsonObject
+    const tool = { name: 'example', description: 'Saved tool definition.', parameters, ...fields }
     const request = { type: 'request/header', data: { header: { config, tools: [tool] }, reason: 'initial' } }
-    const targetTool = {
-      name: 'example', description: 'Saved tool definition.', parameters,
-      'plugin:deferLoading': deferLoading, 'plugin:metadata': fields['metadata'], 'plugin:__proto__': fields['__proto__'], 'plugin:constructor': fields['constructor'],
-    }
     await expectV3Conversion([...releasedPrefix.slice(0, -1), request], (events) => {
-      const expected = [...nativePrefix.slice(0, -1), {
-        ...request, data: { ...request.data, header: { config, tools: [targetTool] } },
-      }]
+      const expected = [...nativePrefix.slice(0, -1), request]
       expect(events).toEqual(expected.map((row, seq) => ({ ...row, seq, time: 1001 + seq })))
       const migrated = events.find(event => event.type === 'request/header')?.data.header.tools?.[0]
-      expect(Object.hasOwn(migrated!, 'plugin:__proto__')).toBe(true)
+      expect(Object.hasOwn(migrated!, '__proto__')).toBe(true)
       expect(Object.getPrototypeOf(migrated!)).toBe(Object.prototype)
       expect(Object.hasOwn(migrated!, 'deferLoading')).toBe(false)
     })

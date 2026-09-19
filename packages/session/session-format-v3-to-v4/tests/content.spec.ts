@@ -96,34 +96,35 @@ describe('V3 content conversion', () => {
     expect(migrateV3EventContent(unchanged)).toBe(unchanged)
   })
 
-  it.each([false, true])('keeps V3 request-tool extensions opaque with deferLoading=%s', (deferLoading) => {
+  it('preserves V3 request-tool metadata keys and values', () => {
     const parameters = { type: 'object', properties: {}, examples: [wrapper], deferLoading: true }
-    const extras = JSON.parse('{"metadata":{"saved":true},"__proto__":{"saved":"prototype"},"constructor":{"saved":"constructor"}}') as SessionFormatJsonObject
-    const tool = { name: 'echo', description: 'Echo', parameters, deferLoading, ...extras }
+    const extras = JSON.parse('{"vendor":{"saved":true},"plugin:vendor":{"saved":false},"plugin:deferLoading":false,"__proto__":{"saved":"prototype"},"constructor":{"saved":"constructor"}}') as SessionFormatJsonObject
+    const tool = { name: 'echo', description: 'Echo', parameters, ...extras }
     const row = event('request/header', { reason: 'initial', header: { config: { provider: 'mock', model: 'mock' }, tools: [tool] } })
+    const before = structuredClone(row)
     const converted = migrate(row)
-    expect(converted.data).toEqual({ reason: 'initial', header: {
-      config: { provider: 'mock', model: 'mock' }, tools: [{ name: 'echo', description: 'Echo', parameters, 'plugin:deferLoading': deferLoading, 'plugin:metadata': extras['metadata'], 'plugin:__proto__': extras['__proto__'], 'plugin:constructor': extras['constructor'] }],
-    } })
+    expect(converted).toBe(row)
+    expect(converted).toEqual(before)
     expect(() => releasedV4SessionFormatCodec.encodeEvent(converted)).not.toThrow()
-    const header = (converted.data as SessionFormatJsonObject)['header'] as SessionFormatJsonObject
-    const actual = (header['tools'] as SessionFormatJsonObject[])[0]!
-    expect(actual['parameters']).toBe(parameters)
-    expect(Object.hasOwn(actual, 'plugin:__proto__')).toBe(true)
-    expect(Object.getPrototypeOf(actual)).toBe(Object.prototype)
-    expect(tool['deferLoading']).toBe(deferLoading)
+    expect(Object.hasOwn(tool, '__proto__')).toBe(true)
+    expect(Object.getPrototypeOf(tool)).toBe(Object.prototype)
+    expect(tool.parameters.deferLoading).toBe(true)
+    expect(tool).toHaveProperty('plugin:deferLoading', false)
   })
 
-  it('prefixes tool extension keys while preserving stream-start extra keys', () => {
-    const extra = JSON.parse('{"deferLoading":true,"plugin:deferLoading":false,"metadata":{"saved":1},"plugin:metadata":{"saved":2},"__proto__":{"saved":3},"plugin:__proto__":{"saved":4}}') as SessionFormatJsonObject
-    const expected = {
-      'plugin:deferLoading': true, 'plugin:plugin:deferLoading': false,
-      'plugin:metadata': { saved: 1 }, 'plugin:plugin:metadata': { saved: 2 },
-      'plugin:__proto__': { saved: 3 }, 'plugin:plugin:__proto__': { saved: 4 },
-    }
-    const tool = { name: 'echo', description: 'Echo', parameters: { metadata: extra }, ...extra }
-    const request = migrateV3EventContent(event('request/header', { header: { tools: [tool] } }))
-    expect(request.data).toEqual({ header: { tools: [{ name: 'echo', description: 'Echo', parameters: tool.parameters, ...expected }] } })
+  it.each([true, false, null, 'custom'])('refuses an unsupported V3 top-level deferLoading value %j without altering the source', (deferLoading) => {
+    const tool = { name: 'echo', description: 'Echo', parameters: {}, deferLoading }
+    const row = event('request/header', { reason: 'initial', header: {
+      config: { provider: 'mock', model: 'mock' },
+      tools: [{ name: 'first', description: 'First', parameters: {} }, tool],
+    } })
+    const before = structuredClone(row)
+    expect(() => migrate(row)).toThrow(/request\/header at seq 0.*tools\[1\].*deferLoading/)
+    expect(row).toEqual(before)
+  })
+
+  it('preserves stream-start extra keys while converting its unknown block type', () => {
+    const extra = JSON.parse('{"deferLoading":true,"plugin:deferLoading":false,"metadata":{"saved":1},"plugin:metadata":{"saved":2},"__proto__":{"saved":3}}') as SessionFormatJsonObject
     const start = { type: 'block-start', index: 7, blockType: 'plugin:text', ...extra }
     const stream = migrateV3EventContent(event('assistant/attempt', { stream: [{ type: 'chunk', chunk: start }] }))
     expect(stream.data).toEqual({ stream: [{ type: 'chunk', chunk: { ...start, blockType: 'plugin:plugin:text' } }] })
@@ -131,10 +132,17 @@ describe('V3 content conversion', () => {
     expect(Object.hasOwn(extra, '__proto__')).toBe(true)
   })
 
-  it('retains native V4 capability validation independently of historical extras', () => {
-    const header = { config: { provider: 'mock', model: 'mock' }, tools: [{ name: 'echo', description: 'Echo', parameters: {}, deferLoading: false }] }
-    expect(() => releasedV4SessionFormatCodec.encodeEvent(event('request/header', { header }))).toThrow(/deferLoading must be true/)
-    expect(() => releasedV4SessionFormatCodec.encodeEvent(migrate(event('request/header', { header })))).not.toThrow()
+  it('retains native V4 deferred-loading declaration validation', () => {
+    const tool = { name: 'echo', description: 'Echo', parameters: {}, deferLoading: true }
+    const header = { config: { provider: 'mock', model: 'mock' }, tools: [tool] }
+    const row = event('request/header', { header })
+    const physical = releasedV4SessionFormatCodec.encodeEvent(row)
+    const collector = new SessionFormatEventCollector()
+    releasedV4SessionFormatCodec.createDecoder({ type: 'session', version: 4, id: 'native', createdAt: 0, isSeeded: false, delegationDepth: 0 }, 'strict').decodeRow(physical, collector)
+    expect(collector.values).toEqual([row])
+    expect(() => releasedV4SessionFormatCodec.encodeEvent(event('request/header', {
+      header: { ...header, tools: [{ ...tool, deferLoading: false }] },
+    }))).toThrow(/deferLoading must be true/)
   })
 
   it('shares V3 request tools with no extension fields and leaves malformed tools decoder-owned', () => {

@@ -1,17 +1,10 @@
-/** V3 extension names and fields isolated from current core vocabulary. */
+/** V3 content tags and request-tool fields admitted before V4 interpretation. */
 
-import { SessionFormatError, isSessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
+import { SessionFormatError, SessionFormatUnsupportedMigrationError, isSessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent, SessionFormatJsonObject, SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
 import { mapEventMessages } from './sources.ts'
 
 const V3_BLOCK_TYPES = new Set(['text', 'reasoning', 'image', 'file', 'tool-call', 'tool-result'])
-const TOOL_SCHEMA_FIELDS = new Set(['name', 'description', 'parameters'])
-
-/** Prefix extension-owned field names without reinterpreting their values. */
-function namespaceFields(value: SessionFormatJsonObject, fields: ReadonlySet<string>): SessionFormatJsonObject {
-  if (Object.keys(value).every(key => fields.has(key))) return value
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [fields.has(key) ? key : `plugin:${key}`, item]))
-}
 
 function migrateBlock(value: SessionFormatJsonValue, subject: string): SessionFormatJsonValue {
   if (!isSessionFormatJsonObject(value) || typeof value['type'] !== 'string') {
@@ -54,9 +47,10 @@ function migrateChunk(value: SessionFormatJsonValue | undefined, subject: string
 }
 
 /**
- * Convert declared V3 extension content, streams, and request-tool extension fields after canonical result lifting.
+ * Convert declared V3 extension content and stream tags after canonical result lifting.
  * @param event - source event after producer attribution conversion.
- * @returns the event with namespaced extension tags and fields, retaining all coordinates and values.
+ * @returns the event with namespaced content tags, retaining all coordinates and other fields.
+ * @throws {SessionFormatUnsupportedMigrationError} A V3 tool definition contains the V4-only deferLoading field.
  */
 export function migrateV3EventContent(event: SessionFormatEvent): SessionFormatEvent {
   const subject = `format v3 ${event.type} at seq ${event.seq}`
@@ -76,14 +70,15 @@ export function migrateV3EventContent(event: SessionFormatEvent): SessionFormatE
     if (message !== data['message']) data = { ...data, message }
   }
   if (event.type === 'request/header' && isSessionFormatJsonObject(data['header'])) {
-    const header = data['header']
-    const tools = header['tools']
+    const tools = data['header']['tools']
     if (Array.isArray(tools)) {
-      const converted = (tools as readonly SessionFormatJsonValue[]).map((tool) => {
-        if (!isSessionFormatJsonObject(tool)) return tool
-        return namespaceFields(tool, TOOL_SCHEMA_FIELDS)
-      })
-      if (converted.some((tool, index) => tool !== tools[index])) data = { ...data, header: { ...header, tools: converted } }
+      for (const [index, tool] of (tools as readonly SessionFormatJsonValue[]).entries()) {
+        if (isSessionFormatJsonObject(tool) && Object.hasOwn(tool, 'deferLoading')) {
+          throw new SessionFormatUnsupportedMigrationError(
+            `${subject}.header.tools[${index}] contains deferLoading, which is only defined in V4`,
+          )
+        }
+      }
     }
   }
   if ((event.type === 'assistant/message' || event.type === 'assistant/attempt') && Array.isArray(data['stream'])) {
