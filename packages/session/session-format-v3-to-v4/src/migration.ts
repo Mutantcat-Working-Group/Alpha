@@ -3,8 +3,10 @@
 import { defineSessionFormatMigration, SessionFormatError, SessionFormatUnsupportedMigrationError, isSessionFormatJsonObject, sessionFormatCount } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent, SessionFormatEventRun, SessionFormatJsonObject, SessionFormatJsonValue, SessionFormatMigration, SessionFormatMigrationContext, SessionFormatMigrationStage, SessionFormatMigrationStageInput } from '@deepseek-ai/dsh-session-format'
 import { assertReleasedV3Header } from '@deepseek-ai/dsh-session-format-v2-to-v3'
-import { mapEventMessages, rewritePluginSource } from './sources.ts'
+import { mapEventMessages, rewriteV3MessageSource } from './sources.ts'
 import { liftToolResult } from './tool-role.ts'
+import { migrateV3EventContent } from './content.ts'
+import { namespaceV3OpaqueEvent } from './extension-identities.ts'
 import { assertReleasedV4Header, validateDeliveryAccepted } from './validation.ts'
 import { catalogFact, childCatalogSource, childCatalogFact, childCatalogSubject } from './facts.ts'
 
@@ -65,17 +67,17 @@ class ReleasedV3ToV4Stage implements SessionFormatMigrationStage {
     }
     const deliveryId = validateDeliveryAccepted(event, 3)
     if (event.type === 'session-log-deepseek/delivery-accepted') {
-      if ((event.data as SessionFormatJsonObject)['sessionFormatVersion'] === 4) {
-        throw new SessionFormatUnsupportedMigrationError('format v3 delivery marker claims target format v4')
-      }
       if (deliveryId !== undefined && deliveryId !== this.input.sourceHeader.id) this.foreignDeliverySeq = event.seq
     }
+    const opaque = namespaceV3OpaqueEvent(event)
+    if (opaque !== event) { context.emitEvent(opaque); return }
     const rewritten = mapEventMessages(event, (message) => {
       const source = message['source']
-      if (!isSessionFormatJsonObject(source) || source['kind'] !== 'plugin') return message
-      return { ...message, source: rewritePluginSource(source, event.seq, message['role']) }
+      if (!isSessionFormatJsonObject(source)) return message
+      const converted = rewriteV3MessageSource(source, event.seq, message['role'])
+      return converted === source ? message : { ...message, source: converted }
     })
-    context.emitEvent(liftToolResult(rewritten))
+    context.emitEvent(migrateV3EventContent(liftToolResult(rewritten)))
   }
 
   transformRun(run: SessionFormatEventRun, context: SessionFormatMigrationContext): void {

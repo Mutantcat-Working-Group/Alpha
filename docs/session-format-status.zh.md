@@ -24,6 +24,19 @@
 
 [格式参考](persistence-changes/historical-formats/README.zh.md)记录从零到工作区写入器的每个整数版本，提供历史 schema 并引用现有的当前目录。
 
+<a id="finalization-record"></a>
+## 定稿记录
+
+```yaml session-format-finalization
+latestFinalizedVersion: 4
+```
+
+V4 的已接受兼容性基线保存在[检查点](persistence-changes/finalized/v4.json)中。向后兼容的 schema 变更可以通过新的确认记录保留 V4。破坏性变更要求更高的写入器版本及自身的头版本转换，不能复用已接受的 3→4 转换。已接受的机器记录与变更后 schema 保持不可变。[检查点规则](persistence-changes/README.zh.md#compatibility-rules)规定比较方法。
+
+定稿不冻结 V4 之后的每项新增，也不表示已发布。下方发布记录保留独立验证的已发布版本。普通注释、别名、源码位置，以及保留已接受含义的实现修复，不改变该基线。
+
+首次发布 V4 前，每次集成仍写入 V3 的较新 master 都必须对已记录的本地源提交执行[显式 V3 词汇校验](cookbook/adding-a-session-format-version.zh.md#final-v3-vocabulary)。更新迁移所有的集合前，要核验源 pin 的新鲜度并审查新事件 payload 的转换。发布后，最终 V3 词汇保持为历史定义，与当前 V4 新增事件无关。
+
 <a id="release-record"></a>
 ## 发布记录
 

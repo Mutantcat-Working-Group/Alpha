@@ -1,3 +1,4 @@
+import type { ContentBlock } from '@deepseek-ai/dsh-llm'
 import { describe, expect, it } from 'vitest'
 import { SESSION_FORMAT_VERSION, SessionId, SessionSeq } from '@mutantcat/dsh-session'
 import type { SessionEvent, SessionEventMap, SessionEventType } from '@mutantcat/dsh-session'
@@ -299,6 +300,34 @@ describe('Agent Teams projection events', () => {
       message: message({ content: [extension] }),
     }, SessionSeq(0))])
     expect(pending(state)[0]?.content).toEqual([extension])
+  })
+
+  it('preserves opaque extension keys through projection and checkpoints', () => {
+    const opaque = JSON.parse('{"__proto__":{"saved":true},"constructor":{"saved":false},"content":[{"type":"tool-result","toolCallId":"opaque","content":[]}]}') as Record<string, unknown>
+    const content: ContentBlock[] = [{ ...opaque, type: 'plugin:vendor' } as unknown as ContentBlock]
+    const queued = event('team/message/queued', { version: 2, teamId: TEAM, message: message({ content }) }, SessionSeq(0))
+    const before = JSON.stringify(queued)
+    const projected = projectTeam(ROOT, [queued])
+    expect(projected.messages[0]?.content).toEqual(content)
+    const checkpoint = teamProjectionDefinition.stateSchema.parse(JSON.parse(JSON.stringify(projected)))
+    expect(JSON.stringify(checkpoint)).toBe(JSON.stringify(projected))
+    expect(JSON.stringify(queued)).toBe(before)
+    const block = checkpoint.messages[0]!.content[0] as unknown as Record<string, unknown>
+    expect(Object.hasOwn(block, '__proto__')).toBe(true)
+    expect(Object.getPrototypeOf(block)).toBe(Object.prototype)
+  })
+
+  it.each([
+    null, [], 3,
+    { type: 'tool-result', toolCallId: 'retired', content: [] },
+    { type: '' },
+    { type: null },
+    { type: 'text', text: false },
+  ])('rejects malformed or retired current content in events and checkpoints: %j', (block) => {
+    const saved = message({ content: [block] as unknown as ContentBlock[] })
+    const queued = event('team/message/queued', { version: 2, teamId: TEAM, message: saved }, SessionSeq(0))
+    expect(() => projectTeam(ROOT, [queued])).toThrow(/team\/message\/queued payload is invalid/)
+    expect(() => teamProjectionDefinition.stateSchema.parse({ ...project(ROOT, []), messages: [saved] })).toThrow()
   })
 
   it('records unsupported event versions without applying them', () => {

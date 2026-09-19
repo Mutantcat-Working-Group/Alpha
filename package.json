@@ -156,6 +156,7 @@
     "verify-persistence-releases": "tsx scripts/persistence-releases.ts",
     "verify-persistence-formats": "tsx scripts/persistence-formats.ts",
     "gen-session-format-catalog": "tsx scripts/gen-session-format-catalog.ts",
+    "verify-v3-event-vocabulary": "tsx scripts/verify-v3-event-vocabulary.ts",
     "verify-session-format-catalog": "tsx scripts/gen-session-format-catalog.ts --check",
     "gen-third-party-notices": "tsx scripts/gen-third-party-notices.ts",
     "verify-third-party-notices": "tsx scripts/gen-third-party-notices.ts --check",

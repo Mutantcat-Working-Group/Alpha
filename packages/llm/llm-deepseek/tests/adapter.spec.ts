@@ -425,6 +425,24 @@ describe('DeepSeekAdapter against a mock server', () => {
     expect(policies).toEqual([{ width: 1, height: 1, maxBytes: 2 * 1024 * 1024 }])
   })
 
+  it('keeps images inside plugin content opaque through adapter.stream', async () => {
+    const server = await mockServer([{ kind: 'sse', events: textEvents }])
+    const attachmentMocks = attachmentStoreOf(ref => Promise.resolve(requestImage(ref)))
+    const adapter = adapterOf({ baseURL: server.url }, attachmentMocks.store)
+    await drain(adapter.stream({ provider: 'deepseek-official', model: 'deepseek-v4-pro', messages: [
+      createUserMessage({ source: { kind: 'user' }, content: [
+        { type: 'plugin:message',
+          message: { role: 'tool', toolCallId: 'foreign', content: [{ type: 'image', attachment: { ...imageRef } }] },
+        } as never,
+        { type: 'text', text: 'context' },
+      ] }),
+    ] }))
+    expect(attachmentMocks.readImageRequest).not.toHaveBeenCalled()
+    expect(server.fileRequests).toHaveLength(0)
+    expect(server.requests).toHaveLength(1)
+    expect(server.requests[0]).toMatchObject({ messages: [{ role: 'user', content: 'context' }] })
+  })
+
   it('falls back to one all-base64 request when Files API resolution fails', async () => {
     const server = await mockServer([{ kind: 'sse', events: textEvents }])
     const secondRef = { ...imageRef, attachmentId: AttachmentId(`sha256:${'c'.repeat(64)}`) }

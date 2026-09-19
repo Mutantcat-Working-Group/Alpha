@@ -86,10 +86,14 @@ describe('V3 to V4 source preservation', () => {
     expect(() => migrate([fact, { ...seed, data: {} }], { ...header, isSeeded: true })).toThrow('inherited event count')
   })
 
-  it('refuses a target-generation delivery without changing predecessor or future delivery values', () => {
-    expect(() => migrate([fact, delivery(4)])).toThrow('claims target format v4')
-    expect(() => restore([fact, delivery(4)])).toThrow('claims target format v4')
-    for (const version of [undefined, 0, 1, 2, 3, 5]) {
+  it('keeps higher-generation delivery records inactive without changing prior generation markers', () => {
+    for (const version of [4, 5, 99]) {
+      const marker = delivery(version)
+      const expected = { ...marker, type: 'plugin:session-log-deepseek/delivery-accepted', ignorable: true }
+      expect(migrate([fact, marker]).events[1]).toEqual(expected)
+      expect(restore([fact, marker]).events[1]).toEqual(expected)
+    }
+    for (const version of [undefined, 0, 1, 2, 3]) {
       const marker = delivery(version)
       expect(migrate([fact, marker]).events[1]).toBe(marker)
     }
@@ -122,7 +126,7 @@ describe('V3 to V4 source preservation', () => {
       type: 'external/opaque', seq: 0, time: -5, ignorable: true,
       data: { nested: { seq: 40 }, content: ['opaque'] }, surfaceOp: { future: { ref: 9 } },
     }
-    expect(restore([opaque]).events).toEqual([opaque])
+    expect(restore([opaque]).events).toEqual([{ ...opaque, type: 'plugin:external/opaque' }])
     const { ignorable: _ignorable, ...required } = opaque
     expect(() => restore([required])).toThrow('unknown event type')
     expect(() => restore([{ ...fact, time: 1.5 }])).toThrow('time')

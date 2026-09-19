@@ -222,7 +222,7 @@ describe('first-party Session format catalog', () => {
       const ignorable = deepFreeze({ ...required, ignorable: true, data: { text: 'tools-code-mode', source: { kind: 'plugin', plugin: 'tools-code-mode' } } })
       const accepted = createSessionFormatCatalogWithChildren([]).createRestore(header, { recovery: 'strict', validation })
       accepted.decodeRow(ignorable)
-      expect(accepted.finish().events).toEqual([ignorable])
+      expect(accepted.finish().events).toEqual([{ ...ignorable, type: `plugin:${type}` }])
     }
   })
 
@@ -278,6 +278,21 @@ describe('first-party Session format catalog', () => {
 })
 
 describe('historical child prerequisite catalog', () => {
+  it('uses the V3 event vocabulary for ignorable events whose names become known later', () => {
+    const header = { type: 'session', version: 3, id: 'old-extension', createdAt: 1, isSeeded: false, delegationDepth: 0 }
+    const rows = [
+      { type: 'feedback/record', seq: 0, time: 1, data: { text: 'saved' } },
+      { type: 'developer/message', seq: 1, time: 2, ignorable: true, surfaceOp: 'append', sourceEventSeqs: [0],
+        data: { content: [{ type: 'tool-result', toolCallId: 'opaque', content: [] }], vendor: true } },
+    ]
+    const historical = historicalSessionFormatCatalog.createRestore(header, { recovery: 'strict', validation: 'current' })
+    for (const row of rows) historical.decodeRow(row)
+    expect(historical.finish().events).toEqual(rows)
+    const current = createSessionFormatCatalogWithChildren([]).createRestore(header, { recovery: 'strict', validation: 'current' })
+    for (const row of rows) current.decodeRow(row)
+    expect(current.finish().events).toEqual([rows[0], { ...rows[1], type: 'plugin:developer/message' }])
+  })
+
   it('restores V3 and preceding versions without the incoming catalog-completion edge', () => {
     const header = { type: 'session', version: 2, id: 'historical', createdAt: 1, isSeeded: false, delegationDepth: 0 }
     expect(historicalSessionFormatCatalog.readHeader(header)).toMatchObject({ status: 'migration-required' })

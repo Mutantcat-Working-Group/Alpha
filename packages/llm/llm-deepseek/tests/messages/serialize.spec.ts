@@ -23,6 +23,11 @@ const capable = resolveAdapterOptions({ models: [{ id: MODEL, systemPromptUpdate
 const nativeBody = (messages: Message[]) => serialize(options({ messages }), capable, messages, new Map(), () => undefined)
 
 describe('Messages request conversion', () => {
+  it('rejects unknown plugin content without interpreting its payload', () => {
+    expect(() => body([createUserMessage({ source: { kind: 'user' }, content: [
+      { type: 'plugin:text', text: 'opaque' } as never,
+    ] })])).toThrow(expect.objectContaining({ code: 'UNSUPPORTED_CONTENT' }))
+  })
   it.each(['user', 'system', 'assistant', 'tool'] as const)('rejects tool-change blocks in %s history', (role) => {
     for (const type of ['tool-addition', 'tool-removal'] as const) {
       const message = { id: 'invalid', role, source: { kind: 'test' }, content: [{ type, toolName: 'search' }] } as unknown as Message

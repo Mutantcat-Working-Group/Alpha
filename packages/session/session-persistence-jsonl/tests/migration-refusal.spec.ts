@@ -3,6 +3,7 @@
 import { Context } from '@deepseek-ai/cordis'
 import { SESSION_FORMAT_VERSION, SessionId } from '@deepseek-ai/dsh-session'
 import { createSessionFormatCatalogWithChildren } from '@deepseek-ai/dsh-session-format-catalog'
+import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import type { SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import { SessionFormatUnsupportedError, SessionPersistenceCorruptionError } from '@deepseek-ai/dsh-session-persistence'
 import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
@@ -248,6 +249,28 @@ async function expectOnlyGenerations(paths: readonly string[]) {
 }
 
 describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compression, access }) => {
+  async function expectV3Conversion(
+    rows: readonly SessionFormatJsonObject[], inspect: (events: readonly SessionEvent[]) => void,
+  ) {
+    const path = await store(3, compression, rows)
+    const original = await observe(path)
+    for (const mode of [access, 'read'] as const) {
+      const ctx = await mount(compression)
+      const handle = await ctx.sessionPersistence.open(id, mode)
+      try {
+        expect(handle.header.version).toBe(SESSION_FORMAT_VERSION)
+        const restored = await handle.read()
+        expect(restored.events.map(event => ({ seq: event.seq, time: event.time })))
+          .toEqual(rows.map((_, seq) => ({ seq, time: 1001 + seq })))
+        inspect(restored.events)
+      } finally {
+        await handle.close()
+      }
+    }
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations(access === 'read' ? [path] : [path, generationLogPath(root, undefined, id, SESSION_FORMAT_VERSION, compression)])
+  }
+
   it.each(migrationRefusals)('refuses V2 $name without publishing or discarding a tail', async ({ tail, diagnostic }) => {
     const path = await store(2, compression, [...prefix, tail])
     const original = await observe(path)
@@ -266,17 +289,51 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     }
   })
 
-  it('refuses a V3 watermark claiming V4 without publishing a successor', async () => {
+  it.each([4, 99])('preserves a V3 watermark claiming V%s as an opaque extension through native reopening', async (sessionFormatVersion) => {
     const marker = { type: 'session-log-deepseek/delivery-accepted', data: {
-      sessionId: id, throughSeq: 0, sessionFormatVersion: 4,
+      sessionId: id, throughSeq: 0, sessionFormatVersion,
     } }
-    const path = await store(3, compression, [...releasedPrefix, marker])
-    const original = await observe(path)
-    const ctx = await mount(compression)
-    await expectRefusal(ctx, access, path,
-      'format v3 delivery marker claims target format v4; source v3 artifact remains unchanged (raw log: ' + path + ')')
-    expect(await observe(path)).toEqual(original)
-    await expectOnlyGenerations([path])
+    await expectV3Conversion([...releasedPrefix, marker], (events) => {
+      expect(events).toEqual([
+        ...nativePrefix,
+        { ...marker, type: 'plugin:session-log-deepseek/delivery-accepted', ignorable: true },
+      ].map((row, seq) => ({ ...row, seq, time: 1001 + seq })))
+    })
+  })
+
+  it.each([false, true])('preserves V3 tool-definition deferLoading=%s and extension fields under plugin-prefixed keys', async (deferLoading) => {
+    const parameters = {
+      type: 'object', properties: { deferLoading: { type: 'boolean' } },
+      default: { type: 'tool-result', toolCallId: 'opaque-call', content: [{ type: 'text', text: 'schema data' }] },
+    }
+    const fields = JSON.parse('{"metadata":{"saved":"original metadata"},"__proto__":{"saved":"prototype"},"constructor":{"saved":"constructor"}}') as SessionFormatJsonObject
+    const tool = { name: 'example', description: 'Saved tool definition.', parameters, deferLoading, ...fields }
+    const request = { type: 'request/header', data: { header: { config, tools: [tool] }, reason: 'initial' } }
+    const targetTool = {
+      name: 'example', description: 'Saved tool definition.', parameters,
+      'plugin:deferLoading': deferLoading, 'plugin:metadata': fields['metadata'], 'plugin:__proto__': fields['__proto__'], 'plugin:constructor': fields['constructor'],
+    }
+    await expectV3Conversion([...releasedPrefix.slice(0, -1), request], (events) => {
+      const expected = [...nativePrefix.slice(0, -1), {
+        ...request, data: { ...request.data, header: { config, tools: [targetTool] } },
+      }]
+      expect(events).toEqual(expected.map((row, seq) => ({ ...row, seq, time: 1001 + seq })))
+      const migrated = events.find(event => event.type === 'request/header')?.data.header.tools?.[0]
+      expect(Object.hasOwn(migrated!, 'plugin:__proto__')).toBe(true)
+      expect(Object.getPrototypeOf(migrated!)).toBe(Object.prototype)
+      expect(Object.hasOwn(migrated!, 'deferLoading')).toBe(false)
+    })
+  })
+
+  it('leaves a V3 tool definition with only declared fields unchanged', async () => {
+    const tool = { name: 'example', description: 'Saved tool definition.', parameters: { type: 'object' } }
+    const request = { type: 'request/header', data: { header: { config, tools: [tool] }, reason: 'initial' } }
+    await expectV3Conversion([...releasedPrefix.slice(0, -1), request], (events) => {
+      expect(events).toEqual([...nativePrefix.slice(0, -1), request]
+        .map((row, seq) => ({ ...row, seq, time: 1001 + seq })))
+      const migrated = events.find(event => event.type === 'request/header')?.data.header.tools?.[0]
+      expect(Object.hasOwn(migrated!, 'metadata')).toBe(false)
+    })
   })
 
   it.each(['tool/code-dispatch-start', 'tool/code-dispatch'])('keeps %s unsupported beyond a damaged native suffix', async (type) => {

@@ -145,6 +145,8 @@ Lead 可以停止 teammate 的当前轮次，而不会删除其排队的消息�
 
 Team 事件追加到精确的 live Lead 会话，并在操作报告成功或唤醒等待者之前 flush。`team/member`、`team/task`、`team/message/queued` 与 `team/message/delivered` 仅存在于日志：它们从不进入会话表面，因此派生模型历史不受协作记录影响。顺序与时间由会话事件的 `seq` 与 `time` 负责，快照不重复保存。`./invariant` 伴生插件把每条候选 Team 事件对照已提交前缀回放，并在 append 前拒绝非法转换。
 
+邮箱投影和检查点准入校验已知内容字段，并按解码后的 JSON 保留未知插件内容，包括自有 `__proto__` 键。未知块字段保持不透明，退役的 tool-result 内容被拒绝。
+
 ### Dispose
 
 dispose 会关闭准入、中止并等待已获准的创建与 mailbox dispatch 事务，再让 continuation owner 释放 roster 中确切的 live direct child 及其后代；Lead 的非 Team continuable child 不受影响。cleanup 失败会让 dispose 明确失败，并以 `disposalTimeoutMs` 为上限。

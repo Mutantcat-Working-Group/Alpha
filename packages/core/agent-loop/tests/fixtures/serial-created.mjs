@@ -14,7 +14,7 @@ export function apply(ctx) {
       id: randomUUID(),
       role: 'user',
       content: [{ type: 'text', text: 'Serial agent creation completed.' }],
-      source: { kind: name },
+      source: { kind: `plugin:plugin:${name}` },
     })
     ready.add(agent)
   })

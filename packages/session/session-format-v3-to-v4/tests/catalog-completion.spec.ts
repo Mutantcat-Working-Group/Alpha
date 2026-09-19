@@ -106,11 +106,11 @@ describe('V3 parent catalog completion', () => {
     expect(migrate([catalog], [], false, undefined, true).events).toEqual([catalog])
   })
 
-  it('rejects target delivery activation and invalid current delivery ownership', () => {
+  it('keeps target delivery inactive and rejects invalid current delivery ownership', () => {
     const preceding = { type: 'feedback/record', seq: 0, time: 1, data: { text: 'prior' } }
     const delivery = { type: 'session-log-deepseek/delivery-accepted', seq: 1, time: 1,
       data: { sessionId: 'other', throughSeq: 0, sessionFormatVersion: 4 } }
-    expect(() => migrate([preceding, delivery], [])).toThrow('claims target format v4')
+    expect(migrate([preceding, delivery], []).events).toEqual([preceding, { ...delivery, type: 'plugin:session-log-deepseek/delivery-accepted', ignorable: true }])
     expect(() => migrate([preceding, { ...delivery, data: { ...delivery.data, sessionFormatVersion: 3 } }], [])).toThrow('wrong Session')
   })
 
@@ -128,7 +128,7 @@ describe('V3 parent catalog completion', () => {
   })
 
   it.each([null, { version: 99 }])('retains existing catalog extensions without interpreting unavailable descriptors: %j', (descriptor) => {
-    const data = { ...child, extension: 'retained' }
+    const data = { ...child, plugin: 'retained' }
     const source = [{ type: 'subagent/catalog', seq: 0, time: 1, data }]
     expect(migrate(source, [{ childId: 'child', childCreatedAt: 2, descriptorCount: descriptor === null ? 0 : 1, descriptor }]).events).toEqual(source)
   })

@@ -361,7 +361,7 @@ describe('JSONL immutable generation publication', () => {
       { type: 'user/message', seq: 3, time: 5,
         surfaceOp: { op: 'replace', start: 2, end: 2 }, sourceEventSeqs: [2], data: {
           id: 'summary', role: 'user', content: [{ type: 'text', text: 'summary' }],
-          source: { kind: 'plugin', plugin: 'summary-fixture' },
+          source: { kind: 'plugin', plugin: 'summary-fixture', form: 'notice', summary: 'summary-fixture' },
         } },
       { type: 'request/header', seq: 4, time: 6, data: {
         header: { config, system: '', tools: [], adapterDefaults: {} }, reason: 'initial',
@@ -377,7 +377,9 @@ describe('JSONL immutable generation publication', () => {
       expect.objectContaining({ type: 'system/message', seq: 2, surfaceOp: 'append', data: expect.objectContaining({ message: expect.objectContaining({ role: 'system', content: [] }) as unknown }) as unknown }) as unknown,
       ...events.slice(2).map(event => event.seq === 3
         ? { ...event, seq: 4, surfaceOp: { op: 'replace', startSeq: 3, endSeq: 3 }, sourceEventSeqs: [3],
-          data: { ...event.data as Record<string, unknown>, source: { kind: 'summary-fixture' } } }
+          data: { ...event.data as Record<string, unknown>, source: {
+            kind: 'plugin:plugin:summary-fixture', form: 'notice', summary: 'summary-fixture',
+          } } }
         : event.seq === 4 ? { ...event, seq: 5, data: { header: { config }, reason: 'initial' } } : { ...event, seq: event.seq + 1 }),
     ]
 

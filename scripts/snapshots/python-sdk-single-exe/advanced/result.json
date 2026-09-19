@@ -102,7 +102,7 @@
           }
         ],
         "source": {
-          "kind": "serial-created-fixture"
+          "kind": "plugin:plugin:serial-created-fixture"
         }
       },
       "surfaceOp": "append"
@@ -1783,7 +1783,7 @@
               }
             ],
             "source": {
-              "kind": "serial-created-fixture"
+              "kind": "plugin:plugin:serial-created-fixture"
             }
           },
           "surfaceOp": "append"
@@ -3029,7 +3029,7 @@
                   }
                 ],
                 "source": {
-                  "kind": "serial-created-fixture"
+                  "kind": "plugin:plugin:serial-created-fixture"
                 }
               }
             ]
@@ -3219,7 +3219,7 @@
               }
             ],
             "source": {
-              "kind": "serial-created-fixture"
+              "kind": "plugin:plugin:serial-created-fixture"
             }
           },
           "surfaceOp": "append"
@@ -3822,7 +3822,7 @@
                   }
                 ],
                 "source": {
-                  "kind": "serial-created-fixture"
+                  "kind": "plugin:plugin:serial-created-fixture"
                 }
               }
             ]
@@ -4028,7 +4028,7 @@
               }
             ],
             "source": {
-              "kind": "serial-created-fixture"
+              "kind": "plugin:plugin:serial-created-fixture"
             }
           },
           "surfaceOp": "append"

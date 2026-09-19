@@ -48,6 +48,8 @@ A resume blocked by an existing write handle returns `session/writer-held` with 
 
 Queue edits replace pending content with non-empty text only.
 
+Attachment authorization inspects only declared content fields of recognized Session events and completed assistant stream blocks. Unknown event payloads, unrelated fields, and extension data cannot authorize attachment reads.
+
 <a id="client-references"></a>
 ## Client references
 

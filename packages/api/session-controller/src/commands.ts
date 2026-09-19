@@ -636,19 +636,16 @@ function imageBlockIn(
   if (!Array.isArray(content)) return undefined
   for (const value of content) {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) continue
-    const block = value as { readonly type?: unknown; readonly attachment?: unknown; readonly content?: unknown }
+    const block = value as { readonly type?: unknown; readonly attachment?: unknown }
     if (block.type === 'image' && typeof block.attachment === 'object' && block.attachment !== null) {
       const ref = block.attachment as ImageAttachmentRef
       if (match(ref)) return ref
-    }
-    if (block.type === 'tool-result') {
-      const nested = imageBlockIn(block.content, match)
-      if (nested !== undefined) return nested
     }
   }
   return undefined
 }
 
+/** Read only first-party declared content fields; unknown event payloads stay opaque. */
 function imageInEvent(
   event: SessionEvent,
   match: (ref: ImageAttachmentRef) => boolean,
@@ -656,21 +653,45 @@ function imageInEvent(
   const data = event.data as {
     readonly content?: unknown
     readonly message?: { readonly content?: unknown }
-    readonly inserted?: readonly { readonly content?: unknown }[]
+    readonly inserted: readonly { readonly content?: unknown }[]
+    readonly messages: readonly { readonly content?: unknown }[]
+    readonly summary?: unknown
+    readonly rawOutput?: unknown
   }
-  const direct = imageBlockIn(data.content, match)
-  if (direct !== undefined) return direct
-  const message = imageBlockIn(data.message?.content, match)
-  if (message !== undefined) return message
-  for (const inserted of data.inserted ?? []) {
-    const found = imageBlockIn(inserted.content, match)
-    if (found !== undefined) return found
-  }
-  if (event.type === 'assistant/message' || event.type === 'assistant/attempt') {
-    for (const chunk of assistantStreamChunks(event.data.stream, 'block-end')) {
-      const found = imageBlockIn([chunk.block], match)
-      if (found !== undefined) return found
+  // First-party event payloads can be present without their producer plugin mounted.
+  const type: string = event.type
+  switch (type) {
+    case 'user/message':
+    case 'tool/ptc-dispatch':
+      return imageBlockIn(data.content, match)
+    case 'system/message':
+    case 'developer/message':
+    case 'tool/result':
+    case 'team/message/queued':
+      return imageBlockIn(data.message?.content, match)
+    case 'agent/inbox/spliced':
+    case 'session/title-llm-request': {
+      const messages = type === 'agent/inbox/spliced' ? data.inserted : data.messages
+      for (const message of messages) {
+        const found = imageBlockIn(message.content, match)
+        if (found !== undefined) return found
+      }
+      return undefined
     }
+    case 'compaction/summary':
+      return imageBlockIn(data.summary, match) ?? imageBlockIn(data.rawOutput, match)
+    case 'assistant/message': {
+      const found = imageBlockIn(data.message?.content, match)
+      if (found !== undefined) return found
+      break
+    }
+    case 'assistant/attempt': break
+    default: return undefined
+  }
+  const assistant = event as SessionEvent<'assistant/message' | 'assistant/attempt'>
+  for (const chunk of assistantStreamChunks(assistant.data.stream, 'block-end')) {
+    const found = imageBlockIn([chunk.block], match)
+    if (found !== undefined) return found
   }
   return undefined
 }

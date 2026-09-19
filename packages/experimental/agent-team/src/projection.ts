@@ -42,7 +42,7 @@ const imageAttachmentSchema = z.object({
 
 // ContentBlockMap is merge-extensible. Validate every core variant exactly,
 // while retaining JSON-decoded plugin variants under an unknown type tag.
-const contentBlockSchema: z.ZodType<ContentBlock> = z.lazy(() => z.union([
+const contentBlockSchema: z.ZodType<ContentBlock> = z.union([
   z.object({ type: z.literal('text'), text: z.string() }).strict(),
   z.object({ type: z.literal('reasoning'), text: z.string() }).strict(),
   z.object({ type: z.literal('image'), attachment: imageAttachmentSchema }).strict(),
@@ -52,17 +52,13 @@ const contentBlockSchema: z.ZodType<ContentBlock> = z.lazy(() => z.union([
     name: z.string(),
     arguments: z.string(),
   }).strict(),
-  z.object({
-    type: z.literal('tool-result'),
-    toolCallId: z.string().min(1),
-    content: z.array(contentBlockSchema),
-    isError: z.boolean().optional(),
-  }).strict(),
-  z.object({ type: z.string().min(1) }).loose().refine(
-    block => !coreContentBlockTypes.has(block.type),
-    { message: 'known content block types must match their declared fields' },
-  ),
-])) as z.ZodType<ContentBlock>
+  // Unknown content is decoded JSON; validation must preserve its own extension keys.
+  z.custom<ContentBlock>((value) => {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+    const type = (value as { type?: unknown }).type
+    return typeof type === 'string' && type.length > 0 && !coreContentBlockTypes.has(type)
+  }),
+]) as z.ZodType<ContentBlock>
 
 const teamMemberSnapshotSchema = z.object({
   id: sessionIdSchema,

@@ -19,7 +19,7 @@ function restore(source: unknown, version: 3 | 4 = 4) {
 describe('V4 source admission', () => {
   it.each(['constructor', 'toString', '__proto__'])('migrates external producer %s without interpreting inherited object keys', (plugin) => {
     const before = JSON.parse(`{"kind":"plugin","plugin":"${plugin}","__proto__":{"tag":"metadata"},"nested":{"kind":"plugin","plugin":"opaque"}}`) as SessionFormatJsonObject
-    const expected = JSON.parse(`{"kind":"${plugin}","__proto__":{"tag":"metadata"},"nested":{"kind":"plugin","plugin":"opaque"}}`) as SessionFormatJsonObject
+    const expected = JSON.parse(`{"kind":"plugin:plugin:${plugin}","__proto__":{"tag":"metadata"},"nested":{"kind":"plugin","plugin":"opaque"}}`) as SessionFormatJsonObject
     const migrated = restore(before, 3)
     expect(migrated.events[0]?.data).toMatchObject({ source: expected })
     expect(Object.hasOwn((migrated.events[0]?.data as { source: object }).source, '__proto__')).toBe(true)

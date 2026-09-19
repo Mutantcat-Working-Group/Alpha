@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-17-persistence-attribution-policy.md
-2026-09-17-persistence-attribution-policy.md: fa9741ba9343d77c52c38e181a3d2b2f445293e9
-2026-09-17-persistence-attribution-policy.zh.md: 0c32adf45938889b5325d0db904be527a969fae0
+2026-09-17-persistence-attribution-policy.md: 19bebc8bc186f4b2b7e2e561fb6a53ceadcebabf
+2026-09-17-persistence-attribution-policy.zh.md: 3561c1d1afca5402cb94b1578603c4f1a2fc89a4

@@ -145,6 +145,8 @@ Tasks are complete versioned snapshots; every mutation carries `expectedRevision
 
 Team events are appended to the exact live Lead Session and flushed before the operation reports success or wakes waiters. `team/member`, `team/task`, `team/message/queued`, and `team/message/delivered` are log-only: they never enter the conversation surface, so derived model history is untouched by coordination records. Session event `seq` and `time` own ordering and timing; snapshots do not duplicate them. The `./invariant` companion replays each candidate Team event against its committed prefix and rejects invalid transitions before append.
 
+Mailbox projection and checkpoint admission validate known content fields and preserve unknown plugin content as decoded JSON, including own `__proto__` keys. Unknown block fields remain opaque; retired tool-result content is rejected.
+
 ### Disposal
 
 Disposal closes admission, aborts and awaits admitted creation and mailbox-dispatch transactions, then asks the continuation owner to release the roster's exact live direct children and their descendants; non-Team continuable children of the Lead remain untouched. Cleanup failures make disposal fail visibly, bounded by `disposalTimeoutMs`.

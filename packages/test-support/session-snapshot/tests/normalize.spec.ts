@@ -755,13 +755,13 @@ describe('normalizeSessionSnapshot', () => {
       .toThrow('session snapshot must start with a session header')
   })
 
-  function deliveryLog(version: number, deliveryVersion = version): string {
+  function deliveryLog(version: number, deliveryVersion = version, id = 'delivery'): string {
     return [
-      { type: 'session', version, id: 'delivery', createdAt: 1, isSeeded: false, delegationDepth: 0 },
+      { type: 'session', version, id, createdAt: 1, isSeeded: false, delegationDepth: 0 },
       { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
       {
         type: 'session-log-deepseek/delivery-accepted', seq: 1, time: 2,
-        data: { sessionId: 'delivery', throughSeq: 0, sessionFormatVersion: deliveryVersion },
+        data: { sessionId: id, throughSeq: 0, sessionFormatVersion: deliveryVersion },
       },
     ].map(record => JSON.stringify(record)).join('\n') + '\n'
   }
@@ -792,9 +792,23 @@ describe('normalizeSessionSnapshot', () => {
     expect(staleCurrent).toContain('"sessionFormatVersion":3')
   })
 
-  it('refuses a source marker claiming the migration target before creating comparison tokens', () => {
-    expect(() => normalizeSessionSnapshots([deliveryLog(3, 4)], ctx, { nativeWriterOutput: true }))
-      .toThrow('format v3 delivery marker claims target format v4')
+  it('keeps a higher-generation V3 delivery opaque before creating comparison tokens', () => {
+    const source = deliveryLog(3, 4, 'recorded-session')
+    const target = prepareSessionSnapshotFixtureForComparison(source)
+    const marker = JSON.parse(target.trimEnd().split('\n').at(-1)!) as unknown
+    expect(marker).toEqual({
+      type: 'plugin:session-log-deepseek/delivery-accepted', seq: 1, time: 2, ignorable: true,
+      data: { sessionId: 'recorded-session', throughSeq: 0, sessionFormatVersion: 4 },
+    })
+    const [historical, migrated, native] = normalizeSessionSnapshots(
+      [source, target, deliveryLog(SESSION_FORMAT_VERSION, SESSION_FORMAT_VERSION, 'recorded-session')], ctx, { nativeWriterOutput: true },
+    )
+    expect(historical).toBe(migrated)
+    expect(historical).not.toBe(native)
+    expect(historical).toContain('"type":"plugin:session-log-deepseek/delivery-accepted"')
+    expect(historical).toContain('"throughSeq":0,"sessionFormatVersion":4')
+    expect(historical).not.toContain('{{sourceSessionFormatVersion}}')
+    expect(native).toContain('"sessionFormatVersion":"{{sourceSessionFormatVersion}}"')
   })
 
   it('keeps captured generations and delivery lookalikes numeric in versioned inputs', () => {

@@ -15,6 +15,20 @@ English | [中文](README.zh.md)
 
 - [Use this package](#use-this-package)
 - [V3-to-V4 specification](#v3-to-v4-specification)
+  - [Header and physical framing](#header-and-framing)
+  - [Tool-result representation](#tool-results)
+  - [Extension data](#extension-data)
+  - [Message-source conversion](#message-sources)
+  - [Parent catalog prerequisites](#parent-catalog)
+  - [Sequence references and inheritance](#sequence-references)
+  - [Delivery generations](#delivery-guards)
+  - [Source audit and refusal](#source-audit)
+- [Native V4 admission](#native-v4-admission)
+  - [Header, messages, and surface metadata](#native-fields)
+  - [Lifecycle and reference relationships](#native-relationships)
+  - [Developer changes and deferred schemas](#developer-changes)
+  - [Fork-generated results](#fork-results)
+  - [Validation entry points and recovery](#native-recovery)
 - [Understand the implementation](#understand-the-implementation)
 - [Further Exploration](#further-exploration)
 - [Model Experience](#model-experience)
@@ -41,17 +55,130 @@ Complete restoration decodes rows, passes them through a fresh stage, and valida
 <a id="v3-to-v4-specification"></a>
 ## V3-to-V4 specification
 
-The logical header changes only `version: 3` to `version: 4`. Released user-role tool-result wrappers become tool-role messages with `toolCallId`, optional `isError`, and direct result content. Released `{ kind: 'plugin', plugin }` message sources become producer-owned kinds through the frozen rename table in [sources.ts](src/sources.ts), retaining producer-specific fields. Every admitted source event retains its type, timestamp, sequence, message identity, surface operation, references, and all non-migrated payload fields; the stage appends only missing own parent catalog records after processing the source events. The released V3 codec remains owned by [V2-to-V3](../session-format-v2-to-v3/README.md); this package reuses it only for the historical source side without changing earlier migration semantics.
+This edge changes only the named representations below and appends missing catalog facts. It namespaces unknown ignorable event types and retains each admitted source event's time, sequence, message identities, surface operation, references, and all fields outside those conversions. It creates no system prompt, developer event, tool execution, or replacement message. Earlier V0–V2 inputs first pass through their existing edges to V3; those edges retain their own transformations and refusal policies.
 
 Source events must be dense from zero. A seeded Session's last `session/end-seed` carrying `inherited: true` determines its inherited event count, excluding the marker. A supplied source cut must agree. Missing seeded markers and inherited markers in unseeded Sessions are refused. Each stage owns its counters and cut; seeded stages leave the cut unknown before EOF, including when preceding migrations change event count.
 
 Complete restoration validates native V4 tool and fork results, turn/step order, tool and PTC lifecycles, retries, title citations, commands, compaction ownership and spans, the protected system head, deliveries, catalog membership, inherited cuts, and installed event vocabulary. It permits unfinished tails but refuses closing events with unresolved tools or mismatched transactions. Installed Session restoration owns common event-envelope and message acceptance. The [native validation decision](../../../.agents/notes/implemented/architecture/2026-09-17-native-v4-read-validation.md) records the ownership split. The V3 semantic validator never receives a V4 event.
 
-A `session-log-deepseek/delivery-accepted` event must identify a nonnegative safe-integer generation; omission identifies V0. A source marker claiming V4 is refused because advancing the header would activate it. Source V3 markers require a nonempty Session id and a `throughSeq` that names an earlier event. A foreign V3 marker is permitted only inside the inherited prefix of a Session with `parentSession`. Other generations retain their recorded coordinates and ids. No delivery payload is rewritten.
+No preset id, PTC dispatch event tag, file attachment, or physical filename is renamed by this edge. Content extensions in embedded streams follow the rules below; stream order and indices remain unchanged.
 
 V4 source admission rejects retired plugin wrappers in surface, inbox, and title-request messages before recoverable scanning can discard rows. The catalog and native JSONL scanner validate every known message-source slot before exposing restored data. Unknown nonempty attribution kinds and every own JSON metadata field remain intact; external names such as `constructor` and `__proto__` are ordinary producer strings.
 
-V4 restoration validates V4 delivery coordinates and ownership under the same rules. V3 deliveries are historical in V4 and do not become V4 watermarks. The V4 codec retains the released V2 physical framing and performs native tool-result and system-message field admission before recovery. Physical decoding defers ignorable developer payloads until reader vocabulary is available; encoders still validate developer payloads. Native JSONL scanners validate known developer payloads before suppressing a recoverable suffix. Complete vocabulary, delivery, and relationship checks require the target restorer or catalog `validation: 'current'`. Retired `header.system` fields and required predecessor PTC tags are refused even in a recoverable suffix; ignorable predecessor PTC records remain opaque. Recoverable codec reads alone do not establish strict restoration.
+[liftToolResult](src/tool-role.ts) converts the message of a `tool/result` event whose source representation has role `user`. It requires a nonempty message id, source `{ kind: 'tool', callId }` with a nonempty call id, and exactly one `tool-result` block naming the same call. The block's content must be an array; an optional `isError` must be boolean.
+
+| V3 field | V4 field or treatment |
+|---|---|
+| `data.message.role: 'user'` | `role: 'tool'` |
+| `data.message.content[0].toolCallId` | `data.message.toolCallId`, equal to the retained `source.callId` |
+| `data.message.content[0].content` | Direct `data.message.content`, including empty content |
+| `data.message.content[0].isError` | Optional `data.message.isError` |
+| Wrapper `type: 'tool-result'` | Removed with the wrapper |
+| Message `id`, `source`, outer extensions, event fields | Retained; no message or call id is minted |
+
+The only admitted wrapper keys are `type`, `toolCallId`, `content`, and `isError`. An unknown wrapper key has no defined target and refuses migration. Nested `tool-result` blocks inside its result content are refused because flattening cannot preserve their independent call identity and error status. Existing outer `toolCallId` must match; existing outer `isError` must be boolean and equal the wrapper's value, treating omission as false for this conflict check. When the wrapper omits `isError`, an existing consistent outer value remains present. Outer JSON properties such as `__proto__` and `constructor` remain own data properties.
+
+A malformed canonical wrapper raises a format error; an unmapped wrapper extension, nested result, or conflicting target field raises an unsupported-migration error. The transformation does not repair contradictory `data.error`; native target validation requires it to accompany `message.isError: true`.
+
+<a id="extension-data"></a>
+### Extension data
+
+Unknown V3 content tags become `plugin:<original-type>`; all other fields remain unchanged and opaque. Stream starts use the same tag in `blockType` and retain `type` and `index`; other start-owned field names receive a `plugin:` prefix. Request-tool definitions retain `name`, `description`, and `parameters`; all other own field names receive `plugin:` too, so historical `deferLoading` becomes `plugin:deferLoading` without enabling V4 capabilities. Existing prefixes double, keeping distinct old names distinct. Parameters, arguments, replay state, and plugin content fields are not traversed. These names preserve data identity; they do not load or execute plugins.
+
+<a id="message-sources"></a>
+### Message-source conversion
+
+The [message walker](src/sources.ts) visits only these payload positions. It maps known V3 identities and gives external plugin names and external direct source kinds separate reserved namespaces.
+
+| Owning event | Message position |
+|---|---|
+| `user/message` | `data` |
+| `system/message`, `assistant/message`, `tool/result` | `data.message` |
+| `agent/inbox/spliced` | Each `data.inserted[]` member |
+| `session/title-llm-request` | Each `data.messages[]` member |
+| `developer/message` | Native walker only; an unknown ignorable V3 event is namespaced and its payload is not visited |
+
+A plugin source requires a string `plugin`, including the empty string. Conversion removes that property, replaces `kind`, and preserves every other own JSON property. Direct source kinds must be nonempty strings. Conversion does not infer missing metadata from message text, tool arguments, configuration, or current files.
+
+| Exact V3 `plugin` | V4 `kind` |
+|---|---|
+| `compact` | `compact-checkpoint` |
+| `tools-code-mode`, `tools-ptc` | `ptc-mode` |
+| `dsh-compaction-basic` | `compact-basic` |
+| `@deepseek-ai/dsh-system-prompt`, on a system-role message | `system-prompt` |
+| `@deepseek-ai/dsh-system-prompt`, on another role | `runtime-context` |
+| Same-name first-party producers listed below | The exact plugin string |
+| Any other plugin name | `plugin:plugin:` followed by the complete original name |
+
+The same-name producers are `agent-instructions`, `session-reference`, `team-message`, `goal`, `skill-invocation`, `skill-catalog`, `coordinator`, `subagent-report`, `subagent-settled`, `webhook`, `agent-message`, `model-selection`, `plan-mode`, `time-context`, `tmux-context`, `user-approval`, `repeat-tool-reminder`, `tool-cordis`, `cordis-host-runner`, `tool-goal`, `tool-jobs`, `hooks-codex`, `hooks-claude-code`, `schedule`, and `dsh-session-title-llm`.
+
+Namespacing prepends `plugin:plugin:` to an external plugin name or `plugin:source:` to an external direct kind. It keeps the complete original string, including an existing prefix. A plugin named `source:x` becomes `plugin:plugin:source:x`, while a direct kind named `x` becomes `plugin:source:x`; the categories cannot collide. Known V3 direct kinds remain unchanged.
+
+There is no recursive source search. Captured request text, assistant replay state and streams, tool arguments/content metadata, Team payloads, and arbitrary nested objects remain unchanged unless another explicitly named rule applies.
+
+<a id="parent-catalog"></a>
+### Parent catalog prerequisites
+
+`historicalChildCatalogSource()` collects a direct subagent child's id and creation time, the number of its own `subagent/descriptor` events after its inherited cut, and the first descriptor payload. The child must have `origin: 'subagent'` and a direct parent. Supplemental facts require `childId`, a nonnegative safe-integer `childCreatedAt` and `descriptorCount`, and a `descriptor` property; absent descriptors are represented by null. An optional `sourcePath` is retained for diagnostics.
+
+| Available evidence | Migration decision |
+|---|---|
+| One descriptor with version 1 | Require string provider and label; derive `mode: 'continuable'`. |
+| One descriptor with version 2 or 3 | Require string provider; use its mode and optional label under catalog rules. |
+| Zero descriptors, or an unsupported descriptor version | May retain an existing parent entry; cannot create a missing entry. |
+| More than one own descriptor | Refuse, including when the parent already has an entry. |
+| Existing own parent entry | Retain it and its extensions; require matching child creation time and any available supported mode/label. |
+| Missing own parent entry with complete supported evidence | Append a version-0 catalog fact with child id, creation time, mode, and optional label. |
+| Missing own parent entry without complete evidence | Refuse the migration without publishing a successor. |
+
+Catalog version 0 requires string `childId`, nonnegative safe-integer `childCreatedAt`, mode `continuable` or `one-shot`, and a string label for continuable mode; a present one-shot label must also be a string. Duplicate own child ids are refused. Existing entries without a corresponding retained child remain in the parent. Descriptor collection does not restore a child's old continuation composition or recover deleted children from tool arguments.
+
+The stage considers parent catalog records only after the final inherited cut. Every inherited marker discards earlier catalog candidates without interpreting their payloads. Missing entries append after all source events, sorted by creation time then child id, with dense new sequences. Their time is the final source event's time, or header creation time for an empty log. They neither enter the model surface nor change the inherited count.
+
+Storage supplies the complete recognizable child set within its root and rechecks membership and physical revisions during preparation, memo reuse, and publication. Missing required evidence, unreadable headers that prevent classifying membership, unsupported selected generations, or source drift refuse the operation. The package itself reads no files; [persistence](../session-persistence-jsonl/README.md) owns encoding, locks, cancellation, and publication.
+
+<a id="sequence-references"></a>
+### Sequence references and inheritance
+
+This edge performs no coordinate remapping. Existing event sequences, `sourceEventSeqs`, replacement `startSeq/endSeq`, command and title references, compaction spans, captured Session references, delivery coordinates, turn/step numbers, stream indices, and all ids retain their values. Tool-result lifting and source conversion do not change source event count; appended catalog records only extend the suffix.
+
+For a seeded Session, the last `session/end-seed` carrying `inherited: true` identifies the inherited event count, excluding that marker. It is unchanged from the V3-stage input, including when preceding V0–V2 migrations already remapped it. A supplied source cut must agree; a missing tagged marker, an inherited marker in an unseeded Session, or a cut outside the events is refused. Unseeded stages expose zero before EOF; seeded stages leave the count unknown until `finish()`. Untagged markers do not define fork inheritance.
+
+<a id="delivery-guards"></a>
+### Delivery generations
+
+| Delivery record | Admission and preservation |
+|---|---|
+| Any interpreted `session-log-deepseek/delivery-accepted` | Generation must be a nonnegative safe integer; omission identifies V0. |
+| V3 source marker claiming any generation above 3 | Namespace its event type as `plugin:session-log-deepseek/delivery-accepted` and set `ignorable: true`; keep the inactive payload and coordinates unchanged. |
+| V3 source marker for generation 3 | Require a nonempty Session id and nonnegative safe-integer `throughSeq` before the marker; a foreign id is allowed only before the inherited cut with `parentSession`. |
+| Source generations below 3 | Retain their ids, generation, and coordinates without activating them. |
+| Native V4 marker for generation 4 | Apply the same earlier-coordinate and Session-ownership checks using V4 as current. |
+| Native V4 historical marker, including generation 3 | Retain recorded coordinates and identity; it is not a V4 acceptance watermark. |
+
+No delivery payload is rewritten. Namespacing higher-generation records preserves their inactive V3 meaning after this and future header promotions; it does not acknowledge delivery. The marker’s envelope sequence remains unchanged.
+
+<a id="source-audit"></a>
+### Source audit and refusal
+
+V3 physical decoding and header validation run before the stage. The stage checks dense sequences, source cuts, canonical tool-result wrappers, named plugin sources, delivery ownership, and supplied catalog evidence as specified above. It does not run the complete released V3 semantic restorer or copy the V2→V3 event/content allowlist. Complete restoration additionally applies the V4 target rules below; physical parsing, stage conversion, and target restoration are distinct checks.
+
+Only the enumerated messages and fields are converted. Unrelated events and arbitrary JSON do not acquire new meanings from matching strings or numbers. The fixed `RELEASED_V3_EVENT_TYPES` set separates source events from extensions independently of the current writer. Unknown required events are invalid V3 input; unknown ignorable names become `plugin:<original-name>` with their payload unchanged. No generic source-schema validation or recursive numeric-field inference is implied.
+
+Only the canonical V3 `tool/result` wrapper has a preserving conversion. A retired `tool-result` block in another interpreted position is refused by target admission rather than retained as an invalid V4 block. Native V4 applies the same tag refusal before recoverable suffix suppression. The check covers only these positions:
+
+| Owner | Content inspected for the retired tag |
+|---|---|
+| `user/message` | `data.content[]` |
+| `system/message`, `developer/message`, `assistant/message`, `tool/result` | `data.message.content[]`; the canonical source tool/result wrapper is lifted before target checking |
+| `agent/inbox/spliced`, `session/title-llm-request` | `data.inserted[].content[]` and `data.messages[].content[]`, respectively |
+| `team/message/queued` | `data.message.content[]` |
+| `compaction/summary`, `tool/ptc-dispatch` | `data.summary[]`, optional `data.rawOutput[]`, and `data.content[]`, respectively |
+| Embedded assistant streams | `assistant/message.data.stream[]` and `assistant/attempt.data.stream[]` entries with `type: 'chunk'`: `chunk.block.type` for `block-end`, and `chunk.blockType` for `block-start` |
+
+The [retired-syntax check](src/retired-syntax.ts) examines direct block tags, not arbitrary descendants. Tool arguments, replay state, JSON-schema parameters, nested metadata, and unknown ignorable event payloads remain opaque. An unknown ignorable developer payload is deferred until reader vocabulary recognizes it; the writer validates known developer records even when marked ignorable.
+
+A direct stage can raise `SessionFormatError` for malformed data or `SessionFormatUnsupportedMigrationError` when a preserving conversion is unavailable. The catalog wraps stage failures as unsupported migration; transformed-target failures receive that classification as well. Strict current validation reports its target failure directly. Physical corruption follows the chosen decoder recovery policy. No prefix is a completed restore, and a refusal does not authorize source mutation, a partial successor, or generation fallback.
 
 -----
 

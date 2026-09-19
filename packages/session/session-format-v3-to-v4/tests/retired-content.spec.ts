@@ -107,6 +107,6 @@ describe('retired tool-result content admission', () => {
       recovery: 'strict', validation: 'current',
     })
     migrated.decodeRow(opaque)
-    expect(migrated.finish().events).toEqual([opaque])
+    expect(migrated.finish().events).toEqual([{ ...opaque, type: 'plugin:future/opaque' }])
   })
 })

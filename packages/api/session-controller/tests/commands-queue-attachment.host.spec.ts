@@ -8,10 +8,11 @@ import { createAssistantMessage, createUserMessage, MessageId } from '@deepseek-
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import SessionStore, {
   SESSION_FORMAT_VERSION, Session, SessionId, SessionLogOffset, SessionSeq,
-} from '@mutantcat/dsh-session'
-import type { SessionEvent, SessionHeader, UserMessage } from '@mutantcat/dsh-session'
-import { snapshotSubagentDescriptor, SUBAGENT_DESCRIPTOR_VERSION } from '@mutantcat/dsh-subagent'
-import { subagentIdentityProjectionDefinition } from '@mutantcat/dsh-subagent/src/projection.ts'
+} from '@deepseek-ai/dsh-session'
+import type { SessionEvent, SessionHeader, UserMessage } from '@deepseek-ai/dsh-session'
+import { createSessionFormatCatalogWithChildren, historicalSessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
+import { snapshotSubagentDescriptor, SUBAGENT_DESCRIPTOR_VERSION } from '@deepseek-ai/dsh-subagent'
+import { subagentIdentityProjectionDefinition } from '@deepseek-ai/dsh-subagent/src/projection.ts'
 import { describe, expect, it, vi } from 'vitest'
 import { ApiSessionAgentController } from '../src/agent.ts'
 import { SessionCommandController } from '../src/commands.ts'
@@ -346,7 +347,8 @@ function imageRef(id: string): ImageAttachmentRef {
 }
 
 function event(type: string, seq: SessionSeq, data: unknown): SessionEvent {
-  return { type, seq, time: seq + 1, data } as SessionEvent
+  const surface = ['user/message', 'system/message', 'developer/message', 'tool/result'].includes(type)
+  return { type, seq, time: seq + 1, data, ...surface ? { surfaceOp: 'append' } : {} } as SessionEvent
 }
 
 async function persistedController(
@@ -378,16 +380,90 @@ async function persistedController(
 }
 
 describe('Session attachment authorization', () => {
-  it('finds references in direct, message, inserted, nested, and streamed content', async () => {
+  it.each([
+    ['system/message', 'message'], ['developer/message', 'message'], ['tool/result', 'message'],
+    ['team/message/queued', 'message'], ['tool/ptc-dispatch', 'content'],
+    ['session/title-llm-request', 'messages'], ['compaction/summary', 'summary'], ['compaction/summary', 'rawOutput'],
+  ] as const)('reads the declared %s %s content without rewriting it', async (type, field) => {
+    const ref = imageRef(`${type}-${field}`)
+    const content = [{ type: 'image', attachment: ref }]
+    const source = type === 'system/message' ? { kind: 'system-prompt' }
+      : type === 'tool/result' ? { kind: 'tool', callId: 'declared-call' } : { kind: 'test' }
+    const data = field === 'message' ? { message: {
+      id: 'declared-message', role: type.split('/')[0], content, source,
+      ...type === 'tool/result' ? { toolCallId: 'declared-call' } : {},
+    } }
+      : field === 'messages' ? { messages: [{ content: [] }, { content }] } : { [field]: content }
+    const events = [event(type, SessionSeq(0), data)]
+    const saved = JSON.stringify(events)
+    const readImage = vi.fn((image: ImageAttachmentRef) => Promise.resolve({ ref: image, data: Uint8Array.of(1) }))
+    const fixture = await persistedController(events, readImage)
+    try {
+      await expect(fixture.controller.attachment({ sessionId: fixture.sessionId, attachmentId: ref.attachmentId }))
+        .resolves.toEqual({ attachment: ref, data: 'AQ==' })
+      expect(readImage).toHaveBeenCalledExactlyOnceWith(ref)
+      expect(JSON.stringify(events)).toBe(saved)
+    } finally {
+      await fixture.ctx.fiber.dispose()
+    }
+  })
+
+  it('ignores unrelated fields of a known message event and its content blocks', async () => {
+    const ref = imageRef('not-a-content-occurrence')
+    const content = [{ type: 'image', attachment: ref }]
+    const stored = event('user/message', SessionSeq(0), {
+      id: 'metadata', role: 'user', source: { kind: 'user' },
+      content: [{ type: 'text', text: 'no image', content }, { type: 'plugin:vendor', data: { content }, content }],
+      message: { content }, inserted: [{ content }],
+    })
+    const readImage = vi.fn((image: ImageAttachmentRef) => Promise.resolve({ ref: image, data: Uint8Array.of(1) }))
+    const fixture = await persistedController([stored], readImage)
+    try {
+      await expect(fixture.controller.attachment({ sessionId: fixture.sessionId, attachmentId: ref.attachmentId }))
+        .rejects.toMatchObject({ code: 'session/attachment-invalid' })
+      expect(readImage).not.toHaveBeenCalled()
+    } finally {
+      await fixture.ctx.fiber.dispose()
+    }
+  })
+
+  it('denies attachment access from a migrated unknown ignorable event', async () => {
+    const ref = imageRef('opaque-event-image')
+    const content = [{ type: 'message', message: {
+      role: 'tool', toolCallId: 'opaque-call', content: [{ type: 'image', attachment: ref }],
+    } }]
+    const header = { type: 'session', version: 3, id: 'cold-attachment', createdAt: 1, isSeeded: false, delegationDepth: 0 }
+    const original = { type: 'external/image-record', seq: 0, time: 1, ignorable: true, data: {
+      content, message: { content }, inserted: [{ content }],
+      stream: [{ type: 'chunk', time: 1, chunk: { type: 'block-end', index: 0, block: content[0] } }],
+    } }
+    const historical = historicalSessionFormatCatalog.createRestore(header, { recovery: 'strict', validation: 'current' })
+    historical.decodeRow(original)
+    expect(historical.finish().header.version).toBe(3)
+    const reader = createSessionFormatCatalogWithChildren([]).createRestore(header, { recovery: 'strict', validation: 'current' })
+    reader.decodeRow(original)
+    const converted = reader.finish()
+    expect(converted.events[0]).toMatchObject({ type: 'plugin:external/image-record', data: original.data })
+    const readImage = vi.fn((image: ImageAttachmentRef) => Promise.resolve({ ref: image, data: Uint8Array.of(1) }))
+    const fixture = await persistedController(converted.events as SessionEvent[], readImage)
+    try {
+      await expect(fixture.controller.attachment({ sessionId: fixture.sessionId, attachmentId: ref.attachmentId }))
+        .rejects.toMatchObject({ code: 'session/attachment-invalid', details: { reason: 'ATTACHMENT_NOT_REFERENCED' } })
+      expect(readImage).not.toHaveBeenCalled()
+    } finally {
+      await fixture.ctx.fiber.dispose()
+    }
+  })
+
+  it('finds references in direct, message, inserted, and streamed content', async () => {
     const nested = imageRef('nested')
     const message = imageRef('message')
     const inserted = imageRef('inserted')
     const streamed = imageRef('streamed')
     const events: SessionEvent[] = [
-      { ...event('fixture/direct', SessionSeq(0), {
-        content: [null, [], { type: 'tool-result', content: [{ type: 'text', text: 'none' }] }, {
-          type: 'tool-result', content: [{ type: 'image', attachment: nested }],
-        }],
+      { ...event('user/message', SessionSeq(0), {
+        id: 'direct', role: 'user', source: { kind: 'user' },
+        content: [null, [], { type: 'text', text: 'none' }, { type: 'image', attachment: nested }],
       }), ignorable: true as const },
       {
         type: 'assistant/message', seq: SessionSeq(1), time: 2, surfaceOp: 'append',
@@ -481,7 +557,7 @@ describe('Session attachment authorization', () => {
     ]) {
       const ref = imageRef(`failure-${thrown.name}`)
       const fixture = await persistedController(
-        [event('fixture/content', SessionSeq(0), { content: [{ type: 'image', attachment: ref }] })],
+        [event('user/message', SessionSeq(0), { id: 'failure', role: 'user', source: { kind: 'user' }, content: [{ type: 'image', attachment: ref }] })],
         () => Promise.reject(thrown),
       )
       await expectFailure(fixture.controller.attachment({

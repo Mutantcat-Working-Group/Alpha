@@ -105,6 +105,20 @@ pnpm run lint
 git diff --check
 ```
 
+<a id="final-v3-vocabulary"></a>
+### 发布 V4 前确认最终 V3 事件词汇
+
+当已发布格式仍为 V3、集成写入方为 V4 时，master 仍可能新增有效的 V3 事件类型。每次集成 master 后及首次发布 V4 前，都要把迁移所有的 `RELEASED_V3_EVENT_TYPES` 与该次刷新使用的最新 V3 写入方提交比较。在已于本地核验的 `origin/master` 仍写入 V3 时，记录其完整、不可变的提交 id：
+
+```sh
+V3_SOURCE_REF="$(git rev-parse --verify 'origin/master^{commit}')"
+pnpm run verify-v3-event-vocabulary --source-ref "$V3_SOURCE_REF"
+```
+
+校验器只读取该本地提交，并要求事件名完全一致。它拒绝遗漏的 V3 名称、额外复制的名称，以及不写入 V3 的源提交。尤其不能把 V4 专有的 `developer/message` 放入冻结的 V3 集合。逐项核对 V3 payload、必要转换、目标接纳及消费方；只添加名称不能证明迁移完整。接受新源事件前要补上相应迁移回归。
+
+此命令不会 fetch，也不能证明远端新鲜度。发布操作者必须确认所选提交是此次集成包含的最新 V3 写入方；陈旧的远端跟踪 ref 或旧 pin 的通过结果均不足。把核验过的 id 记入发布验证。如果 master 已写入 V4，应复用已记录的最终 V3 提交，而不再解析当前 master。V4 发布后，V3 词汇仍绑定该历史源码；后续 V4 事件新增不更新它。常规静态 CI 不依赖可变的 master ref。
+
 <a id="dev-note"></a>
 ## 开发备注
 

@@ -105,6 +105,20 @@ pnpm run lint
 git diff --check
 ```
 
+<a id="final-v3-vocabulary"></a>
+### Final V3 event vocabulary before V4 publication
+
+While the published format remains V3 and the integration writer is V4, master can still add valid V3 event types. After each master integration and before the first V4 publication, compare the migration-owned `RELEASED_V3_EVENT_TYPES` with the latest V3-writer commit used by that refresh. Capture its full immutable id while the locally verified `origin/master` still writes V3:
+
+```sh
+V3_SOURCE_REF="$(git rev-parse --verify 'origin/master^{commit}')"
+pnpm run verify-v3-event-vocabulary --source-ref "$V3_SOURCE_REF"
+```
+
+The verifier reads only that local commit and requires exact event-name equality. It rejects missing V3 names, extra copied names, and a source writer other than V3. In particular, V4-only `developer/message` must not enter the frozen V3 set. Review each difference against the V3 payload, required conversions, target admission, and consumers; adding the name alone does not establish a complete migration. Add the corresponding migration regression before accepting a new source event.
+
+This command does not fetch or establish remote freshness. The release operator must verify that the selected commit is the latest V3 writer included in the integration; an old remote-tracking ref or passing result for an older pin is insufficient. Record the checked id with release validation. If master already writes V4, reuse the recorded final V3 commit rather than resolving current master. After V4 ships, keep the V3 vocabulary tied to that historical source; later V4 event additions do not update it. Regular static CI has no dependency on a mutable master ref.
+
 <a id="dev-note"></a>
 ## Dev Note
 
