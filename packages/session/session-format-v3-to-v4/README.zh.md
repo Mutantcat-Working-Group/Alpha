@@ -55,7 +55,7 @@ const targetHeader = sessionFormatV3ToV4.migrateHeader(sourceHeader)
 <a id="v3-to-v4-specification"></a>
 ## V3 到 V4 规范
 
-本边只改变下列明确命名的表示，并追加缺失的目录事实。未知可忽略事件的类型获得命名空间；每个获准源事件的 time、sequence、消息身份、表面操作、引用以及转换之外的字段均保留。它不创建 system prompt、developer 事件、工具执行或替换消息。更早的 V0–V2 输入先经过各自现有迁移边到达 V3；那些边保留自身的转换与拒绝策略。
+本边只改变下列明确命名的表示，并追加证据完整的缺失目录事实。未知可忽略事件的类型获得命名空间；每个获准源事件的 time、sequence、消息身份、表面操作、引用以及转换之外的字段均保留。它不创建 system prompt、developer 事件、工具执行或替换消息。更早的 V0–V2 输入先经过各自现有迁移边到达 V3；那些边保留自身的转换与拒绝策略。
 
 源事件必须从零开始连续编号。带种子的 Session 中，最后一个携带 `inherited: true` 的 `session/end-seed` 决定继承事件数，不包含该标记本身。传入的源切分点必须与之相符。带种子却缺少标记，或不带种子却出现继承标记的 Session 均被拒绝。每个 Stage 独立拥有计数器和切分点；带种子的 Stage 在 EOF 前保持切分点未知，包括前序迁移改变事件数的情况。
 
@@ -128,16 +128,16 @@ V3 未知内容标签变为 `plugin:<original-type>`，其他字段原样保留�
 | 一个 version 1 descriptor | 要求字符串 provider 与 label；导出 `mode: 'continuable'`。 |
 | 一个 version 2 或 3 descriptor | 要求字符串 provider；按目录规则使用其 mode 和可选 label。 |
 | 没有 descriptor，或 descriptor 版本不受支持 | 可以保留已有父目录项；不能创建缺失项。 |
-| 多个自身 descriptor | 拒绝，包括父目录中已经存在条目的情况。 |
+| 多个自身 descriptor | 保留子 Session；没有可用于补填的明确发现事实。 |
 | 已有自身父目录项 | 保留条目及其扩展；要求子创建时间以及可用且受支持的 mode／label 一致。 |
 | 缺少自身父目录项，且受支持证据完整 | 追加带 child id、创建时间、mode 和可选 label 的 version-0 目录事实。 |
-| 缺少自身父目录项，且证据不完整 | 拒绝迁移，不发布后继代际。 |
+| 缺少自身父目录项，且证据不完整 | 保留父 Session，不凭空创建目录项。 |
 
 Catalog version 0 要求字符串 `childId`、非负安全整数 `childCreatedAt`、`continuable` 或 `one-shot` mode，以及 continuable mode 下的字符串 label；存在的 one-shot label 也必须是字符串。重复的自身 child id 被拒绝。没有对应保留子日志的已有条目仍保留在父日志中。Descriptor 收集不恢复子级的旧 continuation composition，也不从工具参数恢复已删除子级。
 
 Stage 只把最终继承截点之后的父目录记录作为候选。每个 inherited marker 都会丢弃更早的目录候选，不解释其载荷。缺失项追加在所有源事件之后，按创建时间、child id 排序，并使用连续的新序号。时间取最后一个源事件的 time；空日志则取 header 创建时间。这些记录既不进入模型表面，也不改变继承计数。
 
-存储层提供其根目录内完整的可识别子级集合，并在准备、复用 memo 与发布时复查成员及物理版本。缺失必要证据、无法据此判断成员关系的不可读 header、不受支持的所选代际或源变化都会拒绝操作。本包不读取文件；[持久化层](../session-persistence-jsonl/README.zh.md)负责编码、锁、取消与发布。
+存储层提供其根目录内完整的可识别子级集合，并在准备、复用 memo 与发布时复查成员及物理版本。不完整的 descriptor 证据只阻止补填对应子 Session 的目录项。无法据此判断成员关系的不可读 header、不受支持的所选代际或源变化都会拒绝操作。本包不读取文件；[持久化层](../session-persistence-jsonl/README.zh.md)负责编码、锁、取消与发布。
 
 <a id="sequence-references"></a>
 ### 序号引用与继承

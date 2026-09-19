@@ -88,8 +88,8 @@ describe('V3 parent catalog completion', () => {
       ],
     }
     expect(childCatalogFact(historicalChildCatalogSource(artifact))).toEqual(child)
-    expect(() => migrate([], [historicalChildCatalogSource({ ...artifact, inheritedEventCount: 0 })])).toThrow('exactly one')
-    expect(() => migrate([], [historicalChildCatalogSource({ ...artifact, events: [] })])).toThrow('exactly one')
+    expect(migrate([], [historicalChildCatalogSource({ ...artifact, inheritedEventCount: 0 })]).events).toEqual([])
+    expect(migrate([], [historicalChildCatalogSource({ ...artifact, events: [] })]).events).toEqual([])
   })
   it('orders tied and differently dated children independently of directory enumeration', () => {
     const children = [{ ...child, childId: 'z' }, { ...child, childId: 'a' }, { ...child, childId: 'first', childCreatedAt: 1 }]
@@ -114,11 +114,11 @@ describe('V3 parent catalog completion', () => {
     expect(() => migrate([preceding, { ...delivery, data: { ...delivery.data, sessionFormatVersion: 3 } }], [])).toThrow('wrong Session')
   })
 
-  it('requires supported descriptors and complete discovery fields', () => {
+  it('skips unavailable descriptors while requiring complete discovery fields for new facts', () => {
     const artifact = { header: { ...header, origin: 'subagent' as const, parentSession: 'parent' }, inheritedEventCount: 0, events: [] }
     expect(() => historicalChildCatalogSource({ ...artifact, header })).toThrow('direct parent')
     for (const data of [null, {}, { version: 4, mode: 'one-shot', provider: 'spawn' }]) {
-      expect(() => migrate([], [historicalChildCatalogSource({ ...artifact, events: [{ type: 'subagent/descriptor', seq: 0, time: 1, data }] })])).toThrow('supported subagent descriptor')
+      expect(migrate([], [historicalChildCatalogSource({ ...artifact, events: [{ type: 'subagent/descriptor', seq: 0, time: 1, data }] })]).events).toEqual([])
     }
     for (const value of [null, { ...child, version: 1 }, { ...child, childId: null },
       { ...child, label: null }, { ...child, childCreatedAt: -1 }]) {
@@ -131,6 +131,15 @@ describe('V3 parent catalog completion', () => {
     const data = { ...child, plugin: 'retained' }
     const source = [{ type: 'subagent/catalog', seq: 0, time: 1, data }]
     expect(migrate(source, [{ childId: 'child', childCreatedAt: 2, descriptorCount: descriptor === null ? 0 : 1, descriptor }]).events).toEqual(source)
+  })
+
+  it('keeps parent facts authoritative when a child has multiple own descriptors', () => {
+    const data = { ...child, extension: { retained: true } }
+    const source = [{ type: 'subagent/catalog', seq: 0, time: 1, data }]
+    const evidence = { childId: 'child', childCreatedAt: 2, descriptorCount: 2,
+      descriptor: { version: 3, mode: 'one-shot', provider: 'spawn', label: 'ambiguous child identity' } }
+    expect(migrate(source, [evidence]).events).toEqual(source)
+    expect(() => migrate(source, [{ ...evidence, childCreatedAt: 3 }])).toThrow('conflicts')
   })
 
   it('refuses malformed supplemental evidence and known descriptor conflicts', () => {

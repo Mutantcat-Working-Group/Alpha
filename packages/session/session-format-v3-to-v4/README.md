@@ -55,7 +55,7 @@ Complete restoration decodes rows, passes them through a fresh stage, and valida
 <a id="v3-to-v4-specification"></a>
 ## V3-to-V4 specification
 
-This edge changes only the named representations below and appends missing catalog facts. It namespaces unknown ignorable event types and retains each admitted source event's time, sequence, message identities, surface operation, references, and all fields outside those conversions. It creates no system prompt, developer event, tool execution, or replacement message. Earlier V0–V2 inputs first pass through their existing edges to V3; those edges retain their own transformations and refusal policies.
+This edge changes only the named representations below and appends available missing catalog facts. It namespaces unknown ignorable event types and retains each admitted source event's time, sequence, message identities, surface operation, references, and all fields outside those conversions. It creates no system prompt, developer event, tool execution, or replacement message. Earlier V0–V2 inputs first pass through their existing edges to V3; those edges retain their own transformations and refusal policies.
 
 Source events must be dense from zero. A seeded Session's last `session/end-seed` carrying `inherited: true` determines its inherited event count, excluding the marker. A supplied source cut must agree. Missing seeded markers and inherited markers in unseeded Sessions are refused. Each stage owns its counters and cut; seeded stages leave the cut unknown before EOF, including when preceding migrations change event count.
 
@@ -128,16 +128,16 @@ There is no recursive source search. Captured request text, assistant replay sta
 | One descriptor with version 1 | Require string provider and label; derive `mode: 'continuable'`. |
 | One descriptor with version 2 or 3 | Require string provider; use its mode and optional label under catalog rules. |
 | Zero descriptors, or an unsupported descriptor version | May retain an existing parent entry; cannot create a missing entry. |
-| More than one own descriptor | Refuse, including when the parent already has an entry. |
+| More than one own descriptor | Preserve the child; no unambiguous discovery fact is available for backfill. |
 | Existing own parent entry | Retain it and its extensions; require matching child creation time and any available supported mode/label. |
 | Missing own parent entry with complete supported evidence | Append a version-0 catalog fact with child id, creation time, mode, and optional label. |
-| Missing own parent entry without complete evidence | Refuse the migration without publishing a successor. |
+| Missing own parent entry without complete evidence | Preserve the parent without inventing a catalog entry. |
 
 Catalog version 0 requires string `childId`, nonnegative safe-integer `childCreatedAt`, mode `continuable` or `one-shot`, and a string label for continuable mode; a present one-shot label must also be a string. Duplicate own child ids are refused. Existing entries without a corresponding retained child remain in the parent. Descriptor collection does not restore a child's old continuation composition or recover deleted children from tool arguments.
 
 The stage considers parent catalog records only after the final inherited cut. Every inherited marker discards earlier catalog candidates without interpreting their payloads. Missing entries append after all source events, sorted by creation time then child id, with dense new sequences. Their time is the final source event's time, or header creation time for an empty log. They neither enter the model surface nor change the inherited count.
 
-Storage supplies the complete recognizable child set within its root and rechecks membership and physical revisions during preparation, memo reuse, and publication. Missing required evidence, unreadable headers that prevent classifying membership, unsupported selected generations, or source drift refuse the operation. The package itself reads no files; [persistence](../session-persistence-jsonl/README.md) owns encoding, locks, cancellation, and publication.
+Storage supplies the complete recognizable child set within its root and rechecks membership and physical revisions during preparation, memo reuse, and publication. Incomplete descriptor evidence only prevents that child’s backfill. Unreadable headers that prevent classifying membership, unsupported selected generations, or source drift refuse the operation. The package itself reads no files; [persistence](../session-persistence-jsonl/README.md) owns encoding, locks, cancellation, and publication.
 
 <a id="sequence-references"></a>
 ### Sequence references and inheritance

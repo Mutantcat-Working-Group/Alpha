@@ -65,7 +65,7 @@ describe('Node preparation of Preview Session data', () => {
     expect(packVfsOverlay(fixture.trees).files).toEqual(original.files)
   })
 
-  it.each(['missing-descriptor', 'other-root', 'other-origin', 'current-child'] as const)('collects only direct subagent children in the same root: %s', (mode) => {
+  it.each(['missing-descriptor', 'other-root', 'other-origin', 'current-child'] as const)('adds catalog facts only for supported direct subagent children in the same root: %s', (mode) => {
     const fixture = source()
     const parent = fixture.put(3)
     const childDirectory = join(fixture.trees[0]!.directory, 'sessions', mode === 'other-root' ? 'other' : 'project', 'child')
@@ -75,18 +75,20 @@ describe('Node preparation of Preview Session data', () => {
       delegationDepth: 1, parentSession: 'example', ...(mode === 'other-origin' ? {} : { origin: 'subagent' }) }
     const descriptor = { type: 'subagent/descriptor', seq: 0, time: 3,
       data: { version: 3, mode: 'one-shot', provider: 'spawn' } }
-    writeFileSync(join(childDirectory, sessionFormatLogFilename(version)),
+    const childPath = join(childDirectory, sessionFormatLogFilename(version))
+    writeFileSync(childPath,
       JSON.stringify(child) + '\n' + (mode === 'current-child' ? JSON.stringify(descriptor) + '\n' : ''))
     const before = readFileSync(parent)
-    if (mode === 'missing-descriptor') {
-      expect(() => packPreviewFixture(fixture.trees)).toThrow('requires exactly one own supported subagent descriptor')
-    } else {
-      const packed = packPreviewFixture(fixture.trees)
-      expect(restore(packed.files[`home/sessions/project/example/${sessionFormatLogFilename(currentVersion)}`]).events)
-        .toEqual(mode === 'current-child' ? [{ type: 'subagent/catalog', seq: 0, time: 1,
-          data: { version: 0, childId: 'child', childCreatedAt: 2, mode: 'one-shot' } }] : [])
-    }
+    const childBefore = readFileSync(childPath)
+    const original = packVfsOverlay(fixture.trees)
+    const packed = packPreviewFixture(fixture.trees)
+    const restored = restore(packed.files[`home/sessions/project/example/${sessionFormatLogFilename(currentVersion)}`])
+    expect(restored.inheritedEventCount).toBe(0)
+    expect(restored.events).toEqual(mode === 'current-child' ? [{ type: 'subagent/catalog', seq: 0, time: 1,
+      data: { version: 0, childId: 'child', childCreatedAt: 2, mode: 'one-shot' } }] : [])
+    for (const [path, bytes] of Object.entries(original.files)) expect(packed.files[path], path).toEqual(bytes)
     expect(readFileSync(parent)).toEqual(before)
+    expect(readFileSync(childPath)).toEqual(childBefore)
   })
 
   it('uses the highest generation and leaves an already-current image byte-identical', () => {

@@ -122,7 +122,7 @@ class ReleasedV3ToV4Stage implements SessionFormatMigrationStage {
         }
         continue
       }
-      if (fact === undefined) throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} requires exactly one own supported subagent descriptor to complete its parent catalog`)
+      if (fact === undefined) continue
       existingCatalogs.set(id, fact)
       context.emitEvent({ type: 'subagent/catalog', seq: this.nextSeq++, time: this.time, data: fact })
     }

@@ -38,17 +38,14 @@ export function childCatalogSource(value: SessionFormatJsonValue): SessionFormat
 /**
  * Interpret only the discovery fields of known historical descriptors.
  * @param source - validated child evidence.
- * @returns a catalog fact, or undefined when an existing entry needs no unavailable descriptor.
+ * @returns a catalog fact, or undefined without exactly one supported own descriptor.
  */
 export function childCatalogFact(source: SessionFormatJsonObject): SessionFormatJsonObject | undefined {
   const id = source['childId'] as string
   const descriptor = source['descriptor']
   const count = source['descriptorCount'] as number
   const known = isSessionFormatJsonObject(descriptor) && [1, 2, 3].includes(descriptor['version'] as number)
-  if (count > 1) {
-    throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} requires exactly one own supported subagent descriptor to complete its parent catalog`)
-  }
-  if (count === 0 || !known) return undefined
+  if (count !== 1 || !known) return undefined
   if (typeof descriptor['provider'] !== 'string') {
     throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} has an invalid subagent descriptor provider`)
   }
