@@ -30,6 +30,7 @@ function resultContent(value: SessionFormatJsonValue | undefined, subject: strin
  * rejected instead of being silently truncated.
  * @param event - released wrapper tool/result event.
  * @returns the same event with a first-class tool-role message.
+ * @throws {SessionFormatError} when the wrapper, tool source, content, or error flag is malformed.
  * @throws {SessionFormatUnsupportedMigrationError} when the result contains another result.
  */
 export function liftToolResult(event: SessionFormatEvent): SessionFormatEvent {
@@ -56,7 +57,6 @@ export function liftToolResult(event: SessionFormatEvent): SessionFormatEvent {
   if (isError !== undefined && typeof isError !== 'boolean') {
     throw new SessionFormatError(`format v3 ${event.type} at seq ${event.seq} tool-result isError must be boolean`)
   }
-  // Recorded replay compares serialized messages with createToolResultMessage's field order.
   const targetMessage: Record<string, SessionFormatJsonValue> = {
     role: 'tool',
     source,
