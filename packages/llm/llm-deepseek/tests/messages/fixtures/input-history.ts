@@ -8,7 +8,7 @@ import { serialize } from '../../../src/protocols/messages/serialize.ts'
 
 declare module '@deepseek-ai/dsh-llm' {
   interface MessageSourceMap {
-    'plugin:plugin:messages-input-history-snapshot': { kind: 'plugin:plugin:messages-input-history-snapshot' }
+    'plugin:messages-input-history-snapshot': { kind: 'plugin:messages-input-history-snapshot' }
   }
 }
 
@@ -20,7 +20,7 @@ export function apply(ctx: Context): void {
   ctx.on('agent/pre-step', async (_input, next) => {
     const decision = await next()
     if (decision.kind !== 'enter') return decision
-    const source = { kind: `plugin:plugin:${name}` } as const
+    const source = { kind: `plugin:${name}` } as const
     return { ...decision, messages: [
       ...decision.messages,
       createUserMessage({ source, content: [

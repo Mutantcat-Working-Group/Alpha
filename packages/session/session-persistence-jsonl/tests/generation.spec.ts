@@ -378,7 +378,7 @@ describe('JSONL immutable generation publication', () => {
       ...events.slice(2).map(event => event.seq === 3
         ? { ...event, seq: 4, surfaceOp: { op: 'replace', startSeq: 3, endSeq: 3 }, sourceEventSeqs: [3],
           data: { ...event.data as Record<string, unknown>, source: {
-            kind: 'plugin:plugin:summary-fixture', form: 'notice', summary: 'summary-fixture',
+            kind: 'plugin:summary-fixture', form: 'notice', summary: 'summary-fixture',
           } } }
         : event.seq === 4 ? { ...event, seq: 5, data: { header: { config }, reason: 'initial' } } : { ...event, seq: event.seq + 1 }),
     ]

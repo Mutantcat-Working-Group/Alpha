@@ -59,7 +59,7 @@ describe('rewritePluginSource', () => {
     expect(rewritePluginSource({ kind: 'plugin', plugin: 'tools-code-mode' }, 1, 'user')).toEqual({ kind: 'ptc-mode' })
     expect(rewritePluginSource({ kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }, 1, 'system')).toEqual({ kind: 'system-prompt' })
     expect(rewritePluginSource({ kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }, 1, 'user')).toEqual({ kind: 'runtime-context' })
-    expect(rewritePluginSource({ kind: 'plugin', plugin: 'external', extra: true }, 1, 'user')).toEqual({ kind: 'plugin:plugin:external', extra: true })
+    expect(rewritePluginSource({ kind: 'plugin', plugin: 'external', extra: true }, 1, 'user')).toEqual({ kind: 'plugin:external', extra: true })
   })
 
   it('refuses a plugin field that is not a string', () => {
@@ -71,7 +71,7 @@ describe('rewritePluginSource', () => {
 
   it('namespaces external plugin names while retaining released first-party producers', () => {
     for (const plugin of ['plugin', 'user', 'model', 'tool', 'system-prompt', 'runtime-context', 'compact-checkpoint', 'ptc-mode', 'compact-basic', 'auto-review']) {
-      expect(rewritePluginSource({ kind: 'plugin', plugin }, 3, 'user')).toEqual({ kind: `plugin:plugin:${plugin}` })
+      expect(rewritePluginSource({ kind: 'plugin', plugin }, 3, 'user')).toEqual({ kind: `plugin:${plugin}` })
     }
     expect(rewritePluginSource({ kind: 'plugin', plugin: 'agent-instructions', form: 'instructions', changes: [] }, 3, 'user'))
       .toEqual({ kind: 'agent-instructions', form: 'instructions', changes: [] })
@@ -81,20 +81,13 @@ describe('rewritePluginSource', () => {
 })
 
 describe('external V3 source identities', () => {
-  it.each(['', 'plugin:x', 'source:x', 'message', 'x/y', '\ud800', '__proto__'])('separates plugin and direct identity %j', (name) => {
-    expect(rewritePluginSource({ kind: 'plugin', plugin: name }, 1, 'user')).toEqual({ kind: `plugin:plugin:${name}` })
-    if (name.length > 0) {
-      expect(rewriteV3MessageSource({ kind: name, payload: { kind: 'plugin', plugin: name } }, 1, 'user'))
-        .toEqual({ kind: `plugin:source:${name}`, payload: { kind: 'plugin', plugin: name } })
-    }
+  it.each(['', 'acme', 'plugin:x', 'source:x', 'message', 'x/y', '\ud800', '__proto__'])('prefixes the complete plugin name %j', (name) => {
+    expect(rewritePluginSource({ kind: 'plugin', plugin: name }, 1, 'user')).toEqual({ kind: `plugin:${name}` })
   })
 
-  it('keeps plugin and direct-source categories distinct across prefixed names', () => {
-    const plugin = rewriteV3MessageSource({ kind: 'plugin', plugin: 'source:x' }, 1, 'user')
-    const direct = rewriteV3MessageSource({ kind: 'x' }, 1, 'user')
-    expect(plugin).toEqual({ kind: 'plugin:plugin:source:x' })
-    expect(direct).toEqual({ kind: 'plugin:source:x' })
-    expect(plugin).not.toEqual(direct)
+  it.each(['acme', 'plugin:acme', 'source:acme', 'message', 'x/y', '\ud800', '__proto__'])('preserves direct source kind %j and its metadata', (kind) => {
+    const source = { kind, payload: { kind: 'plugin', plugin: kind } }
+    expect(rewriteV3MessageSource(source, 1, 'user')).toBe(source)
   })
 
   it('preserves native V3 sources and converts plugin wrappers', () => {

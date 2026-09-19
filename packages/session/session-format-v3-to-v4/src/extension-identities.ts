@@ -1,4 +1,4 @@
-/** Fixed V3 event vocabulary and reversible namespaces for historical extension identities. */
+/** Fixed V3 event vocabulary and namespaced historical opaque events. */
 
 import type { SessionFormatEvent } from '@deepseek-ai/dsh-session-format'
 
@@ -66,16 +66,6 @@ export const RELEASED_V3_EVENT_TYPES: ReadonlySet<string> = new Set([
   'workspace/changes',
 ])
 /* jscpd:ignore-end */
-
-/**
- * Qualify the complete original name with its historical identity namespace.
- * @param namespace - owner of the historical identity.
- * @param name - complete original source name.
- * @returns a namespaced identity retaining the complete original string as its suffix.
- */
-export function v3ExtensionIdentity(namespace: 'plugin' | 'source', name: string): string {
-  return `plugin:${namespace}:${name}`
-}
 
 /**
  * Keep unknown ignorable events opaque after header promotion.

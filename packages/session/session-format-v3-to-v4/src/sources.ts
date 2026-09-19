@@ -1,8 +1,7 @@
-/** V3 producer identities with reserved namespaces for external names. */
+/** Released V3 plugin-source conversion and declared message traversal. */
 
 import { SessionFormatError, isSessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
 import type { SessionFormatEvent, SessionFormatJsonObject, SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
-import { v3ExtensionIdentity } from './extension-identities.ts'
 
 /**
  * Visit only messages carried by first-party event payloads.
@@ -45,13 +44,6 @@ const RENAMED_PRODUCERS: Readonly<Record<string, string>> = Object.freeze({
   '@deepseek-ai/dsh-system-prompt': 'runtime-context',
 })
 
-/** Direct source kinds admitted by V2-to-V3, excluding the retired plugin wrapper. */
-const V3_NATIVE_PRODUCERS: ReadonlySet<string> = new Set([
-  'user', 'model', 'tool', 'agent-instructions', 'session-reference', 'team-message',
-  'goal', 'skill-invocation', 'skill-catalog', 'coordinator', 'subagent-report',
-  'subagent-settled', 'webhook', 'agent-message',
-])
-
 /** First-party V3 plugin identities that intentionally keep their current kind. */
 const RELEASED_SAME_NAME_PRODUCERS: ReadonlySet<string> = new Set([
   'agent-instructions', 'session-reference', 'team-message', 'goal',
@@ -69,7 +61,7 @@ function producerKind(plugin: string, role: SessionFormatJsonValue | undefined):
   const renamed = Object.hasOwn(RENAMED_PRODUCERS, plugin) ? RENAMED_PRODUCERS[plugin] : undefined
   if (renamed !== undefined) return renamed
   if (RELEASED_SAME_NAME_PRODUCERS.has(plugin)) return plugin
-  return v3ExtensionIdentity('plugin', plugin)
+  return `plugin:${plugin}`
 }
 
 /**
@@ -98,7 +90,7 @@ export function rewritePluginSource(
 }
 
 /**
- * Retain known V3 producer identities and namespace external kinds separately from plugin names.
+ * Convert released plugin wrappers while retaining every direct source kind and its metadata.
  * @param source - decoded V3 message source.
  * @param seq - event sequence for diagnostics.
  * @param role - enclosing message role for role-sensitive producer mappings.
@@ -110,5 +102,5 @@ export function rewriteV3MessageSource(
   const kind = source['kind']
   if (typeof kind !== 'string' || kind.length === 0) throw new SessionFormatError(`message source at seq ${seq} requires a nonempty kind`)
   if (kind === 'plugin') return rewritePluginSource(source, seq, role)
-  return V3_NATIVE_PRODUCERS.has(kind) ? source : { ...source, kind: v3ExtensionIdentity('source', kind) }
+  return source
 }

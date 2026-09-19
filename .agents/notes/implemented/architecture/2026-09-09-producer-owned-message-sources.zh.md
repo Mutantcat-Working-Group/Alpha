@@ -6,11 +6,11 @@ Status: implemented
 
 ## Problem
 
-已发布的 V3 写入方把每个插件产出的消息都盖上共享包装`{ kind: 'plugin', plugin: '<producer>' }` 外加生产者的上下文形态字段，消费方因此必须特殊对待一个合成 kind，而不是直接按生产者身份切换。工具结果成为一等 tool-role 消息、当前世代进入 V4 之后，格式层还必须继续读取仍带包装的已发布 V3 文件。
+已发布 V3 的插件归属使用共享包装 `{ kind: 'plugin', plugin: '<producer>' }` 外加生产者的上下文形态字段，消费方因此必须特殊对待一个合成 kind，而不是直接按生产者身份切换。工具结果成为一等 tool-role 消息、当前世代进入 V4 之后，格式层还必须继续读取仍带包装的已发布 V3 文件。
 
 ## Decision
 
-消息源由生产者拥有：`kind` 标识生产者，各方通过 `MessageSourceMap` 提供声明。V3-to-V4 迁移使用固定生产者表：`@deepseek-ai/dsh-system-prompt` 在 system-role 消息上变成 `system-prompt`，否则变成 `runtime-context`；`compact` 变成 `compact-checkpoint`；`tools-code-mode` 与 `tools-ptc` 变成 `ptc-mode`；`dsh-compaction-basic` 变成 `compact-basic`；已知同名生产者保留 kind。未知插件名在完整原名之前添加 `plugin:plugin:`，未知的直接 source kind 则添加 `plugin:source:`。两个命名空间在保留身份的同时，防止名为 `user` 的旧插件获得人类用户 kind，或与旧的直接 kind 冲突。原上下文形态字段及其他自有 JSON 元数据保留；只有旧包装的身份字段执行指定转换。重命名查找使用自有键，因此 `__proto__` 和 `constructor` 仍是数据。
+消息源由生产者拥有：`kind` 标识生产者，各方通过 `MessageSourceMap` 提供声明。V3-to-V4 迁移使用固定生产者表：`@deepseek-ai/dsh-system-prompt` 在 system-role 消息上变成 `system-prompt`，否则变成 `runtime-context`；`compact` 变成 `compact-checkpoint`；`tools-code-mode` 与 `tools-ptc` 变成 `ptc-mode`；`dsh-compaction-basic` 变成 `compact-basic`；已知同名生产者保留 kind。未知插件名在完整原名之前添加 `plugin:`，直接 source kind 则保留原名。该前缀将名为 `user` 的插件与人类用户 kind 区分开；本边保持直接归属不变。原上下文形态字段及其他自有 JSON 元数据保留；只有旧包装的身份字段执行指定转换。重命名查找使用自有键，因此 `__proto__` 和 `constructor` 仍是数据。
 
 原生 V4 消息源准入在每个声明的持久化消息槽位拒绝退役的 `kind: 'plugin'` 包装，包括 inbox 和标题请求消息。可恢复扫描丢弃后缀之前就会执行此拒绝。完整消息源槽位校验在格式目录和原生 JSONL 扫描器共用的已知事件校验中执行，先于两者公开恢复产物或句柄。即使生产者未安装，未知的非空归属 kind 及额外 JSON 字段仍原样保留。原生压缩和标题关系校验直接使用生产者 kind；[强制校验决策](2026-09-17-native-v4-read-validation.zh.md)负责通用生命周期规则。
 

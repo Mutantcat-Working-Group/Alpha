@@ -19,12 +19,19 @@ function restore(source: unknown, version: 3 | 4 = 4) {
 describe('V4 source admission', () => {
   it.each(['constructor', 'toString', '__proto__'])('migrates external producer %s without interpreting inherited object keys', (plugin) => {
     const before = JSON.parse(`{"kind":"plugin","plugin":"${plugin}","__proto__":{"tag":"metadata"},"nested":{"kind":"plugin","plugin":"opaque"}}`) as SessionFormatJsonObject
-    const expected = JSON.parse(`{"kind":"plugin:plugin:${plugin}","__proto__":{"tag":"metadata"},"nested":{"kind":"plugin","plugin":"opaque"}}`) as SessionFormatJsonObject
+    const expected = JSON.parse(`{"kind":"plugin:${plugin}","__proto__":{"tag":"metadata"},"nested":{"kind":"plugin","plugin":"opaque"}}`) as SessionFormatJsonObject
     const migrated = restore(before, 3)
     expect(migrated.events[0]?.data).toMatchObject({ source: expected })
     expect(Object.hasOwn((migrated.events[0]?.data as { source: object }).source, '__proto__')).toBe(true)
     expect(JSON.stringify(restore(expected))).toBe(JSON.stringify(migrated))
     expect(before['kind']).toBe('plugin')
+  })
+
+  it.each(['acme', 'plugin:acme', 'source:acme', '__proto__'])('retains direct source kind %s through migration and native restore', (kind) => {
+    const source = { kind, extra: { kind: 'plugin', plugin: 'opaque' } }
+    const migrated = restore(source, 3)
+    expect(migrated.events[0]?.data).toMatchObject({ source })
+    expect(restore(source)).toEqual(migrated)
   })
 
   it('rejects missing, malformed, empty, and retired source kinds', () => {

@@ -88,7 +88,7 @@ V3 未知内容标签变为 `plugin:<original-type>`，其他字段原样保留�
 <a id="message-sources"></a>
 ### 消息来源转换
 
-[消息遍历器](src/sources.ts) 只访问下列 payload 位置。它映射已知 V3 身份，并为外部插件名与外部直接来源 kind 分配独立的保留命名空间。
+[消息遍历器](src/sources.ts) 只访问下列 payload 位置。它转换旧插件包装，并保留直接来源 kind。
 
 | 所属事件 | 消息位置 |
 |---|---|
@@ -108,11 +108,11 @@ V3 未知内容标签变为 `plugin:<original-type>`，其他字段原样保留�
 | system 角色消息中的 `@deepseek-ai/dsh-system-prompt` | `system-prompt` |
 | 其他角色中的 `@deepseek-ai/dsh-system-prompt` | `runtime-context` |
 | 下文列出的同名第一方生产者 | 精确的 plugin 字符串 |
-| 其他任何插件名 | `plugin:plugin:` 后接完整的原始名称 |
+| 其他任何插件名 | `plugin:` 后接完整的原始名称 |
 
 同名生产者为 `agent-instructions`、`session-reference`、`team-message`、`goal`、`skill-invocation`、`skill-catalog`、`coordinator`、`subagent-report`、`subagent-settled`、`webhook`、`agent-message`、`model-selection`、`plan-mode`、`time-context`、`tmux-context`、`user-approval`、`repeat-tool-reminder`、`tool-cordis`、`cordis-host-runner`、`tool-goal`、`tool-jobs`、`hooks-codex`、`hooks-claude-code`、`schedule` 和 `dsh-session-title-llm`。
 
-命名空间为外部插件名称添加 `plugin:plugin:`，为外部直接 kind 添加 `plugin:source:`，完整保留包括已有前缀在内的原字符串。名为 `source:x` 的插件变为 `plugin:plugin:source:x`，直接 kind `x` 则变为 `plugin:source:x`，两类身份不会碰撞。已知 V3 直接 kind 保持不变。
+完整的插件字符串保留在 `plugin:` 之后：名为 `acme` 的插件变为 `plugin:acme`。直接来源保留原 kind 和每个自有 JSON 字段，包括未知或已有前缀的 kind。
 
 来源查找不递归进行。捕获的请求文本、assistant 回放状态与流、工具参数／内容元数据、Team 载荷以及任意嵌套对象均保留，除非另有明确命名的规则适用。
 
