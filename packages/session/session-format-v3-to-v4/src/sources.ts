@@ -45,7 +45,7 @@ const RENAMED_PRODUCERS: Readonly<Record<string, string>> = Object.freeze({
   '@deepseek-ai/dsh-system-prompt': 'runtime-context',
 })
 
-/** Native V3 producer kinds whose identity already has a current owner. */
+/** Direct source kinds admitted by V2-to-V3, excluding the retired plugin wrapper. */
 const V3_NATIVE_PRODUCERS: ReadonlySet<string> = new Set([
   'user', 'model', 'tool', 'agent-instructions', 'session-reference', 'team-message',
   'goal', 'skill-invocation', 'skill-catalog', 'coordinator', 'subagent-report',
