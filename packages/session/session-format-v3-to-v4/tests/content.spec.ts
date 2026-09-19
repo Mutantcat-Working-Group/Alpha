@@ -191,7 +191,7 @@ describe('unknown V3 event identities', () => {
     }
   })
 
-  it('keeps required unknown event identity for the source reader to reject', () => {
+  it('leaves required unknown event identities for the migration stage to reject', () => {
     const unknown = event('future', {})
     expect(namespaceV3OpaqueEvent(unknown)).toBe(unknown)
     const known = event('turn/start', { turn: 1 })

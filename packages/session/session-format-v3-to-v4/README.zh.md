@@ -163,7 +163,7 @@ Stage 只把最终继承截点之后的父目录记录作为候选。每个 inhe
 
 Stage 之前先执行 V3 物理解码与 header 校验。Stage 按上述规范检查连续序号、源截点、canonical 工具结果 wrapper、命名的 plugin 来源、delivery 归属及传入的目录证据。它不运行完整的已发布 V3 语义恢复器，也不复制 V2→V3 的事件／内容允许列表。完整恢复还会应用下述 V4 目标规则；物理解析、Stage 转换与目标恢复是不同的检查。
 
-只转换列明的消息及字段。无关事件及任意 JSON 不会因字符串或数字匹配而获得新含义。固定的 `RELEASED_V3_EVENT_TYPES` 集合独立于当前 writer 区分源事件和扩展。未知必需事件不是有效的 V3 输入；未知可忽略事件名称变为 `plugin:<original-name>`，载荷不变。不隐含通用源 schema 校验或递归数字字段推断。
+只转换列明的消息及字段。无关事件及任意 JSON 不会因字符串或数字匹配而获得新含义。固定的 `RELEASED_V3_EVENT_TYPES` 集合独立于当前 writer 区分源事件和扩展。Stage 在解释载荷或查询 V4 词汇之前拒绝 V3 未知必需事件，包括 V4 已认识的名称。未知可忽略事件名称变为 `plugin:<original-name>`，载荷不变。不隐含通用源 schema 校验或递归数字字段推断。
 
 只有 canonical V3 `tool/result` wrapper 具有保留信息的转换。其他被解释位置中的已退役 `tool-result` block 由目标接纳拒绝，不作为无效 V4 block 保留。原生 V4 在 recoverable 后缀抑制前应用同样的标签拒绝。检查只覆盖以下位置：
 

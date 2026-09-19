@@ -302,6 +302,22 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     await expectOnlyGenerations([path])
   })
 
+  it.each(['developer/message', 'external/required'])('refuses invalid required V3 %s before publishing', async (type) => {
+    const row = { type, surfaceOp: 'append', data: {
+      turn: 1, step: 1, message: {
+        id: 'invalid-v3', role: 'developer', source: { kind: 'tool-registry' }, content: [],
+      },
+    } }
+    const path = await store(3, compression, [...releasedPrefix, row])
+    const original = await observe(path)
+    const ctx = await mount(compression)
+    await expectRefusal(ctx, access, path,
+      `format v3 contains unknown event type ${JSON.stringify(type)} at seq ${releasedPrefix.length}`
+      + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    expect(await observe(path)).toEqual(original)
+    await expectOnlyGenerations([path])
+  })
+
   it.each([5, 99])('retains a V3 watermark claiming V%s unchanged through native reopening', async (sessionFormatVersion) => {
     const marker = { type: 'session-log-deepseek/delivery-accepted', data: {
       sessionId: id, throughSeq: 0, sessionFormatVersion,
