@@ -5,7 +5,6 @@ import type { SessionFormatEvent, SessionFormatJsonObject, SessionFormatJsonValu
 import { mapEventMessages } from './sources.ts'
 
 const V3_BLOCK_TYPES = new Set(['text', 'reasoning', 'image', 'file', 'tool-call', 'tool-result'])
-const START_FIELDS = new Set(['type', 'index', 'blockType'])
 const TOOL_SCHEMA_FIELDS = new Set(['name', 'description', 'parameters'])
 
 /** Prefix extension-owned field names without reinterpreting their values. */
@@ -51,8 +50,7 @@ function migrateChunk(value: SessionFormatJsonValue | undefined, subject: string
   const original = value['blockType']
   if (typeof original !== 'string') throw new SessionFormatError(`${subject} blockType must be a string`)
   const blockType = V3_BLOCK_TYPES.has(original) ? original : `plugin:${original}`
-  const mapped = namespaceFields(value, START_FIELDS)
-  return blockType === original ? mapped : { ...mapped, blockType }
+  return blockType === original ? value : { ...value, blockType }
 }
 
 /**

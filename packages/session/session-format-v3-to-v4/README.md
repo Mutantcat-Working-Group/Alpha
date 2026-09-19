@@ -83,7 +83,7 @@ A malformed canonical wrapper raises a format error; an unmapped wrapper extensi
 <a id="extension-data"></a>
 ### Extension data
 
-Unknown V3 content tags become `plugin:<original-type>`; all other fields remain unchanged and opaque. Stream starts use the same tag in `blockType` and retain `type` and `index`; other start-owned field names receive a `plugin:` prefix. Request-tool definitions retain `name`, `description`, and `parameters`; all other own field names receive `plugin:` too, so historical `deferLoading` becomes `plugin:deferLoading` without enabling V4 capabilities. Existing prefixes double, keeping distinct old names distinct. Parameters, arguments, replay state, and plugin content fields are not traversed. These names preserve data identity; they do not load or execute plugins.
+Unknown V3 content tags become `plugin:<original-type>`; all other fields remain unchanged and opaque. Stream starts use the same tag in `blockType`; every other field retains its original key and value. Request-tool definitions retain `name`, `description`, and `parameters`; all other own field names receive `plugin:` too, so historical `deferLoading` becomes `plugin:deferLoading` without enabling V4 capabilities. Existing prefixes double, keeping distinct old names distinct. Parameters, arguments, replay state, and plugin content fields are not traversed. These names preserve data identity; they do not load or execute plugins.
 
 <a id="message-sources"></a>
 ### Message-source conversion

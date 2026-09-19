@@ -71,7 +71,7 @@ describe('V3 content conversion', () => {
   })
 
   it.each(['assistant/message', 'assistant/attempt'])('converts raw %s start/end blocks and preserves start-owned fields', (type) => {
-    const chunk = (value: SessionFormatJsonValue): SessionFormatJsonObject => ({ type: 'chunk', chunk: value, elapsedMs: 7 })
+    const chunk = (value: SessionFormatJsonValue): SessionFormatJsonObject => ({ type: 'chunk', chunk: value, time: 7 })
     const stream = [
       chunk({ type: 'block-start', index: 0, blockType: 'future', extensionName: 'old', metadata: { old: true }, custom: wrapper }),
       chunk({ type: 'block-end', index: 0, block: wrapper }),
@@ -85,11 +85,11 @@ describe('V3 content conversion', () => {
     ]
     const actual = migrateV3EventContent(event(type, { message: { ...user, content: [] }, stream }))
     expect(actual.data).toEqual({ message: { ...user, content: [] }, stream: [
-      chunk({ type: 'block-start', index: 0, blockType: 'plugin:future', 'plugin:extensionName': 'old', 'plugin:metadata': { old: true }, 'plugin:custom': wrapper }),
+      chunk({ type: 'block-start', index: 0, blockType: 'plugin:future', extensionName: 'old', metadata: { old: true }, custom: wrapper }),
       chunk({ type: 'block-end', index: 0, block: convertedBlock }),
       chunk({ type: 'block-start', index: 1, blockType: 'plugin:message' }),
       chunk({ type: 'block-end', index: 1, block: { type: 'plugin:message', content: [wrapper] } }),
-      stream[4], chunk({ type: 'block-start', index: 3, blockType: 'text', 'plugin:metadata': { original: true } }),
+      stream[4], stream[5],
       ...stream.slice(6),
     ] })
     const unchanged = event(type, { message: { ...user, content: [] }, stream: stream.slice(6) })
@@ -114,7 +114,7 @@ describe('V3 content conversion', () => {
     expect(tool['deferLoading']).toBe(deferLoading)
   })
 
-  it('keeps original prefixed keys distinct from unprefixed tool and stream extras', () => {
+  it('prefixes tool extension keys while preserving stream-start extra keys', () => {
     const extra = JSON.parse('{"deferLoading":true,"plugin:deferLoading":false,"metadata":{"saved":1},"plugin:metadata":{"saved":2},"__proto__":{"saved":3},"plugin:__proto__":{"saved":4}}') as SessionFormatJsonObject
     const expected = {
       'plugin:deferLoading': true, 'plugin:plugin:deferLoading': false,
@@ -126,7 +126,7 @@ describe('V3 content conversion', () => {
     expect(request.data).toEqual({ header: { tools: [{ name: 'echo', description: 'Echo', parameters: tool.parameters, ...expected }] } })
     const start = { type: 'block-start', index: 7, blockType: 'plugin:text', ...extra }
     const stream = migrateV3EventContent(event('assistant/attempt', { stream: [{ type: 'chunk', chunk: start }] }))
-    expect(stream.data).toEqual({ stream: [{ type: 'chunk', chunk: { type: 'block-start', index: 7, blockType: 'plugin:plugin:text', ...expected } }] })
+    expect(stream.data).toEqual({ stream: [{ type: 'chunk', chunk: { ...start, blockType: 'plugin:plugin:text' } }] })
     expect(extra['deferLoading']).toBe(true)
     expect(Object.hasOwn(extra, '__proto__')).toBe(true)
   })
