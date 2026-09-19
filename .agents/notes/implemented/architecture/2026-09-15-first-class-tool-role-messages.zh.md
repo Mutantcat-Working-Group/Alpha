@@ -12,7 +12,7 @@ Status: implemented
 
 Session format V4 将一次工具结果存储为一等 `role: 'tool'` 消息。它的 `toolCallId`、工具来源调用标识、结果内容和可选错误标记一起校验。V3 到 V4 的边缘迁移只提升一个已发布的包装，并在发布前拒绝嵌套包装，保留源代际。当前 V4 解码仅接受原生形式；包装行只由相邻迁移边缘接受。
 
-外层消息的 JSON 扩展在提升时保留为自有属性，包括 `__proto__` 和 `constructor`。已有 `toolCallId` 必须与 source call 一致；已有布尔 `isError` 必须与 wrapper 的错误状态一致，省略表示非错误。未知 wrapper 字段和冲突的外层字段会拒绝迁移，因为新表示没有安全的解释方式。只重建已知消息字段会静默删除 V3 已接受的数据；将 wrapper 扩展复制到消息上则会凭空改变其作用范围。
+移除历史 wrapper 时，消息与结果的扩展字段分别保留为 `plugin:message:` 和 `plugin:result:` 名称。后缀保留完整原字段名，避免冲突且不添加核心 metadata 字段。只有 wrapper 提供具有解释语义的调用 id 和错误标志；同名的旧外层字段保持不透明。[转换规范](../../../../packages/session/session-format-v3-to-v4/README.zh.md#tool-results)拥有精确的保留与拒绝规则。
 
 对话角色 map 是封闭的。模型可见角色必须有持久 Session 事件和适配器投影，因此适配器不会把未记录的扩展角色静默转换为 user 文本。提供方特有的来源 kind 仍然可合并扩展，并由各生产方拥有。
 

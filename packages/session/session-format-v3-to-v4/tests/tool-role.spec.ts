@@ -50,10 +50,10 @@ describe('V4 tool-role view and lift', () => {
     expect(JSON.stringify(target)).toBe(JSON.stringify({ ...current, id: 'tool-result-call-1' }))
   })
 
-  it.each([undefined, false, true])('preserves own outer message metadata and matching target fields with isError=%s', (isError) => {
+  it.each([undefined, false, true])('preserves outer fields without activating their target names with isError=%s', (isError) => {
     const metadata = JSON.parse('{"__proto__":{"saved":"prototype"},"constructor":{"saved":"constructor"},"extension":{"saved":true}}') as SessionFormatJsonObject
     const content = [{ type: 'text', text: 'result' }]
-    const message = {
+    const message: SessionFormatJsonObject = {
       ...metadata, ...wrapperMessage(), toolCallId: 'call-1', ...(isError === undefined ? {} : { isError }),
       content: [{ type: 'tool-result', toolCallId: 'call-1', content, ...(isError === undefined ? {} : { isError }) }],
     }
@@ -61,9 +61,14 @@ describe('V4 tool-role view and lift', () => {
     const before = structuredClone(row)
     const lifted = liftToolResult(row)
     const target = (lifted.data as SessionFormatJsonObject)['message'] as SessionFormatJsonObject
-    expect(target).toEqual({ ...message, role: 'tool', content })
-    expect(Object.hasOwn(target, '__proto__')).toBe(true)
-    expect(Object.hasOwn(target, 'constructor')).toBe(true)
+    expect(target).toEqual({ id: message['id'], role: 'tool', source: message['source'], toolCallId: 'call-1', content,
+      ...(isError === undefined ? {} : { isError, 'plugin:message:isError': isError }),
+      'plugin:message:toolCallId': 'call-1',
+      'plugin:message:__proto__': metadata['__proto__'], 'plugin:message:constructor': metadata['constructor'],
+      'plugin:message:extension': metadata['extension'],
+    })
+    expect(Object.hasOwn(target, 'plugin:message:__proto__')).toBe(true)
+    expect(Object.hasOwn(target, 'plugin:message:constructor')).toBe(true)
     expect(Object.getPrototypeOf(target)).toBe(Object.prototype)
     expect(row).toEqual(before)
     expect(JSON.parse(JSON.stringify(releasedV4SessionFormatCodec.encodeEvent(lifted)))).toEqual(lifted)
@@ -74,33 +79,49 @@ describe('V4 tool-role view and lift', () => {
     ['isError', true, false],
     ['isError', true, undefined],
     ['isError', 'false', false],
-  ] as const)('refuses an outer %s field whose meaning conflicts with the lifted value', (field, value, isError) => {
+  ] as const)('keeps outer %s data separate from the interpreted result', (field, value, isError) => {
     const row = event(0, 'tool/result', { turn: 1, step: 1, message: {
       ...wrapperMessage(), [field]: value,
       content: [{ type: 'tool-result', toolCallId: 'call-1', content: [], ...(isError === undefined ? {} : { isError }) }],
     } })
     const before = structuredClone(row)
-    expect(() => liftToolResult(row)).toThrow(SessionFormatUnsupportedMigrationError)
-    expect(() => liftToolResult(row)).toThrow(`conflicting outer ${field}`)
+    const target = (liftToolResult(row).data as SessionFormatJsonObject)['message'] as SessionFormatJsonObject
+    expect(target[`plugin:message:${field}`]).toEqual(value)
+    expect(target['toolCallId']).toBe('call-1')
+    expect(target['isError']).toBe(isError)
     expect(row).toEqual(before)
   })
 
-  it('preserves an outer false flag when the wrapper omits its equivalent non-error flag', () => {
+  it('preserves an outer flag without adding an absent result flag', () => {
     const row = event(0, 'tool/result', { turn: 1, step: 1, message: {
       ...wrapperMessage(), isError: false, content: [{ type: 'tool-result', toolCallId: 'call-1', content: [] }],
     } })
-    expect(liftToolResult(row).data).toMatchObject({ message: { role: 'tool', isError: false } })
+    expect(liftToolResult(row).data).toMatchObject({ message: { role: 'tool', 'plugin:message:isError': false } })
+    expect((liftToolResult(row).data as SessionFormatJsonObject)['message']).not.toHaveProperty('isError')
   })
 
-  it.each(['extension', '__proto__', 'constructor'])('refuses unmapped wrapper field %s without losing it', (field) => {
+  it.each(['extension', '__proto__', 'constructor'])('preserves result-owned %s without adding a core field', (field) => {
     const wrapper = Object.fromEntries([
       ['type', 'tool-result'], ['toolCallId', 'call-1'], ['content', []], [field, { saved: true }],
     ]) as SessionFormatJsonObject
     const row = event(0, 'tool/result', { turn: 1, step: 1, message: { ...wrapperMessage(), content: [wrapper] } })
     const before = structuredClone(row)
-    expect(() => liftToolResult(row)).toThrow(SessionFormatUnsupportedMigrationError)
-    expect(() => liftToolResult(row)).toThrow('unmapped tool-result field')
+    const target = (liftToolResult(row).data as SessionFormatJsonObject)['message'] as SessionFormatJsonObject
+    expect(target[`plugin:result:${field}`]).toEqual({ saved: true })
+    expect(Object.hasOwn(target, `plugin:result:${field}`)).toBe(true)
+    expect(Object.getPrototypeOf(target)).toBe(Object.prototype)
     expect(row).toEqual(before)
+  })
+
+  it('keeps repeated owner names and already-prefixed field names distinct', () => {
+    const row = event(0, 'tool/result', { turn: 1, step: 1, message: {
+      ...wrapperMessage(), note: 'outer', 'plugin:result:note': 'outer prefixed',
+      content: [{ type: 'tool-result', toolCallId: 'call-1', content: [], note: 'inner', 'plugin:message:note': 'inner prefixed' }],
+    } })
+    expect(liftToolResult(row).data).toMatchObject({ message: {
+      'plugin:message:note': 'outer', 'plugin:message:plugin:result:note': 'outer prefixed',
+      'plugin:result:note': 'inner', 'plugin:result:plugin:message:note': 'inner prefixed',
+    } })
   })
 
   it('lifts a released wrapper into the native tool-role message', () => {
@@ -192,7 +213,7 @@ describe('V4 tool-role view and lift', () => {
     })
     const before = structuredClone(row)
     expect(() => liftToolResult(row)).toThrow(SessionFormatUnsupportedMigrationError)
-    expect(() => liftToolResult(row)).toThrow('cannot preserve its call identity and error status')
+    expect(() => liftToolResult(row)).toThrow('unsupported by this converter')
     expect(row).toEqual(before)
   })
 

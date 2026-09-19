@@ -4,12 +4,21 @@ import { SessionFormatError, SessionFormatUnsupportedMigrationError, isSessionFo
 import type { SessionFormatEvent, SessionFormatJsonValue } from '@deepseek-ai/dsh-session-format'
 
 const WRAPPER_FIELDS = new Set(['type', 'toolCallId', 'content', 'isError'])
+const MESSAGE_FIELDS = new Set(['id', 'role', 'source', 'content'])
+
+/** Preserve unknown fields without merging their original message and result owners. */
+function extensionFields(
+  value: Record<string, SessionFormatJsonValue>, fields: ReadonlySet<string>, owner: 'message' | 'result',
+): Record<string, SessionFormatJsonValue> {
+  return Object.fromEntries(Object.entries(value).filter(([key]) => !fields.has(key))
+    .map(([key, field]) => [`plugin:${owner}:${key}`, field]))
+}
 
 function resultContent(value: SessionFormatJsonValue | undefined, subject: string): SessionFormatJsonValue[] {
   if (!Array.isArray(value)) throw new SessionFormatError(`${subject} tool-result content must be an array`)
   if (value.some(block => isSessionFormatJsonObject(block) && block['type'] === 'tool-result')) {
     throw new SessionFormatUnsupportedMigrationError(
-      `${subject} contains a nested tool-result; migration cannot preserve its call identity and error status`,
+      `${subject} contains a nested tool-result unsupported by this converter`,
     )
   }
   return value as SessionFormatJsonValue[]
@@ -21,8 +30,7 @@ function resultContent(value: SessionFormatJsonValue | undefined, subject: strin
  * rejected instead of being silently truncated.
  * @param event - released wrapper tool/result event.
  * @returns the same event with a first-class tool-role message.
- * @throws {SessionFormatUnsupportedMigrationError} when nested results, wrapper
- * extensions, or conflicting target fields cannot be preserved.
+ * @throws {SessionFormatUnsupportedMigrationError} when the result contains another result.
  */
 export function liftToolResult(event: SessionFormatEvent): SessionFormatEvent {
   if (event.type !== 'tool/result' || !isSessionFormatJsonObject(event.data)) return event
@@ -32,9 +40,10 @@ export function liftToolResult(event: SessionFormatEvent): SessionFormatEvent {
   const source = message['source']
   const callId = isSessionFormatJsonObject(source) ? source['callId'] : undefined
   const content = message['content']
-  const wrapper = Array.isArray(content) && content.length === 1 && isSessionFormatJsonObject(content[0])
-    ? content[0]
+  const block = Array.isArray(content) && content.length === 1
+    ? (content as readonly SessionFormatJsonValue[])[0]
     : undefined
+  const wrapper = isSessionFormatJsonObject(block) ? block : undefined
   const id = message['id']
   if (typeof id !== 'string' || id.length === 0
     || !isSessionFormatJsonObject(source) || source['kind'] !== 'tool'
@@ -47,30 +56,18 @@ export function liftToolResult(event: SessionFormatEvent): SessionFormatEvent {
   if (isError !== undefined && typeof isError !== 'boolean') {
     throw new SessionFormatError(`format v3 ${event.type} at seq ${event.seq} tool-result isError must be boolean`)
   }
-  const unmapped = Object.keys(wrapper).find(field => !WRAPPER_FIELDS.has(field))
-  if (unmapped !== undefined) {
-    throw new SessionFormatUnsupportedMigrationError(
-      `format v3 ${event.type} at seq ${event.seq} has unmapped tool-result field ${JSON.stringify(unmapped)}`,
-    )
-  }
-  if (Object.hasOwn(message, 'toolCallId') && message['toolCallId'] !== callId) {
-    throw new SessionFormatUnsupportedMigrationError(`format v3 ${event.type} at seq ${event.seq} has conflicting outer toolCallId`)
-  }
-  if (Object.hasOwn(message, 'isError') && (typeof message['isError'] !== 'boolean' || message['isError'] !== (isError ?? false))) {
-    throw new SessionFormatUnsupportedMigrationError(`format v3 ${event.type} at seq ${event.seq} has conflicting outer isError`)
-  }
-  const targetIsError = isError ?? message['isError']
   // Recorded replay compares serialized messages with createToolResultMessage's field order.
   const targetMessage: Record<string, SessionFormatJsonValue> = {
     role: 'tool',
     source,
     toolCallId: callId,
-    content: resultContent(wrapper['content'] as SessionFormatJsonValue | undefined, `format v3 ${event.type} at seq ${event.seq}`),
-    ...(targetIsError === undefined ? {} : { isError: targetIsError }),
+    content: resultContent(wrapper['content'], `format v3 ${event.type} at seq ${event.seq}`),
+    ...(isError === undefined ? {} : { isError }),
     id,
+    ...extensionFields(message, MESSAGE_FIELDS, 'message'),
+    ...extensionFields(wrapper, WRAPPER_FIELDS, 'result'),
   }
-  const extensions = Object.fromEntries(Object.entries(message).filter(([key]) => !Object.hasOwn(targetMessage, key)))
-  return { ...event, data: { ...data, message: { ...targetMessage, ...extensions } } }
+  return { ...event, data: { ...data, message: targetMessage } }
 }
 
 /**

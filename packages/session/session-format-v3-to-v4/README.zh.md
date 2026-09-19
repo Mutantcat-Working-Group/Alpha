@@ -74,11 +74,11 @@ V4 消息源准入在可恢复扫描丢弃行之前拒绝 surface、inbox 和标
 | `data.message.content[0].content` | 直接作为 `data.message.content`，包括空内容 |
 | `data.message.content[0].isError` | 可选的 `data.message.isError` |
 | Wrapper 的 `type: 'tool-result'` | 随 wrapper 移除 |
-| 消息 `id`、`source`、外层扩展和事件字段 | 保留；不生成新的消息或调用 id |
+| 消息 `id`、`source` 和事件字段 | 保留；不生成新的消息或调用 id |
 
-Wrapper 只允许 `type`、`toolCallId`、`content` 和 `isError`。未知 wrapper 字段没有定义好的目标，因此拒绝迁移。结果内容中嵌套的 `tool-result` block 也被拒绝，因为展平无法保留它们独立的调用身份和错误状态。已有外层 `toolCallId` 必须匹配；已有外层 `isError` 必须为布尔值，并与 wrapper 值一致，此冲突检查把省略视为 false。Wrapper 省略 `isError` 时，一致的已有外层值仍保留。`__proto__` 和 `constructor` 等外层 JSON 属性仍是自有数据属性。
+只有 wrapper 提供具有解释语义的调用 id、content 和可选错误标志。Wrapper 的其他字段变为 `plugin:result:<原字段名>`；外层消息除 `id`、`role`、`source` 和 `content` 外的字段变为 `plugin:message:<原字段名>`。后缀保留完整原名称，包括已有前缀。不同 owner 与重名字段分别保留值；`__proto__` 和 `constructor` 的自有数据保持完整。不添加 metadata 容器或新的内容类型。
 
-格式错误的 canonical wrapper 产生格式错误；没有映射的 wrapper 扩展、嵌套结果或冲突目标字段产生不支持迁移错误。转换不修复矛盾的 `data.error`；原生目标校验要求它与 `message.isError: true` 同时出现。
+格式错误的 canonical wrapper 引发格式错误。当前转换器不支持嵌套结果，遇到时拒绝且不发布 successor。转换不会修复矛盾的 `data.error`；原生目标校验要求它与 wrapper 的 `isError: true` 同时出现。后续可以扩展转换器支持范围，同时保持既定的原生 V4 表示。
 
 <a id="extension-data"></a>
 ### 扩展数据
@@ -252,8 +252,8 @@ V4 还接受 fork 生成的 `TOOL_NOT_STARTED` 结果，使用确定性的 `fork
 - **历史转换器覆盖范围** — 未支持的源表示可能拒绝迁移，不发布后继文件，也不修改源文件。一方录制不等于第三方扩展全集。V4 发布后，只要输出仍兼容 V4，后续转换器修复就可以增加支持。解释流起始块的额外字段或处理未来投递代际，应以具体格式变更为依据。
 - **已接受 V4 转换**——[检查点](../../../docs/session-format-status.zh.md#finalization-record)保护已接受历史。向后兼容的新增可以通过新的确认记录保留 V4；破坏性变更要求后继版本。已写入的 V4 文件不会重跑此入边，历史输入保持不变。
 - **V5 前置读取器**——V4 子日志证据目前经过已安装目录。后续写入器在改变该目录前，须绑定固定代际的 V4 前置读取。导出的 V4 恢复器提供代际自有检查；完整的通用消息接纳还使用已安装的 Session 校验。
-- **历史嵌套工具结果**——迁移会拒绝包含另一层 tool-result 包装的结果，因为展平会丢失其调用身份和错误状态。原始代际保持不变，也不会发布 V4 后继；这些历史需要能保留信息的转换才能继续运行。
-- **历史工具结果扩展**——外层消息的 JSON 属性仍保留为自有数据属性，包括 `__proto__` 和 `constructor`。未知 wrapper 字段没有已定义的 V4 存放位置，因此拒绝迁移。已有外层 `toolCallId` 或 `isError` 字段必须与提升后的结果一致；冲突时拒绝且不发布 successor。
+- **历史嵌套工具结果**——当前迁移拒绝包含另一个 tool-result wrapper 的结果。原始代际保持完整，且不发布 V4 successor。后续转换器可以支持有证据的源数据场景，而不改变既定 V4 格式；[迁移 cookbook](../../../docs/cookbook/adding-a-session-format-version.zh.md#stages-and-validation) 定义了这一区别。
+- **历史扩展消费者**——带前缀的消息与结果字段保留 JSON 数据，不激活核心字段。消费者必须明确理解这些字段后才能解释它们。
 - **依赖保留的子日志**——仅凭父日志无法恢复未记录的子 id、创建时间或 descriptor。删除的子 Session 无法从工具参数恢复；已存在的父目录记录仍保留。
 - **存储范围**——事实只覆盖同一持久化根目录内可识别的子 Session。跨根目录导入和损坏日志修复不属于此迁移。
 

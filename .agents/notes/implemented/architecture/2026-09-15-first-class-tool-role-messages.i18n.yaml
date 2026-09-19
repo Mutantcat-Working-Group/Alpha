@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-15-first-class-tool-role-messages.md
-2026-09-15-first-class-tool-role-messages.md: c16bc44116b1b2c20c988db4b6977ee31bea4ab4
-2026-09-15-first-class-tool-role-messages.zh.md: f9eb581f6c080655145b3c9ab1c55d052fe871b8
+2026-09-15-first-class-tool-role-messages.md: 09f73c6d9b9c0196b3b09b5483d9e833cbc08837
+2026-09-15-first-class-tool-role-messages.zh.md: 549838faf6855f4d3206c5bb05964f2f9be435f2

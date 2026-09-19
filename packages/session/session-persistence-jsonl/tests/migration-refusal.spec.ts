@@ -419,7 +419,7 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     await expectOnlyGenerations([path])
   })
 
-  it('preserves a V3 nested tool result when its identity and error status cannot migrate', async () => {
+  it('leaves the V3 source unchanged when nested results are unsupported', async () => {
     const rows = releasedToolRows({}, { content: [
       { type: 'tool-result', toolCallId: 'nested-call', isError: true, content: [{ type: 'text', text: 'inner failure' }] },
     ] })
@@ -427,36 +427,39 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     const original = await observe(path)
     const ctx = await mount(compression)
     await expectRefusal(ctx, access, path,
-      'format v3 tool/result at seq 7 contains a nested tool-result; migration cannot preserve its call identity and error status'
-      + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
-    expect(await observe(path)).toEqual(original)
-    await expectOnlyGenerations([path])
-  })
-
-  it.each(['extension', '__proto__', 'constructor'])('refuses a V3 wrapper with unmapped %s metadata without publishing', async (field) => {
-    const rows = releasedToolRows({}, Object.fromEntries([[field, { saved: true }]]))
-    const path = await store(3, compression, rows)
-    const original = await observe(path)
-    const ctx = await mount(compression)
-    await expectRefusal(ctx, access, path,
-      `format v3 tool/result at seq 7 has unmapped tool-result field ${JSON.stringify(field)}`
+      'format v3 tool/result at seq 7 contains a nested tool-result unsupported by this converter'
       + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
     expect(await observe(path)).toEqual(original)
     await expectOnlyGenerations([path])
   })
 
   it.each([
-    { field: 'toolCallId', value: 'conflicting-call' },
-    { field: 'isError', value: true },
-  ])('refuses a conflicting outer $field before publishing', async ({ field, value }) => {
-    const rows = releasedToolRows({ [field]: value })
+    { owner: 'result', field: 'extension', value: { saved: true } },
+    { owner: 'result', field: '__proto__', value: { saved: true } },
+    { owner: 'result', field: 'constructor', value: { saved: true } },
+    { owner: 'message', field: 'toolCallId', value: 'conflicting-call' },
+    { owner: 'message', field: 'isError', value: true },
+  ] as const)('preserves $owner-owned $field through migration and native reopening', async ({ owner, field, value }) => {
+    const extra = Object.fromEntries([[field, value]])
+    const rows = owner === 'message' ? releasedToolRows(extra) : releasedToolRows({}, extra)
     const path = await store(3, compression, rows)
     const original = await observe(path)
     const ctx = await mount(compression)
-    await expectRefusal(ctx, access, path, `format v3 tool/result at seq 7 has conflicting outer ${field}`
-      + '; source v3 artifact remains unchanged (raw log: ' + path + ')')
+    for (const mode of [access, 'read'] as const) {
+      const handle = await ctx.sessionPersistence.open(id, mode)
+      try {
+        const result = (await handle.read()).events.find(event => event.type === 'tool/result')
+        expect(result?.data.message).toMatchObject({
+          role: 'tool', toolCallId: 'outer-call', isError: false,
+          [`plugin:${owner}:${field}`]: value,
+        })
+        expect(Object.hasOwn(result!.data.message, `plugin:${owner}:${field}`)).toBe(true)
+      } finally {
+        await handle.close()
+      }
+    }
     expect(await observe(path)).toEqual(original)
-    await expectOnlyGenerations([path])
+    await expectOnlyGenerations(access === 'read' ? [path] : [path, generationLogPath(root, undefined, id, SESSION_FORMAT_VERSION, compression)])
   })
 
   it('preserves outer V3 tool-message metadata through migration and native reopening', async () => {
@@ -465,8 +468,11 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
     const original = await observe(path)
     const ctx = await mount(compression)
     const expected = {
-      ...metadata, id: 'result', role: 'tool', source: { kind: 'tool', callId: 'outer-call' },
+      id: 'result', role: 'tool', source: { kind: 'tool', callId: 'outer-call' },
       toolCallId: 'outer-call', isError: false, content: [{ type: 'text', text: 'result' }],
+      'plugin:message:toolCallId': 'outer-call', 'plugin:message:isError': false,
+      'plugin:message:__proto__': metadata['__proto__'], 'plugin:message:constructor': metadata['constructor'],
+      'plugin:message:extension': metadata['extension'],
     }
     for (const mode of [access, 'read'] as const) {
       const handle = await ctx.sessionPersistence.open(id, mode)
@@ -474,7 +480,7 @@ describe.each(modes)('EOF migration refusal ($compression, $access)', ({ compres
         const restored = await handle.read()
         const result = restored.events.find(event => event.type === 'tool/result')
         expect(result?.data.message).toEqual(expected)
-        expect(Object.hasOwn(result!.data.message, '__proto__')).toBe(true)
+        expect(Object.hasOwn(result!.data.message, 'plugin:message:__proto__')).toBe(true)
         expect(Object.getPrototypeOf(result!.data.message)).toBe(Object.prototype)
       } finally {
         await handle.close()
