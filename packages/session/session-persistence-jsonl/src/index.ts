@@ -9,7 +9,6 @@
 import { Context } from '@mutantcat/cordis'
 import z from '@mutantcat/schemastery'
 import {
-  createSessionFormatCatalogWithChildren,
   SessionFormatUnsupportedMigrationError,
   sessionFormatCatalog,
 } from '@mutantcat/dsh-session-format-catalog'
@@ -18,7 +17,7 @@ import { open, mkdir, readdir, realpath, link, rm, stat, truncate } from 'node:f
 import { dirname, join, resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { scheduler } from 'node:timers/promises'
-import { createHash, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import {
   SessionPersistence, SessionPersistenceRevision, SessionFormatUnsupportedError,
   SessionPersistenceCorruptionError,
@@ -45,7 +44,6 @@ import {
 } from './zstd.ts'
 import { ensureDurableDirectoryWin32, publishNewFileWin32 } from './win32.ts'
 import { verifyCurrentGenerationInWorker } from './migration-verifier.ts'
-import { prepareCatalogFacts } from './catalog-migration.ts'
 import {
   JsonlGenerationSourceChangedError,
   JsonlGenerationUnsupportedMigrationError,
@@ -124,7 +122,6 @@ interface CurrentStoredLog extends StoredLogBase {
 /** A migrated historical generation retained until an explicit write open publishes it. */
 interface PreparedStoredLog extends StoredLogBase {
   readonly status: 'prepared'
-  readonly validateRelatedSources: () => Promise<void>
   readonly publication: {
     readonly source: ResolvedJsonlGeneration
     readonly value: PreparedJsonlMigration
@@ -248,7 +245,7 @@ class JsonlSessionPersistence extends SessionPersistence {
   private compression: JsonlCompression
   private rootEncodingCheck: Promise<void> | undefined
   private readonly tracker = new JsonlBackendTracker(this.name)
-  private readonly generationFormat: Omit<JsonlGenerationFormatAdapter, 'createRestore'>
+  private readonly generationFormat: JsonlGenerationFormatAdapter
   /**
    * Bounded LRU of parsed, validated stored logs keyed by session id and
    * guarded by the stat-derived revision, so an immediate cold-read handoff
@@ -274,6 +271,9 @@ class JsonlSessionPersistence extends SessionPersistence {
     this.compression = config.compression ?? DEFAULT_COMPRESSION
     this.generationFormat = {
       currentVersion: sessionFormatCatalog.currentVersion,
+      createRestore: header => sessionFormatCatalog.createRestore(header, {
+        recovery: 'recoverable', validation: 'transformed',
+      }),
       encodeHeader: (header, inheritedEventCount) =>
         sessionFormatCatalog.encodeCurrentHeader(header, inheritedEventCount),
       encodeEvent: event => sessionFormatCatalog.encodeCurrentEvent(event),
@@ -341,13 +341,7 @@ class JsonlSessionPersistence extends SessionPersistence {
       if (pending !== undefined) {
         return this.tracker.adopt(new JsonlSessionHandle(this, id, pending.header, 'read', { cursor: 0, materialized: false, inheritedEventCount: pending.inheritedEventCount }))
       }
-      let stored: StoredLog
-      try {
-        stored = await this.requireStoredLog(id, options?.signal)
-      } catch (error: unknown) {
-        if (!(error instanceof JsonlGenerationSourceChangedError)) throw error
-        stored = await this.requireStoredLog(id, options?.signal)
-      }
+      const stored = await this.requireStoredLog(id, options?.signal)
       let state: StorageHandleState
       if (stored.status === 'prepared') {
         state = {
@@ -447,9 +441,7 @@ class JsonlSessionPersistence extends SessionPersistence {
       options?.signal?.throwIfAborted()
       return {
         header,
-        revision: selected.sourceVersion < SESSION_FORMAT_VERSION
-          ? SessionPersistenceRevision(`${fileRevision(identity)}:${await this.historicalCorpusRevision(options?.signal)}`)
-          : fileRevision(identity),
+        revision: fileRevision(identity),
         sizeBytes: Number(identity.size),
       }
     } catch (error: unknown) {
@@ -474,8 +466,6 @@ class JsonlSessionPersistence extends SessionPersistence {
     // predate the scan), so create-to-list visibility never has a hole.
     const pending = [...this.tracker.pendingEntries()]
     const artifacts = await this.listArtifacts(signal)
-    const corpusRevision = artifacts.some(artifact => artifact.sourceVersion < SESSION_FORMAT_VERSION)
-      ? await this.historicalCorpusRevision(signal) : undefined
     for (const artifact of artifacts) {
       signal?.throwIfAborted()
       try {
@@ -484,9 +474,7 @@ class JsonlSessionPersistence extends SessionPersistence {
         listed.add(artifact.header.id)
         snapshots.push({
           header: artifact.header,
-          revision: artifact.sourceVersion < SESSION_FORMAT_VERSION
-            ? SessionPersistenceRevision(`${fileRevision(identity)}:${corpusRevision}`)
-            : fileRevision(identity),
+          revision: fileRevision(identity),
           sizeBytes: Number(identity.size),
         })
       } catch (error: unknown) {
@@ -579,12 +567,6 @@ class JsonlSessionPersistence extends SessionPersistence {
     signal.throwIfAborted()
     const memoized = this.coldLogMemo.get(id)
     if (memoized?.status === 'prepared' && memoized.revision === sourceRevision) {
-      try {
-        await memoized.validateRelatedSources()
-      } catch (error: unknown) {
-        this.coldLogMemo.delete(id)
-        throw this.generationFailure(id, selected, error)
-      }
       this.coldLogMemo.delete(id)
       this.coldLogMemo.set(id, memoized)
       return memoized
@@ -620,33 +602,13 @@ class JsonlSessionPersistence extends SessionPersistence {
     signal: AbortSignal,
   ): Promise<PreparedStoredLog> {
     let prepared: Awaited<ReturnType<typeof prepareJsonlMigration>>
-    let validateRelatedSources: () => Promise<void>
     try {
-      const children = async () => (await this.listArtifacts(signal, selected.sourcePath))
-        .filter(source => source.header.origin === 'subagent' && source.header.parentSession === id)
-      const sources = await children()
-      const related = await prepareCatalogFacts(id, sources, this.compression, signal)
-      const membership = sources.map(source => source.path).sort()
-      validateRelatedSources = async () => {
-        const current = (await children()).map(source => source.path).sort()
-        const before = new Set(membership)
-        const after = new Set(current)
-        const changed = current.find(path => !before.has(path)) ?? membership.find(path => !after.has(path))
-        if (changed !== undefined) throw new JsonlGenerationSourceChangedError(changed)
-        await related.validate()
-      }
       prepared = await prepareJsonlMigration({
         sourcePath: selected.sourcePath,
         sourceVersion: selected.sourceVersion,
         currentPath: selected.currentPath,
         compression: this.compression,
-        format: {
-          ...this.generationFormat,
-          createRestore: header => createSessionFormatCatalogWithChildren(related.facts).createRestore(header, {
-            recovery: 'recoverable', validation: 'transformed',
-          }),
-        },
-        validateRelatedSources,
+        format: this.generationFormat,
         verifyCurrentFile: verifyCurrentGenerationInWorker,
         validateHistoricalHeader: headerValue => this.validateSourceIdentity(
           selected,
@@ -665,7 +627,6 @@ class JsonlSessionPersistence extends SessionPersistence {
     validateStoredEvents(meta, events, { kind: 'jsonl', path: selected.sourcePath })
     const stored: PreparedStoredLog = {
       status: 'prepared',
-      validateRelatedSources,
       meta,
       ...freezeStoredEvents(events),
       tornTruncateTo: undefined,
@@ -1024,28 +985,8 @@ class JsonlSessionPersistence extends SessionPersistence {
     return sources
   }
 
-  /** Historical logical events depend on the corpus, including members with unreadable headers. */
-  private async historicalCorpusRevision(signal?: AbortSignal): Promise<string> {
-    const paths = (await this.listGenerations(signal)).map(source => source.sourcePath).sort()
-    const hash = createHash('sha256')
-    for (const path of paths) {
-      signal?.throwIfAborted()
-      let revision: string
-      try {
-        revision = fileRevision(await stat(path, { bigint: true }))
-      } catch (error: unknown) {
-        if (!isENOENT(error)) throw error
-        revision = 'missing'
-      }
-      hash.update(JSON.stringify([path, revision]))
-    }
-    signal?.throwIfAborted()
-    return hash.digest('hex')
-  }
-
   private async listArtifacts(
     signal?: AbortSignal,
-    migrationSource?: string,
   ): Promise<Array<{ header: SessionHeader; path: string; sourceVersion: number }>> {
     signal?.throwIfAborted()
     await this.ensureRootEncoding()
@@ -1054,26 +995,14 @@ class JsonlSessionPersistence extends SessionPersistence {
     const ids = new Set<SessionId>()
     for (const selected of await this.listGenerations(signal)) {
       signal?.throwIfAborted()
-      if (migrationSource !== undefined && selected.sourceVersion > SESSION_FORMAT_VERSION) {
-        throw new SessionFormatUnsupportedError(
-          `catalog migration cannot inspect Session format v${selected.sourceVersion}; upgrade the harness (raw log: ${selected.sourcePath})`,
-          { kind: 'jsonl', path: selected.sourcePath },
-        )
-      }
       let header: SessionHeader | undefined
       try {
         header = await this.readGenerationHeader(selected, undefined, signal)
       } catch (error: unknown) {
-        if (error instanceof SessionFormatUnsupportedError && migrationSource === undefined) continue
+        if (error instanceof SessionFormatUnsupportedError) continue
         throw error
       }
       if (header === undefined) {
-        if (migrationSource !== undefined && selected.sourcePath !== migrationSource) {
-          throw new SessionFormatUnsupportedError(
-            `cannot establish complete catalog membership from an unreadable Session header (raw log: ${selected.sourcePath})`,
-            { kind: 'jsonl', path: selected.sourcePath },
-          )
-        }
         continue
       }
       if (ids.has(header.id)) {

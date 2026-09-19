@@ -33,7 +33,7 @@ Import this library from persistence and test-support readers that need the comp
 
 ```text
 const descriptor = sessionFormatCatalog.readHeader(physicalHeader)
-const catalog = createSessionFormatCatalogWithChildren(childFacts)
+const catalog = sessionFormatCatalog
 const restore = catalog.createRestore(physicalHeader, { recovery: 'recoverable', validation: 'transformed' })
 for (const row of physicalRows) restore.decodeRow(row)
 const current = restore.finish()
@@ -47,7 +47,7 @@ Production historical reads select `{ recovery: 'recoverable', validation: 'tran
 
 The catalog contains all supported historical readers directly. A profile cannot add, remove, or reorder an edge by mounting a feature plugin. Its peer dependency on `dsh-session` supplies the installed current event vocabulary and current restoration rules, while historical edge validators remain frozen. The browser-safe `./message-projections` export assembles current plugin-owned interpreters for detached constructors and surface folds; it does not mount recovery listeners.
 
-`createSessionFormatCatalogWithChildren(childFacts)` binds explicit child evidence to V3→V4 during assembly; see the [catalog-completion specification](../session-format-v3-to-v4/README.md). `historicalSessionFormatCatalog` restores V0–V3 using the fixed released-V3 event vocabulary to collect child prerequisites without recursively completing their catalogs. An ignorable V3 extension remains opaque even when the installed writer knows its name. Isolated transcript replay explicitly supplies an empty array; persistence must collect the complete available direct-child set. Keep the supplied evidence unchanged for the catalog’s lifetime. Each restore owns independent stage state. The static `sessionFormatCatalog` supports header and native current-format reads; historical body reads require the child-bound catalog.
+`sessionFormatCatalog` restores historical bodies independently of other Sessions. `createSessionFormatCatalogWithChildren(childFacts)` optionally supplements parent catalogs for offline fixture preparation and Preview packing; see the [catalog-completion specification](../session-format-v3-to-v4/README.md). `historicalSessionFormatCatalog` restores V0–V3 using the fixed released-V3 vocabulary for that evidence collection. An ignorable V3 extension stays opaque even when the current writer knows its name. Supplied evidence remains unchanged for the catalog’s lifetime, and every restore owns independent stage state.
 
 -----
 

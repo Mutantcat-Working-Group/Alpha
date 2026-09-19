@@ -37,6 +37,7 @@ export const inject = ['sessions', 'uiWorkspace', 'slots', 'locale', 'sidebarRig
 function selectReadOnlySubagent(owner: ComposerChainProps): SubagentReadOnlyMatch | null {
   const subagent = owner.session?.subagent
   if (subagent === undefined || subagent === null) return null
+  if (subagent.address.mode === 'unresolved') return { reason: 'unresolved' }
   if (subagent.address.mode === 'one-shot') return { reason: 'one-shot' }
   // The parent catalog is fetched ahead of the selected Session. Until it
   // resolves, leave the normal disabled composer in place instead of briefly
@@ -68,11 +69,8 @@ export function apply(ctx: ClientContext): void {
         preferNewPane: true,
       })
     },
-    refresh(parentSessionId: SessionId) {
-      void sessions.refreshSubagents(parentSessionId)
-    },
-    setCatalogOpen(parentSessionId: SessionId, open: boolean) {
-      sessions.setSubagentCatalogOpen(parentSessionId, open)
+    refresh() {
+      void sessions.refresh()
     },
   })
   ctx.slots.inject(

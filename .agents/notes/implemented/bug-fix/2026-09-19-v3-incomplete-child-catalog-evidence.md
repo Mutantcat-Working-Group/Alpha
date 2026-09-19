@@ -10,9 +10,9 @@ A valid V3 child log can have no own descriptor, an unsupported descriptor versi
 
 ## Decision
 
-The V3→V4 migration appends a missing parent catalog entry only when exactly one supported own child descriptor supplies its discovery fields. Other descriptor counts and unsupported versions contribute no new catalog fact. Existing parent entries and child events remain intact. This replaces only the missing-evidence refusal in the [adjacent migration decision](../architecture/2026-08-31-released-session-format-migrations.md).
+Optional V3→V4 catalog completion for offline fixture preparation and Preview packing appends a missing parent entry only when exactly one supported own child descriptor supplies its discovery fields. Other descriptor counts and unsupported versions contribute no new fact; existing parent entries and child events remain intact. Runtime JSONL migration does not collect this evidence and restores each Session independently, as specified in the [adjacent migration decision](../architecture/2026-08-31-released-session-format-migrations.md).
 
-Known child creation times must still match existing parent entries. Available unambiguous mode and label fields must also agree. Invalid known descriptor fields, corrupt logs, unreadable membership, unsupported selected generations, and changed source revisions retain their existing failures.
+Supplied child creation times must match existing parent entries. Mode, label, and descriptor fields are checked only for exactly one supported own descriptor. These evidence checks belong to explicit offline completion; child corruption or unsupported generations never prevent runtime parent migration.
 
 ## Alternatives considered
 
@@ -22,6 +22,8 @@ Known child creation times must still match existing parent entries. Available u
 
 ## Consequences
 
-A historical child without a usable descriptor remains readable by id but may be absent from its parent's direct-child catalog. Existing catalog entries remain visible. Once a V4 successor is published, opening it does not rescan historical children; automatic later catalog repair is outside this migration. Preparation still rechecks child revisions before publication, so newly available evidence cannot silently bypass source consistency checks.
+A historical child without a usable descriptor remains discoverable from a readable parent-linked header even when no parent catalog entry exists. Runtime migration preserves that absence rather than inventing a fact. The child’s own open performs decoding and reports any failure locally; publishing a parent successor never requires successful child decoding.
 
-Unit, JSONL read/write, and Preview packing tests cover unavailable evidence, unchanged source bytes, retained entries, identity conflicts, and evidence changes before publication.
+Pure completion and Preview tests retain unavailable-evidence, existing-entry, and conflict coverage. JSONL read/write regressions cover independent parent and child opens, stable parent revisions across child changes, and unchanged predecessor bytes.
+
+The [Session-local migration decision](./2026-09-19-session-local-subagent-migration.md) supersedes runtime child-body collection and unopened-branch projection reads; optional offline completion and durable catalog semantics remain active.

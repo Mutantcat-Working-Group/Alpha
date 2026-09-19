@@ -360,6 +360,33 @@ describe('Host Remote event routing', () => {
 })
 
 describe('subagent catalogs', () => {
+  it.for(['one-shot', 'continuable'] as const)('opens a header-discovered child on demand and resolves %s mode', async (mode, { mock, remote, start }) => {
+    remote.session.list.mockImplementation(() => Promise.resolve(ok({ items: [
+      summary(S1), summary(S2, { parentSessionId: S1, origin: 'subagent' }),
+    ] })))
+    mock.load(sessionWorld)
+    mock.stream(FOLLOW, followScript(ok({
+      records: [], hasMore: false,
+      projections: { asOfSeq: 0, values: { subagent: { mode, label: 'restored', seq: 0 } } },
+    })))
+    const client = await start()
+    const manager = new SessionManager(client.ctx.remote)
+    try {
+      await manager.refreshList()
+      manager.resolveTarget(S2)
+      expect(manager.subagentAddress(S2)).toEqual({ parentSessionId: S1, childSessionId: S2, mode: 'unresolved' })
+      expect(remote.session.projections).not.toHaveBeenCalled()
+      expect(mock.log.requests(FOLLOW)).toEqual([])
+      const child = manager.get(S2)
+      await child.open()
+      expect(mock.log.requests(FOLLOW)).toEqual([{
+        address: { kind: 'subagent', parentSessionId: S1, childSessionId: S2, mode: 'unresolved' },
+        assistantStream: true, maxMessages: 50,
+      }])
+      expect(child.getSnapshot().subagent?.address.mode).toBe(mode)
+    } finally { await manager.dispose() }
+  })
+
   it('keeps a catalog-discovered child address across identity resolution and status frames', async ({ mock, remote, start }) => {
     remote.session.list.mockResolvedValue(ok({ items: [
       summary(S1),
@@ -969,13 +996,11 @@ describe('connected generation', () => {
     expect(remote.session.page).toHaveBeenCalledTimes(historyCallsBefore)
   })
 
-  it('retains the durable parent address and refreshes that parent across reconnect', async ({ mock, remote }) => {
+  it('retains the durable parent address across reconnect without opening the parent', async ({ mock, remote }) => {
     const address = {
       parentSessionId: S1, childSessionId: S2, mode: 'continuable' as const,
     }
-    const parent = Promise.withResolvers<Awaited<ReturnType<typeof remote.subagents.list>>>()
-    const child = Promise.withResolvers<Awaited<ReturnType<typeof remote.subagents.list>>>()
-    remote.subagents.list.mockImplementation(payload => (payload === S1 ? parent.promise : child.promise))
+    remote.session.list.mockImplementation(() => Promise.resolve(ok({ items: [summary(S1)] as never[] })))
     const manager = makeManager(mock, remote)
     remote.subagents.list.mockResolvedValueOnce(ok({
       entries: [{ kind: 'child', id: S2, mode: 'continuable', label: 'worker', activity: 'inactive', hasChildren: false }],
@@ -987,16 +1012,12 @@ describe('connected generation', () => {
     remote.subagents.list.mockClear()
 
     manager.handleConnected()
-    expect(manager.get(S2).getSnapshot().subagent).toEqual({ address, parentAvailable: true })
-    parent.resolve(ok({ entries: [], parentAvailable: true }))
-    child.resolve(ok({ entries: [], parentAvailable: true }))
+    expect(manager.get(S2).getSnapshot().subagent).toEqual({ address })
 
     await vi.waitFor(() => {
       expect(remote.session.list).toHaveBeenCalledOnce()
     })
-    await vi.waitFor(() => {
-      expect(remote.subagents.list.mock.calls.map(([parentSessionId]) => parentSessionId)).toEqual([S1])
-    })
+    expect(remote.session.projections).not.toHaveBeenCalled()
     expect(manager.get(S2).getSnapshot().subagent).toEqual({
       address,
       parentAvailable: true,

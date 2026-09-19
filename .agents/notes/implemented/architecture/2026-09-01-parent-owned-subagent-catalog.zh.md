@@ -44,6 +44,8 @@ snapshot normalizer 会把 `childCreatedAt` 归零，因为它来自 process clo
 
 ## 后果
 
-Session 观察和客户端快照通过 `projections.values.subagentCatalog` 暴露直接子级列表。目录状态变化时，projection 变更通知发布完整列表。每次视图计算成本为 O(D)，因此 D 次创建的累计视图工作量可能为 O(D²)；这沿用既有 projection 机制。直接子级和后代列表仍使用 Session 语料库与子级身份 projection。
+会话观察和客户端快照通过 `projections.values.subagentCatalog` 暴露持久化 catalog 事实。变化流发布完整列表，因此 D 次创建可能累计 O(D²) 视图工作。历史子会话可能缺少这些事实：`listChildren()` 在一次父观察之外补充仅头部发现，返回未解析条目，不读子正文。Web 从已有会话列表派生同类缺失条目。这保留 catalog 作为唯一持久化创建记录，同时接受显式服务发现的 O(N) 头部枚举成本。[Web 投影消费](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md) 负责浏览器加载与同步。
 
-不认识该 required event 的 backend 会按既有 Session event 机制拒绝日志。目录投影不通过扫描旧子级日志来重建缺失的父级事实。
+[创建元数据排除决策](../simplification/2026-09-16-subagent-catalog-membership-only.zh.md) 说明目录事实为何不包含模型配置。
+
+[会话独立迁移决策](../bug-fix/2026-09-19-session-local-subagent-migration.zh.md)取代运行时子正文收集与未打开分支投影读取；可选离线补全和持久化 catalog 语义仍有效。

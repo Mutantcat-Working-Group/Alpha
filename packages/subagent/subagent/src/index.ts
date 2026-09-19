@@ -77,6 +77,7 @@ import type { SubagentDescendantListEntry, SubagentListEntry } from './list-chil
 import { snapshotSubagentDescriptor } from './descriptor.ts'
 import { subagentIdentityProjectionDefinition, subagentTimingProjectionDefinition } from './projection.ts'
 import { establishCatalogChild, subagentCatalogProjectionDefinition } from './catalog.ts'
+import type { SubagentDiscoveryEntry } from './control-types.ts'
 import { deliverSubagentPrompt } from './internal.ts'
 
 export type {} from './catalog.ts'
@@ -364,23 +365,15 @@ export class SubagentRuntime extends TypertRemoteService {
   }
 
   /**
-   * Enumerate the parent's direct session-backed subagents without loading or
-   * resuming an Agent. The Session query service supplies one live-preferred
-   * corpus and shared point observations; the projection cache supplies
-   * immutable descriptor hits without opening cold logs. The registered
-   * `subagent` projection remains the sole mode/label classifier.
-   *
-   * Every query receives `signal`, and the listing rechecks cancellation
-   * around each await. Read rejections that settle
-   * after an abort become a stable `SubagentError` with code `CANCELLED`.
-   * @param parentSessionId - parent session whose direct children are listed.
-   * @param signal - caller-owned cancellation forwarded to Session queries
-   *   and observed around every read await.
-   * @returns children and per-child diagnostics ordered by `createdAt`, then id.
-   * @throws {@link SubagentError} when the projection registry or the session
-   *   store is not mounted, or the caller cancels the listing.
+   * Read the parent's catalog and discover missing direct children from Session headers.
+   * The service owns and releases the live-preferred Session observation.
+   * @param parentSessionId - parent whose direct children are requested.
+   * @param signal - cancellation forwarded to the Session query.
+   * @returns catalog children in event order, then unresolved children whose bodies remain unread.
+   * @throws {@link SubagentError} when query or catalog projection is unavailable.
+   * @throws SessionQueryError when the parent cannot be read or the query is cancelled.
    */
-  listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentListEntry[]> {
+  listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentDiscoveryEntry[]> {
     return listSubagentChildren(this.ctx, parentSessionId, signal)
   }
 

@@ -799,6 +799,7 @@ export class Session implements SessionFace {
   }
 
   private buildSnapshot(): SessionSnapshot {
+    const identity = this.projections.values().subagent
     return {
       sessionId: this.sessionId,
       pendingSubmissions: this.pendingSubmissions,
@@ -806,7 +807,9 @@ export class Session implements SessionFace {
       subagent: this.address === undefined
         ? null
         : {
-          address: this.address,
+          address: this.address.mode === 'unresolved' && identity != null
+            ? { ...this.address, mode: identity.mode }
+            : this.address,
           ...(this.parentAvailable === undefined ? {} : { parentAvailable: this.parentAvailable }),
         },
       removed: this.removed,

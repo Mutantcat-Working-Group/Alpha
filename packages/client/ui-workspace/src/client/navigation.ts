@@ -283,6 +283,32 @@ class UiWorkspaceService extends Service implements UiWorkspace {
     }
   }
 
+  private async restoreSelection(workspaces: WorkspaceSnapshot, sessions: SessionListState): Promise<void> {
+    const saved = this.selection.getSnapshot()
+    if (saved.subagentAddress !== undefined) {
+      this.replaceMain(saved.subagentAddress, this.lifetime.signal, 'preserve')
+      return
+    }
+    const summary = saved.sessionId === undefined ? undefined : sessions.byId[saved.sessionId]
+    const workspace = summary === undefined ? undefined
+      : workspaces.items.find(item => item.sessionIds.includes(summary.id))
+    if (summary !== undefined && (!summary.blank || workspace === undefined)) {
+      this.replaceMain(summary.id, this.lifetime.signal, 'preserve')
+      return
+    }
+    const navigation = AbortSignal.any([this.ctx.layout.beginNavigation(), this.lifetime.signal])
+    let sessionId: SessionId | undefined
+    if (summary !== undefined && workspace !== undefined && summary.cwd === workspace.path
+      && !workspaces.archivedSessionIds.includes(summary.id)) {
+      sessionId = await this.reuseBlank(workspace.workspaceId, summary.id)
+    }
+    const target = workspace?.workspaceId ?? recentWorkspace(workspaces.items, sessions.byId)
+    if (sessionId === undefined && target !== undefined) sessionId = await this.connectWorkspace(target)
+    if (sessionId !== undefined && !navigation.aborted) {
+      this.replaceMain(sessionId, navigation, 'preserve')
+    }
+  }
+
   /** @returns true when an archived current selection was cleared. */
   private clearArchivedCurrent(): boolean {
     const current = this.mainReference?.sessionId

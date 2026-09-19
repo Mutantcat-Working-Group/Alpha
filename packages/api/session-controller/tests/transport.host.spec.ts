@@ -631,6 +631,27 @@ describe('SessionHistoryController', () => {
       .rejects.toMatchObject({ code: 'subagent/unauthorized' })
   })
 
+  it('resolves a header-discovered address while retaining child ownership and descriptor validation', async () => {
+    const bench = await setup()
+    const parentSessionId = SessionId('unresolved-parent')
+    const childSessionId = SessionId('unresolved-child')
+    const header: SessionHeader = {
+      version: SESSION_FORMAT_VERSION, id: childSessionId, createdAt: 1, cwd: '/workspace',
+      isSeeded: false, origin: 'subagent', parentSession: parentSessionId,
+    }
+    cold(bench.ctx, header, [event('subagent/descriptor', SessionSeq(0), {
+      version: 3, mode: 'one-shot', provider: 'spawn',
+    })])
+    const address = { kind: 'subagent', parentSessionId, childSessionId, mode: 'unresolved' } as const
+    await expect(bench.transport.page({ address, throughSeq: 0 }, signal())).resolves.toMatchObject({
+      records: [{ type: 'event', event: { type: 'subagent/descriptor' } }],
+    })
+    await expect(bench.transport.page({ address: { ...address, parentSessionId: SessionId('wrong') }, throughSeq: 0 }, signal()))
+      .rejects.toMatchObject({ code: 'subagent/unauthorized' })
+    await expect(bench.transport.page({ address: { ...address, mode: 'continuable' }, throughSeq: 0 }, signal()))
+      .rejects.toMatchObject({ code: 'subagent/unauthorized' })
+  })
+
   it('reports an unavailable descriptor when an observed child has no projection value', async () => {
     const ctx = new Context()
     await ctx.plugin(SessionStore)

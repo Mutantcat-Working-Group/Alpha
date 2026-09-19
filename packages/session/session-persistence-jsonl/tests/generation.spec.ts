@@ -23,7 +23,6 @@ import {
   JsonlGenerationTargetConflictError,
   JsonlGenerationUnsupportedMigrationError,
   prepareJsonlMigration,
-  readDecodedJsonlSource,
   verifyJsonlCurrentGeneration,
   type JsonlGenerationFormatAdapter,
   type PrepareJsonlMigrationOptions,
@@ -86,19 +85,6 @@ function header(version: number, id = 'generation-test'): Record<string, unknown
 
 const event0 = { type: 'turn/start', seq: 0, time: 2, data: { turn: 1 } }
 const event1 = { type: 'turn/end', seq: 1, time: 3, data: { turn: 1, reason: { kind: 'completed' } } }
-
-it('preserves cancellation raised while creating a child source decoder', async () => {
-  const path = join(await tempRoot(), 'session.v3.jsonl')
-  await writeFile(path, line(header(3)))
-  const controller = new AbortController()
-  const reason = new Error('child decoding cancelled')
-  await expect(readDecodedJsonlSource(path, 3, 'none', {
-    createRestore() {
-      controller.abort(reason)
-      throw reason
-    },
-  }, controller.signal)).rejects.toBe(reason)
-})
 
 const assistantUsage = { inputTokens: 3, outputTokens: 2 }
 const assistantReplayState = { response: { id: 'response' } }

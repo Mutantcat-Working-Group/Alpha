@@ -133,7 +133,7 @@ describe('SubagentHeaderLineage', () => {
     expect(inactiveTrigger.querySelector('[data-state="ongoing"]')).toBeNull()
   })
 
-  it('does not aggregate subagents reached through an ordinary fork', () => {
+  it('adds header-discovered children without counting ordinary forks or their descendants', () => {
     const fork = 'fork' as SessionId
     const forkChild = 'fork-child' as SessionId
     render(<SubagentHeaderLineage {...props(catalog(), {}, {
@@ -479,7 +479,30 @@ describe('SubagentHeaderLineage', () => {
     expect(input.setCatalogOpen).toHaveBeenCalledWith(CHILD, false)
   })
 
-  it('shows known descendant rows while their catalog loads', () => {
+  it('shows a loading branch until its child headers arrive', () => {
+    const input = props(catalog(), { [CHILD]: catalog({ entries: [], state: 'loading' }) })
+    render(<SubagentHeaderLineage {...input} />)
+    hoverCatalog(screen.getByRole('button', { name: /1 个子代理，正在运行/ }))
+    fireEvent.click(screen.getByRole('button', { name: '展开 worker 的下级子代理' }))
+    expect(screen.getByText('正在加载子代理…')).toBeTruthy()
+  })
+
+  it('uses an already opened child identity without loading the parent catalog', () => {
+    const input = props(undefined, {}, {
+      [CHILD]: {
+        ...summary(CHILD, 1), parentId: PARENT, origin: 'subagent',
+        projectionValues: { subagent: { mode: 'one-shot', label: 'restored', seq: 0 } },
+      },
+    })
+    render(<SubagentHeaderLineage {...input} />)
+    hoverCatalog(screen.getByRole('button', { name: /1 个子代理/ }))
+    fireEvent.click(screen.getByRole('treeitem', { name: /restored/ }))
+    expect(input.openChild).toHaveBeenCalledWith({
+      parentSessionId: PARENT, childSessionId: CHILD, mode: 'one-shot',
+    })
+  })
+
+  it('shows header-discovered descendants before their identity projections load', () => {
     const secondGrandchild = 'grandchild-2' as SessionId
     const summaries = {
       [GRANDCHILD]: {
@@ -495,18 +518,19 @@ describe('SubagentHeaderLineage', () => {
     hoverCatalog(screen.getByRole('button', { name: /2 个子代理/ }))
     fireEvent.click(screen.getByRole('button', { name: '展开 worker 的下级子代理' }))
 
-    expect(deferred.setCatalogOpen).toHaveBeenCalledWith(CHILD, true)
-    expect(screen.getByRole('group').getAttribute('aria-busy')).toBe('true')
-    const loadingRows = screen.getAllByRole('treeitem', { name: '正在加载子代理' })
-    expect(loadingRows).toHaveLength(2)
-    expect(loadingRows.every(row => row.getAttribute('aria-level') === '2')).toBe(true)
-    expect(loadingRows[1]?.querySelector('[data-state="ongoing"]')).not.toBeNull()
+    expect(deferred.refresh).toHaveBeenCalledWith(CHILD)
+    expect(screen.getByRole('group').getAttribute('aria-busy')).toBeNull()
+    expect(screen.getAllByRole('treeitem', { name: /尚未打开/ })).toHaveLength(2)
+    fireEvent.click(screen.getByRole('treeitem', { name: /grandchild-2/ }))
+    expect(deferred.openChild).toHaveBeenCalledWith({ parentSessionId: CHILD, childSessionId: secondGrandchild, mode: 'unresolved' })
 
     const loading = props(catalog(), {
       [CHILD]: catalog({ entries: [], state: 'loading' }),
     }, summaries)
     view.rerender(<SubagentHeaderLineage {...loading} />)
-    expect(screen.getAllByRole('treeitem', { name: '正在加载子代理' })).toHaveLength(2)
+    hoverCatalog(screen.getByRole('button', { name: /1 个子代理，正在运行/ }))
+    fireEvent.click(screen.getByRole('button', { name: '展开 worker 的下级子代理' }))
+    expect(screen.getAllByRole('treeitem', { name: /尚未打开/ })).toHaveLength(2)
 
     const ready = props(catalog(), {
       [CHILD]: catalog({
@@ -595,7 +619,7 @@ describe('SubagentHeaderLineage', () => {
     expect(failed.refresh).toHaveBeenCalledWith(PARENT)
   })
 
-  it('keeps known descendants reachable while their catalog is absent or stale-empty', () => {
+  it('keeps header-discovered children available without parent catalog facts', () => {
     const second = 'child-2' as SessionId
     const summaries = {
       [CHILD]: {
@@ -607,19 +631,11 @@ describe('SubagentHeaderLineage', () => {
     }
     const absent = props(undefined, {}, summaries)
     const view = render(<SubagentHeaderLineage {...absent} />)
-
-    const trigger = screen.getByRole('button', { name: '1 个子代理，正在运行' })
-    expect(within(trigger).getByText('2 个子代理')).toBeTruthy()
-    hoverCatalog(trigger)
-    expect(absent.setCatalogOpen).toHaveBeenCalledWith(PARENT, true)
-    expect(screen.getAllByRole('treeitem', { name: '正在加载子代理' })).toHaveLength(2)
-    expect(absent.openChild).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /子代理/ })).toBeTruthy()
 
     const staleEmpty = props(catalog({ entries: [] }), {}, summaries)
     view.rerender(<SubagentHeaderLineage {...staleEmpty} />)
-    expect(screen.getByRole('button', { name: '1 个子代理，正在运行' })).toBeTruthy()
-    expect(screen.getAllByRole('treeitem', { name: '正在加载子代理' })).toHaveLength(2)
-    expect(staleEmpty.openChild).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /子代理/ })).toBeTruthy()
   })
 
   it('hides a bare loading catalog and keeps the error fallback without focusable rows', async () => {
@@ -797,6 +813,21 @@ describe('SubagentHeaderLineage', () => {
     expect(input.refresh).not.toHaveBeenCalled()
   })
 
+  it('shows a loading switcher before the restored child header arrives', () => {
+    const input = {
+      ...props(undefined, {}, {}, {
+        parentSessionId: PARENT, childSessionId: CHILD, mode: 'unresolved',
+      }),
+      lineageSessionId: CHILD,
+      displayTitle: 'restored child',
+    }
+    render(<SubagentHeaderLineage {...input} />)
+    hoverCatalog(screen.getByRole('button', { name: '切换子代理：restored child' }))
+    expect(screen.getByText('正在加载子代理…')).toBeTruthy()
+    expect(input.refresh).toHaveBeenCalledWith(PARENT)
+    expect(input.openChild).not.toHaveBeenCalled()
+  })
+
   it('keeps a nested title switcher scoped to its direct-parent catalog', () => {
     const input = {
       ...props(catalog(), {
@@ -829,6 +860,11 @@ describe('SubagentHeaderLineage', () => {
 })
 
 describe('SubagentReadOnlyComposer', () => {
+  it('keeps an unresolved child read-only', () => {
+    render(<SubagentReadOnlyComposer matched={{ reason: 'unresolved' }} t={t} />)
+    expect(screen.getByRole('status').textContent).toContain(zh['readonly.unresolved.body'])
+  })
+
   it('explains the exact missing-parent recovery path', () => {
     render(<SubagentReadOnlyComposer matched={{ reason: 'parent-unavailable' }} t={t} />)
     expect(screen.getByRole('status').textContent).toContain('父会话当前不在线')

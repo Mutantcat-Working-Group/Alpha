@@ -10,9 +10,9 @@ Status: implemented
 
 ## Decision
 
-V3→V4 迁移只在恰好一个受支持的自身子 descriptor 提供发现字段时，追加缺失的父目录项。其他 descriptor 数量及不受支持的版本不贡献新的目录事实。已有父目录项和子事件保持完整。这只替代[相邻迁移决策](../architecture/2026-08-31-released-session-format-migrations.zh.md)中的证据缺失拒绝规则。
+离线夹具准备和 Preview 打包中的可选 V3→V4 catalog 补全，仅在恰好一个受支持的自身子 descriptor 提供发现字段时追加缺失父条目。其他 descriptor 数量或不支持的版本不贡献新事实，已有父条目和子事件保持完整。运行时 JSONL 迁移不收集这些证据，并按[相邻迁移决策](../architecture/2026-08-31-released-session-format-migrations.zh.md)独立恢复各会话。
 
-已知子创建时间仍必须与已有父目录项一致。可获得且明确的 mode 和 label 字段也必须一致。已知 descriptor 字段无效、日志损坏、成员关系不可读、所选代际不受支持以及源修订变化仍保留原有失败行为。
+传入子创建时间必须匹配已有父条目。只有恰好一个受支持自身 descriptor 时才检查模式、标签和 descriptor 字段。这些证据检查属于显式离线补全；子会话损坏或不支持的代次不会阻止运行时父会话迁移。
 
 ## Alternatives considered
 
@@ -22,6 +22,8 @@ V3→V4 迁移只在恰好一个受支持的自身子 descriptor 提供发现字
 
 ## Consequences
 
-没有可用 descriptor 的历史子 Session 仍可按 id 读取，但可能不出现在其父级的直属子目录中。已有目录项仍可见。V4 后继发布后，打开它不会重新扫描历史子日志；后续自动修复目录不属于本迁移。准备过程仍会在发布前复查子修订，因此新出现的证据无法悄悄绕过源一致性检查。
+即使没有父 catalog 条目，缺少可用 descriptor 的历史子会话仍可通过可读且关联父会话的头部被发现。运行时迁移保留该缺失状态，不虚构事实。子会话自身 open 执行解码并局部报告失败；发布父后继从不要求子解码成功。
 
-单元、JSONL 读写和 Preview 打包测试覆盖不可用证据、源字节不变、条目保留、身份冲突以及发布前的证据变化。
+纯补全与 Preview 测试保留不可用证据、已有条目和冲突覆盖。JSONL 读写回归覆盖父子独立打开、子变化期间父版本标识稳定，以及前代字节不变。
+
+[会话独立迁移决策](./2026-09-19-session-local-subagent-migration.zh.md)取代运行时子正文收集与未打开分支投影读取；可选离线补全和持久化 catalog 语义仍有效。

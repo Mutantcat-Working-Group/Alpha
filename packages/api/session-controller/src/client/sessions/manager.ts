@@ -179,6 +179,14 @@ export class SessionManager {
         return { parentSessionId, childSessionId: sessionId, mode: child.mode }
       }
     }
+    const summary = this.summaries.find(item => item.sessionId === sessionId)
+    if (summary?.origin === 'subagent' && summary.parentSessionId !== undefined) {
+      return {
+        parentSessionId: summary.parentSessionId,
+        childSessionId: sessionId,
+        mode: this.projectionStores.get(sessionId)?.values().subagent?.mode ?? 'unresolved',
+      }
+    }
     return undefined
   }
 
@@ -724,89 +732,11 @@ export class SessionManager {
     this.listMutations = null
     this.listInflight = null
     void this.refreshList()
-    const parents = new Set(this.openCatalogs)
-    for (const id of this.sessions.keys()) {
-      const address = this.addresses.get(id)
-      if (address !== undefined) parents.add(address.parentSessionId)
-    }
-    for (const parentSessionId of parents) void this.refreshSubagents(parentSessionId)
-  }
-
-  /** Debounce membership refetches for an explicitly consumed catalog. */
-  private scheduleCatalogRefresh(parentSessionId: SessionId): void {
-    if (this.catalogDebounce.has(parentSessionId)) return
-    const timer = setTimeout(() => {
-      this.catalogDebounce.delete(parentSessionId)
-      // The in-flight response predates the membership frame that scheduled
-      // this callback. Queue one post-settlement pull instead of treating an
-      // ordinary overlapping read as evidence that catalog membership changed.
-      if (this.catalogInflight.has(parentSessionId)) {
-        this.catalogStale.add(parentSessionId)
-        return
-      }
-      void this.refreshSubagents(parentSessionId)
-    }, 50)
-    this.catalogDebounce.set(parentSessionId, timer)
-  }
-
-  /** Apply one Agent-driver transition to loaded and in-flight catalogs. */
-  private updateCatalogActivity(childSessionId: SessionId, running: boolean): void {
-    const activity = running ? 'running' as const : 'inactive' as const
-    for (const inflight of this.catalogInflight.values()) {
-      inflight.activityRows.set(childSessionId, activity)
-    }
-    let changed = false
-    for (const [parentSessionId, catalog] of this.catalogs) {
-      if (!catalog.entries.some(entry =>
-        entry.kind === 'child' && entry.id === childSessionId && entry.activity !== activity)) continue
-      const entries = catalog.entries.map((entry) => {
-        if (entry.kind !== 'child' || entry.id !== childSessionId) return entry
-        return { ...entry, activity }
-      })
-      changed = true
-      this.catalogs.set(parentSessionId, { ...catalog, entries })
-    }
-    if (changed) this.notifier.markDirty()
-  }
-
-  /** Preserve and project a positive expandability hint after one direct subagent publishes. */
-  private markCatalogParentExpandable(parentSessionId: SessionId): void {
-    this.applyCatalogParentExpandable(parentSessionId)
-    for (const inflight of this.catalogInflight.values()) inflight.expandableRows.add(parentSessionId)
-  }
-
-  /** Apply one positive expandability hint to every loaded catalog containing that unique row id. */
-  private applyCatalogParentExpandable(parentSessionId: SessionId): void {
-    let changed = false
-    for (const [catalogParentId, catalog] of this.catalogs) {
-      if (!catalog.entries.some(entry =>
-        entry.kind === 'child' && entry.id === parentSessionId && !entry.hasChildren)) continue
-      const entries = catalog.entries.map((entry) => {
-        if (entry.kind !== 'child' || entry.id !== parentSessionId || entry.hasChildren) return entry
-        return { ...entry, hasChildren: true }
-      })
-      changed = true
-      this.catalogs.set(catalogParentId, { ...catalog, entries })
-    }
-    if (changed) this.notifier.markDirty()
-  }
-
-  /** Fold request-local row mutations into one catalog result before publication. */
-  private withCatalogMutations(
-    entries: SubagentCatalog['entries'],
-    expandableRows: ReadonlySet<SessionId>,
-    activityRows: ReadonlyMap<SessionId, 'running' | 'inactive'>,
-  ): SubagentCatalog['entries'] {
-    return entries.map((entry) => {
-      if (entry.kind !== 'child') return entry
-      const activity = activityRows.get(entry.id)
-      if (!expandableRows.has(entry.id) && activity === undefined) return entry
-      return {
-        ...entry,
-        ...expandableRows.has(entry.id) ? { hasChildren: true } : {},
-        ...activity === undefined ? {} : { activity },
-      }
-    })
+    const parents = new Set(this.projectionLoads.keys())
+    for (const { controller } of this.projectionInflight.values()) controller.abort()
+    this.projectionInflight.clear()
+    this.projectionLoads.clear()
+    for (const parentSessionId of parents) void this.refreshProjections(parentSessionId)
   }
 
   private buildListSnapshot(): SessionListSnapshot {

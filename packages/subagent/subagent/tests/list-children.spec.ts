@@ -170,130 +170,39 @@ function mutateStoredHeader(
   }
 }
 
-/** Minimal complete-turn child log with one descriptor payload. */
-function childEvents(descriptor: unknown): SessionEvent[] {
-  return [
-    { type: 'turn/start', seq: SessionSeq(0), time: 1, data: { turn: 1, trigger: { kind: 'message', source: { kind: 'user' } } } },
-    {
-      type: 'user/message',
-      seq: SessionSeq(1),
-      time: 2,
-      data: createUserMessage({ content: [{ type: 'text', text: 'work' }], source: { kind: 'user' } }),
-      surfaceOp: 'append',
-    },
-    { type: 'subagent/descriptor', seq: SessionSeq(2), time: 3, data: descriptor },
-    { type: 'turn/end', seq: SessionSeq(3), time: 4, data: { turn: 1, reason: { kind: 'completed' } } },
-  ] as SessionEvent[]
-}
-
-function descriptorPayload(label: string, version = SUBAGENT_DESCRIPTOR_VERSION) {
-  return { version, mode: 'continuable' as const, provider: 'spawn', label }
-}
-
-declare module '@mutantcat/dsh-session-projection/types' {
-  interface SessionProjectionStateMap {
-    subagentListHostileProbe: { poisoned?: boolean | undefined }
-  }
-  interface SessionProjectionMap {
-    /** Test-only hostile probe proving per-child isolation of foreign unit failures. */
-    subagentListHostileProbe: null
-  }
-}
-
-/**
- * A foreign registered unit that rejects one specific child's log at view
- * time: `apply` never throws (the eager drive passes every committed event
- * through it), while the poisoned state detonates only when a listing read
- * folds or serves this child through the registry.
- */
-const hostileProjectionDefinition = {
-  key: 'subagentListHostileProbe',
-  stateSchema: z.object({ poisoned: z.boolean().optional() }),
-  init: () => ({}),
-  apply: (state, event) =>
-    event.type === 'subagent/descriptor' && (event.data as { label?: string }).label === 'poison me'
-      ? { poisoned: true }
-      : state,
-  wire: {
-    viewSchema: z.null(),
-    view: (state) => {
-      if (state.poisoned === true) throw new Error('hostile unit rejects the poisoned log')
-      return null
-    },
-  },
-  stateVersion: 1,
-} satisfies ProjectionDefinition<'subagentListHostileProbe', { poisoned?: boolean | undefined }>
-
 describe('SubagentRuntime.listChildren', () => {
-  it('lists live children without persistence or the continuation runtime', async () => {
-    const ctx = new Context()
-    await ctx.plugin(SessionStore)
-    await ctx.plugin(SessionProjectionRegistry)
-    await ctx.plugin(TestSessionQuery)
-    await ctx.plugin(SubagentRuntime)
-    expect(ctx.get('jobs')).toBeUndefined()
-    expect(ctx.get('agents')).toBeUndefined()
-    expect(ctx.get('sessionPersistence')).toBeUndefined()
-
-    const parentId = SessionId('live-only-parent')
-    ctx.sessions.create(parentId)
-    const childId = SessionId('live-only-child')
-    const child = ctx.sessions.create(childId, {
-      meta: { parentSession: parentId, origin: 'subagent' },
+  it('discovers historical children from headers while leaving their bodies unread', async () => {
+    const { ctx, root } = await setup([], { compression: 'none' })
+    const parent = SessionId('historical-parent')
+    const child = SessionId('historical-child')
+    const header = { type: 'session', version: 3, id: parent, createdAt: 1, isSeeded: false, delegationDepth: 0 }
+    const source = [
+      [header, []],
+      [{ ...header, id: child, createdAt: 2, origin: 'subagent', parentSession: parent, delegationDepth: 1 }, [{
+        type: 'subagent/descriptor', seq: 0, time: 2,
+        data: { version: 3, mode: 'continuable', provider: 'spawn', label: 'historical child' },
+      }]],
+    ] as const
+    const originals = source.map(([meta, events]) => {
+      const path = generationLogPath(root, undefined, meta.id, 3, 'none')
+      const content = [meta, ...events].map(row => JSON.stringify(row)).join('\n') + '\n'
+      mkdirSync(dirname(path), { recursive: true })
+      writeFileSync(path, content)
+      return { path, content }
     })
-    child.append('turn/start', {
-      turn: 1,
-    })
-    child.append('subagent/descriptor', descriptorPayload('live-only child'))
 
-    await expect(ctx.subagents.listChildren(parentId)).resolves.toEqual([
-      {
-        kind: 'child', id: childId, label: 'live-only child', mode: 'continuable',
-        activity: 'running', hasChildren: false,
-      },
-    ])
+    const observe = vi.spyOn(ctx.sessionQuery, 'observeSession')
+    expect(await ctx.subagents.listChildren(parent)).toEqual([{
+      id: child, createdAt: 2, mode: 'unresolved',
+    }])
+    expect(observe.mock.calls.map(([id]) => id)).toEqual([parent])
+    for (const { path, content } of originals) {
+      expect(readFileSync(path, 'utf8')).toBe(content)
+      expect(readdirSync(dirname(path))).toEqual(['session.v3.jsonl'])
+    }
   })
 
-  it('fails loud when the projection registry is not mounted, even with no children', async () => {
-    const ctx = await setupWithoutProjections()
-    await expect(ctx.subagents.listChildren(SessionId('no-projections-parent'))).rejects.toThrow(
-      expect.objectContaining({ code: 'SUBAGENT_CONTROL_PROJECTIONS_UNAVAILABLE' }) as Error,
-    )
-  })
-
-  it('fails loud when the session store is not mounted', async () => {
-    const ctx = new Context()
-    await ctx.plugin(SessionProjectionRegistry)
-    await ctx.plugin(SubagentRuntime)
-    await expect(ctx.subagents.listChildren(SessionId('no-store-parent'))).rejects.toThrow(
-      expect.objectContaining({ code: 'SUBAGENT_CONTROL_SESSION_STORE_UNAVAILABLE' }) as Error,
-    )
-  })
-
-  it('fails loud when the Session query service is not mounted', async () => {
-    const ctx = new Context()
-    await ctx.plugin(SessionStore)
-    await ctx.plugin(SessionProjectionRegistry)
-    await ctx.plugin(SubagentRuntime)
-
-    await expect(ctx.subagents.listChildren(SessionId('no-query-parent'))).rejects.toThrow(
-      expect.objectContaining({ code: 'SUBAGENT_CONTROL_QUERY_UNAVAILABLE' }) as Error,
-    )
-  })
-
-  it('lists a persisted continuable child as inactive with its durable label', async () => {
-    const { ctx, parent } = await setup([textResponse('done')])
-    const childId = await startChild(ctx, parent, 'summarize the doc')
-    const entries = await ctx.subagents.listChildren(parent.id)
-    expect(entries).toEqual([
-      {
-        kind: 'child', id: childId, label: 'summarize the doc', mode: 'continuable',
-        activity: 'inactive', hasChildren: false,
-      },
-    ])
-  })
-
-  it('lists one-shot and continuable children under the same parent', async () => {
+  it('lists provider-established children from the parent catalog without a child body read', async () => {
     const { ctx, parent } = await setup([textResponse('once'), textResponse('again')])
     const oneShot = await ctx.subagents.start('spawn', {
       prompt: [{ type: 'text', text: 'finish once' }],
@@ -305,11 +214,23 @@ describe('SubagentRuntime.listChildren', () => {
     await oneShot.dispose()
     const continuableId = await startChild(ctx, parent, 'continuable child')
 
-    const entries = await ctx.subagents.listChildren(parent.id)
-    expect(entries).toHaveLength(2)
-    expect(entries).toContainEqual({
-      kind: 'child',
-      id: oneShotId,
+    const children = await ctx.subagents.listChildren(parent.id)
+    expect(children.map(({ createdAt: _createdAt, ...child }) => child)).toEqual([
+      { id: oneShotId, mode: 'one-shot' },
+      { id: continuableId, label: 'continuable child', mode: 'continuable' },
+    ])
+    expect(children.every(child => Number.isFinite(child.createdAt))).toBe(true)
+    expect(listSessions).toHaveBeenCalledOnce()
+    expect(observeSession).toHaveBeenCalledOnce()
+  })
+
+  it('releases its observation after reading the catalog view', async () => {
+    const { ctx, parent } = await setup([])
+    const childId = SessionId('cold-state-child')
+    parent.session.append('subagent/catalog', {
+      version: 0,
+      childId,
+      childCreatedAt: 3,
       mode: 'one-shot',
       activity: 'inactive',
       hasChildren: false,
@@ -1066,12 +987,13 @@ describe('SubagentRuntime.listChildren', () => {
         }, { once: true })
       })
     }
-    const listing = ctx.subagents.listChildren(parent.id, controller.signal)
-    await entered.promise
-    controller.abort()
-    await expect(listing).rejects.toThrow(
-      expect.objectContaining({ code: 'CANCELLED' }) as Error,
-    )
+    expect(chunkLengths).toEqual([1, ...Array.from({ length: 16 }, () => 64)])
+    const entries = await ctx.subagents.listChildren(parent.id)
+    expect(listSessions).toHaveBeenCalledOnce()
+    expect(entries).toHaveLength(1_025)
+    expect(entries.find(entry => entry.id === 'child-064')).toEqual({
+      id: SessionId('child-064'), createdAt: 64, mode: 'one-shot',
+    })
   })
 
   it('an abort observed after a cold inspection resolves cannot become a successful result', async () => {

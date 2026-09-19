@@ -26,6 +26,7 @@ export const zh = {
   'loading.aria': '正在加载子代理',
   'load.error': '无法加载子代理',
   'retry': '重试',
+  'mode.unresolved': '尚未打开',
   'mode.oneShot': '一次性',
   'mode.continuable': '可继续',
   'activity.running': '正在运行',
@@ -43,6 +44,7 @@ export const zh = {
   'readonly.oneShot.title': '一次性子代理记录',
   'readonly.title': '此子代理暂时只读',
   'readonly.oneShot.body': '一次性任务不支持后续消息，可在这里查看完整执行记录。',
+  'readonly.unresolved.body': '打开会话后才能确认是否支持后续消息。',
   'readonly.body': '父会话当前不在线，重新打开父会话后即可继续发送消息。',
 } as const
 
@@ -69,6 +71,7 @@ export const en: Record<SubagentKey, string> = {
   'loading.aria': 'Loading subagents',
   'load.error': 'Unable to load subagents',
   'retry': 'Retry',
+  'mode.unresolved': 'Not opened',
   'mode.oneShot': 'one-shot',
   'mode.continuable': 'continuable',
   'activity.running': 'running',
@@ -86,6 +89,7 @@ export const en: Record<SubagentKey, string> = {
   'readonly.oneShot.title': 'One-shot subagent record',
   'readonly.title': 'This subagent is read-only for now',
   'readonly.oneShot.body': 'One-shot tasks do not accept follow-ups; review the full execution record here.',
+  'readonly.unresolved.body': 'Open this conversation to check whether it supports follow-up messages.',
   'readonly.body': 'The parent session is offline; reopen it to continue sending messages.',
 }
 

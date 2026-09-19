@@ -48,7 +48,18 @@ The header-only operation advances validated metadata without reading the body:
 const targetHeader = sessionFormatV3ToV4.migrateHeader(sourceHeader)
 ```
 
-Complete restoration decodes rows, passes them through a fresh stage, and validates the target artifact. Partial stage emissions do not establish success: a later event or `finish()` can refuse the artifact. Strict catalog restoration uses `{ recovery: 'strict', validation: 'current' }`; the [format protocol](../session-format/README.md) owns scheduling and error handling.
+Historical body restoration through `sessionFormatV3ToV4` requires only the requested Session. It preserves existing catalog entries without reading children. Offline fixture preparation may explicitly supply child evidence through `createSessionFormatCatalogWithChildren()` to append missing catalog facts; an empty array requests no backfill. Keep supplied evidence unchanged for the catalog’s lifetime.
+
+```text
+const catalog = createSessionFormatCatalogWithChildren(childFacts)
+const restore = catalog.createRestore(physicalHeader, {
+  recovery: 'strict', validation: 'current',
+})
+for (const row of physicalRows) restore.decodeRow(row)
+const artifact = restore.finish()
+```
+
+Every restore creates independent Stage state. Compact runs expand as iterables without an intermediate event array. Partial emissions do not establish success: a later row or `finish()` can refuse the artifact. The [format protocol](../session-format/README.md) owns scheduling and error handling; [JSONL persistence](../session-persistence-jsonl/README.md) owns source reads, preparation, and verified exclusive successor publication.
 
 -----
 
@@ -137,7 +148,7 @@ Catalog version 0 requires string `childId`, nonnegative safe-integer `childCrea
 
 The stage considers parent catalog records only after the final inherited cut. Every inherited marker discards earlier catalog candidates without interpreting their payloads. Missing entries append after all source events, sorted by creation time then child id, with dense new sequences. Their time is the final source event's time, or header creation time for an empty log. They neither enter the model surface nor change the inherited count.
 
-Storage supplies the complete recognizable child set within its root and rechecks membership and physical revisions during preparation, memo reuse, and publication. Incomplete descriptor evidence only prevents that child’s backfill. Unreadable headers that prevent classifying membership, unsupported selected generations, or source drift refuse the operation. The package itself reads no files; [persistence](../session-persistence-jsonl/README.md) owns encoding, locks, cancellation, and publication.
+The supplemental evidence rules apply only when a caller requests catalog completion. Runtime JSONL migration does not collect child evidence; it migrates each Session on its own open. The package reads no files; [persistence](../session-persistence-jsonl/README.md) owns encoding, locks, cancellation, source revision checks, and publication.
 
 <a id="sequence-references"></a>
 ### Sequence references and inheritance

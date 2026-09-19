@@ -19,8 +19,11 @@ import type {} from '@mutantcat/dsh-token-meter/client'
 import css from './SubagentHeaderLineage.module.css'
 import { indexSubagentDescendants } from './subagent-lineage.ts'
 
-type CatalogEntry = SubagentCatalogSnapshot['entries'][number]
-type Catalogs = SessionListState['subagentsByParent']
+type SubagentCatalogSnapshot = Omit<SessionProjectionSnapshot, 'values' | 'state'> & {
+  state: 'loading' | 'ready' | 'error'
+  entries: { id: SessionId; mode: SubagentAddress['mode']; label?: string; activity: 'running' | 'inactive' }[]
+}
+type Catalogs = Readonly<Record<SessionId, SubagentCatalogSnapshot>>
 
 /** Business actions supplied by the slot registration. */
 export interface SubagentCatalogInjected {
@@ -302,8 +305,15 @@ function CatalogRows({
           || (childCatalog.state === 'loading' && childCatalog.entries.length === 0)
         const summary = summaries[entry.id]
         const label = entry.label ?? entry.id
-        const mode = entry.mode === 'one-shot' ? t('mode.oneShot') : t('mode.continuable')
-        const activity = entry.activity === 'running' ? t('activity.running') : t('activity.inactive')
+        const mode = entry.mode === 'unresolved' ? t('mode.unresolved')
+          : entry.mode === 'one-shot' ? t('mode.oneShot') : t('mode.continuable')
+        const completed = entry.activity === 'inactive'
+          && summary?.projectionValues?.subagentTiming?.lastTurnCompleted === true
+        const activity = entry.activity === 'running'
+          ? t('activity.running')
+          : completed
+            ? t('activity.completed')
+            : t('activity.inactive')
         const secondary = [summary?.title, mode, activity]
           .filter(value => value !== undefined)
           .join(' · ')
@@ -509,6 +519,32 @@ function CatalogDropdown({
   const ancestorSwitcher = variant === 'switcher' && openTitle !== undefined
   const catalogs = useSessions(state => state.subagentsByParent)
   const summaries = useSessions(state => state.byId)
+  const statuses = useSessionStatus(value => value)
+  const catalogs = useMemo<Catalogs>(() => {
+    const result: Record<SessionId, SubagentCatalogSnapshot> = Object.fromEntries(Object.entries(projections).map(([id, snapshot]) => [id, {
+      state: snapshot.state === 'idle'
+        ? snapshot.values.subagentCatalog === undefined ? 'loading' : 'ready'
+        : snapshot.state,
+      error: snapshot.error,
+      entries: (snapshot.values.subagentCatalog ?? []).map(entry => ({
+        ...entry, activity: (statuses.get(entry.id)?.running ?? summaries[entry.id]?.running) === true ? 'running' as const : 'inactive' as const,
+      })),
+    }]))
+    const known = new Map(Object.entries(result).map(([id, catalog]) => [id, new Set(catalog.entries.map(entry => entry.id))]))
+    for (const summary of Object.values(summaries)) {
+      if (summary.origin !== 'subagent' || summary.parentId === undefined) continue
+      result[summary.id] ??= { state: 'ready', error: null, entries: [] }
+      const catalog = result[summary.parentId] ??= { state: 'ready', error: null, entries: [] }
+      if (known.get(summary.parentId)?.has(summary.id)) continue
+      const identity = summary.projectionValues?.subagent
+      catalog.entries.push({
+        id: summary.id, mode: identity?.mode ?? 'unresolved',
+        ...(identity?.label === undefined ? {} : { label: identity.label }),
+        activity: (statuses.get(summary.id)?.running ?? summary.running) ? 'running' : 'inactive',
+      })
+    }
+    return result
+  }, [projections, summaries, statuses])
   const catalog = catalogs[rootSessionId]
   const [open, setOpen] = useState(false)
   const [menuPosition, setMenuPosition] = useState<CSSProperties>()
@@ -524,9 +560,9 @@ function CatalogDropdown({
   setCatalogOpenRef.current = setCatalogOpen
   const currentEntry = currentSessionId === undefined
     ? undefined
-    : catalog?.entries.find(entry => entry.kind === 'child' && entry.id === currentSessionId)
-  const switcherDisplayTitle = currentEntry?.kind === 'child'
-    ? currentEntry.label ?? currentEntry.id
+    : catalog?.entries.find(entry => entry.id === currentSessionId)
+  const switcherDisplayTitle = currentEntry !== undefined
+    ? currentEntry.label ?? (currentEntry.mode === 'unresolved' ? displayTitle : currentEntry.id)
     : displayTitle
   const healthy = catalog?.entries.filter(entry => entry.kind === 'child') ?? []
   const descendants = useMemo(

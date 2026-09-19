@@ -48,7 +48,18 @@ kind: "package-library"
 const targetHeader = sessionFormatV3ToV4.migrateHeader(sourceHeader)
 ```
 
-完整恢复解码行、通过新的 Stage 处理行，并校验目标产物。Stage 的部分输出不代表恢复成功：后续事件或 `finish()` 仍可能拒绝该产物。严格的目录恢复使用 `{ recovery: 'strict', validation: 'current' }`；[格式协议](../session-format/README.zh.md)负责调度和错误处理。
+通过 `sessionFormatV3ToV4` 恢复历史正文只需要所请求的会话。它保留已有 catalog 条目，不读取子会话。离线夹具准备可以通过 `createSessionFormatCatalogWithChildren()` 显式传入子会话证据，追加缺失的 catalog 事实；空数组表示不回填。传入证据在 catalog 生命周期内必须保持不变。
+
+```text
+const catalog = createSessionFormatCatalogWithChildren(childFacts)
+const restore = catalog.createRestore(physicalHeader, {
+  recovery: 'strict', validation: 'current',
+})
+for (const row of physicalRows) restore.decodeRow(row)
+const artifact = restore.finish()
+```
+
+每次恢复都创建独立的 Stage 状态。紧凑 run 以迭代器展开，不物化中间事件数组。部分输出不代表成功：后续行或 `finish()` 仍可拒绝整份产物。[格式协议](../session-format/README.zh.md)负责调度和错误处理；[JSONL 持久化](../session-persistence-jsonl/README.zh.md)负责源读取、准备以及经验证的独占后继发布。
 
 -----
 
@@ -137,7 +148,7 @@ Catalog version 0 要求字符串 `childId`、非负安全整数 `childCreatedAt
 
 Stage 只把最终继承截点之后的父目录记录作为候选。每个 inherited marker 都会丢弃更早的目录候选，不解释其载荷。缺失项追加在所有源事件之后，按创建时间、child id 排序，并使用连续的新序号。时间取最后一个源事件的 time；空日志则取 header 创建时间。这些记录既不进入模型表面，也不改变继承计数。
 
-存储层提供其根目录内完整的可识别子级集合，并在准备、复用 memo 与发布时复查成员及物理版本。不完整的 descriptor 证据只阻止补填对应子 Session 的目录项。无法据此判断成员关系的不可读 header、不受支持的所选代际或源变化都会拒绝操作。本包不读取文件；[持久化层](../session-persistence-jsonl/README.zh.md)负责编码、锁、取消与发布。
+补充证据规则仅适用于调用者请求 catalog 补全时。运行时 JSONL 迁移不收集子会话证据，每个会话在自身 open 时独立迁移。本包不读取文件；[持久化](../session-persistence-jsonl/README.zh.md) 负责编码、锁、取消、源文件版本检查和发布。
 
 <a id="sequence-references"></a>
 ### 序号引用与继承
