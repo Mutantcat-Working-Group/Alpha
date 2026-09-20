@@ -70,12 +70,13 @@ export function childCatalogFact(source: SessionFormatJsonObject): SessionFormat
  * @returns validated catalog payload.
  */
 export function catalogFact(value: SessionFormatJsonValue, subject = 'subagent/catalog'): SessionFormatJsonObject {
-  if (!isSessionFormatJsonObject(value) || value['version'] !== 0
+  if (!isSessionFormatJsonObject(value) || (value['version'] !== 0 && value['version'] !== 1)
     || typeof value['childId'] !== 'string'
     || (value['mode'] !== 'continuable' && value['mode'] !== 'one-shot' && value['mode'] !== 'unknown')
+    || (value['version'] === 0 && value['mode'] === 'unknown')
     || (value['mode'] === 'continuable' && typeof value['label'] !== 'string')
     || (value['label'] !== undefined && typeof value['label'] !== 'string')) {
-    throw new SessionFormatError(`${subject} requires a version 0 catalog fact`)
+    throw new SessionFormatError(`${subject} requires a supported versioned catalog fact`)
   }
   sessionFormatCount(value['childCreatedAt'], 'catalog child creation time')
   return value

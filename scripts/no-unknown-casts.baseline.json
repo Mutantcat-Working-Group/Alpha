@@ -2131,9 +2131,7 @@
     "b50b6842b3565ea7f1441afb3214ab0ccf027df0e44bb485005935849c46f8ea": 1
   },
   "packages/subagent/subagent/src/catalog.ts": {
-    "29a67bf48723006b65c652af8a0ff30a4385bb14d651d91ca3059e1ddcb44fcf": 1,
     "3e704e331ed2fc5d4c0855e2455b31b82924c525f2e267416e393cdbd36c251b": 1,
-    "c3a7c8abe19131a8d98f4fb6a495b590e67a56cbf2e741caccfe730f8261edb0": 1,
     "fdc5fcade0ba1abbc426ccccb07a1ad4998253799b8561815047d95178441cdf": 1
   },
   "packages/subagent/subagent/src/internal.ts": {

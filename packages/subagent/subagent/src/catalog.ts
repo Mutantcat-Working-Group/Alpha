@@ -17,19 +17,21 @@ import type {
 import type { ProjectionDefinition } from '@mutantcat/dsh-session-projection'
 import type { SubagentCatalogEntry } from './projection-types.ts'
 
-/** Current payload version for `subagent/catalog` events. */
+/** Catalog payload version emitted by live child creation. */
 export const SUBAGENT_CATALOG_VERSION = 0
 
-/** One parent-owned catalog fact with known or unknown child mode. */
+type KnownCatalogMode =
+  | { readonly mode: 'one-shot'; readonly label?: string }
+  | { readonly mode: 'continuable'; readonly label: string }
+
+/** Parent catalog v0 records known modes; v1 also retains children with unknown mode. */
 export type SubagentCatalogEvent =
   & {
-    readonly version: 0
     readonly childId: SessionId
     readonly childCreatedAt: number
   } & (
-    | { readonly mode: 'one-shot'; readonly label?: string }
-    | { readonly mode: 'continuable'; readonly label: string }
-    | { readonly mode: 'unknown'; readonly label?: string }
+    | ({ readonly version: 0 } & KnownCatalogMode)
+    | ({ readonly version: 1 } & (KnownCatalogMode | { readonly mode: 'unknown'; readonly label?: string }))
   )
 
 declare module '@deepseek-ai/dsh-session/types' {
@@ -50,25 +52,25 @@ export interface SubagentCatalogState {
 
 const sessionIdSchema = z.string() as unknown as z.ZodType<SessionId>
 const oneShotCatalogSchema = z.object({
-  version: z.literal(SUBAGENT_CATALOG_VERSION),
+  version: z.union([z.literal(0), z.literal(1)]),
   childId: sessionIdSchema,
   childCreatedAt: z.number().int().nonnegative(),
   mode: z.literal('one-shot'),
   label: z.string().optional(),
 }).strict()
 const continuableCatalogSchema = z.object({
-  version: z.literal(SUBAGENT_CATALOG_VERSION),
+  version: z.union([z.literal(0), z.literal(1)]),
   childId: sessionIdSchema,
   childCreatedAt: z.number().int().nonnegative(),
   mode: z.literal('continuable'),
   label: z.string(),
 }).strict()
-const unknownCatalogSchema = oneShotCatalogSchema.extend({ mode: z.literal('unknown') })
+const unknownCatalogSchema = oneShotCatalogSchema.extend({ version: z.literal(1), mode: z.literal('unknown') })
 const eventDataSchema = z.union([
   oneShotCatalogSchema,
   continuableCatalogSchema,
   unknownCatalogSchema,
-]) as unknown as z.ZodType<SubagentCatalogEvent>
+]) as z.ZodType<SubagentCatalogEvent>
 const viewSchema = z.array(z.union([
   oneShotCatalogSchema.omit({ version: true, childId: true, childCreatedAt: true }).extend({
     id: sessionIdSchema,
@@ -82,7 +84,7 @@ const viewSchema = z.array(z.union([
     id: sessionIdSchema,
     createdAt: unknownCatalogSchema.shape.childCreatedAt,
   }),
-])) as unknown as z.ZodType<SubagentCatalogEntry[]>
+])) as z.ZodType<SubagentCatalogEntry[]>
 const stateSchema: z.ZodType<SubagentCatalogState> = z.object({
   inheritedEventCount: z.number().int().nonnegative() as unknown as z.ZodType<SessionLogOffset>,
   head: chunkedListSchema(eventDataSchema).optional(),

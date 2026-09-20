@@ -122,7 +122,7 @@ class ReleasedV3ToV4Stage implements SessionFormatMigrationStage {
         }
         continue
       }
-      const entry = fact ?? { version: 0, childId: id, childCreatedAt: source['childCreatedAt'] as number, mode: 'unknown' }
+      const entry = fact ?? { version: 1, childId: id, childCreatedAt: source['childCreatedAt'] as number, mode: 'unknown' }
       existingCatalogs.set(id, entry)
       context.emitEvent({ type: 'subagent/catalog',
         seq: this.nextSeq++, time: this.time, data: entry })

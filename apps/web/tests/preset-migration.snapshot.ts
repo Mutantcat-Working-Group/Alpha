@@ -109,7 +109,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
           ? { ...row, data: { agentPreset: 'ptc' } }
           : row),
         { type: 'subagent/catalog', seq: rows.length, time: rows.at(-1)?.['time'], data: {
-          version: 0, childId: brokenId, childCreatedAt: childFixture[0]?.['createdAt'], mode: 'unknown',
+          version: 1, childId: brokenId, childCreatedAt: childFixture[0]?.['createdAt'], mode: 'unknown',
         } },
         { type: 'subagent/catalog', seq: rows.length + 1, time: rows.at(-1)?.['time'], data: {
           version: 0, childId, childCreatedAt: childFixture[0]?.['createdAt'], mode: 'one-shot', label: 'historical child',

@@ -648,7 +648,7 @@ describe('HarnessClient', () => {
       (client as unknown as { dispatchNotification(n: HarnessNotification): void }).dispatchNotification({ method, params })
     }
     const unknownChild = { type: 'subagent/catalog', seq: 0, time: 1,
-      data: { version: 0, childId: 'unreadable-child', childCreatedAt: 1, mode: 'unknown' } }
+      data: { version: 1, childId: 'unreadable-child', childCreatedAt: 1, mode: 'unknown' } }
     inject('session.event', { sessionId: 'root', event: unknownChild })
     inject('subagent.started', { parentSessionId: 'root', childSessionId: 'child' })
     inject('subagent.started', { parentSessionId: 'child', childSessionId: 'grandchild' })

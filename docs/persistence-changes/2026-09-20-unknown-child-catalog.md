@@ -28,19 +28,19 @@ baseline: false
 changes:
   - root: "event:subagent/catalog"
     previous: "2026-09-11-initial"
-    after: "4d6002c7eec8d76bbb6e531a35a55bc66dfb87621bc2e89e3af0641acf947bb3"
+    after: "3abae7324356f155cb42450c00b806d134ec93bd6439d2063b8d724162d58604"
     decision: same-version
 ```
 
 <a id="compatibility"></a>
 ## Compatibility
 
-The catalog adds one unknown-mode alternative with the same identity and optional label fields as one-shot mode. Existing alternatives and the V4 header remain unchanged. New readers accept old records; older readers may reject records with unknown mode. The persistence classifier has a scoped catalog exception for this addition, while other union additions and modifications remain strict. Unknown membership grants no continuation capability.
+Catalog payload v0 remains unchanged. Payload v1 adds unknown mode, and current readers accept v0 and v1. Complete facts still use v0; migration emits v1 for unknown children. Existing logs need no rewrite, and the Session header remains V4. Older readers reject v1. The classifier allows higher event payload versions only when all old payload alternatives remain unchanged; same-version widening and removal of old readers stay breaking.
 
 <a id="verification"></a>
 ## Verification
 
-Catalog migration, restoration, projection, and Web regressions cover retained unknown membership and child-local errors. Persistence classifier tests accept the exact catalog extension and reject altered existing fields, other new modes, extra unknown fields, removals, and unrelated union additions.
+Migration, restoration, projection, and Web regressions retain unknown membership and child-local errors. Classifier tests accept higher payload versions with preserved predecessors and reject same-version additions, invalid versions, changed or removed old alternatives, and header/surface changes.
 
 <a id="dev-note"></a>
 ## Dev Note

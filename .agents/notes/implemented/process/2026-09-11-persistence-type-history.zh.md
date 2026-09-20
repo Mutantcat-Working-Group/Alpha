@@ -14,7 +14,7 @@ Status: implemented
 
 专用的[持久化变更记录](../../../../docs/persistence-changes/README.zh.md)将确认绑定到每个受影响根的变更后摘要。生成的伴随文件保存完整的变更后 schema。初始记录覆盖所有根；后续记录为每个根指定前驱。前驱的变更后 schema 提供下一次的变更前 schema。验证拒绝有歧义的历史，并要求当前源码匹配最终记录状态，无需查询 Git 历史或远端服务。
 
-自动分类允许可选事件体新增、事件体属性从必选改为可选，以及普通事件新增保持同一版本。当双方保存的 schema 均声明支持时，受限的[消息源归属策略](2026-09-17-persistence-schema-review.zh.md)也允许添加符合条件的生产者 kind。[Catalog 例外](../../../../docs/persistence-changes/README.zh.md#compatibility-rules) 允许增加身份字段不变的未知子模式，并记录旧读取器限制。其他结构变更需要升版本决策，并在该记录中包含递增的头部版本。[格式版本流程](../../../../docs/cookbook/adding-a-session-format-version.zh.md)继续负责相邻迁移工作。每个结构差异都需要显式记录，包括允许保持同一版本的新增。
+自动分类允许可选事件体新增、事件体属性从必选改为可选，以及普通事件新增保持同一版本。当双方保存的 schema 均声明支持时，受限的[消息源归属策略](2026-09-17-persistence-schema-review.zh.md)也允许添加符合条件的生产者 kind。[事件载荷版本规则](../../../../docs/persistence-changes/README.zh.md#compatibility-rules) 允许在原样保留所有旧分支时增加更高的数字载荷版本，并记录旧读取器限制。其他结构变更需要升版本决策，并在该记录中包含递增的头部版本。[格式版本流程](../../../../docs/cookbook/adding-a-session-format-version.zh.md)继续负责相邻迁移工作。每个结构差异都需要显式记录，包括允许保持同一版本的新增。
 
 新文档类型保留历史类型转换的兼容性说明和证据。Agent Note 保留机制层面的决策，不积累单次确认清单。双语对中的机器声明保持相同，且只解析一次。
 

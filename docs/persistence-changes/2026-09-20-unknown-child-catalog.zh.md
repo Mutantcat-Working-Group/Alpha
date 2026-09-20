@@ -28,19 +28,19 @@ baseline: false
 changes:
   - root: "event:subagent/catalog"
     previous: "2026-09-11-initial"
-    after: "4d6002c7eec8d76bbb6e531a35a55bc66dfb87621bc2e89e3af0641acf947bb3"
+    after: "3abae7324356f155cb42450c00b806d134ec93bd6439d2063b8d724162d58604"
     decision: same-version
 ```
 
 <a id="compatibility"></a>
 ## 兼容性
 
-Catalog 增加一个 unknown 模式分支，身份与可选 label 字段和 one-shot 模式相同。已有分支及 V4 header 保持不变。新读取器接受旧记录；旧读取器可能拒绝 unknown 模式记录。持久化分类器仅为该 catalog 扩展设置限定例外，其他联合类型新增与修改仍严格检查。未知成员关系不授予继续执行能力。
+Catalog 载荷 v0 保持不变。载荷 v1 增加 unknown 模式，当前读取器支持 v0 和 v1。完整事实继续使用 v0；迁移为未知子会话写入 v1。已有日志无需改写，Session header 保持 V4。旧读取器拒绝 v1。分类器仅在所有旧载荷分支保持不变时允许增加更高的事件载荷版本；同版本扩展和移除旧版读取支持仍属于破坏性变更。
 
 <a id="verification"></a>
 ## 验证
 
-Catalog 迁移、恢复、投影和 Web 回归覆盖未知成员保留与子会话局部报错。持久化分类器测试接受此 catalog 扩展，并拒绝已有字段修改、其他新增模式、未知分支额外字段、删除及无关联合类型新增。
+迁移、恢复、投影和 Web 回归覆盖未知成员保留与子会话局部报错。分类器测试接受保留前代的更高载荷版本，并拒绝同版本新增、无效版本、旧分支修改或删除，以及 header/model-surface 变更。
 
 <a id="dev-note"></a>
 ## 开发备注

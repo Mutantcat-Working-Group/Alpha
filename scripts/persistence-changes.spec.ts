@@ -194,58 +194,61 @@ function unionBody(arms: readonly (readonly SchemaProperty[])[]): PersistenceRoo
   return { ...typeRoot('event:example/value', {}), schema, digest: schemaDigest(schema) }
 }
 
-function catalogModeRoot(unknownMode?: string, changeLabel = false, extraField = false): PersistenceRoot {
-  const snapshot = parsePersistenceSnapshot(JSON.parse(readFileSync(
-    new URL('../docs/persistence-changes/2026-09-11-initial.schema.json', import.meta.url), 'utf8',
-  )))
-  const root = snapshot.roots.find(root => root.key === 'event:subagent/catalog')!
-  const nodes: SchemaNode[] = [...structuredClone(root.schema.nodes)]
-  const union = nodes.find(node => node.kind === 'union')!
-  if (union.kind !== 'union') throw new Error('catalog fixture requires mode alternatives')
-  const oneShot = union.types.find((index) => {
-    const node = nodes[index]
-    if (node?.kind !== 'object') return false
-    const mode = nodes[node.properties.find(property => property.name === 'mode')!.type]
-    return mode?.kind === 'literal' && mode.value === 'one-shot'
-  })!
-  const variant = nodes[oneShot]!
-  if (variant.kind !== 'object') throw new Error('catalog fixture requires object alternatives')
-  if (unknownMode !== undefined) {
+function versionedEvent(variants: readonly { version: number; mode: string; extra?: boolean }[]): PersistenceRoot {
+  const nodes: SchemaNode[] = [
+    { kind: 'object', indices: [], properties: [
+      { name: 'data', type: variants.length === 1 ? 3 : 1, optional: false },
+      { name: 'type', type: 3 + variants.length * 3, optional: false },
+    ] },
+    { kind: 'union', types: variants.map((_, index) => 3 + index * 3) },
+    { kind: 'primitive', type: 'string' },
+  ]
+  for (const variant of variants) {
     const index = nodes.length
-    nodes.push({ ...variant, properties: variant.properties.map(property => property.name === 'mode'
-      ? { ...property, type: index + 1 } : property) }, { kind: 'literal', value: unknownMode })
-    const added = nodes[index]!
-    if (extraField && added.kind === 'object') nodes[index] = { ...added,
-      properties: [...added.properties, { name: 'extra', type: variant.properties[0]!.type, optional: false }] }
-    nodes[nodes.indexOf(union)] = { ...union, types: [...union.types, index] }
+    nodes.push({ kind: 'object', indices: [], properties: [
+      { name: 'version', type: index + 1, optional: false },
+      { name: 'mode', type: index + 2, optional: false },
+      ...(variant.extra ? [{ name: 'extra', type: 2, optional: false }] : []),
+    ] }, { kind: 'literal', value: variant.version }, { kind: 'literal', value: variant.mode })
   }
-  if (changeLabel) nodes[oneShot] = { ...variant, properties: variant.properties.filter(property => property.name !== 'label') }
+  nodes.push({ kind: 'literal', value: 'example/value' })
   const schema = canonicalizeSchema(nodes, 0)
-  return { ...root, schema, digest: schemaDigest(schema) }
+  return { ...typeRoot('event:example/value', {}), schema, digest: schemaDigest(schema) }
 }
 
 describe('persistence change classification', () => {
-  it('acknowledges unknown catalog mode at V4 while retaining the accepted checkpoint', () => {
+  it.each([1, 2])('acknowledges a higher payload version while preserving %s old variant(s) and the V4 checkpoint', (count) => {
     const root = fixture()
-    const before = { ...inventory({}, 4), roots: [...inventory({}, 4).roots.filter(root => root.kind !== 'event'), catalogModeRoot()] }
+    const variants = [{ version: 0, mode: 'one-shot' }, { version: 0, mode: 'continuable' }].slice(0, count)
+    const oldEvent = versionedEvent(variants)
+    const nextEvent = versionedEvent([...variants, { version: 1, mode: 'unknown', extra: true }])
+    const before = { ...inventory({}, 4), roots: [...inventory({}, 4).roots.filter(root => root.kind !== 'event'), oldEvent] }
     finalize(root, before)
-    const after = { ...before, roots: before.roots.map(root => root.kind === 'event' ? catalogModeRoot('unknown') : root) }
-    expect(classifyPersistenceChange(catalogModeRoot(), catalogModeRoot('unknown')))
-      .toEqual([expect.objectContaining({ path: 'event:subagent/catalog.data', requiresVersionBump: false })])
+    const after = { ...before, roots: before.roots.map(root => root.kind === 'event' ? nextEvent : root) }
+    expect(classifyPersistenceChange(oldEvent, nextEvent))
+      .toEqual([expect.objectContaining({ kind: 'payload-version-added', requiresVersionBump: false })])
     runPersistenceChanges(['--record', COMPATIBLE_ID, '--prose', proseFile(root)], root, () => after)
     verifyPersistenceChanges(root, after)
   })
 
-  it('keeps other catalog modes, altered fields, classification changes, and removals breaking', () => {
-    const before = catalogModeRoot()
-    for (const after of [catalogModeRoot('other'), catalogModeRoot('unknown', true), catalogModeRoot('unknown', false, true)]) {
-      expect(classifyPersistenceChange(before, after).some(change => change.requiresVersionBump)).toBe(true)
-    }
-    const expanded = catalogModeRoot('unknown')
+  it('rejects changes to old payloads, missing versions, non-increasing versions, and removal of old readers', () => {
+    const variants = [{ version: 0, mode: 'one-shot' }, { version: 0, mode: 'continuable' }]
+    const before = versionedEvent(variants)
+    for (const after of [
+      versionedEvent([...variants, { version: 0, mode: 'unknown' }]),
+      versionedEvent([...variants, { version: -1, mode: 'unknown' }]),
+      versionedEvent([...variants, { version: 0.5, mode: 'unknown' }]),
+      versionedEvent([{ version: 0, mode: 'one-shot', extra: true }, variants[1]!, { version: 1, mode: 'unknown' }]),
+      versionedEvent([{ version: 1, mode: 'unknown' }]),
+    ]) expect(classifyPersistenceChange(before, after).some(change => change.requiresVersionBump)).toBe(true)
+    const expanded = versionedEvent([...variants, { version: 1, mode: 'unknown' }])
     expect(classifyPersistenceChange(expanded, before).some(change => change.requiresVersionBump)).toBe(true)
-    expect(classifyPersistenceChange(before, { ...expanded, surface: true }).some(change => change.requiresVersionBump)).toBe(true)
-    expect(classifyPersistenceChange({ ...before, key: 'event:other' }, { ...expanded, key: 'event:other' })
+    expect(classifyPersistenceChange({ ...before, surface: true }, { ...expanded, surface: true })
       .some(change => change.requiresVersionBump)).toBe(true)
+    expect(classifyPersistenceChange({ ...before, kind: 'header' }, { ...expanded, kind: 'header' })
+      .some(change => change.requiresVersionBump)).toBe(true)
+    const unversioned = unionBody([[{ name: 'mode', type: 2, optional: false }]])
+    expect(classifyPersistenceChange(unversioned, expanded).some(change => change.requiresVersionBump)).toBe(true)
   })
 
   it('treats a new optional payload subtree as one additive change even with required descendants', () => {

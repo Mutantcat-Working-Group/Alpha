@@ -102,13 +102,26 @@ describe('subagent catalog projection', () => {
       .toEqual(Array.from({ length: 130 }, (_, i) => SessionId(`child-${i}`)))
   })
 
+  it.each([0, 1] as const)('reads known catalog modes at payload version %s', (version) => {
+    const events: SessionEvent[] = [
+      { type: 'subagent/catalog', seq: SessionSeq(0), time: 0,
+        data: { version, childId: SessionId('once'), childCreatedAt: 1, mode: 'one-shot' } },
+      { type: 'subagent/catalog', seq: SessionSeq(1), time: 0,
+        data: { version, childId: SessionId('ongoing'), childCreatedAt: 2, mode: 'continuable', label: 'child' } },
+    ]
+    expect(subagentCatalogProjectionDefinition.wire.view(fold(events))).toEqual([
+      { id: SessionId('once'), createdAt: 1, mode: 'one-shot' },
+      { id: SessionId('ongoing'), createdAt: 2, mode: 'continuable', label: 'child' },
+    ])
+  })
+
   it('validates recursive chunk state and materializes every label variant in event order', () => {
     const events: SessionEvent[] = [
       fact(0, 'child-b', 1, { mode: 'one-shot' }),
       fact(1, 'child-a', 1, { mode: 'one-shot', label: 'once' }),
       fact(2, 'child-d', 3, { mode: 'continuable', label: 'later' }),
       { type: 'subagent/catalog', seq: SessionSeq(3), time: 0,
-        data: { version: 0, childId: SessionId('unreadable'), childCreatedAt: 4, mode: 'unknown' } },
+        data: { version: 1, childId: SessionId('unreadable'), childCreatedAt: 4, mode: 'unknown' } },
     ]
     const state = fold(events)
 
@@ -143,6 +156,7 @@ describe('subagent catalog projection', () => {
   })
 
   it.each([
+    { version: 0, childId: 'child', childCreatedAt: 0, mode: 'unknown' },
     { version: 9, childId: 'child', childCreatedAt: 0, mode: 'one-shot' },
     { version: 0, childId: 'child', childCreatedAt: 0, mode: 'continuable' },
     { version: 0, childId: 'child', childCreatedAt: -1, mode: 'one-shot' },

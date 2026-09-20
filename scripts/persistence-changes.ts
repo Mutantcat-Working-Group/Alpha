@@ -64,6 +64,7 @@ const CHANGE_DESCRIPTIONS = {
   'index-signature-changed': 'index signature changed',
   'tuple-length-changed': 'tuple length changed',
   'tuple-element-cardinality-changed': 'tuple element cardinality changed',
+  'payload-version-added': 'event payload version added',
   'union-variants-changed': 'union variants changed',
 } as const
 
@@ -450,6 +451,27 @@ export function classifyPersistenceChange(
     }
     const oldNode = oldRoot.schema.nodes[oldIndex] as SchemaNode
     const newNode = newRoot.schema.nodes[newIndex] as SchemaNode
+    if (oldRoot.kind === 'event' && oldRoot.surface === false && scope === 'body' && path === `${key}.data`) {
+      const oldTypes = oldNode.kind === 'union' ? oldNode.types : [oldIndex]
+      const newTypes = newNode.kind === 'union' ? newNode.types : [newIndex]
+      const payloadVersion = (schema: CanonicalSchema, index: number): number | undefined => {
+        const node = schema.nodes[index]
+        if (node?.kind !== 'object') return undefined
+        const property = node.properties.find(property => property.name === 'version' && !property.optional)
+        const version = schema.nodes[property?.type ?? -1]
+        return version?.kind === 'literal' && typeof version.value === 'number'
+          && Number.isSafeInteger(version.value) && version.value >= 0 ? version.value : undefined
+      }
+      const versions = oldTypes.map(index => payloadVersion(oldRoot.schema, index))
+      const oldHashes = new Set(oldTypes.map(index => fingerprint(oldRoot.schema, index, 0)))
+      const newHashes = new Set(newTypes.map(index => fingerprint(newRoot.schema, index, 1)))
+      const added = newTypes.filter(index => !oldHashes.has(fingerprint(newRoot.schema, index, 1)))
+      if (versions.every(version => version !== undefined) && added.length > 0
+        && [...oldHashes].every(hash => newHashes.has(hash))
+        && added.every(index => (payloadVersion(newRoot.schema, index) ?? -1) > Math.max(...versions))) {
+        return [describe(path, 'payload-version-added', false)]
+      }
+    }
     if (oldNode.kind !== newNode.kind) return [describe(path, 'type-changed')]
     if (oldNode.kind === 'object' && newNode.kind === 'object') {
       const oldProps = new Map(oldNode.properties.map(property => [property.name, property]))
@@ -506,29 +528,6 @@ export function classifyPersistenceChange(
   function compareAlternatives(
     oldTypes: readonly number[], newTypes: readonly number[], path: string, scope: Scope, active: ReadonlySet<string>,
   ): PersistenceTypeChange[] {
-    if (key === 'event:subagent/catalog' && path === `${key}.data` && scope === 'body'
-      && oldTypes.length === 2 && newTypes.length === 3) {
-      const modeNode = (index: number): number | undefined => {
-        const node = newRoot.schema.nodes[index]
-        return node?.kind === 'object' ? node.properties.find(property => property.name === 'mode' && !property.optional)?.type : undefined
-      }
-      const mode = (index: number): string | number | boolean | null | undefined => {
-        const node = newRoot.schema.nodes[modeNode(index) ?? -1]
-        return node?.kind === 'literal' ? node.value : undefined
-      }
-      const unknown = newTypes.find(index => mode(index) === 'unknown')
-      const oneShot = newTypes.find(index => mode(index) === 'one-shot')
-      if (unknown !== undefined && oneShot !== undefined) {
-        // The catalog exception admits only the one-shot fields with unknown mode;
-        // existing branches still pass the ordinary structural comparison below.
-        const normalized = { ...newRoot.schema, nodes: newRoot.schema.nodes.map((node, index) =>
-          index === modeNode(unknown) ? { kind: 'literal' as const, value: 'one-shot' } : node) }
-        if (subDigest(normalized, unknown) === fingerprint(newRoot.schema, oneShot, 1)) {
-          return [describe(path, 'union-variants-changed', false),
-            ...compareAlternatives(oldTypes, newTypes.filter(index => index !== unknown), path, scope, active)]
-        }
-      }
-    }
     if (oldTypes.length !== newTypes.length) return [describe(path, 'union-variants-changed')]
     const candidates = oldTypes.map(oldType => newTypes.map(newType => compare(oldType, newType, path, scope, active)))
     const matching = matchUnionVariants(candidates.map(row => row.flatMap((candidate, index) =>

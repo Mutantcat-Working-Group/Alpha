@@ -6,7 +6,7 @@
       "kind": "event",
       "event": "subagent/catalog",
       "surface": false,
-      "digest": "4d6002c7eec8d76bbb6e531a35a55bc66dfb87621bc2e89e3af0641acf947bb3",
+      "digest": "3abae7324356f155cb42450c00b806d134ec93bd6439d2063b8d724162d58604",
       "schema": {
         "root": 0,
         "nodes": [
@@ -20,7 +20,7 @@
               },
               {
                 "name": "ignorable",
-                "type": 11,
+                "type": 14,
                 "optional": true
               },
               {
@@ -35,7 +35,7 @@
               },
               {
                 "name": "type",
-                "type": 12,
+                "type": 15,
                 "optional": false
               }
             ],
@@ -46,7 +46,9 @@
             "types": [
               2,
               7,
-              9
+              9,
+              11,
+              12
             ]
           },
           {
@@ -65,7 +67,7 @@
               {
                 "name": "label",
                 "type": 4,
-                "optional": true
+                "optional": false
               },
               {
                 "name": "mode",
@@ -90,7 +92,7 @@
           },
           {
             "kind": "literal",
-            "value": "unknown"
+            "value": "continuable"
           },
           {
             "kind": "literal",
@@ -116,12 +118,12 @@
               },
               {
                 "name": "mode",
-                "type": 8,
+                "type": 5,
                 "optional": false
               },
               {
                 "name": "version",
-                "type": 6,
+                "type": 8,
                 "optional": false
               }
             ],
@@ -129,7 +131,7 @@
           },
           {
             "kind": "literal",
-            "value": "continuable"
+            "value": 1
           },
           {
             "kind": "object",
@@ -165,6 +167,72 @@
           {
             "kind": "literal",
             "value": "one-shot"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 10,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 13,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "unknown"
           },
           {
             "kind": "literal",

@@ -14881,7 +14881,7 @@
       "kind": "event",
       "event": "subagent/catalog",
       "surface": false,
-      "digest": "4d6002c7eec8d76bbb6e531a35a55bc66dfb87621bc2e89e3af0641acf947bb3",
+      "digest": "3abae7324356f155cb42450c00b806d134ec93bd6439d2063b8d724162d58604",
       "schema": {
         "root": 0,
         "nodes": [
@@ -14895,7 +14895,7 @@
               },
               {
                 "name": "ignorable",
-                "type": 11,
+                "type": 14,
                 "optional": true
               },
               {
@@ -14910,7 +14910,7 @@
               },
               {
                 "name": "type",
-                "type": 12,
+                "type": 15,
                 "optional": false
               }
             ],
@@ -14921,7 +14921,9 @@
             "types": [
               2,
               7,
-              9
+              9,
+              11,
+              12
             ]
           },
           {
@@ -14940,7 +14942,7 @@
               {
                 "name": "label",
                 "type": 4,
-                "optional": true
+                "optional": false
               },
               {
                 "name": "mode",
@@ -14965,7 +14967,7 @@
           },
           {
             "kind": "literal",
-            "value": "unknown"
+            "value": "continuable"
           },
           {
             "kind": "literal",
@@ -14991,12 +14993,12 @@
               },
               {
                 "name": "mode",
-                "type": 8,
+                "type": 5,
                 "optional": false
               },
               {
                 "name": "version",
-                "type": 6,
+                "type": 8,
                 "optional": false
               }
             ],
@@ -15004,7 +15006,7 @@
           },
           {
             "kind": "literal",
-            "value": "continuable"
+            "value": 1
           },
           {
             "kind": "object",
@@ -15040,6 +15042,72 @@
           {
             "kind": "literal",
             "value": "one-shot"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 10,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 13,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "unknown"
           },
           {
             "kind": "literal",
@@ -32300,6 +32368,213 @@
       "sources": []
     },
     {
+      "digest": "1de64ea9a0849ce631b7e4e1255ae773fabd94a4a7c8d27e716f8012302e12c0",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "union",
+            "types": [
+              1,
+              6,
+              8,
+              10,
+              11
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "mode",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 5,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "literal",
+            "value": "continuable"
+          },
+          {
+            "kind": "literal",
+            "value": 0
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "mode",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 7,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": 1
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 3,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 9,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 5,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "one-shot"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 3,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 9,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 7,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 3,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 12,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 7,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "unknown"
+          }
+        ]
+      },
+      "names": [
+        "packages/subagent/subagent/src/catalog.ts#SubagentCatalogEvent"
+      ],
+      "sources": [
+        "packages/subagent/subagent/src/catalog.ts:28"
+      ]
+    },
+    {
       "digest": "1df34a6c086866ffdc2dd9e8e5c581c3751a010cdf6b8538a7327f7a3237f0b4",
       "schema": {
         "root": 0,
@@ -36330,145 +36605,6 @@
       ]
     },
     {
-      "digest": "30a49d1a89bd03b8503fbdab94d4883e4ce839d931f29672ac070007cc0016ce",
-      "schema": {
-        "root": 0,
-        "nodes": [
-          {
-            "kind": "union",
-            "types": [
-              1,
-              6,
-              8
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "childCreatedAt",
-                "type": 2,
-                "optional": false
-              },
-              {
-                "name": "childId",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "mode",
-                "type": 4,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 5,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "primitive",
-            "type": "number"
-          },
-          {
-            "kind": "primitive",
-            "type": "string"
-          },
-          {
-            "kind": "literal",
-            "value": "continuable"
-          },
-          {
-            "kind": "literal",
-            "value": 0
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "childCreatedAt",
-                "type": 2,
-                "optional": false
-              },
-              {
-                "name": "childId",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 3,
-                "optional": true
-              },
-              {
-                "name": "mode",
-                "type": 7,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 5,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "one-shot"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "childCreatedAt",
-                "type": 2,
-                "optional": false
-              },
-              {
-                "name": "childId",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 3,
-                "optional": true
-              },
-              {
-                "name": "mode",
-                "type": 9,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 5,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "unknown"
-          }
-        ]
-      },
-      "names": [
-        "packages/subagent/subagent/src/catalog.ts#SubagentCatalogEvent"
-      ],
-      "sources": [
-        "packages/subagent/subagent/src/catalog.ts:24"
-      ]
-    },
-    {
       "digest": "30d5a537b296685770b1241c4b4bbde19d5a31ff81aa23df73fab5e90b8fc65f",
       "schema": {
         "root": 0,
@@ -38180,6 +38316,248 @@
       "sources": [
         "packages/feedback/message-feedback/src/types.ts:17"
       ]
+    },
+    {
+      "digest": "3abae7324356f155cb42450c00b806d134ec93bd6439d2063b8d724162d58604",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "data",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "ignorable",
+                "type": 14,
+                "optional": true
+              },
+              {
+                "name": "seq",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "time",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "type",
+                "type": 15,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "union",
+            "types": [
+              2,
+              7,
+              9,
+              11,
+              12
+            ]
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "mode",
+                "type": 5,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 6,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "literal",
+            "value": "continuable"
+          },
+          {
+            "kind": "literal",
+            "value": 0
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "mode",
+                "type": 5,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": 1
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 10,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 6,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "one-shot"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 10,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 13,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 8,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "unknown"
+          },
+          {
+            "kind": "literal",
+            "value": true
+          },
+          {
+            "kind": "literal",
+            "value": "subagent/catalog"
+          }
+        ]
+      },
+      "names": [],
+      "sources": []
     },
     {
       "digest": "3b04790e08b35241ffa0d38f6d7e4f8788aa921341f6c0d7574a329397c59408",
@@ -47013,180 +47391,6 @@
         "packages/webhook/webhook/src/brand.ts:9",
         "packages/workflow/workflow/src/types.ts:13"
       ]
-    },
-    {
-      "digest": "4d6002c7eec8d76bbb6e531a35a55bc66dfb87621bc2e89e3af0641acf947bb3",
-      "schema": {
-        "root": 0,
-        "nodes": [
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "data",
-                "type": 1,
-                "optional": false
-              },
-              {
-                "name": "ignorable",
-                "type": 11,
-                "optional": true
-              },
-              {
-                "name": "seq",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "time",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "type",
-                "type": 12,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "union",
-            "types": [
-              2,
-              7,
-              9
-            ]
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "childCreatedAt",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "childId",
-                "type": 4,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 4,
-                "optional": true
-              },
-              {
-                "name": "mode",
-                "type": 5,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 6,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "primitive",
-            "type": "number"
-          },
-          {
-            "kind": "primitive",
-            "type": "string"
-          },
-          {
-            "kind": "literal",
-            "value": "unknown"
-          },
-          {
-            "kind": "literal",
-            "value": 0
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "childCreatedAt",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "childId",
-                "type": 4,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 4,
-                "optional": false
-              },
-              {
-                "name": "mode",
-                "type": 8,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 6,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "continuable"
-          },
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "childCreatedAt",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "childId",
-                "type": 4,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 4,
-                "optional": true
-              },
-              {
-                "name": "mode",
-                "type": 10,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 6,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "literal",
-            "value": "one-shot"
-          },
-          {
-            "kind": "literal",
-            "value": true
-          },
-          {
-            "kind": "literal",
-            "value": "subagent/catalog"
-          }
-        ]
-      },
-      "names": [],
-      "sources": []
     },
     {
       "digest": "4e011753f8263f436efaabfbb3b4db53a98fc55342c5ded2daf7208b217be159",
@@ -71208,6 +71412,63 @@
       "sources": []
     },
     {
+      "digest": "a0f25b5aeeebf2bf1542ce67726b095e3b139a39c71861d57e827f12dea1f499",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 2,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 4,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "literal",
+            "value": "unknown"
+          },
+          {
+            "kind": "literal",
+            "value": 1
+          }
+        ]
+      },
+      "names": [],
+      "sources": []
+    },
+    {
       "digest": "a0f906856fc06f1c6f2083eb970e5a657a82b1a84c06c095445e5d6d161cda80",
       "schema": {
         "root": 0,
@@ -76112,7 +76373,7 @@
       "sources": []
     },
     {
-      "digest": "b63b089a00b3b9357675b3e0c3d3e9aa4fdbda1fba9c91a6b0c59ffdbb89f505",
+      "digest": "b6896938660a1dfe4ddd100fb3164d9f8fa57feeabfe37441a80106c9942697a",
       "schema": {
         "root": 0,
         "nodes": [
@@ -76120,32 +76381,36 @@
             "kind": "object",
             "properties": [
               {
-                "name": "id",
+                "name": "childCreatedAt",
                 "type": 1,
                 "optional": false
               },
               {
-                "name": "kind",
+                "name": "childId",
                 "type": 2,
                 "optional": false
               },
               {
-                "name": "prompt",
-                "type": 1,
-                "optional": false
-              },
-              {
-                "name": "scheduledAt",
-                "type": 1,
-                "optional": false
-              },
-              {
-                "name": "title",
-                "type": 1,
+                "name": "label",
+                "type": 2,
                 "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 4,
+                "optional": false
               }
             ],
             "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
           },
           {
             "kind": "primitive",
@@ -76153,16 +76418,16 @@
           },
           {
             "kind": "literal",
-            "value": "at"
+            "value": "one-shot"
+          },
+          {
+            "kind": "literal",
+            "value": 1
           }
         ]
       },
-      "names": [
-        "packages/schedule/schedule/src/types.ts#LegacyAtScheduleRecord"
-      ],
-      "sources": [
-        "packages/schedule/schedule/src/types.ts:167"
-      ]
+      "names": [],
+      "sources": []
     },
     {
       "digest": "b6ef9c6210be8350cd465f485cf520031fffa6bf3809c61a1e713e834c5982d0",
@@ -77875,63 +78140,6 @@
         "event:agent/inbox/spliced.data.inserted[0].source[18].sections",
         "event:agent/inbox/spliced.data.inserted[0].source[4].sections"
       ],
-      "sources": []
-    },
-    {
-      "digest": "c8d70349934748fe4cf79c49654c72459f4073c57b65e01ff1e8f49dfcce49ca",
-      "schema": {
-        "root": 0,
-        "nodes": [
-          {
-            "kind": "object",
-            "properties": [
-              {
-                "name": "childCreatedAt",
-                "type": 1,
-                "optional": false
-              },
-              {
-                "name": "childId",
-                "type": 2,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 2,
-                "optional": true
-              },
-              {
-                "name": "mode",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "version",
-                "type": 4,
-                "optional": false
-              }
-            ],
-            "indices": []
-          },
-          {
-            "kind": "primitive",
-            "type": "number"
-          },
-          {
-            "kind": "primitive",
-            "type": "string"
-          },
-          {
-            "kind": "literal",
-            "value": "unknown"
-          },
-          {
-            "kind": "literal",
-            "value": 0
-          }
-        ]
-      },
-      "names": [],
       "sources": []
     },
     {
@@ -85670,6 +85878,63 @@
       "names": [
         "event:step/end"
       ],
+      "sources": []
+    },
+    {
+      "digest": "e2ad8f5bcd813f268ffef1b10a12d7ddd2b8ced8b9b6d0275b3f6b7ed094a187",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "mode",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 4,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "literal",
+            "value": "continuable"
+          },
+          {
+            "kind": "literal",
+            "value": 1
+          }
+        ]
+      },
+      "names": [],
       "sources": []
     },
     {
