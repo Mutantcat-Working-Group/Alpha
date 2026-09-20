@@ -52,6 +52,9 @@ export function childCatalogFact(source: SessionFormatJsonObject): SessionFormat
   if (typeof descriptor['provider'] !== 'string') {
     throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} has an invalid subagent descriptor provider`)
   }
+  if (descriptor['version'] !== 1 && descriptor['mode'] !== 'continuable' && descriptor['mode'] !== 'one-shot') {
+    throw new SessionFormatUnsupportedMigrationError(`${childCatalogSubject(source)} has an invalid subagent descriptor mode`)
+  }
   return catalogFact({
     version: 0, childId: id, childCreatedAt: source['childCreatedAt'] as number,
     // V1 described only continuable children and carried no mode field.
@@ -69,25 +72,10 @@ export function childCatalogFact(source: SessionFormatJsonObject): SessionFormat
 export function catalogFact(value: SessionFormatJsonValue, subject = 'subagent/catalog'): SessionFormatJsonObject {
   if (!isSessionFormatJsonObject(value) || value['version'] !== 0
     || typeof value['childId'] !== 'string'
-    || (value['mode'] !== 'continuable' && value['mode'] !== 'one-shot')
+    || (value['mode'] !== 'continuable' && value['mode'] !== 'one-shot' && value['mode'] !== 'unknown')
     || (value['mode'] === 'continuable' && typeof value['label'] !== 'string')
     || (value['label'] !== undefined && typeof value['label'] !== 'string')) {
-    throw new SessionFormatError(`${subject} requires a complete version 0 catalog fact`)
-  }
-  sessionFormatCount(value['childCreatedAt'], 'catalog child creation time')
-  return value
-}
-
-/**
- * Validate a current catalog entry retained without a supported child descriptor.
- * @param value - decoded unknown-child payload.
- * @returns the validated identity with unknown mode.
- */
-export function unknownCatalogFact(value: SessionFormatJsonValue): SessionFormatJsonObject {
-  if (!isSessionFormatJsonObject(value) || value['version'] !== 0
-    || typeof value['childId'] !== 'string' || value['mode'] !== 'unknown'
-    || (value['label'] !== undefined && typeof value['label'] !== 'string')) {
-    throw new SessionFormatError('subagent/catalog-unknown requires a version 0 identity with unknown mode')
+    throw new SessionFormatError(`${subject} requires a version 0 catalog fact`)
   }
   sessionFormatCount(value['childCreatedAt'], 'catalog child creation time')
   return value

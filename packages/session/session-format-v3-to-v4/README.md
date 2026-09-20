@@ -142,9 +142,9 @@ There is no recursive source search. Captured request text, assistant replay sta
 | More than one own descriptor | Retain an existing parent entry without mode/label comparison; otherwise append unknown-mode membership. |
 | Existing own parent entry | Retain it and its extensions; require matching child creation time and mode/label from exactly one supported own descriptor, when available. |
 | Missing own parent entry with complete supported evidence | Append a version-0 catalog fact with child id, creation time, mode, and optional label. |
-| Missing own parent entry without complete evidence | Append `subagent/catalog-unknown` with header identity and unknown mode, without inventing a label. |
+| Missing own parent entry without complete evidence | Append `subagent/catalog` with header identity and unknown mode, without inventing a label. |
 
-Catalog version 0 requires string `childId`, nonnegative safe-integer `childCreatedAt`, mode `continuable` or `one-shot`, and a string label for continuable mode; a present one-shot label must also be a string. Duplicate own child ids are refused. Existing entries without a corresponding retained child remain in the parent. Descriptor collection does not restore a child's old continuation composition or recover deleted children from tool arguments. `subagent/catalog-unknown` separately records version 0, child id, creation time, and `mode: 'unknown'`; both event types contribute to the same unique-child catalog. Existing `subagent/catalog` payloads retain their mode requirements.
+Catalog version 0 requires string `childId`, nonnegative safe-integer `childCreatedAt`, mode `continuable`, `one-shot`, or `unknown`, and a string label for continuable mode; a present label in any mode must also be a string. Duplicate own child ids are refused. Existing entries without a corresponding retained child remain in the parent. Descriptor collection does not restore a child's old continuation composition or recover deleted children from tool arguments. Unknown-mode entries retain header identity without asserting a supported child descriptor.
 
 The stage considers parent catalog records only after the final inherited cut. Every inherited marker discards earlier catalog candidates without interpreting their payloads. Missing entries append after all source events, sorted by creation time then child id, with dense new sequences. Their time is the final source event's time, or header creation time for an empty log. They neither enter the model surface nor change the inherited count.
 
@@ -233,7 +233,7 @@ Current common admission does not validate each user/tool/developer content bloc
 | `compaction/start`, `compaction/summary`, `compaction/end` | Match compaction id, source command, and the active turn context. Summary spans name exact current-surface nodes and exclude the protected head; successful completion has one summary. Inherited unfinished compactions expire at the end-seed marker. |
 | `compaction/prune` | Its span names exact current-surface nodes and excludes the protected head; it does not require a compaction transaction or its owner fields. |
 | Compact checkpoint replacement | Its `compact-checkpoint` source identifies the active compaction. |
-| Native `subagent/catalog` and `subagent/catalog-unknown` | Check own version-0 payload fields and unique child ids after the inherited cut. Native reads neither collect child logs nor compare their physical facts; inherited entries do not establish own membership. |
+| Native `subagent/catalog` | Check own version-0 payload fields and unique child ids after the inherited cut. Native reads neither collect child logs nor compare their physical facts; inherited entries do not establish own membership. |
 | Inherited cut and delivery | Apply the marker, coordinate, and generation-ownership rules stated above. |
 
 These checks are generation-owned in [relationships.ts](src/relationships.ts). Full common message/envelope acceptance and plugin-owned message projections additionally use the installed Session; the exported V4 restorer alone is not a replacement for complete catalog restoration.

@@ -9,7 +9,7 @@ English | [中文](2026-09-20-unknown-child-catalog.zh.md)
 
 ## Summary
 
-Add subagent/catalog-unknown to retain historical direct-child header identity when a descriptor cannot establish the mode.
+Retain unreadable historical children in subagent/catalog with unknown mode.
 
 ## Table of Contents
 
@@ -26,21 +26,21 @@ schemaVersion: 1
 id: 2026-09-20-unknown-child-catalog
 baseline: false
 changes:
-  - root: "event:subagent/catalog-unknown"
-    previous: null
-    after: "d21dd6c60a43d9cb0d93da371e482f66ffd55daa36544e80978a0e7b32737b21"
+  - root: "event:subagent/catalog"
+    previous: "2026-09-11-initial"
+    after: "4d6002c7eec8d76bbb6e531a35a55bc66dfb87621bc2e89e3af0641acf947bb3"
     decision: same-version
 ```
 
 <a id="compatibility"></a>
 ## Compatibility
 
-This adds an ordinary required-on-read event without changing the finalized subagent/catalog payload, Session header, or envelope. Existing logs remain valid. Older readers that do not know the new event refuse logs containing it; current readers project it into the existing catalog with unknown mode and keep continuation requests restricted to supported child descriptors.
+The catalog adds one unknown-mode alternative with the same identity and optional label fields as one-shot mode. Existing alternatives and the V4 header remain unchanged. New readers accept old records; older readers may reject records with unknown mode. The persistence classifier has a scoped catalog exception for this addition, while other union additions and modifications remain strict. Unknown membership grants no continuation capability.
 
 <a id="verification"></a>
 ## Verification
 
-pnpm exec vitest run packages/session/session-format-v3-to-v4/tests/validation.spec.ts packages/subagent/subagent/tests/catalog.spec.ts: 16 tests passed, covering unknown identity restoration, malformed payload rejection, duplicate child rejection, and shared catalog projection.
+Catalog migration, restoration, projection, and Web regressions cover retained unknown membership and child-local errors. Persistence classifier tests accept the exact catalog extension and reject altered existing fields, other new modes, extra unknown fields, removals, and unrelated union additions.
 
 <a id="dev-note"></a>
 ## Dev Note

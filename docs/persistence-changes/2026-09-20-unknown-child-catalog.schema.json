@@ -2,11 +2,11 @@
   "formatVersion": 2,
   "roots": [
     {
-      "key": "event:subagent/catalog-unknown",
+      "key": "event:subagent/catalog",
       "kind": "event",
-      "event": "subagent/catalog-unknown",
+      "event": "subagent/catalog",
       "surface": false,
-      "digest": "d21dd6c60a43d9cb0d93da371e482f66ffd55daa36544e80978a0e7b32737b21",
+      "digest": "4d6002c7eec8d76bbb6e531a35a55bc66dfb87621bc2e89e3af0641acf947bb3",
       "schema": {
         "root": 0,
         "nodes": [
@@ -20,53 +20,61 @@
               },
               {
                 "name": "ignorable",
-                "type": 6,
+                "type": 11,
                 "optional": true
               },
               {
                 "name": "seq",
-                "type": 2,
+                "type": 3,
                 "optional": false
               },
               {
                 "name": "time",
-                "type": 2,
+                "type": 3,
                 "optional": false
               },
               {
                 "name": "type",
-                "type": 7,
+                "type": 12,
                 "optional": false
               }
             ],
             "indices": []
           },
           {
+            "kind": "union",
+            "types": [
+              2,
+              7,
+              9
+            ]
+          },
+          {
             "kind": "object",
             "properties": [
               {
                 "name": "childCreatedAt",
-                "type": 2,
+                "type": 3,
                 "optional": false
               },
               {
                 "name": "childId",
-                "type": 3,
-                "optional": false
-              },
-              {
-                "name": "label",
-                "type": 3,
-                "optional": true
-              },
-              {
-                "name": "mode",
                 "type": 4,
                 "optional": false
               },
               {
-                "name": "version",
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
                 "type": 5,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 6,
                 "optional": false
               }
             ],
@@ -89,12 +97,82 @@
             "value": 0
           },
           {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "mode",
+                "type": 8,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 6,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "continuable"
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "childCreatedAt",
+                "type": 3,
+                "optional": false
+              },
+              {
+                "name": "childId",
+                "type": 4,
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": 4,
+                "optional": true
+              },
+              {
+                "name": "mode",
+                "type": 10,
+                "optional": false
+              },
+              {
+                "name": "version",
+                "type": 6,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "literal",
+            "value": "one-shot"
+          },
+          {
             "kind": "literal",
             "value": true
           },
           {
             "kind": "literal",
-            "value": "subagent/catalog-unknown"
+            "value": "subagent/catalog"
           }
         ]
       }

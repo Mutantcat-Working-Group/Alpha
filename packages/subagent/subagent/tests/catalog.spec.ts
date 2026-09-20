@@ -107,7 +107,7 @@ describe('subagent catalog projection', () => {
       fact(0, 'child-b', 1, { mode: 'one-shot' }),
       fact(1, 'child-a', 1, { mode: 'one-shot', label: 'once' }),
       fact(2, 'child-d', 3, { mode: 'continuable', label: 'later' }),
-      { type: 'subagent/catalog-unknown', seq: SessionSeq(3), time: 0,
+      { type: 'subagent/catalog', seq: SessionSeq(3), time: 0,
         data: { version: 0, childId: SessionId('unreadable'), childCreatedAt: 4, mode: 'unknown' } },
     ]
     const state = fold(events)

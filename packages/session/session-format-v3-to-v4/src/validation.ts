@@ -6,7 +6,7 @@ import type { SessionFormatArtifact, SessionFormatEvent } from '@deepseek-ai/dsh
 import { assertV4DeveloperData } from './developer.ts'
 import { assertV4LifecycleRelationships } from './relationships.ts'
 import { assertV4MessageSources } from './message-sources.ts'
-import { catalogFact, unknownCatalogFact } from './facts.ts'
+import { catalogFact } from './facts.ts'
 import { assertV4RetiredSyntax } from './retired-syntax.ts'
 import { assertV4SystemMessageFields } from './system-message.ts'
 import { assertV4ForkResult } from './fork-result.ts'
@@ -119,8 +119,8 @@ export function assertReleasedV4Relationships(artifact: SessionFormatArtifact, k
       && deliveryId !== artifact.header.id) {
       throw new SessionFormatError('current-generation delivery marker names the wrong Session')
     }
-    if ((event.type === 'subagent/catalog' || event.type === 'subagent/catalog-unknown') && event.seq >= artifact.inheritedEventCount) {
-      const fact = event.type === 'subagent/catalog' ? catalogFact(event.data) : unknownCatalogFact(event.data)
+    if (event.type === 'subagent/catalog' && event.seq >= artifact.inheritedEventCount) {
+      const fact = catalogFact(event.data)
       const id = fact['childId'] as string
       if (ids.has(id)) throw new SessionFormatError(`duplicate catalog child ${id}`)
       ids.add(id)

@@ -108,7 +108,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
           && (row['data'] as { agentPreset: string }).agentPreset === 'code'
           ? { ...row, data: { agentPreset: 'ptc' } }
           : row),
-        { type: 'subagent/catalog-unknown', seq: rows.length, time: rows.at(-1)?.['time'], data: {
+        { type: 'subagent/catalog', seq: rows.length, time: rows.at(-1)?.['time'], data: {
           version: 0, childId: brokenId, childCreatedAt: childFixture[0]?.['createdAt'], mode: 'unknown',
         } },
         { type: 'subagent/catalog', seq: rows.length + 1, time: rows.at(-1)?.['time'], data: {

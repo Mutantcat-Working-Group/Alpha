@@ -596,7 +596,7 @@ def test_session_subscription_keeps_descendant_relationships_across_subscription
     client = HarnessClient()
     with client.subscribe_session_notifications("main") as first:
         unknown_child = {
-            "type": "subagent/catalog-unknown", "seq": 0, "time": 1,
+            "type": "subagent/catalog", "seq": 0, "time": 1,
             "data": {"version": 0, "childId": "unreadable-child", "childCreatedAt": 1, "mode": "unknown"},
         }
         client._handle_message({

@@ -49,8 +49,16 @@ description: "审阅和维护已记录的会话持久化类型变更、对应 sc
 | 添加可选事件体属性，包括其完整子树 | `same-version` |
 | 将必选事件体属性改为可选 | `same-version` |
 | 添加普通事件类型 | `same-version` |
+| 为 `subagent/catalog` 增加使用 one-shot 字段的 `unknown` 模式，并保留既有分支 | `same-version` |
+| 在前后 schema 均带有相同受支持策略的 user/developer 消息源字段中，添加显式声明为归属信息的 kind | `same-version` |
 | 将可选属性改为必选、添加必选属性、更改已有类型，或删除／重命名属性或事件 | `version-bump` |
 | 更改会话头或事件封装 | `version-bump` |
+
+定稿检查点保护已接受基线，不替换这些兼容性规则。在 V4 中，可选新增、普通事件及符合条件的归属 kind 新增可以使用新的同版本记录。破坏性差异要求更高的写入器版本，以及包含自身头版本递增的确认记录。不能更新已接受 V4 记录以复用其原有 3→4 转换。
+
+Catalog 例外在 descriptor 不可用时保留历史子会话身份。它仅允许增加字段与 one-shot 分支相同的 `unknown` 分支；已有分支仍执行常规比较。它不允许其他模式新增、删除、header 变更或任意联合类型扩展。新版读取器仍可读取已有日志；旧版读取器可能拒绝新模式。[确认记录](2026-09-20-unknown-child-catalog.zh.md) 说明这一向前读取限制。
+
+提取器接受核心拥有的 source 属性上针对 user 或 developer 字面量角色的显式 `@persistenceSource` 绑定，不会从未标记类型中推断绑定。生产者用 `@persistenceAttribution` 标记其 `MessageSourceMap` 成员。该标记承诺：读取器无需生产者即可保留未知 kind 及其 JSON 元数据，且该 kind 不引入校验、回放或权限要求。生产者可以检查自身 kind 来恢复去重状态；其他读取器必须无需该投影也能保留并派生已记录的消息。记录的 schema 保存绑定、策略版本、字面量 `kind` 判别字段、保留承诺及符合条件的 kind 集合。Inventory format 2 保存这些承诺；没有绑定策略的提取仍使用 format 1。Session 格式版本独立于此。比较双方的快照必须带有兼容的策略状态。已有 kind 分组仍进行常规结构比较；删除、未标记的添加、策略更改及无关破坏性变更继续采用严格规则。同一 wire kind 的多个上下文形式分支归为一组。
 
 同版本说明须解释旧记录为何可以缺少新增内容，以及旧读取器为何可以忽略它而不改变回放。对于必选改可选的变更，说明须解释读取器如何处理缺失值。检查器验证类型分类；审阅者判断说明是否成立。升版本记录在同一转换中包含递增的头部版本，并遵循[会话格式流程](../cookbook/adding-a-session-format-version.zh.md)。
 

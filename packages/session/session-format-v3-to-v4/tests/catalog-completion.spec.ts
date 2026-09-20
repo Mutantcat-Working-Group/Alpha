@@ -67,14 +67,14 @@ describe('V3 parent catalog completion', () => {
     expect(migrate(source, [child], true).events).toEqual([
       ...source, { type: 'subagent/catalog', seq: 4, time: 2, data: child },
     ])
-    expect(() => migrate([...source, { ...opaque, seq: 4 }], [], true)).toThrow('complete version 0')
-    expect(() => migrate([opaque], [])).toThrow('complete version 0')
+    expect(() => migrate([...source, { ...opaque, seq: 4 }], [], true)).toThrow('version 0')
+    expect(() => migrate([opaque], [])).toThrow('version 0')
   })
 
   it('requires explicit corpus facts and refuses conflicting identities', () => {
     expect(() => sessionFormatV3ToV4.createStage({ sourceHeader: header, targetHeader: { ...header, version: 4 },
       sourceKind: 'decoded', sourceInheritedEventCount: 0 })).toThrow('explicit historical child facts')
-    expect(() => migrate([], [{ ...child, mode: 'invalid' }])).toThrow('complete version 0')
+    expect(() => migrate([], [{ ...child, mode: 'invalid' }])).toThrow('version 0')
     expect(() => migrate([{ type: 'subagent/catalog', seq: 0, time: 2, data: child }], [{ ...child, childCreatedAt: 3 }])).toThrow('conflicts')
   })
 
@@ -148,7 +148,7 @@ describe('V3 parent catalog completion', () => {
     const unavailable = { childId: 'unavailable', childCreatedAt: 1,
       descriptorCount: kind === 'missing' ? 0 : kind === 'multiple' ? 2 : 1, descriptor }
     expect(migrate([], [child, unavailable]).events).toEqual([
-      { type: 'subagent/catalog-unknown', seq: 0, time: 1, data: { version: 0, childId: 'unavailable', childCreatedAt: 1, mode: 'unknown' } },
+      { type: 'subagent/catalog', seq: 0, time: 1, data: { version: 0, childId: 'unavailable', childCreatedAt: 1, mode: 'unknown' } },
       { type: 'subagent/catalog', seq: 1, time: 1, data: child },
     ])
   })

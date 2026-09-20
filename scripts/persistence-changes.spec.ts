@@ -194,33 +194,60 @@ function unionBody(arms: readonly (readonly SchemaProperty[])[]): PersistenceRoo
   return { ...typeRoot('event:example/value', {}), schema, digest: schemaDigest(schema) }
 }
 
-function messageSourceRoot(kinds: readonly (readonly [string, string?])[]): PersistenceRoot {
-  const nodes: SchemaNode[] = [
-    { kind: 'object', indices: [], properties: [{ name: 'data', type: 1, optional: false }] },
-    { kind: 'object', indices: [], properties: [{ name: 'source', type: 2, optional: false }] },
-    { kind: 'union', types: [] },
-  ]
-  const arms: number[] = []
-  for (const [kind, payload] of kinds) {
-    const literal = nodes.length
-    nodes.push({ kind: 'literal', value: kind })
-    const properties: SchemaProperty[] = [{ name: 'kind', type: literal, optional: false }]
-    if (payload !== undefined) {
-      const payloadLiteral = nodes.length
-      nodes.push({ kind: 'literal', value: payload })
-      properties.push({ name: 'plugin', type: payloadLiteral, optional: false })
-    }
-    arms.push(nodes.length)
-    nodes.push({ kind: 'object', indices: [], properties })
+function catalogModeRoot(unknownMode?: string, changeLabel = false, extraField = false): PersistenceRoot {
+  const snapshot = parsePersistenceSnapshot(JSON.parse(readFileSync(
+    new URL('../docs/persistence-changes/2026-09-11-initial.schema.json', import.meta.url), 'utf8',
+  )))
+  const root = snapshot.roots.find(root => root.key === 'event:subagent/catalog')!
+  const nodes: SchemaNode[] = [...structuredClone(root.schema.nodes)]
+  const union = nodes.find(node => node.kind === 'union')!
+  if (union.kind !== 'union') throw new Error('catalog fixture requires mode alternatives')
+  const oneShot = union.types.find((index) => {
+    const node = nodes[index]
+    if (node?.kind !== 'object') return false
+    const mode = nodes[node.properties.find(property => property.name === 'mode')!.type]
+    return mode?.kind === 'literal' && mode.value === 'one-shot'
+  })!
+  const variant = nodes[oneShot]!
+  if (variant.kind !== 'object') throw new Error('catalog fixture requires object alternatives')
+  if (unknownMode !== undefined) {
+    const index = nodes.length
+    nodes.push({ ...variant, properties: variant.properties.map(property => property.name === 'mode'
+      ? { ...property, type: index + 1 } : property) }, { kind: 'literal', value: unknownMode })
+    const added = nodes[index]!
+    if (extraField && added.kind === 'object') nodes[index] = { ...added,
+      properties: [...added.properties, { name: 'extra', type: variant.properties[0]!.type, optional: false }] }
+    nodes[nodes.indexOf(union)] = { ...union, types: [...union.types, index] }
   }
-  nodes[2] = { kind: 'union', types: arms }
+  if (changeLabel) nodes[oneShot] = { ...variant, properties: variant.properties.filter(property => property.name !== 'label') }
   const schema = canonicalizeSchema(nodes, 0)
-  return { ...typeRoot('event:example/value', {}), schema, digest: schemaDigest(schema) }
+  return { ...root, schema, digest: schemaDigest(schema) }
 }
 
-const MESSAGE_SOURCE_KINDS = [['user'], ['model'], ['tool'], ['plugin', 'alpha']] as const
-
 describe('persistence change classification', () => {
+  it('acknowledges unknown catalog mode at V4 while retaining the accepted checkpoint', () => {
+    const root = fixture()
+    const before = { ...inventory({}, 4), roots: [...inventory({}, 4).roots.filter(root => root.kind !== 'event'), catalogModeRoot()] }
+    finalize(root, before)
+    const after = { ...before, roots: before.roots.map(root => root.kind === 'event' ? catalogModeRoot('unknown') : root) }
+    expect(classifyPersistenceChange(catalogModeRoot(), catalogModeRoot('unknown')))
+      .toEqual([expect.objectContaining({ path: 'event:subagent/catalog.data', requiresVersionBump: false })])
+    runPersistenceChanges(['--record', COMPATIBLE_ID, '--prose', proseFile(root)], root, () => after)
+    verifyPersistenceChanges(root, after)
+  })
+
+  it('keeps other catalog modes, altered fields, classification changes, and removals breaking', () => {
+    const before = catalogModeRoot()
+    for (const after of [catalogModeRoot('other'), catalogModeRoot('unknown', true), catalogModeRoot('unknown', false, true)]) {
+      expect(classifyPersistenceChange(before, after).some(change => change.requiresVersionBump)).toBe(true)
+    }
+    const expanded = catalogModeRoot('unknown')
+    expect(classifyPersistenceChange(expanded, before).some(change => change.requiresVersionBump)).toBe(true)
+    expect(classifyPersistenceChange(before, { ...expanded, surface: true }).some(change => change.requiresVersionBump)).toBe(true)
+    expect(classifyPersistenceChange({ ...before, key: 'event:other' }, { ...expanded, key: 'event:other' })
+      .some(change => change.requiresVersionBump)).toBe(true)
+  })
+
   it('treats a new optional payload subtree as one additive change even with required descendants', () => {
     const before = typeRoot('event:example/value', { value: 'string' })
     const after = typeRoot('event:example/value', { value: 'string', 'details?': { name: 'string', count: 'number' } })
