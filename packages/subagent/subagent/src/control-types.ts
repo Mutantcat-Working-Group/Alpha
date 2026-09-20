@@ -50,7 +50,8 @@ export type SubagentListEntry =
     | {
       /** A terminal one-shot child. */
       readonly mode: 'one-shot'
-      /** Optional durable creation label from the child's descriptor. */
+      readonly external?: true
+      /** Optional durable creation label from the owning catalog or child descriptor. */
       readonly label?: string
     }
     | {

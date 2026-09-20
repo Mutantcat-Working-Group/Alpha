@@ -157,6 +157,8 @@ describe('subagent catalog projection', () => {
 
   it.each([
     { version: 0, childId: 'child', childCreatedAt: 0, mode: 'unknown' },
+    { version: 1, childId: 'child', childCreatedAt: 0, mode: 'unknown', external: true },
+    { version: 1, childId: 'child', childCreatedAt: 0, mode: 'continuable', label: 'child', external: true },
     { version: 9, childId: 'child', childCreatedAt: 0, mode: 'one-shot' },
     { version: 0, childId: 'child', childCreatedAt: 0, mode: 'continuable' },
     { version: 0, childId: 'child', childCreatedAt: -1, mode: 'one-shot' },
@@ -174,5 +176,26 @@ describe('subagent catalog projection', () => {
     } finally {
       await ctx.fiber.dispose()
     }
+  })
+})
+
+
+describe('external catalog membership', () => {
+  it.each([0, 1] as const)('restores external leaves alongside unknown children at payload version %s', (version) => {
+    const start = fact(0, 'external', 1, { mode: 'one-shot', label: 'Review' })
+    const entry = { ...start, data: { ...start.data, version, mode: 'one-shot' as const, external: true as const } }
+    const unknown: SessionEvent<'subagent/catalog'> = {
+      type: 'subagent/catalog', seq: SessionSeq(3), time: 0,
+      data: { version: 1, childId: SessionId('unreadable'), childCreatedAt: 3, mode: 'unknown' },
+    }
+    const state = fold([entry, fact(1, 'local', 2, { mode: 'continuable', label: 'Implement' }), unknown])
+    const restored = subagentCatalogProjectionDefinition.stateSchema.parse(JSON.parse(JSON.stringify(state)))
+    expect(subagentCatalogProjectionDefinition.wire.view(restored)).toEqual([
+      { id: SessionId('external'), createdAt: 1, mode: 'one-shot', label: 'Review', external: true },
+      { id: SessionId('local'), createdAt: 2, mode: 'continuable', label: 'Implement' },
+      { id: SessionId('unreadable'), createdAt: 3, mode: 'unknown' },
+    ])
+    expect(subagentCatalogProjectionDefinition.wire.view(fold([entry]))[0]).toMatchObject({ external: true })
+    expect(subagentCatalogProjectionDefinition.wire.viewSchema.safeParse([{ id: 'external', createdAt: 1, mode: 'one-shot', external: 'invalid' }]).success).toBe(false)
   })
 })

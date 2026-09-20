@@ -848,3 +848,19 @@ describe('SubagentReadOnlyComposer', () => {
     expect(screen.getByRole('status').textContent).toContain('一次性任务不支持后续消息')
   })
 })
+
+
+it('shows external membership without an execution status or child Session navigation', () => {
+  const input = props(catalog({ entries: [
+    { id: CHILD, mode: 'one-shot', label: 'External review', activity: 'inactive', external: true },
+  ] }))
+  render(<SubagentHeaderLineage {...input} />)
+  hoverCatalog(screen.getByRole('button', { name: /子代理/ }))
+  const row = screen.getByRole('treeitem', { name: /External review.*外部任务/ })
+  expect(row.getAttribute('aria-disabled')).toBe('true')
+  expect(row.hasAttribute('aria-expanded')).toBe(false)
+  expect(row.getAttribute('aria-label')).not.toMatch(/已完成|未运行|结果待定/)
+  fireEvent.click(row)
+  expect(input.openChild).not.toHaveBeenCalled()
+  expect(input.openChildAside).not.toHaveBeenCalled()
+})

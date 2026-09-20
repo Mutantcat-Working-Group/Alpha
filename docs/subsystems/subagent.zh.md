@@ -270,7 +270,20 @@ interface ContinuableCreateSpec {
 
 `SubagentRuntime.listChildren(parentSessionId, signal?)` 通过优先使用在线 Session 的观察读取父会话的 `subagentCatalog` 视图，并在成功或失败时释放观察。它按父会话事件顺序返回直接子级条目，不读取子级日志，也不枚举 Session 语料库。查询失败直接传播；缺少目录投影时显式失败。浏览器条目从共享 projection store 派生成员关系，并从 Session 状态补充活动状态；control stream 推送完整目录更新。`listDescendants()` 保留语料库遍历、子级身份诊断和完整的 `hasChildren` 计算。[父目录 Agent Note](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 说明创建、fork 隔离、排序和持久化成本。
 
-`SubagentRuntime.listDescendants(rootSessionId)` 将同一份实时优先语料与基于投影的解释应用到根的完整后代树，并按稳定 pre-order 输出。普通会话和一次性 child 仍作为遍历节点，因此其下的可继续后代仍可发现；只有 `origin: 'subagent'` 的候选会生成条目。每个返回的 child 或 diagnostic 都从枚举所得的持久 header 附加树位置；冷检查在提供身份前还会重新校验完整生命周期：
+```ts type-equiv
+/**
+ * Authority under which one interrupt request is admitted. `user` carries the
+ * durable direct-parent address a human client presented; `ancestor` carries
+ * the exact live Agent object whose recorded lineage must contain the caller.
+ */
+type SubagentInterruptAuthority =
+  | { readonly kind: 'user'; readonly parentSessionId: SessionId }
+  | { readonly kind: 'ancestor'; readonly agent: Agent }
+```
+
+## 持久枚举
+
+`listChildren` 读取父级拥有的目录。`listDescendants` 结合 Session 语料中的身份与父级目录，包括普通 Session 下的外部叶子项。外部一次性条目携带 `external: true`，不能打开子 Session 或接受后续消息。目录在创建时记录成员关系，不携带执行状态。完整结果交给调用方或父级完成通知。`list_agents` 只展示可继续子级，其活跃状态为 `running` 或 `inactive`；作用域与诊断信息见[控制工具](../../packages/subagent/tool-subagent-control/README.zh.md#list_agents)。
 
 ```ts type-equiv
 /**

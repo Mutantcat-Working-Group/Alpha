@@ -131,7 +131,7 @@ export type { AgentMessageSource, SubagentSettledMessageSource } from './continu
 export type * from './control-types.ts'
 export type { SubagentDescendantListEntry } from './list-children.ts'
 export type { SubagentRunEndInfo, SubagentRunInfo } from './types.ts'
-export type { SubagentIdentityProjection, SubagentTimingProjection } from './projection-types.ts'
+export type { SubagentCatalogEntry, SubagentIdentityProjection, SubagentTimingProjection } from './projection-types.ts'
 
 declare module '@mutantcat/cordis' {
   interface Context {

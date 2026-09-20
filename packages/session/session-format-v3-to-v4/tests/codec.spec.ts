@@ -160,3 +160,11 @@ describe('V4 framing and restoration', () => {
     expect(restoreReleasedV4Artifact(artifact, types)).toBe(artifact)
   })
 })
+
+
+it('restores external membership and rejects duplicate catalog children', () => {
+  const data = { ...(catalog.data as SessionFormatJsonObject), mode: 'one-shot', label: 'External', external: true }
+  const entry = { ...catalog, data }
+  expect(restore([entry]).events).toEqual([entry])
+  expect(() => restore([entry, { ...entry, seq: 1 }])).toThrow('duplicate catalog child')
+})
