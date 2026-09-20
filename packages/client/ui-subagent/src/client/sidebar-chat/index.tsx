@@ -73,7 +73,7 @@ export function parseSubagentChatAddress(value: string): SubagentAddress | undef
   if (parts.length !== 2 || parts[0] !== 'session') return undefined
   const parentSessionId = url.searchParams.get('parent')
   const mode = url.searchParams.get('mode')
-  if (parentSessionId === null || parentSessionId === '' || (mode !== 'one-shot' && mode !== 'continuable')) {
+  if (parentSessionId === null || parentSessionId === '' || (mode !== 'one-shot' && mode !== 'continuable' && mode !== 'unknown')) {
     return undefined
   }
   try {

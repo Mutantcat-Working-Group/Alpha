@@ -74,7 +74,7 @@ describe('V3 parent catalog completion', () => {
   it('requires explicit corpus facts and refuses conflicting identities', () => {
     expect(() => sessionFormatV3ToV4.createStage({ sourceHeader: header, targetHeader: { ...header, version: 4 },
       sourceKind: 'decoded', sourceInheritedEventCount: 0 })).toThrow('explicit historical child facts')
-    expect(() => migrate([], [{ ...child, mode: 'unknown' }])).toThrow('complete version 0')
+    expect(() => migrate([], [{ ...child, mode: 'invalid' }])).toThrow('complete version 0')
     expect(() => migrate([{ type: 'subagent/catalog', seq: 0, time: 2, data: child }], [{ ...child, childCreatedAt: 3 }])).toThrow('conflicts')
   })
 
@@ -88,8 +88,8 @@ describe('V3 parent catalog completion', () => {
       ],
     }
     expect(childCatalogFact(historicalChildCatalogSource(artifact))).toEqual(child)
-    expect(migrate([], [historicalChildCatalogSource({ ...artifact, inheritedEventCount: 0 })]).events).toEqual([])
-    expect(migrate([], [historicalChildCatalogSource({ ...artifact, events: [] })]).events).toEqual([])
+    expect(migrate([], [historicalChildCatalogSource({ ...artifact, inheritedEventCount: 0 })]).events).toMatchObject([{ data: { childId: 'child', mode: 'unknown' } }])
+    expect(migrate([], [historicalChildCatalogSource({ ...artifact, events: [] })]).events).toMatchObject([{ data: { childId: 'child', mode: 'unknown' } }])
   })
   it('orders tied and differently dated children independently of directory enumeration', () => {
     const children = [{ ...child, childId: 'z' }, { ...child, childId: 'a' }, { ...child, childId: 'first', childCreatedAt: 1 }]
@@ -114,11 +114,11 @@ describe('V3 parent catalog completion', () => {
     expect(() => migrate([preceding, { ...delivery, data: { ...delivery.data, sessionFormatVersion: 3 } }], [])).toThrow('wrong Session')
   })
 
-  it('skips unavailable descriptors while requiring complete discovery fields for new facts', () => {
+  it('retains unknown children while validating available descriptor fields', () => {
     const artifact = { header: { ...header, origin: 'subagent' as const, parentSession: 'parent' }, inheritedEventCount: 0, events: [] }
     expect(() => historicalChildCatalogSource({ ...artifact, header })).toThrow('direct parent')
     for (const data of [null, {}, { version: 4, mode: 'one-shot', provider: 'spawn' }]) {
-      expect(migrate([], [historicalChildCatalogSource({ ...artifact, events: [{ type: 'subagent/descriptor', seq: 0, time: 1, data }] })]).events).toEqual([])
+      expect(migrate([], [historicalChildCatalogSource({ ...artifact, events: [{ type: 'subagent/descriptor', seq: 0, time: 1, data }] })]).events).toMatchObject([{ data: { childId: 'parent', mode: 'unknown' } }])
     }
     for (const value of [null, { ...child, version: 1 }, { ...child, childId: null },
       { ...child, label: null }, { ...child, childCreatedAt: -1 }]) {
@@ -140,6 +140,17 @@ describe('V3 parent catalog completion', () => {
       descriptor: { version: 3, mode: 'one-shot', provider: 'spawn', label: 'ambiguous child identity' } }
     expect(migrate(source, [evidence]).events).toEqual(source)
     expect(() => migrate(source, [{ ...evidence, childCreatedAt: 3 }])).toThrow('conflicts')
+  })
+
+  it.each(['missing', 'unknown', 'multiple'] as const)('continues catalog backfill after %s child evidence', (kind) => {
+    const descriptor: SessionFormatJsonValue = kind === 'missing' ? null : kind === 'unknown' ? { version: 99 }
+      : { version: 3, mode: 'one-shot', provider: 'spawn' }
+    const unavailable = { childId: 'unavailable', childCreatedAt: 1,
+      descriptorCount: kind === 'missing' ? 0 : kind === 'multiple' ? 2 : 1, descriptor }
+    expect(migrate([], [child, unavailable]).events).toEqual([
+      { type: 'subagent/catalog-unknown', seq: 0, time: 1, data: { version: 0, childId: 'unavailable', childCreatedAt: 1, mode: 'unknown' } },
+      { type: 'subagent/catalog', seq: 1, time: 1, data: child },
+    ])
   })
 
   it('refuses malformed supplemental evidence and known descriptor conflicts', () => {

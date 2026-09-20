@@ -63,6 +63,8 @@ Token totals sum the four disjoint `tokenUsage` buckets. Duration sums completed
 
 One-shot children always elect a read-only composer. A continuable child elects one only when its exact parent is unavailable and the child is not running; otherwise the ordinary composer's Session routes prompts through `subagents/prompt`. This package never receives host context or calls a model-facing tool.
 
+Unknown-mode catalog rows remain visible and clickable, using the child id when no label is available. Their composer is read-only until child history establishes a supported mode; a read failure is reported in the child conversation.
+
 </details>
 
 -----

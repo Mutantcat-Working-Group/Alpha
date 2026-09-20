@@ -113,6 +113,23 @@ describe('restoreReleasedV4Artifact', () => {
       .toThrow(/unseeded format v4 Session has inherited events/)
   })
 
+  it('retains unknown child membership and rejects invalid identities or duplicate child ids', () => {
+    const known = new Set([...KNOWN, 'subagent/catalog', 'subagent/catalog-unknown'])
+    const data = { version: 0, childId: 'unreadable', childCreatedAt: 2, mode: 'unknown' }
+    const event = { type: 'subagent/catalog-unknown', seq: 0, time: 1, data }
+    const valid = artifact([event])
+    expect(restoreReleasedV4Artifact(valid, known)).toBe(valid)
+    expect(() => restoreReleasedV4Artifact(artifact([{ ...event, data: { ...data, label: 'retained' } }]), known)).not.toThrow()
+    for (const invalid of [null, { ...data, version: 1 }, { ...data, childId: 1 },
+      { ...data, childCreatedAt: -1 }, { ...data, mode: 'one-shot' }, { ...data, label: null }]) {
+      expect(() => restoreReleasedV4Artifact(artifact([{ ...event, data: invalid }]), known)).toThrow()
+    }
+    expect(() => restoreReleasedV4Artifact(artifact([event, { ...event, seq: 1 }]), known)).toThrow('duplicate catalog child')
+    expect(() => restoreReleasedV4Artifact(artifact([event, { type: 'subagent/catalog', seq: 1, time: 1,
+      data: { ...data, mode: 'one-shot' } }]), known)).toThrow('duplicate catalog child')
+    expect(() => restoreReleasedV4Artifact(artifact([{ ...event, type: 'subagent/catalog' }]), known)).toThrow('complete version 0')
+  })
+
   it('validates only the envelope in physical mode', () => {
     const unknown = conversation()
     unknown.splice(2, 0, { type: 'campaign/unknown', seq: 0, time: 1, data: { x: 1 } })

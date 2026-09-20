@@ -138,13 +138,13 @@ There is no recursive source search. Captured request text, assistant replay sta
 |---|---|
 | One descriptor with version 1 | Require string provider and label; derive `mode: 'continuable'`. |
 | One descriptor with version 2 or 3 | Require string provider; use its mode and optional label under catalog rules. |
-| Zero descriptors, or an unsupported descriptor version | May retain an existing parent entry; cannot create a missing entry. |
-| More than one own descriptor | Preserve the child; no unambiguous discovery fact is available for backfill. |
-| Existing own parent entry | Retain it and its extensions; require matching child creation time and any available supported mode/label. |
+| Zero descriptors, or an unsupported descriptor version | Retain an existing parent entry; otherwise append unknown-mode membership. |
+| More than one own descriptor | Retain an existing parent entry without mode/label comparison; otherwise append unknown-mode membership. |
+| Existing own parent entry | Retain it and its extensions; require matching child creation time and mode/label from exactly one supported own descriptor, when available. |
 | Missing own parent entry with complete supported evidence | Append a version-0 catalog fact with child id, creation time, mode, and optional label. |
-| Missing own parent entry without complete evidence | Preserve the parent without inventing a catalog entry. |
+| Missing own parent entry without complete evidence | Append `subagent/catalog-unknown` with header identity and unknown mode, without inventing a label. |
 
-Catalog version 0 requires string `childId`, nonnegative safe-integer `childCreatedAt`, mode `continuable` or `one-shot`, and a string label for continuable mode; a present one-shot label must also be a string. Duplicate own child ids are refused. Existing entries without a corresponding retained child remain in the parent. Descriptor collection does not restore a child's old continuation composition or recover deleted children from tool arguments.
+Catalog version 0 requires string `childId`, nonnegative safe-integer `childCreatedAt`, mode `continuable` or `one-shot`, and a string label for continuable mode; a present one-shot label must also be a string. Duplicate own child ids are refused. Existing entries without a corresponding retained child remain in the parent. Descriptor collection does not restore a child's old continuation composition or recover deleted children from tool arguments. `subagent/catalog-unknown` separately records version 0, child id, creation time, and `mode: 'unknown'`; both event types contribute to the same unique-child catalog. Existing `subagent/catalog` payloads retain their mode requirements.
 
 The stage considers parent catalog records only after the final inherited cut. Every inherited marker discards earlier catalog candidates without interpreting their payloads. Missing entries append after all source events, sorted by creation time then child id, with dense new sequences. Their time is the final source event's time, or header creation time for an empty log. They neither enter the model surface nor change the inherited count.
 
@@ -214,7 +214,65 @@ Migration retains every source event, order, sequence, timestamp, and payload, a
 
 V4 also admits fork-generated `TOOL_NOT_STARTED` results with deterministic `forked-tool-result-<callId>-<seq>` IDs and branch-specific text. Native validation checks the advertised call, error result, identity suffix, and surface operation directly; persisted and restored data retain the original fork ID and wording. Later surface replacements, including tool-result pruning, retain that identity and validate their source references through the installed Session. Released V0–V3 validators remain unchanged.
 
-Native V4 preserves `developer/message` events at positive turn/step coordinates, tool-addition/removal blocks, and `deferLoading: true` tool-schema markers. Known developer events must match an open step; unknown ignorable events remain opaque. Additions store `toolName` and require the event's `headerSeq` to identify an earlier known `request/header` containing exactly one complete matching schema. Removals and messages without additions omit `headerSeq`. Native validation rejects inline definitions, missing or ambiguous bindings, and invalid roles while preserving unrelated JSON fields, replacement coordinates, and source references. Empty developer nodes retain their surface positions and cannot shadow the protected system head. This format support does not activate provider tool loading.
+System image admission requires a nonempty attachment id, one of PNG/JPEG/WebP/GIF MIME types, nonnegative bytes, positive width/height, optional string name, and positive original dimensions when present. Native storage admission is distinct from whether a particular model provider can represent that content.
+
+Current common admission does not validate each user/tool/developer content block against the complete generated schema. It checks message identity, role, source, and an array container; version-specific validators add only the checks listed here. Unknown block kinds and uninspected fields can therefore survive storage admission and still be refused by a provider.
+
+<a id="native-relationships"></a>
+### Lifecycle and reference relationships
+
+| Owner | Required relationship |
+|---|---|
+| `turn/start`, `turn/end`, `step/start`, `step/end` | Ordered turn/step numbers, matching open owners, no overlapping turn/step, and no unresolved advertised or started tool call at a closing boundary. Unfinished tails remain open. |
+| `assistant/message`, `tool/call`, appended `tool/result` | Match an open step; advertised call ids are unique, starts retain name/arguments, and results settle one advertised call. A result before its start requires the exact admitted `TOOL_NOT_STARTED` repair. Tool-result surface replacements require an open turn instead of replaying the original call lifecycle. |
+| `system/message`, `developer/message`, `assistant/attempt` | Match an open turn and step. Request headers and contexts require an open turn. |
+| `tool/ptc-dispatch-start`, `tool/ptc-dispatch` | Require an open turn, unique sub-call start and settlement, stable root/parent/name/arguments, and a nested parent belonging to the same root. |
+| `llm/retry`, `llm/retry-started` | Match the current request provider and turn/step, sequential attempts per policy chain, stable retry identity, and one start matching a prior scheduled attempt. |
+| `session/title`, `session/title-llm-request` | Cite distinct earlier human `user/message` events. User-assigned titles have no citations; other titles have citations. An LLM title request has nonempty citations and one user-role text message sourced from `dsh-session-title-llm`. |
+| `command/run`, `command/done` | Run ids are unique; completion has a prior run. A present completion `sourceEventSeq` names an earlier non-command event and accompanies success. |
+| `compaction/start`, `compaction/summary`, `compaction/end` | Match compaction id, source command, and the active turn context. Summary spans name exact current-surface nodes and exclude the protected head; successful completion has one summary. Inherited unfinished compactions expire at the end-seed marker. |
+| `compaction/prune` | Its span names exact current-surface nodes and excludes the protected head; it does not require a compaction transaction or its owner fields. |
+| Compact checkpoint replacement | Its `compact-checkpoint` source identifies the active compaction. |
+| Native `subagent/catalog` and `subagent/catalog-unknown` | Check own version-0 payload fields and unique child ids after the inherited cut. Native reads neither collect child logs nor compare their physical facts; inherited entries do not establish own membership. |
+| Inherited cut and delivery | Apply the marker, coordinate, and generation-ownership rules stated above. |
+
+These checks are generation-owned in [relationships.ts](src/relationships.ts). Full common message/envelope acceptance and plugin-owned message projections additionally use the installed Session; the exported V4 restorer alone is not a replacement for complete catalog restoration.
+
+<a id="developer-changes"></a>
+### Developer changes and deferred schemas
+
+The edge does not create developer history. Native `developer/message` requires positive turn/step coordinates, role `developer`, a nonempty message id, array content, and producer-owned source metadata. Each `tool-addition` or `tool-removal` block requires a nonempty `toolName`. Additions reject any own inline `tool` field, including values that would otherwise be optional JSON metadata.
+
+An event containing additions must have `headerSeq`; it selects an earlier known `request/header` for all additions in that event. Each name must match exactly one definition there with string `description` and object `parameters`. Missing, forward, wrong-type, unknown, ambiguous, and incomplete bindings are refused. Events without additions must omit `headerSeq`; `sourceEventSeqs` remains independent derivation/replacement metadata. Replacement, fork, restart, and compaction retain the recorded binding rather than consulting the current registry or latest header.
+
+Tool-change blocks in ordinary messages, inbox/title input, compaction summary/raw output, or embedded assistant block-start/block-end records are refused. A present `request/header.header.tools[].deferLoading` must be exactly true; it is independent of whether any developer addition exists. Empty developer nodes retain surface positions, produce no model message, and cannot replace the protected system head. Unknown ignorable developer payloads are deferred until the reader knows that event type.
+
+Native format support does not enable automatic emission, provider tool loading, or UI rendering. Current provider and UI consumers explicitly refuse developer history they cannot represent. Backward-compatible consumer support for the already accepted representation is separate from adding a new format.
+
+<a id="fork-results"></a>
+### Fork-generated results
+
+Fork seed construction belongs to core Session, not this migration. Native V4 admits its synthetic `TOOL_NOT_STARTED` error results with ids `forked-tool-result-<callId>-<seq>`, role `tool`, matching source/call ids, `isError: true`, `ToolNotStartedError`, and one text block. Append results carry their own sequence and no source references; later replacements retain an earlier suffix and cite exactly that original result. The branch-specific text is retained, not normalized to crash-recovery wording.
+
+Started fork calls use `TOOL_OUTCOME_UNKNOWN` error results and retain their recorded start references. They follow ordinary started-call validation; the special not-started identity rules above do not apply to them. Fork construction closes its open tail with `turn/end.reason.kind: 'forked'` and leaves completed earlier steps and turns unchanged.
+
+The ordinary interrupted not-started repair retains its canonical historical integer suffix and exact crash-recovery text. Both forms must settle an advertised call under the lifecycle rules. The stage preserves existing fork/call/message ids; it does not infer ancestry from their string prefixes or execute a tool.
+
+<a id="native-recovery"></a>
+### Validation entry points and recovery
+
+| Entry point | Checks and limits |
+|---|---|
+| V4 codec decode | Released physical framing plus V4 row admission. Required predecessor PTC tags, retired system headers, and owned malformed native fields are refused before recoverable suffix suppression. |
+| V4 codec encode | The same native row checks; ignorable developer payloads are still validated by the writer. |
+| Native catalog, `validation: 'transformed'` | Codec checks only; skips artifact restoration because no migration ran. This is not full native validation. |
+| Historical catalog, `validation: 'transformed'` | Conversion followed by generation-owned V4 restoration; skips installed common Session validation. |
+| Catalog, `validation: 'current'` | Generation-owned V4 checks plus installed current Session header, envelope, message, surface, and projection validation. Use strict recovery for fixtures and publication verification. |
+| Native JSONL scanner | Supplies installed vocabulary to row admission before recovery and applies mandatory V4 relationships before exposing the accepted prefix. |
+
+Unknown required events are refused by vocabulary-aware restoration. Unknown ignorable payloads remain uninterpreted; required `tool/code-dispatch-start` / `tool/code-dispatch` are refused as retired syntax, while ignorable predecessors stay opaque. The physical decoder defers ignorable developer payloads when vocabulary is absent; a native reader that knows developer events must validate them before accepting a recoverable suffix. Only accepted inherited markers establish the cut.
+
+-----
 
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
@@ -266,6 +324,7 @@ The edge preserves the recorded request prefix. Provider cache availability and 
 - **Nested historical tool results** — migration currently refuses results containing another tool-result wrapper. The original generation remains intact and no V4 successor is published. A later converter may support evidenced source cases without changing the established V4 format; the [migration cookbook](../../../docs/cookbook/adding-a-session-format-version.md#stages-and-validation) defines that distinction.
 - **Historical extension consumers** — prefixed message and result fields preserve JSON data without activating core fields. A consumer must explicitly understand those fields before interpreting them.
 - **Retained child logs required** — a parent alone cannot recover unrecorded child ids, creation times, or descriptors. Deleted children cannot be reconstructed from tool arguments; existing parent catalog records remain.
+- **Unknown historical modes** — without exactly one supported own descriptor, a missing parent entry records unknown mode. Current reads do not rewrite that entry; opening the child resolves available descriptor information or reports its own error.
 - **Storage scope** — facts cover recognizable children within the same persistence root. Cross-root import and corrupt-log repair are outside this migration.
 
 <a id="dev-note"></a>

@@ -447,6 +447,16 @@ describe('SessionHistoryController', () => {
       records: [{ type: 'event', event: { type: 'subagent/descriptor' } }],
     })
     await expect(transport.page({
+      address: { kind: 'subagent', parentSessionId, childSessionId, mode: 'unknown' },
+      throughSeq: 0,
+    }, signal)).resolves.toMatchObject({
+      records: [{ type: 'event', event: { type: 'subagent/descriptor' } }],
+    })
+    await expect(transport.page({
+      address: { kind: 'subagent', parentSessionId: SessionId('other-parent'), childSessionId, mode: 'unknown' },
+      throughSeq: 0,
+    }, signal)).rejects.toMatchObject({ code: 'subagent/unauthorized' })
+    await expect(transport.page({
       address: {
         kind: 'subagent',
         parentSessionId: SessionId('other-parent'),

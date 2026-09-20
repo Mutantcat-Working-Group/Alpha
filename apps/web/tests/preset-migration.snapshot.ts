@@ -71,6 +71,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
         .filter(event => event.type === 'agent-preset/selected')
         .map(event => event.data.agentPreset)).toEqual(withSelections ? ['ptc', 'standard', 'ptc'] : [])
       expect(await scaffold.ctx.subagents.listChildren(id)).toEqual([
+        { id: brokenId, createdAt: childFixture[0]?.['createdAt'], mode: 'unknown' },
         { id: childId, createdAt: childFixture[0]?.['createdAt'], mode: 'one-shot', label: 'historical child' },
       ])
 
@@ -80,7 +81,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
       const address = { kind: 'subagent', parentSessionId: id, childSessionId: childId, mode: 'one-shot' } as const
       const childPage = await scaffold.ctx.sessionController.page({ address, throughSeq: childRows.length - 1 }, signal)
       expect(childPage.records.map(record => record.event.type)).toEqual(childRows.map(row => row['type']))
-      await expect(scaffold.ctx.sessionController.page({ address: { ...address, childSessionId: brokenId }, throughSeq: 1 }, signal))
+      await expect(scaffold.ctx.sessionController.page({ address: { ...address, childSessionId: brokenId, mode: 'unknown' }, throughSeq: 1 }, signal))
         .rejects.toThrow()
       await expect(scaffold.ctx.sessionController.page({ address: { kind: 'session', sessionId: id }, throughSeq: rows.length - 1 }, signal))
         .resolves.toMatchObject({ hasMore: false })
@@ -107,14 +108,17 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
           && (row['data'] as { agentPreset: string }).agentPreset === 'code'
           ? { ...row, data: { agentPreset: 'ptc' } }
           : row),
-        { type: 'subagent/catalog', seq: rows.length, time: rows.at(-1)?.['time'], data: {
+        { type: 'subagent/catalog-unknown', seq: rows.length, time: rows.at(-1)?.['time'], data: {
+          version: 0, childId: brokenId, childCreatedAt: childFixture[0]?.['createdAt'], mode: 'unknown',
+        } },
+        { type: 'subagent/catalog', seq: rows.length + 1, time: rows.at(-1)?.['time'], data: {
           version: 0, childId, childCreatedAt: childFixture[0]?.['createdAt'], mode: 'one-shot', label: 'historical child',
         } },
         // Agent activation closes its restored prefix with a fresh seed marker.
-        { type: 'session/end-seed', seq: rows.length + 1, time: 0, data: {} },
-        { type: 'permission/preset', seq: rows.length + 2, time: 0, data: { preset: 'workspace-write' } },
-        { type: 'sandbox/mode', seq: rows.length + 3, time: 0, data: { mode: 'workspace-write' } },
-        { type: 'approval/policy', seq: rows.length + 4, time: 0, data: { policy: 'ask' } },
+        { type: 'session/end-seed', seq: rows.length + 2, time: 0, data: {} },
+        { type: 'permission/preset', seq: rows.length + 3, time: 0, data: { preset: 'workspace-write' } },
+        { type: 'sandbox/mode', seq: rows.length + 4, time: 0, data: { mode: 'workspace-write' } },
+        { type: 'approval/policy', seq: rows.length + 5, time: 0, data: { policy: 'ask' } },
       ].map(row => JSON.stringify(row)).join('\n') + '\n'
       const context = { sessionIds: [id], cwd: scaffold.workspaceCwd }
       expect(normalizeSessionSnapshots([published], context)).toEqual(normalizeSessionSnapshots([expected], context))

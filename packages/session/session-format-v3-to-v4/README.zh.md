@@ -138,13 +138,13 @@ V3 未知内容标签变为 `plugin:<original-type>`，其他字段原样保留�
 |---|---|
 | 一个 version 1 descriptor | 要求字符串 provider 与 label；导出 `mode: 'continuable'`。 |
 | 一个 version 2 或 3 descriptor | 要求字符串 provider；按目录规则使用其 mode 和可选 label。 |
-| 没有 descriptor，或 descriptor 版本不受支持 | 可以保留已有父目录项；不能创建缺失项。 |
-| 多个自身 descriptor | 保留子 Session；没有可用于补填的明确发现事实。 |
-| 已有自身父目录项 | 保留条目及其扩展；要求子创建时间以及可用且受支持的 mode／label 一致。 |
+| 没有 descriptor，或 descriptor 版本不受支持 | 保留已有父目录项；否则追加模式未知的目录项。 |
+| 多个自身 descriptor | 保留已有父目录项，不比较 mode／label；否则追加模式未知的目录项。 |
+| 已有自身父目录项 | 保留条目及其扩展；要求子创建时间一致，并在恰好一个受支持的自身 descriptor 可用时比较其 mode／label。 |
 | 缺少自身父目录项，且受支持证据完整 | 追加带 child id、创建时间、mode 和可选 label 的 version-0 目录事实。 |
-| 缺少自身父目录项，且证据不完整 | 保留父 Session，不凭空创建目录项。 |
+| 缺少自身父目录项，且证据不完整 | 追加 `subagent/catalog-unknown`，记录 header 身份和未知模式，不编造标签。 |
 
-Catalog version 0 要求字符串 `childId`、非负安全整数 `childCreatedAt`、`continuable` 或 `one-shot` mode，以及 continuable mode 下的字符串 label；存在的 one-shot label 也必须是字符串。重复的自身 child id 被拒绝。没有对应保留子日志的已有条目仍保留在父日志中。Descriptor 收集不恢复子级的旧 continuation composition，也不从工具参数恢复已删除子级。
+Catalog version 0 要求字符串 `childId`、非负安全整数 `childCreatedAt`、`continuable` 或 `one-shot` mode，以及 continuable mode 下的字符串 label；存在的 one-shot label 也必须是字符串。重复的自身 child id 被拒绝。没有对应保留子日志的已有条目仍保留在父日志中。Descriptor 收集不恢复子级的旧 continuation composition，也不从工具参数恢复已删除子级。 `subagent/catalog-unknown` 单独记录 version 0、child id、创建时间和 `mode: 'unknown'`；两种事件共同组成 child id 唯一的目录。已有 `subagent/catalog` 载荷保留其 mode 要求。
 
 Stage 只把最终继承截点之后的父目录记录作为候选。每个 inherited marker 都会丢弃更早的目录候选，不解释其载荷。缺失项追加在所有源事件之后，按创建时间、child id 排序，并使用连续的新序号。时间取最后一个源事件的 time；空日志则取 header 创建时间。这些记录既不进入模型表面，也不改变继承计数。
 
@@ -214,7 +214,65 @@ const artifact = restore.finish()
 
 V4 还接受 fork 生成的 `TOOL_NOT_STARTED` 结果，使用确定性的 `forked-tool-result-<callId>-<seq>` ID 和分支专用文案。原生校验直接检查声明的调用、错误结果、身份后缀和 surface 操作；持久化与恢复的数据保留原始 fork ID 和文案。后续 surface 替换（包括工具结果裁剪）保留该身份，并由已安装的 Session 校验其源引用。已发布的 V0–V3 校验器保持不变。
 
-原生 V4 保留携带正整数 turn/step 坐标的 `developer/message` 事件、工具添加/移除块及 `deferLoading: true` 工具模式标记。已知 developer 事件必须匹配打开的 step；未知且可忽略的事件保持不透明。添加块存储 `toolName`，事件必须携带 `headerSeq`，指向包含恰好一个完整同名模式的更早且已知的 `request/header`。移除及不含添加的消息不携带 `headerSeq`。原生验证拒绝内嵌定义、缺失或歧义绑定及无效角色，同时保留无关 JSON 字段、替换坐标和来源引用。空 developer 节点保留其 surface 位置，且不能覆盖受保护的 system 头节点。此格式支持不启用提供方工具加载。
+System image 接纳要求非空 attachment id、PNG／JPEG／WebP／GIF MIME 类型之一、非负 bytes、正 width／height、可选字符串 name，以及存在时为正的原始尺寸。原生存储接纳与具体模型提供方能否表示该内容是不同的问题。
+
+当前通用接纳不会按完整的生成 schema 校验每个 user／tool／developer content block。它检查消息身份、角色、来源与数组容器；代际专用校验器只增加此处列出的检查。因此，未知 block kind 和未检查的字段可能通过存储接纳，但仍被提供方拒绝。
+
+<a id="native-relationships"></a>
+### 生命周期与引用关系
+
+| 所有者 | 必需关系 |
+|---|---|
+| `turn/start`、`turn/end`、`step/start`、`step/end` | Turn／step 编号有序，开放所有者匹配，turn／step 不重叠，结束边界不遗留已声明或已开始但未解决的工具调用。未完成尾部保持开放。 |
+| `assistant/message`、`tool/call`、追加的 `tool/result` | 匹配开放 step；声明的调用 id 唯一，开始保留 name／arguments，结果结算一个已声明调用。开始之前的结果必须是精确获准的 `TOOL_NOT_STARTED` 修复。工具结果的表面替换要求开放 turn，不重放原始调用生命周期。 |
+| `system/message`、`developer/message`、`assistant/attempt` | 匹配开放 turn 与 step。Request header 和 context 要求开放 turn。 |
+| `tool/ptc-dispatch-start`、`tool/ptc-dispatch` | 要求开放 turn、唯一 sub-call 开始与结算、稳定的 root／parent／name／arguments，以及属于同一 root 的嵌套 parent。 |
+| `llm/retry`、`llm/retry-started` | 匹配当前请求 provider 和 turn／step，每条策略链的尝试连续、retry 身份稳定，每次 start 匹配一个先前已调度的尝试。 |
+| `session/title`、`session/title-llm-request` | 引用互异且更早的真人 `user/message` 事件。用户指定标题没有引用；其他标题具有引用。LLM 标题请求带非空引用和一个来源为 `dsh-session-title-llm` 的 user 角色文本消息。 |
+| `command/run`、`command/done` | Run id 唯一；完成记录对应先前 run。存在的完成 `sourceEventSeq` 引用更早的非 command 事件，并伴随 success。 |
+| `compaction/start`、`compaction/summary`、`compaction/end` | 匹配 compaction id、源 command 和活动 turn 上下文。Summary 区间引用精确的当前表面节点且排除 protected head；成功完成需要一个 summary。继承的未完成 compaction 在 end-seed marker 处过期。 |
+| `compaction/prune` | 其区间引用精确的当前表面节点且排除 protected head；它不要求存在 compaction 事务或其所有者字段。 |
+| Compact checkpoint 替换 | 其 `compact-checkpoint` 来源标识活动 compaction。 |
+| 原生 `subagent/catalog` 与 `subagent/catalog-unknown` | 检查继承截点之后的自身 version-0 载荷字段与 child id 唯一性。原生读取既不收集子日志，也不比较其物理事实；继承项不建立自身成员关系。 |
+| 继承截点与 delivery | 应用上文的 marker、坐标及代际归属规则。 |
+
+这些检查由 [relationships.ts](src/relationships.ts) 按代际拥有。完整的通用消息／信封接纳与插件拥有的消息投影还使用已安装 Session；单独的导出 V4 恢复器不能替代完整 catalog 恢复。
+
+<a id="developer-changes"></a>
+### Developer 变更与延迟 schema
+
+本边不创建 developer 历史。原生 `developer/message` 要求正 turn／step 坐标、developer 角色、非空消息 id、数组 content，以及生产者拥有的来源元数据。每个 `tool-addition` 或 `tool-removal` block 都要求非空 `toolName`。添加块拒绝任何自有内嵌 `tool` 字段，包括其他情况下可作为可选 JSON 元数据的值。
+
+含有添加块的事件必须带 `headerSeq`，为该事件内全部添加选择一个更早且已知的 `request/header`。每个名称必须在那里恰好匹配一个带字符串 `description` 和对象 `parameters` 的定义。缺失、前向、错误类型、未知、歧义或不完整的绑定均被拒绝。没有添加块的事件必须省略 `headerSeq`；`sourceEventSeqs` 仍是独立的派生／替换元数据。替换、fork、重启和 compaction 保留记录的绑定，不查询当前 registry 或最新 header。
+
+普通消息、inbox／title 输入、compaction summary／raw output 以及内嵌 assistant block-start／block-end 记录中的工具变更块均被拒绝。存在的 `request/header.header.tools[].deferLoading` 必须恰好为 true；它与是否存在 developer 添加事件无关。空 developer 节点保留表面位置，不产生模型消息，也不能替换 protected system head。未知 ignorable developer 载荷推迟到读取器知道该事件类型时校验。
+
+原生格式支持不启用自动发出、提供方工具加载或 UI 渲染。当前提供方与 UI 消费者会明确拒绝不能表示的 developer 历史。为已经接受的表示增加向后兼容的消费者支持，与新增格式是不同的变更。
+
+<a id="fork-results"></a>
+### Fork 生成的结果
+
+Fork 种子构造归核心 Session 所有，不属于此迁移。原生 V4 接纳它生成的 `TOOL_NOT_STARTED` 合成错误结果，其 id 为 `forked-tool-result-<callId>-<seq>`，角色为 tool，source／call id 匹配，带 `isError: true`、`ToolNotStartedError` 和一个 text block。追加结果携带自身序号且没有源引用；后续替换保留更早的后缀，并精确引用那个原始结果。分支专用文本保留，不归一化为崩溃恢复措辞。
+
+已经开始的 fork 调用使用 `TOOL_OUTCOME_UNKNOWN` 错误结果，并保留记录的开始引用。它们遵循普通已开始调用的校验；上文专用于 not-started 的身份规则不适用于它们。Fork 构造通过 `turn/end.reason.kind: 'forked'` 关闭开放尾部，保留先前已结束的 step 和 turn。
+
+普通 interrupted not-started 修复保留 canonical 历史整数后缀和精确的崩溃恢复文本。两种形式都必须按生命周期规则结算一个已声明调用。Stage 保留已有 fork／call／message id；它不从字符串前缀推断祖先关系，也不执行工具。
+
+<a id="native-recovery"></a>
+### 校验入口与恢复
+
+| 入口 | 检查与限制 |
+|---|---|
+| V4 codec 解码 | 已发布物理分帧加 V4 行接纳。Required 前代 PTC 标签、已退役 system header 和自身负责的错误原生字段，在 recoverable 后缀抑制前被拒绝。 |
+| V4 codec 编码 | 同样的原生行检查；writer 仍校验 ignorable developer 载荷。 |
+| 原生 catalog，`validation: 'transformed'` | 只有 codec 检查；因为没有执行迁移，跳过产物恢复。这不是完整原生校验。 |
+| 历史 catalog，`validation: 'transformed'` | 转换后执行代际自有的 V4 恢复；跳过已安装 Session 的通用校验。 |
+| Catalog，`validation: 'current'` | 代际自有 V4 检查加已安装当前 Session 的 header、信封、消息、表面与投影校验。Fixture 与发布验证使用 strict recovery。 |
+| 原生 JSONL scanner | 在恢复前把已安装词汇表传给行接纳，并在暴露已接纳前缀前执行必需的 V4 关系检查。 |
+
+支持词汇表的恢复器拒绝未知 required 事件。未知 ignorable 载荷不被解释；required `tool/code-dispatch-start` / `tool/code-dispatch` 作为退役语法被拒绝，而 ignorable 前代事件保持不透明。没有词汇表时，物理解码器推迟解释 ignorable developer 载荷；知道 developer 事件的原生读取器必须在接纳 recoverable 后缀前校验它们。只有被接纳的 inherited marker 才能确定截点。
+
+-----
 
 <a id="understand-the-implementation"></a>
 ## 理解实现
@@ -266,6 +324,7 @@ V4 还接受 fork 生成的 `TOOL_NOT_STARTED` 结果，使用确定性的 `fork
 - **历史嵌套工具结果**——当前迁移拒绝包含另一个 tool-result wrapper 的结果。原始代际保持完整，且不发布 V4 successor。后续转换器可以支持有证据的源数据场景，而不改变既定 V4 格式；[迁移 cookbook](../../../docs/cookbook/adding-a-session-format-version.zh.md#stages-and-validation) 定义了这一区别。
 - **历史扩展消费者**——带前缀的消息与结果字段保留 JSON 数据，不激活核心字段。消费者必须明确理解这些字段后才能解释它们。
 - **依赖保留的子日志**——仅凭父日志无法恢复未记录的子 id、创建时间或 descriptor。删除的子 Session 无法从工具参数恢复；已存在的父目录记录仍保留。
+- **历史模式未知**——没有恰好一个受支持的自身 descriptor 时，缺失的父目录项记录未知模式。当前读取不重写该项；打开子会话时解析可用的 descriptor 信息，或报告该子会话的错误。
 - **存储范围**——事实只覆盖同一持久化根目录内可识别的子 Session。跨根目录导入和损坏日志修复不属于此迁移。
 
 <a id="dev-note"></a>

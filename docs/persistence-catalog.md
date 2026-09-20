@@ -58,6 +58,7 @@ The [format references](persistence-changes/historical-formats/README.md) cover 
 | `event:step/end` | event | `e0a787e6ec76c7c94fecbc501b489164ab0293db05bc947914077ad01e674f05` | [`{ type: "step/end" }`](#persistence-type-sha256-e0a787e6ec76c7c94fecbc501b489164ab0293db05bc947914077ad01e674f05) |
 | `event:step/start` | event | `4513e088d43e6c68425be30451b9f961cc264fe7318ca62681c41d4d78615986` | [`{ type: "step/start" }`](#persistence-type-sha256-4513e088d43e6c68425be30451b9f961cc264fe7318ca62681c41d4d78615986) |
 | `event:subagent/catalog` | event | `ae1f7110feeec697b8cab42b68f7709aa7b3279764099dfb53c25890d2e5c871` | [`{ type: "subagent/catalog" }`](#persistence-type-sha256-ae1f7110feeec697b8cab42b68f7709aa7b3279764099dfb53c25890d2e5c871) |
+| `event:subagent/catalog-unknown` | event | `d21dd6c60a43d9cb0d93da371e482f66ffd55daa36544e80978a0e7b32737b21` | [`{ type: "subagent/catalog-unknown" }`](#persistence-type-sha256-d21dd6c60a43d9cb0d93da371e482f66ffd55daa36544e80978a0e7b32737b21) |
 | `event:subagent/descriptor` | event | `b79ada42962cad0190a9d465805260567621fa3a4abd757eb31e6016b52d5ab5` | [`{ type: "subagent/descriptor" }`](#persistence-type-sha256-b79ada42962cad0190a9d465805260567621fa3a4abd757eb31e6016b52d5ab5) |
 | `event:subagent/model-selection-policy` | event | `a6567ccb2e530606b775371eb4fa31468d72084339968e8b0440a516a23b39dc` | [`{ type: "subagent/model-selection-policy" }`](#persistence-type-sha256-a6567ccb2e530606b775371eb4fa31468d72084339968e8b0440a516a23b39dc) |
 | `event:system/message` | event | `69081694be231d56fd9580ba14645fd5e35373202605d5c5c841a9435b5fa3b1` | [`{ type: "system/message" }`](#persistence-type-sha256-69081694be231d56fd9580ba14645fd5e35373202605d5c5c841a9435b5fa3b1) |
@@ -898,7 +899,21 @@ Source: [`packages/core/session/src/types.ts:299`](../packages/core/session/src/
 'subagent/catalog': SubagentCatalogEvent
 ```
 
-Source: [`packages/subagent/subagent/src/catalog.ts:40`](../packages/subagent/subagent/src/catalog.ts)
+Source: [`packages/subagent/subagent/src/catalog.ts:48`](../packages/subagent/subagent/src/catalog.ts)
+
+<a id="subagentcatalog-unknown--log-only"></a>
+
+#### `subagent/catalog-unknown` — log-only
+
+```ts persistence-catalog
+/**
+ * A historical child's header identity when its descriptor cannot establish a mode.
+ * @param data - child identity retained for discovery and later history reads.
+ */
+'subagent/catalog-unknown': UnknownCatalogEvent
+```
+
+Source: [`packages/subagent/subagent/src/catalog.ts:53`](../packages/subagent/subagent/src/catalog.ts)
 
 <a id="subagentdescriptor--log-only"></a>
 
@@ -4986,6 +5001,14 @@ SHA-256: `44c8c77aa9aa100b0d74d2deee85474b29faa6eee0ac0f662f7abe9931ddd7f2`
 
 `"subagent/catalog"`
 
+<a id="persistence-type-sha256-d437ebdbc1839ffcf3f6fa201a003126ec63945186b0c0792f1db466bf8ebd89"></a>
+
+### `"subagent/catalog-unknown"`
+
+SHA-256: `d437ebdbc1839ffcf3f6fa201a003126ec63945186b0c0792f1db466bf8ebd89`
+
+`"subagent/catalog-unknown"`
+
 <a id="persistence-type-sha256-5ebce1317eacd2c148456627a09668e927ee15c204f0643f5ea76b46b54a2647"></a>
 
 ### `"subagent/descriptor"`
@@ -5297,6 +5320,14 @@ SHA-256: `0af3ecfb8c60d416fc40a7cc4fb2c4851a8e46608b2b38ab9e510670c971aa1f`
 SHA-256: `2c4c21f19f426a58f2dac914e34313aa43f8408972de857a486d1f086d5adb6c`
 
 `"unavailable"`
+
+<a id="persistence-type-sha256-05a2796621b1ee6c03ef7abe560b25116bb4da4d592312117242a78415a32b04"></a>
+
+### `"unknown"`
+
+SHA-256: `05a2796621b1ee6c03ef7abe560b25116bb4da4d592312117242a78415a32b04`
+
+`"unknown"`
 
 <a id="persistence-type-sha256-0bdaf9cb63594be4ef034b68901fffe792fe09d6d5f6bac42d7f56f6e7834fb9"></a>
 
@@ -8209,6 +8240,26 @@ Sources: [`packages/core/session/src/types.ts:232`](../packages/core/session/src
 | `forked` | not declared | none | [`{ kind: "forked" }`](#persistence-type-sha256-ec8b5ff7c77ca6893ac7ba5a0c5b2aefeb52f12c64450b7359660c2a7e8a53d7) |
 | `interrupted` | not declared | none | [`{ kind: "interrupted" }`](#persistence-type-sha256-56b7c047694875a843ba020dfea3c8380d54ae4ff88ab349e72004dc21e07c23) |
 | `max-tokens` | not declared | none | [`{ kind: "max-tokens" }`](#persistence-type-sha256-ab7ec5f9eb2c6dfacca5da4c37cf7ba85d04172053ee6b1ebf1709ffcd99c1a7) |
+
+<a id="persistence-type-sha256-c8d70349934748fe4cf79c49654c72459f4073c57b65e01ff1e8f49dfcce49ca"></a>
+
+<a id="persistence-type-packagessubagentsubagentsrccatalogtsunknowncatalogevent"></a>
+
+<a id="persistence-type-unknowncatalogevent"></a>
+
+### `UnknownCatalogEvent`
+
+SHA-256: `c8d70349934748fe4cf79c49654c72459f4073c57b65e01ff1e8f49dfcce49ca`
+
+Sources: [`packages/subagent/subagent/src/catalog.ts:34`](../packages/subagent/subagent/src/catalog.ts)
+
+| Property | Presence | Type |
+|---|---|---|
+| `childCreatedAt` | required | `number` |
+| `childId` | required | `string` |
+| `label` | optional | `string` |
+| `mode` | required | `"unknown"` |
+| `version` | required | `0` |
 
 <a id="persistence-type-sha256-64ea5653002834c44f29bea4620e9c42aeb6024ae5b1d58d69f95158006b2586"></a>
 
@@ -11175,7 +11226,23 @@ SHA-256: `4312134fc6f9cad507c31390bd3d147535492dd77621ec517c5e85f853d53a03`
 
 `"turn/end"`
 
-<a id="persistence-type-turnstart"></a>
+<a id="persistence-type-sha256-d21dd6c60a43d9cb0d93da371e482f66ffd55daa36544e80978a0e7b32737b21"></a>
+
+<a id="persistence-type-eventsubagentcatalog-unknown"></a>
+
+### `{ type: "subagent/catalog-unknown" }`
+
+SHA-256: `d21dd6c60a43d9cb0d93da371e482f66ffd55daa36544e80978a0e7b32737b21`
+
+| Property | Presence | Type |
+|---|---|---|
+| `data` | required | [`UnknownCatalogEvent`](#persistence-type-sha256-c8d70349934748fe4cf79c49654c72459f4073c57b65e01ff1e8f49dfcce49ca) |
+| `ignorable` | optional | `true` |
+| `seq` | required | `number` |
+| `time` | required | `number` |
+| `type` | required | `"subagent/catalog-unknown"` |
+
+<a id="persistence-type-sha256-b79ada42962cad0190a9d465805260567621fa3a4abd757eb31e6016b52d5ab5"></a>
 
 ### `"turn/start"`
 

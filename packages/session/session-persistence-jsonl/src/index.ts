@@ -627,7 +627,7 @@ class JsonlSessionPersistence extends SessionPersistence {
       const sources = await children()
       const related = await prepareCatalogFacts(id, sources, this.compression, signal)
       for (const failure of related.failures) {
-        this.ctx.logger.warn(`${this.name}: session "${id}" catalog omitted an unreadable child (raw log: ${failure.path}): ${String(failure.error)}`)
+        this.ctx.logger.warn(`${this.name}: session "${id}" catalog retained a child with unknown descriptor (raw log: ${failure.path}): ${String(failure.error)}`)
       }
       const membership = sources.map(source => source.path).sort()
       validateRelatedSources = async () => {

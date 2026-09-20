@@ -10,9 +10,9 @@ Status: implemented
 
 ## Decision
 
-V3→V4 迁移只在恰好一个受支持的自身子 descriptor 提供发现字段时，追加缺失的父目录项。其他 descriptor 数量及不受支持的版本不贡献新的目录事实。已有父目录项和子事件保持完整。这只替代[相邻迁移决策](../architecture/2026-08-31-released-session-format-migrations.zh.md)中的证据缺失拒绝规则。
+V3→V4 迁移仅在恰好一个受支持的自身子 descriptor 提供发现字段时，追加完整的缺失父目录项。其他 descriptor 数量和不支持的版本通过[逐会话目录准备](2026-09-19-session-local-subagent-migration.zh.md)保留模式未知的成员关系。已有父目录项和子事件保持不变。这取代[相邻迁移决策](../architecture/2026-08-31-released-session-format-migrations.zh.md)中对缺失证据的拒绝。
 
-下述 JSONL 错误传播规则部分由[逐会话目录准备](2026-09-19-session-local-subagent-migration.zh.md)取代；转换器仍校验提供的事实及冲突。已知子创建时间仍必须与已有父目录项一致。只有恰好一个受支持的自身 descriptor 时，才校验其字段并比较 mode／label。该 descriptor 字段无效、日志损坏、成员关系不可读、所选代际不受支持以及源修订变化仍保留原有失败行为。
+JSONL 错误传播规则由[逐会话目录准备](2026-09-19-session-local-subagent-migration.zh.md)部分取代；转换器仍校验已提供事实及冲突。已知子创建时间必须匹配已有父目录项。只有恰好一个受支持的自身 descriptor 时才检查 mode／label 和 descriptor 字段。JSONL 隔离无效 descriptor 字段和损坏子正文，并保留已知 header 身份；不可读或不支持的 header 不参与发现。来源修订变化仍拒绝发布。
 
 ## Alternatives considered
 
@@ -22,6 +22,6 @@ V3→V4 迁移只在恰好一个受支持的自身子 descriptor 提供发现字
 
 ## Consequences
 
-没有可用 descriptor 的历史子 Session 仍可按 id 读取，但可能不出现在其父级的直属子目录中。已有目录项仍可见。V4 后继发布后，打开它不会重新扫描历史子日志；后续自动修复目录不属于本迁移。准备过程仍会在发布前复查子修订，因此新出现的证据无法悄悄绕过源一致性检查。
+历史子会话具有可读 header 但没有可用 descriptor 时，在父直属子目录中保留未知模式成员关系。已有目录项仍可见。V4 后继发布后，打开它不重新扫描历史子日志；自动补齐后续模式不属于本迁移。准备过程仍在发布前重新检查子修订，因此新出现的证据不能静默绕过来源一致性检查。
 
 单元、JSONL 读写和 Preview 打包测试覆盖不可用证据、源字节不变、条目保留、身份冲突以及发布前的证据变化。

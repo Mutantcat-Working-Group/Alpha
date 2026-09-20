@@ -45,6 +45,8 @@ export async function prepareCatalogFacts(
       path: source.path, identity: await stat(source.path, { bigint: true }),
     }
     witnesses.push(witness)
+    const unavailable = { childId: source.header.id, childCreatedAt: source.header.createdAt,
+      descriptorCount: 0, descriptor: null, sourcePath: source.path }
     let restored: Awaited<ReturnType<typeof readDecodedJsonlSource>>
     try {
       restored = await readDecodedJsonlSource(source.path, version, compression, {
@@ -55,6 +57,7 @@ export async function prepareCatalogFacts(
     } catch (error: unknown) {
       signal.throwIfAborted()
       failures.push({ path: source.path, error })
+      facts.push(unavailable)
       continue
     }
     witness.identity = restored.identity
@@ -69,6 +72,7 @@ export async function prepareCatalogFacts(
       fact = historicalChildCatalogSource(restored.artifact)
     } catch (error: unknown) {
       failures.push({ path: source.path, error })
+      facts.push(unavailable)
       continue
     }
     facts.push({ ...fact, sourcePath: source.path })

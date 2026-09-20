@@ -79,6 +79,21 @@ export function catalogFact(value: SessionFormatJsonValue, subject = 'subagent/c
 }
 
 /**
+ * Validate a current catalog entry retained without a supported child descriptor.
+ * @param value - decoded unknown-child payload.
+ * @returns the validated identity with unknown mode.
+ */
+export function unknownCatalogFact(value: SessionFormatJsonValue): SessionFormatJsonObject {
+  if (!isSessionFormatJsonObject(value) || value['version'] !== 0
+    || typeof value['childId'] !== 'string' || value['mode'] !== 'unknown'
+    || (value['label'] !== undefined && typeof value['label'] !== 'string')) {
+    throw new SessionFormatError('subagent/catalog-unknown requires a version 0 identity with unknown mode')
+  }
+  sessionFormatCount(value['childCreatedAt'], 'catalog child creation time')
+  return value
+}
+
+/**
  * Name the child and its optional storage-owned location in a migration diagnostic.
  * @param source - validated supplemental child evidence.
  * @returns a child identity with its source path when persistence supplied one.

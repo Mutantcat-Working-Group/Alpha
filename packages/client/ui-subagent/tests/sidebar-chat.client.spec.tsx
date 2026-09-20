@@ -38,6 +38,8 @@ describe('Sidebar chat address', () => {
     expect(parseSubagentChatAddress(resource)).toEqual(ADDRESS)
     expect(parseSubagentChatAddress(subagentChatAddress({ ...ADDRESS, mode: 'one-shot' })))
       .toEqual({ ...ADDRESS, mode: 'one-shot' })
+    expect(parseSubagentChatAddress(subagentChatAddress({ ...ADDRESS, mode: 'unknown' })))
+      .toEqual({ ...ADDRESS, mode: 'unknown' })
   })
 
   it.each([
@@ -47,7 +49,7 @@ describe('Sidebar chat address', () => {
     'dsh-resource://subagentchat/other/child?parent=parent&mode=continuable',
     'dsh-resource://subagentchat/session/child?mode=continuable',
     'dsh-resource://subagentchat/session/child?parent=&mode=continuable',
-    'dsh-resource://subagentchat/session/child?parent=parent&mode=unknown',
+    'dsh-resource://subagentchat/session/child?parent=parent&mode=invalid',
     'dsh-resource://subagentchat/session/%?parent=parent&mode=continuable',
   ])('rejects %s', (address) => {
     expect(parseSubagentChatAddress(address)).toBeUndefined()

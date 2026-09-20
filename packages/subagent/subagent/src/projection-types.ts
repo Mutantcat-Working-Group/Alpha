@@ -15,6 +15,7 @@ export type SubagentCatalogEntry =
   & (
     | { readonly mode: 'one-shot'; readonly label?: string }
     | { readonly mode: 'continuable'; readonly label: string }
+    | { readonly mode: 'unknown'; readonly label?: string }
   )
 
 /** Durable active-turn timing for one descriptor-backed child session. */

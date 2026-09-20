@@ -8,7 +8,7 @@ Service Definition：[dsh-subagent](../../packages/subagent/subagent)（`ctx.sub
 
 源码：[`packages/subagent/subagent/src/types.ts`](../../packages/subagent/subagent/src/types.ts)、[`packages/subagent/subagent/src/index.ts`](../../packages/subagent/subagent/src/index.ts)和 [`packages/subagent/subagent/src/continuation.ts`](../../packages/subagent/subagent/src/continuation.ts)
 
-`subagentCatalog` projection 通过 Session 观察和客户端快照暴露按父会话事件排序的 `SubagentCatalogEntry[]`。每个条目包含子级 id、创建时间、模式和依模式确定的标签；fork 继承的目录事实不在其中。[subagent 包](../../packages/subagent/subagent/README.zh.md) 定义目录创建和持久化语义。
+`subagentCatalog` projection 通过 Session 观察和客户端快照暴露按父会话事件排序的 `SubagentCatalogEntry[]`。每个条目包含子级 id、创建时间、模式和依模式确定的标签；fork 继承的目录事实不在其中。[subagent 包](../../packages/subagent/subagent/README.zh.md) 定义目录创建和持久化语义。历史子会话的 descriptor 不可用时使用 `mode: 'unknown'`，保留 header 身份供发现，但不授予继续执行能力。
 
 ## 两类能力，两种发现方式
 
@@ -469,7 +469,7 @@ spawn 和 fork 后端通过 `parent.ctx` 创建一个普通的单次 agent，将
 - **委派深度**由持久 `SessionHeader.delegationDepth` 与可合并扩展的运行时字段 `AgentOptions.subagentDepth` 共同表示；缺失表示顶层深度为零，存在的较大值具有权威性。两个字段都归该 seam 所有——循环既不设置也不读取它们——因此进程内子 agent 会持久保存 parent 深度 + 1，冷恢复无法降低深度，而且每次 start 都会拒绝超出安全整数域、或高于已定义绝对 `request.maxDepth` 上限的派生深度。
 - **Fork 种子注入**使用 [`CreateAgentOptions.seed`](core.zh.md#creation-and-ownership)（一个 `SessionEvent[]` 前缀，经由 `AgentLoop.createAgent` → `ctx.sessions.prepare({ seed })` 传递，与 `ctx.agents.resume()` 使用的原语相同）。fork 后端传入父级日志的一段*平衡的已完成轮次前缀*——父级事件直到并包括其最后一个 `turn/end`——因此种子从 0 连续，[invariants](../../packages/runtime-diagnostics/invariants) 回放可以接受它（进行中的、未平衡的轮次被排除在外）。
 
-`SubagentCatalogEntry` 描述一条成功创建直接子级的事实；`SubagentCatalogState` 是仅 host 使用的 projection state。`listChildren()` 拥有一次 live-preferred 父 Session observation，不打开子级日志。浏览器消费者通过共享 Session projection store 读取 `subagentCatalog`，并将成员关系与 Session 列表活动状态组合。`SubagentCatalogRow` 属于完整后代列表。[父目录决策](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 规定持久事实与读取语义。
+`SubagentCatalogEntry` 描述一条完整或未知模式的直接子级目录记录；`SubagentCatalogState` 是仅 host 使用的 projection state。`listChildren()` 拥有一次 live-preferred 父 Session observation，不打开子级日志。浏览器消费者通过共享 Session projection store 读取 `subagentCatalog`，并将成员关系与 Session 列表活动状态组合。`SubagentCatalogRow` 属于完整后代列表。[父目录决策](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 规定持久事实与读取语义。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
