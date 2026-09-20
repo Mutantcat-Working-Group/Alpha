@@ -1166,7 +1166,7 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
       .rejects.toThrow(/released v0 physical header lacks required member "type"/)
   })
 
-  it('keeps historical revisions independent of another Session storage faults', async () => {
+  it('tracks a disappearing corpus member and propagates its storage faults in historical revisions', async () => {
     const parent = meta('corpus-revision-parent', '/work')
     const child = meta('corpus-revision-child', '/work')
     for (const header of [parent, child]) {
@@ -1179,10 +1179,10 @@ describe('JsonlSessionPersistence: immutable format generations', () => {
     statFailure.error = Object.assign(new Error('member disappeared'), { code: 'ENOENT' })
     const missing = await ctx.sessionPersistence.stat(parent.id)
     expect(missing).toBeDefined()
-    expect(missing?.revision).toBe(present?.revision)
+    expect(missing?.revision).not.toBe(present?.revision)
     expect((await ctx.sessionPersistence.stat(parent.id))?.revision).toBe(missing?.revision)
     statFailure.error = Object.assign(new Error('member denied'), { code: 'EACCES' })
-    expect((await ctx.sessionPersistence.stat(parent.id))?.revision).toBe(present?.revision)
+    await expect(ctx.sessionPersistence.stat(parent.id)).rejects.toBe(statFailure.error)
   })
 
   it('surfaces source-read storage faults and aborts unwrapped during migration', async () => {

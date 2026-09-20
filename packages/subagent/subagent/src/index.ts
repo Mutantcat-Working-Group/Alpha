@@ -77,7 +77,7 @@ import type { SubagentDescendantListEntry, SubagentListEntry } from './list-chil
 import { snapshotSubagentDescriptor } from './descriptor.ts'
 import { subagentIdentityProjectionDefinition, subagentTimingProjectionDefinition } from './projection.ts'
 import { establishCatalogChild, subagentCatalogProjectionDefinition } from './catalog.ts'
-import type { SubagentDiscoveryEntry } from './control-types.ts'
+import type { SubagentCatalogEntry } from './projection-types.ts'
 import { deliverSubagentPrompt } from './internal.ts'
 
 export type {} from './catalog.ts'
@@ -365,15 +365,15 @@ export class SubagentRuntime extends TypertRemoteService {
   }
 
   /**
-   * Read the parent's catalog and discover missing direct children from Session headers.
+   * Read the parent's durable direct-child catalog without loading or resuming an Agent.
    * The service owns and releases the live-preferred Session observation.
    * @param parentSessionId - parent whose direct children are requested.
    * @param signal - cancellation forwarded to the Session query.
-   * @returns catalog children in event order, then unresolved children whose bodies remain unread.
+   * @returns catalog children in parent event order.
    * @throws {@link SubagentError} when query or catalog projection is unavailable.
    * @throws SessionQueryError when the parent cannot be read or the query is cancelled.
    */
-  listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentDiscoveryEntry[]> {
+  listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentCatalogEntry[]> {
     return listSubagentChildren(this.ctx, parentSessionId, signal)
   }
 

@@ -2,16 +2,16 @@
 import type { ReactNode } from 'react'
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { Context } from '@mutantcat/cordis'
+import type { Context } from '@deepseek-ai/cordis'
 import type {
   ISessions, SessionListState, SessionReference, SessionSnapshot,
-} from '@mutantcat/dsh-api-session-controller/client'
-import type { ResourceProvider } from '@mutantcat/dsh-client-resources/client'
-import { sessionSnapshot } from '@mutantcat/dsh-client-test-runtime'
-import type { ConversationViewsProps } from '@mutantcat/dsh-client-ui-conversation/client'
-import type { SidebarRightTabDefinition } from '@mutantcat/dsh-client-ui-sidebar-right/client'
-import type { SessionId } from '@mutantcat/dsh-session/types'
-import type { SubagentAddress } from '@mutantcat/dsh-subagent/client'
+} from '@deepseek-ai/dsh-api-session-controller/client'
+import type { ResourceProvider } from '@deepseek-ai/dsh-client-resources/client'
+import { sessionSnapshot } from '@deepseek-ai/dsh-client-test-runtime'
+import type { ConversationViewsProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type { SidebarRightTabDefinition } from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import type { SubagentAddress } from '@deepseek-ai/dsh-subagent/client'
 import {
   ConversationSlotPanel, FixedChatConversationView, parseSubagentChatAddress,
   registerSidebarChat, subagentChatAddress, SUBAGENT_CHAT_ID, type SidebarChatTabProps,
@@ -38,8 +38,6 @@ describe('Sidebar chat address', () => {
     expect(parseSubagentChatAddress(resource)).toEqual(ADDRESS)
     expect(parseSubagentChatAddress(subagentChatAddress({ ...ADDRESS, mode: 'one-shot' })))
       .toEqual({ ...ADDRESS, mode: 'one-shot' })
-    expect(parseSubagentChatAddress(subagentChatAddress({ ...ADDRESS, mode: 'unresolved' })))
-      .toEqual({ ...ADDRESS, mode: 'unresolved' })
   })
 
   it.each([
@@ -66,7 +64,7 @@ describe('Sidebar chat registration', () => {
       [Symbol.dispose]: release,
     } as unknown as SessionReference
     const retain = vi.fn(() => reference)
-    const refresh = vi.fn(() => Promise.resolve())
+    const refreshProjections = vi.fn(() => Promise.resolve())
     const list = {
       getSnapshot: () => ({
         ids: [],
@@ -86,7 +84,7 @@ describe('Sidebar chat registration', () => {
     let definition: SidebarRightTabDefinition | undefined
     const registrations: { options: Record<string, unknown>; component: unknown }[] = []
     const ctx = {
-      sessions: { retain, refresh, list } as unknown as ISessions,
+      sessions: { retain, refreshProjections, list } as unknown as ISessions,
       resources: { register: (value: ResourceProvider<'subagentchat'>) => { provider = value; return () => {} } },
       sidebarRightTabs: { register: (value: SidebarRightTabDefinition) => { definition = value; return () => {} } },
       slots: {
@@ -116,7 +114,7 @@ describe('Sidebar chat registration', () => {
     const controller = new AbortController()
     const stream = provider!.open(subagentChatAddress(ADDRESS), { signal: controller.signal })[Symbol.asyncIterator]()
     expect(await stream.next()).toEqual({ done: false, value: { ok: true, value: { address: ADDRESS, reference } } })
-    expect(refresh).toHaveBeenCalledWith()
+    expect(refreshProjections).toHaveBeenCalledWith(PARENT)
     expect(retain).toHaveBeenCalledWith(ADDRESS, { source: 'sidebarChat', signal: controller.signal })
     const completion = stream.next()
     await Promise.resolve()
@@ -132,7 +130,7 @@ describe('Sidebar chat registration', () => {
     expect(release).toHaveBeenCalledTimes(2)
 
     let finishRefresh: (() => void) | undefined
-    refresh.mockImplementationOnce(() => new Promise<void>((resolve) => { finishRefresh = resolve }))
+    refreshProjections.mockImplementationOnce(() => new Promise<void>((resolve) => { finishRefresh = resolve }))
     const abortedDuringRefresh = new AbortController()
     const pending = provider!.open(
       subagentChatAddress(ADDRESS), { signal: abortedDuringRefresh.signal },

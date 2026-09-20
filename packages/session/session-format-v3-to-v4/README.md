@@ -48,7 +48,7 @@ The header-only operation advances validated metadata without reading the body:
 const targetHeader = sessionFormatV3ToV4.migrateHeader(sourceHeader)
 ```
 
-Historical body restoration through `sessionFormatV3ToV4` requires only the requested Session. It preserves existing catalog entries without reading children. Offline fixture preparation may explicitly supply child evidence through `createSessionFormatCatalogWithChildren()` to append missing catalog facts; an empty array requests no backfill. Keep supplied evidence unchanged for the catalog’s lifetime.
+Historical body restoration requires explicit child evidence. `sessionFormatV3ToV4.createStage()` refuses without that binding; an empty array explicitly declares no children. Persistence must collect the complete available direct-child set, while isolated transcript replay can supply its deliberately empty set. Keep the evidence unchanged for the catalog's lifetime.
 
 ```text
 const catalog = createSessionFormatCatalogWithChildren(childFacts)
@@ -148,7 +148,7 @@ Catalog version 0 requires string `childId`, nonnegative safe-integer `childCrea
 
 The stage considers parent catalog records only after the final inherited cut. Every inherited marker discards earlier catalog candidates without interpreting their payloads. Missing entries append after all source events, sorted by creation time then child id, with dense new sequences. Their time is the final source event's time, or header creation time for an empty log. They neither enter the model surface nor change the inherited count.
 
-The supplemental evidence rules apply only when a caller requests catalog completion. Runtime JSONL migration does not collect child evidence; it migrates each Session on its own open. The package reads no files; [persistence](../session-persistence-jsonl/README.md) owns encoding, locks, cancellation, source revision checks, and publication.
+Storage supplies recognizable direct-child evidence and rechecks membership and physical revisions during preparation, memo reuse, and publication. The JSONL provider isolates unreadable child headers, child decoding failures, and invalid descriptor fields while retaining other catalog entries; it does not migrate child catalogs during parent preparation. The converter still rejects conflicting supplied facts and changed parent history. [JSONL persistence](../session-persistence-jsonl/README.md) owns warnings, source checks, and child-local failure handling. Current V4 reads never invoke this converter and validate native catalog fields, uniqueness, and delivery ownership directly.
 
 <a id="sequence-references"></a>
 ### Sequence references and inheritance

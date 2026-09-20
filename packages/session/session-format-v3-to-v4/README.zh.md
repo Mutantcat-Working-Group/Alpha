@@ -48,7 +48,7 @@ kind: "package-library"
 const targetHeader = sessionFormatV3ToV4.migrateHeader(sourceHeader)
 ```
 
-通过 `sessionFormatV3ToV4` 恢复历史正文只需要所请求的会话。它保留已有 catalog 条目，不读取子会话。离线夹具准备可以通过 `createSessionFormatCatalogWithChildren()` 显式传入子会话证据，追加缺失的 catalog 事实；空数组表示不回填。传入证据在 catalog 生命周期内必须保持不变。
+历史正文恢复要求显式的子级证据。没有该绑定时，`sessionFormatV3ToV4.createStage()` 会拒绝；空数组明确声明没有子级。持久化层必须收集完整的可用直属子级集合，而隔离的 transcript 回放可以提供其刻意为空的集合。Catalog 存续期间，证据必须保持不变。
 
 ```text
 const catalog = createSessionFormatCatalogWithChildren(childFacts)
@@ -148,7 +148,7 @@ Catalog version 0 要求字符串 `childId`、非负安全整数 `childCreatedAt
 
 Stage 只把最终继承截点之后的父目录记录作为候选。每个 inherited marker 都会丢弃更早的目录候选，不解释其载荷。缺失项追加在所有源事件之后，按创建时间、child id 排序，并使用连续的新序号。时间取最后一个源事件的 time；空日志则取 header 创建时间。这些记录既不进入模型表面，也不改变继承计数。
 
-补充证据规则仅适用于调用者请求 catalog 补全时。运行时 JSONL 迁移不收集子会话证据，每个会话在自身 open 时独立迁移。本包不读取文件；[持久化](../session-persistence-jsonl/README.zh.md) 负责编码、锁、取消、源文件版本检查和发布。
+存储提供可识别的直属子证据，并在准备、memo 复用与发布时重新检查成员集合和物理修订。JSONL 提供方隔离不可读子 header、子日志解码失败和无效 descriptor 字段，同时保留其他目录项；准备父目录时不会迁移子目录。转换器仍拒绝冲突的已提供事实和发生变化的父历史。[JSONL 持久化](../session-persistence-jsonl/README.zh.md)拥有警告、来源检查与子会话错误隔离。当前 V4 读取不调用本转换器，直接校验原生目录字段、唯一性及投递归属。
 
 <a id="sequence-references"></a>
 ### 序号引用与继承

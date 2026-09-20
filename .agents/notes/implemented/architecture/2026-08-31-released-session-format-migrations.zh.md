@@ -105,7 +105,7 @@ Preparation 会把 cancellation 传给 source read，并在现有的约 500 ms D
 
 Stage pipeline 终止于一份 prepared current artifact。[历史 Session 只读迁移准备](2026-09-05-read-only-session-migration-preparation.zh.md)定义 read open 如何立即消费该 artifact，以及 write open 如何在返回 append 权限前完成 encode、verification 与 publication。
 
-批量 V4 迁移命令通过有界队列显式请求各个会话，共享一个 JSONL Context 及其两个 Worker 的校验限制。每次发布只校验自身源文件。命令可在队列排空后重试源变化拒绝；子会话发布不会使父会话准备结果失效。
+批量 V4 迁移命令在有界任务队列中共享一个 JSONL persistence Context，保留 backend 的双 Worker 校验上限，以及复用近期已解码日志的缓存。子 Session 并发发布可能改变父 Session 选中的子代际；普通修订检查会拒绝这次尝试。命令只把这种源变化错误延后到初始队列清空后串行重试一次，重新收集证据，不放宽发布检查，也不重试无关失败。
 
 ### Durable format 与 publication 规则
 
@@ -131,20 +131,20 @@ POSIX publication 使用 hard-link creation 加目录 sync；Windows 使用 no-o
 
 ### 父目录前置事实
 
-原运行时规则（已由[会话独立迁移](../bug-fix/2026-09-19-session-local-subagent-migration.zh.md)取代）：V3→V4 使用保留的直属子 Session header 和自身 descriptor 补齐父 Session 的子代理发现记录。存储将紧凑的 descriptor 证据提供给 catalog 组装处，由其绑定到 V3→V4 stage 工厂；Stage 等待父 Session 的最终继承截点确定后，才校验目录 payload 并导出可获得的自身发现事实。嵌套的 seed 标记丢弃继承目录候选，不解释其 payload。已有目录记录允许 descriptor 不可用，包括在首次 step 之前失败的子 Session。Descriptor v1 表示 continuable 模式；v2/v3 显式记录模式。可获得且明确的发现字段必须与父目录一致；缺失记录要求一个受支持的 descriptor。Descriptor 缺失、版本不受支持或存在多个时，保留日志但不补填对应子 Session，理由见[不完整子目录证据](../bug-fix/2026-09-19-v3-incomplete-child-catalog-evidence.zh.md)。JSONL 在准备、复用和发布时重新检查关联成员与来源修订。扫描中其他任何不支持代际或不可读 header 都会拒绝迁移，因为无法证明它与父 Session 无关。来源变化使准备缓存失效；只读打开自动重试一次，写打开则拒绝发布。诊断保留出错子日志的路径，并区分不支持的迁移证据与畸形子数据。存储解码器先将物理 JSON 与压缩错误归类，再由收集器补充子日志信息；文件系统读取与取消保留原始错误。仅支持 V0–V3 的目录避免递归迁移子 Session。当前 V4 读取跳过该扫描，但会执行与严格恢复相同的自身目录字段、唯一性及当前投递归属检查。见[格式规范](../../../../packages/session/session-format-v3-to-v4/README.zh.md)。
+本段的运行时子会话错误处理部分由[逐会话目录准备](../bug-fix/2026-09-19-session-local-subagent-migration.zh.md)取代：打开父会话仍通过读取直属子会话补齐目录，但不可读子会话不再阻断健康父历史。V3→V4 使用保留的直属子 Session header 和自身 descriptor 补齐父 Session 的子代理发现记录。存储将紧凑的 descriptor 证据提供给 catalog 组装处，由其绑定到 V3→V4 stage 工厂；Stage 等待父 Session 的最终继承截点确定后，才校验目录 payload 并导出可获得的自身发现事实。嵌套的 seed 标记丢弃继承目录候选，不解释其 payload。已有目录记录允许 descriptor 不可用，包括在首次 step 之前失败的子 Session。Descriptor v1 表示 continuable 模式；v2/v3 显式记录模式。可获得且明确的发现字段必须与父目录一致；缺失记录要求一个受支持的 descriptor。Descriptor 缺失、版本不受支持或存在多个时，保留日志但不补填对应子 Session，理由见[不完整子目录证据](../bug-fix/2026-09-19-v3-incomplete-child-catalog-evidence.zh.md)。JSONL 在准备、复用和发布时重新检查关联成员与来源修订。扫描中其他任何不支持代际或不可读 header 都会拒绝迁移，因为无法证明它与父 Session 无关。来源变化使准备缓存失效；只读打开自动重试一次，写打开则拒绝发布。诊断保留出错子日志的路径，并区分不支持的迁移证据与畸形子数据。存储解码器先将物理 JSON 与压缩错误归类，再由收集器补充子日志信息；文件系统读取与取消保留原始错误。仅支持 V0–V3 的目录避免递归迁移子 Session。当前 V4 读取跳过该扫描，但会执行与严格恢复相同的自身目录字段、唯一性及当前投递归属检查。见[格式规范](../../../../packages/session/session-format-v3-to-v4/README.zh.md)。
 
 原始父子迁移测试保留 24 个历史创建时间冲突作为拒绝证据。独立的内存对照只对齐子创建时间，证明恢复保留事件，包括已发布但没有 descriptor 的子 Session。Headless/ACP 与 SDK 快照适配器在规范化之前校验实时父子时钟，并在刷新时保持两者相等；已提交的前代文件保持不变。
 
-原运行时规则（已由[会话独立迁移](../bug-fix/2026-09-19-session-local-subagent-migration.zh.md)取代）：历史格式的公开修订号组合父日志物理修订号与每个所选规范路径及其文件系统修订号的指纹。仅父日志令牌无法标识子日志提供的目录变化；全库指纹让 `stat`/`list` 保持只读元数据，也纳入不可读或不支持的成员，无需新增持久化索引。无关变化也会使历史缓存失效，获取令牌需要扫描根目录。当前格式令牌仍只取决于自身文件。准备缓存保留父日志物理修订号，并独立校验子成员集合与修订。
+历史格式的公开修订号组合父日志物理修订号与每个所选规范路径及其文件系统修订号的指纹。仅父日志令牌无法标识子日志提供的目录变化；全库指纹让 `stat`/`list` 保持只读元数据，也纳入不可读或不支持的成员，无需新增持久化索引。无关变化也会使历史缓存失效，获取令牌需要扫描根目录。当前格式令牌仍只取决于自身文件。准备缓存保留父日志物理修订号，并独立校验子成员集合与修订。
 
-原运行时规则（已由[会话独立迁移](../bug-fix/2026-09-19-session-local-subagent-migration.zh.md)取代）：通用格式接口只传递正在恢复的 artifact。每个父 Session 的 catalog 组装将 V3→V4 声明替换为捕获已收集子 Session 证据的闭包，并复用生成的 codec、迁移与校验清单。每次父 Session 准备只编译一条短迁移链，每次恢复拥有独立的 stage 状态。在组装处绑定证据，使通用恢复选项和 stage 输入不必携带子 Session 证据，同时保留存储对发现与来源重验的所有权。静态 header 和原生当前格式读取不需要子 Session 证据；未绑定的历史正文恢复会拒绝，不会假定子 Session 集合为空。
+通用格式接口只传递正在恢复的 artifact。每个父 Session 的 catalog 组装将 V3→V4 声明替换为捕获已收集子 Session 证据的闭包，并复用生成的 codec、迁移与校验清单。每次父 Session 准备只编译一条短迁移链，每次恢复拥有独立的 stage 状态。在组装处绑定证据，使通用恢复选项和 stage 输入不必携带子 Session 证据，同时保留存储对发现与来源重验的所有权。静态 header 和原生当前格式读取不需要子 Session 证据；未绑定的历史正文恢复会拒绝，不会假定子 Session 集合为空。
 
 <a id="catalog-scan-measurements"></a>
 ### 目录扫描测量
 
 包内[诊断脚本](../../../../packages/session/session-persistence-jsonl/tests/catalog-migration.perf.ts)测量一个原始 V3 父日志、四个各有 1,000 条事件的直属子日志，以及 0/100/1,000 个只有 header 的无关 V3 Session。每个样本在新进程中创建独立临时日志库与 Cordis 上下文，按 stat → 冷读 → 缓存读取 → 写入发布 → 当前格式热读顺序执行，最后释放上下文并删除文件。脚本在普通 Node 下使用已构建的工作区导出；创建夹具不计入测量区间。这些结果是夹具创建后的文件系统缓存热态观察，不代表磁盘冷读延迟，也不是性能门禁。
 
-下表记录会话独立运行时迁移之前，macOS arm64、Node v26.0.0 上主动 catalog 扫描实现的测量。1,000 个无关会话时，中位数为 stat 84.14 ms、冷读 237.97 ms、缓存读 110.98 ms、发布 268.46 ms、同进程当前格式读取 0.41 ms。这些历史测量说明：当准备仍解码子正文时，仅优化元数据访问并不足够；它们不是当前耗时或跨主机阈值。
+以下为 macOS arm64、Node v26.0.0 下各规模的全部三个样本，单位为毫秒。只读打开不发布后继：即使解码结果已缓存，成员扫描仍与日志库规模成正比。1,000 个无关日志时，中位数分别为 stat 84.14 ms、冷读 237.97 ms、缓存读取 110.98 ms、发布 268.46 ms，以及同进程当前格式读取 0.41 ms。这些测量记录成本，不证明性能提升，也不设跨主机阈值。
 
 | 无关 Session | 历史 stat | 冷读 | 缓存读取 | 发布 | 当前格式热读 |
 |---:|---:|---:|---:|---:|---:|

@@ -393,7 +393,7 @@ export type SessionAddress =
     readonly kind: 'subagent'
     readonly parentSessionId: SessionId
     readonly childSessionId: SessionId
-    readonly mode: 'one-shot' | 'continuable' | 'unresolved'
+    readonly mode: 'one-shot' | 'continuable'
   }
 
 /** One raw Session event in the Remote journal. */

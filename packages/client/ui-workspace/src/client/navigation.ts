@@ -286,6 +286,7 @@ class UiWorkspaceService extends Service implements UiWorkspace {
   private async restoreSelection(workspaces: WorkspaceSnapshot, sessions: SessionListState): Promise<void> {
     const saved = this.selection.getSnapshot()
     if (saved.subagentAddress !== undefined) {
+      void this.sessions.refreshProjections(saved.subagentAddress.parentSessionId)
       this.replaceMain(saved.subagentAddress, this.lifetime.signal, 'preserve')
       return
     }

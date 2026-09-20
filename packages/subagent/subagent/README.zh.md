@@ -60,7 +60,7 @@ kind: "package-reference"
 
 ### 消息、中断与发现
 
-每个存活 Agent 都可以通过 `sendMessage()` 向直接可继续子代理发送消息；驻留的可继续子代理也可以向直接父代理发送。工作中的目标在最近步骤通过 Steer 接收消息，空闲目标启动新轮次，只有直接子代理支持冷恢复。父代理可以随时中断运行中的后代或列出子代理。浏览器续接独立选择 Queue 或 Steer，支持图片：Host 在子代理收件箱接收消息前准入并持久化图片，模型不支持图片输入时拒绝交付。直接子代理发现读取父会话的 `subagentCatalog` 投影和会话头部。`listChildren(parentSessionId, signal?)` 按父事件顺序返回 catalog 条目，再返回头部发现的 `mode: 'unresolved'` 子会话，不打开子会话正文。它传递取消信号，并在物化后释放父会话观察。N 个会话的头部枚举为 O(N)，D 条事实的 catalog 物化为 O(D)。完整后代发现显式读取子会话身份投影；两条路径均不加载或恢复子 Agent。
+每个确切在线 Agent 都可以对直接可继续 child 使用 `sendMessage()`；驻留的可继续 child 还可以对自己的直接 parent 使用它。正在工作的目标通过 Steer 在最近 step 接收 Agent 消息；空闲目标启动轮次，且只有直接 child 可以冷恢复。parent 也可以随时中断正在运行的后代或列举自己的子级。浏览器发出的继续执行 prompt 会独立选择 Queue 或 Steer，并且可以携带图片部分：Host 先通过附件存储完成整批图片的准入与持久化，子级 inbox 才接受这条消息；当子级声明的模型不接受图片输入时拒绝投递。 直接子级发现读取 parent 自有的 `subagentCatalog` projection。`listChildren(parentSessionId, signal?)` 持有一次优先实时来源的 Session 观察，异步返回目录，不读取子级日志。它转发取消信号，并在物化后释放观察。物化以 O(D) 时间保留 D 条事实的父日志事件顺序。完整后代发现保留 Session 语料库与子级身份 projection；两条路径都不加载或恢复子级 Agent。
 
 ### 失败与恢复
 

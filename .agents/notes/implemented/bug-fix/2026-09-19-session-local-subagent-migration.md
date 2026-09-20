@@ -1,4 +1,4 @@
-# Agent Note: Migrate each Session independently of its children
+# Agent Note: Complete parent catalogs without migrating child catalogs
 
 Status: implemented
 
@@ -6,28 +6,26 @@ English | [中文](2026-09-19-session-local-subagent-migration.zh.md)
 
 ## Problem
 
-Runtime V3→V4 preparation collected every direct child's descriptor to complete the parent catalog. This decoded whole child logs before opening the parent, and unrelated unreadable headers could prevent complete membership classification. A corrupt child therefore blocked valid parent history. Historical revisions also fingerprinted the entire root, invalidating a parent's cached preparation when unrelated files changed.
+Opening a historical parent requires discovery facts from its direct children. A child's corrupt body or invalid descriptor, or an unreadable header elsewhere in the root, could reject the parent's V4 preparation and hide otherwise readable history.
 
 ## Decision
 
-JSONL migrates only the Session explicitly opened by a reader or writer. It preserves existing catalog facts and does not read child bodies or collect cross-session evidence. Read opens prepare current logical events without publishing; write opens validate the selected source and exclusively publish its immutable successor. Public revisions and preparation reuse depend only on the selected file. Predecessor generations remain byte-identical.
+Opening A discovers candidate B Sessions through headers, reads their own descriptors, and completes A's catalog. Historical child reads use the V0–V3 catalog; current child reads use native validation. These reads neither prepare B's own catalog nor publish B's successor. Opening B separately performs B's migration and catalog preparation. Frontend discovery and `list_agents` retain their parent-catalog behavior and existing result types.
 
-Discovery combines parent catalog facts with header relationships. The subagent service returns unresolved direct-child entries when no catalog fact exists; the Web derives them from its existing Session list. Menu and branch refreshes enumerate headers without requesting child projections. Selecting a child opens its own history, validates its direct parent and descriptor, and resolves mode and label. Until then the address grants no continuation authority and the composer stays read-only. A child open failure remains local. Explicit programmatic reads and continuation requests also migrate their selected Session on demand; explicit descendant inspection and bulk migration still read the Sessions they request.
+JSONL omits unreadable or unsupported headers from discovery. A child-body or descriptor-field failure produces a warning with the child path and omits that child's supplemental fact, while preserving healthy siblings and existing parent entries. Cancellation and source-consistency failures still stop the operation. Inspected child revisions, including failed decodes, are rechecked before reuse and publication so repairs cannot silently reuse stale evidence. Released predecessors remain byte-identical.
 
-The catalog remains the durable source of successful creation facts. Unresolved discovery rows are neither persisted events nor projection values. No new Session format or persistent index is needed. Offline fixture preparation and Preview packing may still explicitly supply child evidence for catalog completion; their caller already owns that corpus.
-
-This partially supersedes runtime catalog prerequisites and corpus revisions in [released migrations](../architecture/2026-08-31-released-session-format-migrations.md), the discovery-only assumption in [parent catalogs](../architecture/2026-09-01-parent-owned-subagent-catalog.md), and unopened-branch reads in [Web projection consumption](../simplification/2026-09-08-web-subagent-catalog-projections.md). Their format, creation, ordering, and transport decisions remain active. [Incomplete evidence](2026-09-19-v3-incomplete-child-catalog-evidence.md) continues to govern optional offline completion.
+This partially supersedes child-failure propagation in [released migrations](../architecture/2026-08-31-released-session-format-migrations.md) and [incomplete child evidence](2026-09-19-v3-incomplete-child-catalog-evidence.md). Their format conversion, descriptor cardinality, conflict validation, and immutable publication rules remain active.
 
 ## Alternatives considered
 
-**Catch child failures and continue backfill.** This still decodes every healthy child, hides failures, and permanently omits discovery facts when the parent successor is published.
+**Skip catalog completion and discover children in each consumer.** This introduces incomplete tool results and additional UI states despite the parent's readable child descriptors. The parent catalog already serves these consumers.
 
-**Supply an empty child set without changing discovery.** This removes migration coupling but makes historical children disappear from catalog-only consumers.
+**Recursively prepare child catalogs.** A only needs B's own descriptor. Preparing B's descendants adds unrelated work and failure dependencies.
 
-**Persist placeholder catalog events or another child index.** Unknown mode and label are not successful creation facts. A second persistent index adds write coordination and repair without improving header-based navigation.
+**Refuse A when one child cannot be read.** The child's discovery metadata does not justify withholding the parent's healthy history. Warnings retain the child location without inventing mode or label fields.
 
 ## Consequences
 
-Explicit direct-child discovery now enumerates N headers in addition to materializing D catalog facts. It avoids all child-body decoding, while ordinary parent migration has no corpus-dependent preparation. Historical rows may initially show an id instead of a label and cannot promise resumability. Headers that cannot be decoded cannot contribute a navigation row, but do not block opening another known Session.
+Initial parent preparation still scans headers and reads direct-child bodies one at a time. It does not claim to eliminate this I/O. Published V4 parents use their catalog without rescanning children. A failed child's missing catalog entry is not automatically repaired after parent publication; the child remains addressable by id, as with other incomplete historical descriptor evidence.
 
-Raw and compressed persistence regressions cover V0–V3, child corruption and future formats, independent publication, unchanged predecessors, and stable parent revisions across child mutations. Service tests verify only the parent is observed. Client and Host tests verify unresolved addresses, selected-child decoding, mode resolution, and ownership rejection. The shipped Web preset-migration snapshot round-trips parent and child generations with a corrupt sibling and checks that only explicitly opened Sessions migrate.
+Raw and compressed tests cover catalog completion, child-local errors, source changes and repairs, unchanged child generations, and deferred child-catalog preparation. The shipped Web migration snapshot checks the parent catalog with a corrupt sibling, then opens the child independently. Its additional historical child raises the corpus budget from ten to eleven roles; the guard rejects a twelfth role.

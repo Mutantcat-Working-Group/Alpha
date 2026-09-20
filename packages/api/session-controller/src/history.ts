@@ -364,7 +364,7 @@ function validateAddress(
       reason: 'unsupported',
     })
   }
-  if (address.mode !== 'unresolved' && identity.mode !== address.mode) {
+  if (identity.mode !== address.mode) {
     throw new RemoteError('subagent/unauthorized', 'subagent mode does not match the supplied address', {
       childSessionId: address.childSessionId,
     })

@@ -10,7 +10,6 @@ import type { PromptContentPart } from '@deepseek-ai/dsh-attachment/types'
 import type { Branded } from '@deepseek-ai/dsh-brand'
 import type { MessageId } from '@deepseek-ai/dsh-llm/brand'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { SubagentCatalogEntry } from './projection-types.ts'
 
 /**
  * Client-minted identity of one browser prompt, persisted on the exact accepted
@@ -78,13 +77,6 @@ export type SubagentListEntry =
     readonly reason: 'corrupt' | 'unsupported' | 'unavailable'
   }
 
-/** A direct child whose identity is known from the catalog or awaits an explicit child read. */
-export type SubagentDiscoveryEntry = SubagentCatalogEntry | {
-  readonly id: SessionId
-  readonly createdAt: number
-  readonly mode: 'unresolved'
-}
-
 /** Durable parent/child address that selects subagent transport in the client. */
 export type SubagentAddress =
   & {
@@ -94,8 +86,6 @@ export type SubagentAddress =
   & (
     | { readonly mode: 'one-shot' }
     | { readonly mode: 'continuable' }
-    /** Header-discovered child; opening it resolves its descriptor without granting continuation. */
-    | { readonly mode: 'unresolved' }
   )
 
 /** One human message addressed to a continuable direct child. */

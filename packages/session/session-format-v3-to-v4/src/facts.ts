@@ -6,7 +6,8 @@ import type { SessionFormatArtifact, SessionFormatJsonObject, SessionFormatJsonV
 /**
  * Collect a child's own descriptor without requiring one before its parent catalog is read.
  * @param artifact - validated historical child artifact with its exact inherited cut.
- * @returns compact child identity and descriptor evidence for catalog completion.
+ * @returns compact child identity and descriptor evidence with validated discovery fields for catalog completion.
+ * @throws SessionFormatError when a supported own descriptor has invalid discovery fields.
  */
 export function historicalChildCatalogSource(artifact: SessionFormatArtifact): SessionFormatJsonObject {
   const header = artifact.header
@@ -14,10 +15,12 @@ export function historicalChildCatalogSource(artifact: SessionFormatArtifact): S
     throw new SessionFormatUnsupportedMigrationError('catalog migration requires a subagent child with a direct parent')
   }
   const descriptors = artifact.events.filter(event => event.type === 'subagent/descriptor' && event.seq >= artifact.inheritedEventCount)
-  return {
+  const source = {
     childId: header.id, childCreatedAt: header.createdAt,
     descriptorCount: descriptors.length, descriptor: descriptors[0]?.data ?? null,
   }
+  childCatalogFact(source)
+  return source
 }
 
 /**

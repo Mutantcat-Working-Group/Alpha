@@ -44,8 +44,6 @@ Current-writer snapshot expectations include catalog facts even when replay inpu
 
 ## Consequences
 
-Session observations and client snapshots expose durable catalog facts through `projections.values.subagentCatalog`. The change feed publishes complete lists, so D creations can incur O(D²) cumulative view work. Historical children may lack these facts: `listChildren()` supplements one parent observation with header-only discovery and returns unresolved rows without reading child bodies. The Web derives the same missing entries from its existing Session list. This preserves the catalog as the sole durable creation record while accepting O(N) header enumeration for explicit service discovery. [Web projection consumption](../simplification/2026-09-08-web-subagent-catalog-projections.md) owns browser loading and synchronization.
+Session observations and client snapshots expose the direct-child list through `projections.values.subagentCatalog`. The projection change feed publishes a complete list when catalog state changes. Each view costs O(D), so D creations can incur O(D²) cumulative view work; this follows the existing projection mechanism. `listChildren()` reads the parent projection through one live-preferred Session observation; descendant listing uses the Session corpus and child identity projection. [Web projection consumption](../simplification/2026-09-08-web-subagent-catalog-projections.md) owns browser loading and synchronization.
 
 [Creation metadata exclusion](../simplification/2026-09-16-subagent-catalog-membership-only.md) records why model configuration is absent from catalog facts.
-
-The [Session-local migration decision](../bug-fix/2026-09-19-session-local-subagent-migration.md) supersedes runtime child-body collection and unopened-branch projection reads; optional offline completion and durable catalog semantics remain active.

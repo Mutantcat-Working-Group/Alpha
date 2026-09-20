@@ -179,14 +179,6 @@ export class SessionManager {
         return { parentSessionId, childSessionId: sessionId, mode: child.mode }
       }
     }
-    const summary = this.summaries.find(item => item.sessionId === sessionId)
-    if (summary?.origin === 'subagent' && summary.parentSessionId !== undefined) {
-      return {
-        parentSessionId: summary.parentSessionId,
-        childSessionId: sessionId,
-        mode: this.projectionStores.get(sessionId)?.values().subagent?.mode ?? 'unresolved',
-      }
-    }
     return undefined
   }
 
@@ -733,6 +725,10 @@ export class SessionManager {
     this.listInflight = null
     void this.refreshList()
     const parents = new Set(this.projectionLoads.keys())
+    for (const id of this.sessions.keys()) {
+      const address = this.addresses.get(id)
+      if (address !== undefined) parents.add(address.parentSessionId)
+    }
     for (const { controller } of this.projectionInflight.values()) controller.abort()
     this.projectionInflight.clear()
     this.projectionLoads.clear()

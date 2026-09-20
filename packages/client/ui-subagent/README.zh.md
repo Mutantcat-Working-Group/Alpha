@@ -25,17 +25,17 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-会话头部保留当前标题作为层级导航，并为已知直接子会话或 catalog 错误追加 `/` 数量入口。列表行合并已有父 catalog 事实和会话列表中的头部关系，让历史子会话无需打开日志即可被发现。打开菜单或展开分支只刷新轻量会话列表。选择一行时，通过精确的 `{parentSessionId, childSessionId, mode}` 地址只打开该子会话；只有头部的条目使用 `mode: 'unresolved'`，直到读取自身 descriptor。末尾箭头将同一地址打开到右侧 Sidebar。
+会话页头保留当前会话 title 作为谱系面包屑，并在直接目录有子项或读取失败时追加 `/` 数量触发器。目录缺席、空目录加载中或成功加载为空时，均隐藏数量触发器。触发器打开该直接目录，报告总数与运行数，并且只在行展开时加载嵌套目录。选择任意深度，即可用该子会话的确切 `{parentSessionId, childSessionId, mode}` 地址打开其对话；也可以使用行尾箭头在右侧 Sidebar 打开同一地址，并在空间允许时优先使用独立分栏。
 
-本包注册 `dsh-resource://subagentchat/session/<child>?parent=<parent>&mode=<mode>` 资源和内置 Sidebar 标签类型。资源在持有子会话 `SessionReference` 前刷新轻量会话列表，并在标签记录关闭时释放引用。标签通过 `sidebar.chat.conversation` 渲染共享的 `conversation.content` Factory，将局部 View 固定为 Chat，省略主 Conversation 头部和宽度控件。
+本包注册 `dsh-resource://subagentchat/session/<child>?parent=<parent>&mode=<mode>` 资源与 builtin Sidebar tab 类型。资源先刷新直接 parent 目录，再保留 child 的 `SessionReference`，并在 tab 记录关闭时释放 reference。tab 通过 `sidebar.chat.conversation` 渲染共享 `conversation.content` Factory，把局部 View 固定为 Chat，并省略主 Conversation 的 Header 与宽度控制。
 
 ### 浏览目录
 
-列表行显示模式、活动状态和可选的日志标题；未解析条目显示“尚未打开”，在身份数据可用前使用 id。已有父 catalog 标签仍具有权威性。运行、完成和其他空闲子会话分别使用共享的进行中、成功和空闲标记。缓存的用量和耗时为可选项。ArrowRight/ArrowLeft 展开或收起分支，ArrowUp/ArrowDown、Home、End、Escape 用于导航或关闭树。头部发现的子会话若没有列出的后代或缓存 catalog 条目，无需读取正文即可作为叶节点。
+行显示 mode、活动状态与由日志支撑的可选 title；running 使用共享 ongoing loading，最近一个已结束轮次正常完成的 inactive child 使用共享 success 绿点，其他 inactive child 使用共享 idle 灰点。每行都为状态图标预留相同的 14px 列宽，并将较小的圆点居中，使 title 与 loading 状态对齐。紧凑的页头触发器会垂直居中活动图标与数量，并保留 4px 水平间距。尾随列在上行显示提供方的持久化 token 用量总计，在下行显示活跃轮次耗时。键盘导航：ArrowRight/ArrowLeft 展开和折叠分支；ArrowUp/ArrowDown、Home、End 与 Escape 用于导航或关闭树。没有 label 的 one-shot 行回退到其会话 id。只有一行自身的目录加载为空后，它才是已知叶子。
 
 ### 续接对话
 
-未解析子会话保持只读输入区，直到打开历史记录并得到有效身份。父代理在线的可继续子会话使用普通输入区：后续消息进入子代理 FIFO 收件箱，Stop 经 `subagents/interruptByParent` 路由。父代理不可用且未运行的可继续子会话使用只读输入区；仍运行时禁用输入和 Send，但保留 Stop。一次性子会话历史始终只读。
+确切 parent 存活时，可继续 child 保留普通输入 chrome：child 运行期间输入和 Send 保持可用，因为每条后续消息都会进入 child 的 FIFO inbox，而独立的 Stop 经由 `subagents/interruptByParent` 路由。确切 parent 不可用且 child 未在运行的可继续 child 会选用说明恢复路径的只读编辑器；此类 child 仍在运行期间，selector 会让位给普通编辑器——输入区与 Send 被禁用，但独立的 Stop 保持可用。
 
 ### `@` 引用 source
 

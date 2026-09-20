@@ -71,9 +71,9 @@ describe('V3 parent catalog completion', () => {
     expect(() => migrate([opaque], [])).toThrow('complete version 0')
   })
 
-  it('accepts independent migration and refuses conflicting supplemental identities', () => {
+  it('requires explicit corpus facts and refuses conflicting identities', () => {
     expect(() => sessionFormatV3ToV4.createStage({ sourceHeader: header, targetHeader: { ...header, version: 4 },
-      sourceKind: 'decoded', sourceInheritedEventCount: 0 })).not.toThrow()
+      sourceKind: 'decoded', sourceInheritedEventCount: 0 })).toThrow('explicit historical child facts')
     expect(() => migrate([], [{ ...child, mode: 'unknown' }])).toThrow('complete version 0')
     expect(() => migrate([{ type: 'subagent/catalog', seq: 0, time: 2, data: child }], [{ ...child, childCreatedAt: 3 }])).toThrow('conflicts')
   })

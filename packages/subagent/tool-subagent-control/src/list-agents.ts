@@ -12,7 +12,7 @@ import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { SessionId } from '@deepseek-ai/dsh-session'
 import type {
-  SubagentDiscoveryEntry, SubagentDescendantListEntry, SubagentListEntry,
+  SubagentCatalogEntry, SubagentDescendantListEntry, SubagentListEntry,
 } from '@deepseek-ai/dsh-subagent'
 import { assertNever } from '@deepseek-ai/dsh-util-values'
 
@@ -67,15 +67,12 @@ function statusOf(agents: { get(id: SessionId): Agent | undefined }, id: Session
 /** Project one service row into the model-facing entry, or omit a one-shot child. */
 function project(
   agents: { get(id: SessionId): Agent | undefined },
-  entry: SubagentDiscoveryEntry | SubagentListEntry,
+  entry: SubagentCatalogEntry | SubagentListEntry,
   position?: Pick<SubagentDescendantListEntry, 'parentId' | 'depth'>,
 ): ListAgentsEntry | undefined {
   const at = position === undefined ? {} : { parent: position.parentId, depth: position.depth }
   if (entry.kind === 'diagnostic') {
     return { kind: 'diagnostic', id: entry.id, reason: entry.reason, ...at }
-  }
-  if (entry.mode === 'unresolved') {
-    return { kind: 'diagnostic', id: entry.id, reason: 'unavailable', ...at }
   }
   // One-shot children cannot be continued by send_message, so the model
   // never selects them; discovery still traversed them for descendants.
@@ -105,7 +102,7 @@ export function apply(ctx: Context): void {
       + 'step boundary or starts a turn for an idle or ready child, and a direct child remains a `send_message` '
       + 'candidate in every status. The snapshot is not a delivery '
       + 'promise — `send_message` performs the authoritative check and may still fail. Children that could '
-      + 'not be identified without opening them are reported as diagnostics. Scope `descendants` '
+      + 'not be read are reported as diagnostics only in `descendants` scope. Scope `descendants` '
       + 'walks the whole tree below you in stable pre-order, annotating each entry with its durable direct-parent '
       + 'session id and depth. You may use `send_message` only for depth-1 entries; deeper entries are '
       + 'candidates for `interrupt_agent` only.',

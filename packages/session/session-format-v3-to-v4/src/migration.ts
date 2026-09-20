@@ -10,7 +10,7 @@ import { namespaceV3OpaqueEvent, RELEASED_V3_EVENT_TYPES } from './extension-ide
 import { assertReleasedV4Header, validateDeliveryAccepted } from './validation.ts'
 import { catalogFact, childCatalogSource, childCatalogFact, childCatalogSubject } from './facts.ts'
 
-/** Convert one Session independently, preserving its existing catalog entries. */
+/** Header-only migration declaration; body restoration requires explicit child evidence. */
 export const sessionFormatV3ToV4 = defineSessionFormatMigration({
   name: '@deepseek-ai/dsh-session-format-v3-to-v4',
   fromVersion: 3,
@@ -19,13 +19,15 @@ export const sessionFormatV3ToV4 = defineSessionFormatMigration({
     assertReleasedV3Header(header)
     return { ...header, version: 4 }
   },
-  createStage: input => new ReleasedV3ToV4Stage(input, []),
+  createStage() {
+    throw new SessionFormatUnsupportedMigrationError('V3 catalog migration requires explicit historical child facts, including an empty array for a parent without children')
+  },
   validateTargetHeader: assertReleasedV4Header,
 })
 
 /**
  * Bind one parent's historical child evidence to its V3→V4 migration.
- * @param children - complete child evidence retained unchanged for the lifetime of this declaration; an empty array requests no backfill.
+ * @param children - complete child evidence retained unchanged for the lifetime of this declaration; an empty array declares no children.
  * @returns an adjacent migration that creates independent stages with the supplied evidence.
  */
 export function createSessionFormatV3ToV4(children: readonly SessionFormatJsonValue[]): SessionFormatMigration {

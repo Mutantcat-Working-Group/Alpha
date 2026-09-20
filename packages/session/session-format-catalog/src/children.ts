@@ -7,7 +7,7 @@ import { sessionFormatCatalogOptions } from './generated.ts'
 
 /**
  * Assemble a catalog whose V3→V4 edge knows one parent's historical children.
- * @param children - complete child evidence retained unchanged for the catalog's lifetime; an empty array requests no backfill.
+ * @param children - complete child evidence retained unchanged for the catalog's lifetime; an empty array declares no children.
  * @returns a catalog with independent restore state per artifact and unchanged current-format readers.
  */
 export function createSessionFormatCatalogWithChildren(children: readonly SessionFormatJsonValue[]): SessionFormatCatalog {

@@ -126,17 +126,6 @@ describe('dsh-tool-subagent-control/list-agents', () => {
     expect(text(result)).toBe('(no subagents)')
   })
 
-  it('reports header-discovered children without reading their unresolved identities', async () => {
-    const { ctx, parent } = await setup([])
-    vi.spyOn(ctx.subagents, 'listChildren').mockResolvedValue([
-      { id: SessionId('unopened'), createdAt: 1, mode: 'unresolved' },
-    ])
-    const result = await callTool(ctx, 'list_agents', {}, parent)
-    expect(result.isError).toBe(false)
-    expect(text(result)).toContain('unopened')
-    expect(text(result)).toContain('unavailable')
-  })
-
   it('renders direct children in array order with registry statuses', async () => {
     const { ctx, parent } = await setup([textResponse('done')])
     const started = await ctx.subagents.startContinuable({

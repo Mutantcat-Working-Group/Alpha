@@ -171,7 +171,7 @@ function mutateStoredHeader(
 }
 
 describe('SubagentRuntime.listChildren', () => {
-  it('discovers historical children from headers while leaving their bodies unread', async () => {
+  it('lists historical children through a migrated parent while preserving V3 files', async () => {
     const { ctx, root } = await setup([], { compression: 'none' })
     const parent = SessionId('historical-parent')
     const child = SessionId('historical-child')
@@ -191,18 +191,16 @@ describe('SubagentRuntime.listChildren', () => {
       return { path, content }
     })
 
-    const observe = vi.spyOn(ctx.sessionQuery, 'observeSession')
     expect(await ctx.subagents.listChildren(parent)).toEqual([{
-      id: child, createdAt: 2, mode: 'unresolved',
+      id: child, createdAt: 2, mode: 'continuable', label: 'historical child',
     }])
-    expect(observe.mock.calls.map(([id]) => id)).toEqual([parent])
     for (const { path, content } of originals) {
       expect(readFileSync(path, 'utf8')).toBe(content)
       expect(readdirSync(dirname(path))).toEqual(['session.v3.jsonl'])
     }
   })
 
-  it('lists provider-established children from the parent catalog without a child body read', async () => {
+  it('lists provider-established children from the parent catalog without a corpus or child read', async () => {
     const { ctx, parent } = await setup([textResponse('once'), textResponse('again')])
     const oneShot = await ctx.subagents.start('spawn', {
       prompt: [{ type: 'text', text: 'finish once' }],
@@ -220,7 +218,7 @@ describe('SubagentRuntime.listChildren', () => {
       { id: continuableId, label: 'continuable child', mode: 'continuable' },
     ])
     expect(children.every(child => Number.isFinite(child.createdAt))).toBe(true)
-    expect(listSessions).toHaveBeenCalledOnce()
+    expect(listSessions).not.toHaveBeenCalled()
     expect(observeSession).toHaveBeenCalledOnce()
   })
 
@@ -989,7 +987,7 @@ describe('SubagentRuntime.listChildren', () => {
     }
     expect(chunkLengths).toEqual([1, ...Array.from({ length: 16 }, () => 64)])
     const entries = await ctx.subagents.listChildren(parent.id)
-    expect(listSessions).toHaveBeenCalledOnce()
+    expect(listSessions).not.toHaveBeenCalled()
     expect(entries).toHaveLength(1_025)
     expect(entries.find(entry => entry.id === 'child-064')).toEqual({
       id: SessionId('child-064'), createdAt: 64, mode: 'one-shot',

@@ -1,8 +1,7 @@
 /**
  * Direct-child discovery from a parent-owned `subagent/catalog` projection,
- * with header-only discovery of missing entries, plus complete descendant-tree
- * enumeration from the Session corpus. A direct listing observes one parent
- * and reads no child log. Descendant
+ * plus complete descendant-tree enumeration from the Session corpus. A direct
+ * listing owns one parent observation and reads no child log. Descendant
  * enumeration retains the complete corpus and the child identity projection
  * because ordinary Sessions and one-shot children remain traversal nodes.
  *
@@ -18,7 +17,7 @@ import type { SessionObservation, SessionQueryEngine } from '@mutantcat/dsh-sess
 import type { SubagentListEntry } from './control-types.ts'
 import { SubagentError } from './error.ts'
 import type { SubagentIdentityProjection } from './projection-types.ts'
-import type { SubagentDiscoveryEntry } from './control-types.ts'
+import type { SubagentCatalogEntry } from './projection-types.ts'
 
 export type { SubagentListEntry } from './control-types.ts'
 
@@ -62,14 +61,14 @@ interface PositionedCandidate {
  * @param ctx - context carrying the Session query service.
  * @param parentSessionId - parent whose direct children are requested.
  * @param signal - cancellation forwarded to the Session observation.
- * @returns catalog rows in event order, followed by header-discovered children without reading their bodies.
+ * @returns direct-child rows in parent catalog event order.
  * @throws {@link SubagentError} when query or catalog projection is unavailable.
  */
 export async function listChildren(
   ctx: Context,
   parentSessionId: SessionId,
   signal?: AbortSignal,
-): Promise<SubagentDiscoveryEntry[]> {
+): Promise<SubagentCatalogEntry[]> {
   const query = ctx.get('sessionQuery')
   if (query === undefined) {
     throw new SubagentError(
@@ -87,15 +86,7 @@ export async function listChildren(
       'SUBAGENT_CONTROL_PROJECTIONS_UNAVAILABLE',
     )
   }
-  const discovered: SubagentDiscoveryEntry[] = [...entries]
-  const known = new Set(entries.map(entry => entry.id))
-  const records = await query.listSessions(signal)
-  for (const { header } of records) {
-    if (header.origin === 'subagent' && header.parentSession === parentSessionId && !known.has(header.id)) {
-      discovered.push({ id: header.id, createdAt: header.createdAt, mode: 'unresolved' })
-    }
-  }
-  return discovered
+  return entries
 }
 
 /**

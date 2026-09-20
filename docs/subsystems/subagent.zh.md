@@ -268,7 +268,7 @@ interface ContinuableCreateSpec {
 
 模型侧的 `list_agents` 适配器将当前活动表示为 `running` 或 `inactive`。这些值不描述任务完成情况，也不保证 `send_message` 会成功。
 
-`SubagentRuntime.listChildren(parentSessionId, signal?)` 持有一次父观察，并以会话头部发现补充 catalog。它返回 `SubagentDiscoveryEntry[]`：先按事件顺序返回 catalog 事实，再为缺少 catalog 事实的子会话返回 `{ id: SessionId; createdAt: number; mode: 'unresolved' }` 行。不打开任何子正文。查询失败向上传播，缺少父 catalog 投影时显式报错。`listDescendants()` 显式读取子身份，返回诊断和完整 `hasChildren` 信息。[会话独立迁移](../../.agents/notes/implemented/bug-fix/2026-09-19-session-local-subagent-migration.zh.md) 负责按需发现与迁移隔离。
+`SubagentRuntime.listChildren(parentSessionId, signal?)` 通过优先使用在线 Session 的观察读取父会话的 `subagentCatalog` 视图，并在成功或失败时释放观察。它按父会话事件顺序返回直接子级条目，不读取子级日志，也不枚举 Session 语料库。查询失败直接传播；缺少目录投影时显式失败。浏览器条目从共享 projection store 派生成员关系，并从 Session 状态补充活动状态；control stream 推送完整目录更新。`listDescendants()` 保留语料库遍历、子级身份诊断和完整的 `hasChildren` 计算。[父目录 Agent Note](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 说明创建、fork 隔离、排序和持久化成本。
 
 `SubagentRuntime.listDescendants(rootSessionId)` 将同一份实时优先语料与基于投影的解释应用到根的完整后代树，并按稳定 pre-order 输出。普通会话和一次性 child 仍作为遍历节点，因此其下的可继续后代仍可发现；只有 `origin: 'subagent'` 的候选会生成条目。每个返回的 child 或 diagnostic 都从枚举所得的持久 header 附加树位置；冷检查在提供身份前还会重新校验完整生命周期：
 
@@ -469,7 +469,7 @@ spawn 和 fork 后端通过 `parent.ctx` 创建一个普通的单次 agent，将
 - **委派深度**由持久 `SessionHeader.delegationDepth` 与可合并扩展的运行时字段 `AgentOptions.subagentDepth` 共同表示；缺失表示顶层深度为零，存在的较大值具有权威性。两个字段都归该 seam 所有——循环既不设置也不读取它们——因此进程内子 agent 会持久保存 parent 深度 + 1，冷恢复无法降低深度，而且每次 start 都会拒绝超出安全整数域、或高于已定义绝对 `request.maxDepth` 上限的派生深度。
 - **Fork 种子注入**使用 [`CreateAgentOptions.seed`](core.zh.md#creation-and-ownership)（一个 `SessionEvent[]` 前缀，经由 `AgentLoop.createAgent` → `ctx.sessions.prepare({ seed })` 传递，与 `ctx.agents.resume()` 使用的原语相同）。fork 后端传入父级日志的一段*平衡的已完成轮次前缀*——父级事件直到并包括其最后一个 `turn/end`——因此种子从 0 连续，[invariants](../../packages/runtime-diagnostics/invariants) 回放可以接受它（进行中的、未平衡的轮次被排除在外）。
 
-`SubagentCatalogEntry` 描述持久化成功创建事实，`SubagentCatalogState` 是其 Host 投影状态。`SubagentDiscoveryEntry` 为直接列表增加非持久化、未解析的头部行。浏览器消费者合并 catalog 事实、关联父会话的摘要与缓存子身份。`SubagentAddress` 携带父子 id 及已知或未解析模式；历史打开在续接前校验子会话 descriptor。`SubagentCatalogRow` 属于完整后代列表。
+`SubagentCatalogEntry` 描述一条成功创建直接子级的事实；`SubagentCatalogState` 是仅 host 使用的 projection state。`listChildren()` 拥有一次 live-preferred 父 Session observation，不打开子级日志。浏览器消费者通过共享 Session projection store 读取 `subagentCatalog`，并将成员关系与 Session 列表活动状态组合。`SubagentCatalogRow` 属于完整后代列表。[父目录决策](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 规定持久事实与读取语义。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -578,15 +578,15 @@ async drainContinuableDescendants(parents: readonly Agent[]): Promise<void>
 async drainContinuableChildren(parent: Agent, childIds: readonly SessionId[]): Promise<void>
 
 /**
- * Read the parent's catalog and discover missing direct children from Session headers.
+ * Read the parent's durable direct-child catalog without loading or resuming an Agent.
  * The service owns and releases the live-preferred Session observation.
  * @param parentSessionId - parent whose direct children are requested.
  * @param signal - cancellation forwarded to the Session query.
- * @returns catalog children in event order, then unresolved children whose bodies remain unread.
+ * @returns catalog children in parent event order.
  * @throws {@link SubagentError} when query or catalog projection is unavailable.
  * @throws SessionQueryError when the parent cannot be read or the query is cancelled.
  */
-listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentDiscoveryEntry[]>
+listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentCatalogEntry[]>
 
 /**
  * Enumerate the root's complete session-backed subagent tree in stable
