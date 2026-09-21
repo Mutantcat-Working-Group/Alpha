@@ -82,7 +82,7 @@
           ],
           "source": {
             "kind": "plugin",
-            "plugin": "@deepseek-ai/dsh-system-prompt"
+            "plugin": "@mutantcat/dsh-system-prompt"
           },
           "id": "{{messageId}}"
         }
@@ -141,7 +141,7 @@
         ],
         "source": {
           "kind": "plugin",
-          "plugin": "@deepseek-ai/dsh-system-prompt",
+          "plugin": "@mutantcat/dsh-system-prompt",
           "form": "snapshot",
           "sections": [
             {
@@ -1786,7 +1786,7 @@
               ],
               "source": {
                 "kind": "plugin",
-                "plugin": "@deepseek-ai/dsh-system-prompt"
+                "plugin": "@mutantcat/dsh-system-prompt"
               },
               "id": "{{messageId}}"
             }
@@ -1863,7 +1863,7 @@
             ],
             "source": {
               "kind": "plugin",
-              "plugin": "@deepseek-ai/dsh-system-prompt",
+              "plugin": "@mutantcat/dsh-system-prompt",
               "form": "snapshot",
               "sections": [
                 {
@@ -3242,7 +3242,7 @@
               ],
               "source": {
                 "kind": "plugin",
-                "plugin": "@deepseek-ai/dsh-system-prompt"
+                "plugin": "@mutantcat/dsh-system-prompt"
               },
               "id": "{{messageId}}"
             }
@@ -3319,7 +3319,7 @@
             ],
             "source": {
               "kind": "plugin",
-              "plugin": "@deepseek-ai/dsh-system-prompt",
+              "plugin": "@mutantcat/dsh-system-prompt",
               "form": "snapshot",
               "sections": [
                 {
@@ -4060,7 +4060,7 @@
               ],
               "source": {
                 "kind": "plugin",
-                "plugin": "@deepseek-ai/dsh-system-prompt"
+                "plugin": "@mutantcat/dsh-system-prompt"
               },
               "id": "{{messageId}}"
             }
@@ -4137,7 +4137,7 @@
             ],
             "source": {
               "kind": "plugin",
-              "plugin": "@deepseek-ai/dsh-system-prompt",
+              "plugin": "@mutantcat/dsh-system-prompt",
               "form": "snapshot",
               "sections": [
                 {

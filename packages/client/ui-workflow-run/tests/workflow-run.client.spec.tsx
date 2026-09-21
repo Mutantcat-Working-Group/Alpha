@@ -1,26 +1,26 @@
 // @vitest-environment jsdom
-import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
-import { Context } from '@deepseek-ai/cordis'
+import type { GlobalStandardProps } from '@mutantcat/dsh-client-ui-slots'
+import { Context } from '@mutantcat/cordis'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ConversationNodeAssembler, UiConversation,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
 import type {
   ConversationMatch, ConversationNodeDefinition, ConversationStartMatch,
   ConversationViewDefinition,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type { ChatConversationViewNode } from '@deepseek-ai/dsh-client-ui-chat/client'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
+import type { ChatConversationViewNode } from '@mutantcat/dsh-client-ui-chat/client'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
 import type {
   SessionListState, SessionLiveEventEntry,
-} from '@deepseek-ai/dsh-api-session-controller/client'
-import type { SessionEvent, SessionId } from '@deepseek-ai/dsh-session/types'
-import { apply as applyLocale, inject as localeInject } from '@deepseek-ai/dsh-client-locale/client'
+} from '@mutantcat/dsh-api-session-controller/client'
+import type { SessionEvent, SessionId } from '@mutantcat/dsh-session/types'
+import { apply as applyLocale, inject as localeInject } from '@mutantcat/dsh-client-locale/client'
 import {
   chatSnapshot as emptyChatSnapshot, conversationSnapshot, makeTranslate, sessionSnapshot,
   stubSettingsScope, TestSessions, workspaceSnapshot,
-} from '@deepseek-ai/dsh-client-test-runtime'
+} from '@mutantcat/dsh-client-test-runtime'
 import {
   WorkflowRunPanel, type WorkflowRunInjected, type WorkflowRunPanelProps,
 } from '../src/client/WorkflowRunPanel.tsx'

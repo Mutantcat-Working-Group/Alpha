@@ -1,26 +1,26 @@
 /**
  * Service Definition for the approval capability seam, covering requests, cancellation, audit, and per-session policy. Missing
  * answerers fail closed; grants apply only to the requested action.
- * @module @deepseek-ai/dsh-user-approval
+ * @module @mutantcat/dsh-user-approval
  */
 
 import { randomUUID } from 'node:crypto'
-import { Context, Service } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage, type ToolCallId } from '@deepseek-ai/dsh-llm'
-import { scopeTarget } from '@deepseek-ai/dsh-scope'
-import type { Session } from '@deepseek-ai/dsh-session'
-import { SessionSeq } from '@deepseek-ai/dsh-session'
-import type {} from '@deepseek-ai/dsh-system-prompt'
+import { Context, Service } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { createUserMessage, type ToolCallId } from '@mutantcat/dsh-llm'
+import { scopeTarget } from '@mutantcat/dsh-scope'
+import type { Session } from '@mutantcat/dsh-session'
+import { SessionSeq } from '@mutantcat/dsh-session'
+import type {} from '@mutantcat/dsh-system-prompt'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     approval: ApprovalService
   }
 }
 
-declare module '@deepseek-ai/dsh-session/types' {
+declare module '@mutantcat/dsh-session/types' {
   interface SessionEventMap {
     /**
      * The session's approval policy was switched — log-only, durable,

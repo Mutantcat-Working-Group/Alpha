@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
-import { SessionFormatEventCollector, SessionFormatUnsupportedMigrationError } from '@deepseek-ai/dsh-session-format'
-import type { SessionFormatEvent, SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
+import { sessionFormatCatalog } from '@mutantcat/dsh-session-format-catalog'
+import { SessionFormatEventCollector, SessionFormatUnsupportedMigrationError } from '@mutantcat/dsh-session-format'
+import type { SessionFormatEvent, SessionFormatJsonObject } from '@mutantcat/dsh-session-format'
 import { releasedV3SessionFormatCodec, restoreReleasedV3Artifact } from '../src/index.ts'
 
 const header = { type: 'session', version: 2, id: 'combined', createdAt: 1, isSeeded: false, delegationDepth: 0 }

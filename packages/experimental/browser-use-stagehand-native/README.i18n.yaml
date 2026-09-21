@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/experimental/browser-use-stagehand-native/README.md
-README.md: 671a900d5dab4f3575129e0b8410742be889079c
-README.zh.md: 69f3c115c68751f6452e0e0f99e2dcaa33500786
+README.md: ead1cd85716a1a47744d309648fe942ea2036600
+README.zh.md: faa50f978a4451842ac46b32bfc0cd2e915379fb

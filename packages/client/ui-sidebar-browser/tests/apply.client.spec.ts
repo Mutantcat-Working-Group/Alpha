@@ -1,7 +1,7 @@
 /** Browser type, Slot, locale, and HMR disposal through the real registries. */
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { SidebarRightTabRegistry } from '@deepseek-ai/dsh-client-ui-sidebar-right/src/client/tab-registry.ts'
+import { Context } from '@mutantcat/cordis'
+import { SidebarRightTabRegistry } from '@mutantcat/dsh-client-ui-sidebar-right/src/client/tab-registry.ts'
 import { BrowserBody } from '../src/client/view/BrowserBody.tsx'
 import { BrowserTitle } from '../src/client/view/BrowserTitle.tsx'
 import type { BrowserInjected } from '../src/client/browser/BrowserController.ts'

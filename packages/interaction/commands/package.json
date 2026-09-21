@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-commands",
+  "name": "@mutantcat/dsh-commands",
   "description": "Plugin-owned human command registry for DeepSeek Harness UIs",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -53,29 +53,29 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-util-crypto": "workspace:^",
+    "@mutantcat/dsh-util-crypto": "workspace:^",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

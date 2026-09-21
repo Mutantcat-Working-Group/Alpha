@@ -13,7 +13,7 @@
 # The preset's own persona, shadowing the deployment default for this agent.
 # `{{model}}` and `{{cwd}}` resolve from the agent's own route and workspace.
 - id: persona
-  name: '@deepseek-ai/dsh-persona'
+  name: '@mutantcat/dsh-persona'
   config:
     suffix: Your working directory is {{cwd}}.
     prefix: |-
@@ -33,12 +33,12 @@
 
       Load the cordis-plugin-development skill before authoring an installed plugin. Use cordis_inspect_list to discover Host and Client providers, then cordis_inspect_query to read exact Service, Event, Tool, Theme or Slot APIs. These tools are read-only; queries do not invoke business methods.
 
-      To connect an MCP server, create a configuration-only bundle whose patch inserts @deepseek-ai/dsh-mcp-client, then install it with plugin_manager. Load cordis-plugin-development for the package and YAML examples. After successful activation, call one of the newly available mcp__<serverName>__<tool> tools to verify the connection.
+      To connect an MCP server, create a configuration-only bundle whose patch inserts @mutantcat/dsh-mcp-client, then install it with plugin_manager. Load cordis-plugin-development for the package and YAML examples. After successful activation, call one of the newly available mcp__<serverName>__<tool> tools to verify the connection.
 
       Use installed bundles for new plugin code. Package installation may require explicit user approval for build scripts. Preserve returned failures and pending states; only report success after observing the requested capability.
 
 - id: agent-instructions
-  name: '@deepseek-ai/dsh-agent-instructions'
+  name: '@mutantcat/dsh-agent-instructions'
   config:
     maxBytes: 65536
 
@@ -52,11 +52,11 @@
 # registry from here; their executors (`bash-sandbox`/`pwsh-sandbox`) are
 # host-plane too.
 - id: tool-bash
-  name: '@deepseek-ai/dsh-tool-bash'
+  name: '@mutantcat/dsh-tool-bash'
   disabled: !!js process.platform === 'win32'
 
 - id: tool-pwsh
-  name: '@deepseek-ai/dsh-tool-pwsh'
+  name: '@mutantcat/dsh-tool-pwsh'
   disabled: !!js process.platform !== 'win32'
 
 # ── filesystem ──────────────────────────────────────────────────────────────
@@ -64,10 +64,10 @@
 # Both register into the host `tools` registry and provide nothing, so
 # they need no realm. The `fs` service and its policy stay in the host.
 - id: tool-fs
-  name: '@deepseek-ai/dsh-tool-fs'
+  name: '@mutantcat/dsh-tool-fs'
 
 - id: tool-fs-search
-  name: '@deepseek-ai/dsh-tool-fs-search'
+  name: '@mutantcat/dsh-tool-fs-search'
   config:
     sampleOverCapGlobResults: false
 
@@ -81,7 +81,7 @@
 # owning agent anyway, so one host instance serves every session. What a preset
 # chooses is whether its agent can collect and stop background work at all.
 - id: tool-jobs
-  name: '@deepseek-ai/dsh-tool-jobs'
+  name: '@mutantcat/dsh-tool-jobs'
 
 # ── goals ───────────────────────────────────────────────────────────────────
 
@@ -89,10 +89,10 @@
 # can resolve them. The human command and model-facing tool register into this
 # preset's scoped layers.
 - id: command-goal
-  name: '@deepseek-ai/dsh-command-goal'
+  name: '@mutantcat/dsh-command-goal'
 
 - id: tool-goal
-  name: '@deepseek-ai/dsh-tool-goal'
+  name: '@mutantcat/dsh-tool-goal'
 
 # ── plan mode ───────────────────────────────────────────────────────────────
 
@@ -105,7 +105,7 @@
     planMode: true
   config:
     - id: plan-mode
-      name: '@deepseek-ai/dsh-plan-mode'
+      name: '@mutantcat/dsh-plan-mode'
       config:
         section: |
               You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
@@ -139,13 +139,13 @@
     toolResultPruner: true
   config:
     - id: compaction-basic
-      name: '@deepseek-ai/dsh-compaction-basic'
+      name: '@mutantcat/dsh-compaction-basic'
 
     - id: command-compact
-      name: '@deepseek-ai/dsh-command-compact'
+      name: '@mutantcat/dsh-command-compact'
 
     - id: tool-result-pruner
-      name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+      name: '@mutantcat/dsh-compaction-tool-result-pruner'
       config:
         thresholdChars: 8192
         headChars: 4096
@@ -169,13 +169,13 @@
     workflowEngine: true
   config:
     - id: tool-subagent-control
-      name: '@deepseek-ai/dsh-tool-subagent-control'
+      name: '@mutantcat/dsh-tool-subagent-control'
 
     - id: tool-subagent-list-agents
-      name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+      name: '@mutantcat/dsh-tool-subagent-control/list-agents'
 
     - id: tool-subagent
-      name: '@deepseek-ai/dsh-tool-subagent'
+      name: '@mutantcat/dsh-tool-subagent'
       config:
         provider: spawn
         toolName: subagent
@@ -187,7 +187,7 @@
     # keeps fork continuable; parent and child inherit the same messaging tool,
     # while the parent id and return guidance follow the inherited history.
     - id: tool-subagent-fork
-      name: '@deepseek-ai/dsh-tool-subagent'
+      name: '@mutantcat/dsh-tool-subagent'
       config:
         provider: fork
         toolName: subagent_fork
@@ -198,7 +198,7 @@
     # preset and remove `disabled` from the matching tool row. Host availability
     # alone grants no tool.
     - id: tool-subagent-codex
-      name: '@deepseek-ai/dsh-tool-subagent'
+      name: '@mutantcat/dsh-tool-subagent'
       disabled: true
       config:
         provider: codex
@@ -207,7 +207,7 @@
         maxDepth: provider-managed
 
     - id: tool-subagent-claude-code
-      name: '@deepseek-ai/dsh-tool-subagent'
+      name: '@mutantcat/dsh-tool-subagent'
       disabled: true
       config:
         provider: claude-code
@@ -216,12 +216,12 @@
         maxDepth: provider-managed
 
     - id: workflow-ptc
-      name: '@deepseek-ai/dsh-workflow-ptc'
+      name: '@mutantcat/dsh-workflow-ptc'
       config:
         provider: spawn
 
     - id: tool-workflow
-      name: '@deepseek-ai/dsh-tool-workflow'
+      name: '@mutantcat/dsh-tool-workflow'
 
     # Off by default with the base row it mirrors: the tool description
     # restricts `ralph` to runs the human explicitly asked for, and completion
@@ -230,7 +230,7 @@
     # id and drops `disabled`; the shipped root shadows a copy that reuses this
     # id.
     - id: tool-ralph
-      name: '@deepseek-ai/dsh-tool-ralph'
+      name: '@mutantcat/dsh-tool-ralph'
       disabled: true
       config:
         subagentProvider: spawn
@@ -239,17 +239,17 @@
 # ── remaining model-facing rows ─────────────────────────────────────────────
 
 - id: tool-ask-user
-  name: '@deepseek-ai/dsh-tool-ask-user'
+  name: '@mutantcat/dsh-tool-ask-user'
 
 - id: tool-todo
-  name: '@deepseek-ai/dsh-tool-todo'
+  name: '@mutantcat/dsh-tool-todo'
   config:
     allowParallelInProgress: true
 
 # The `web` service and its search provider stay in the host composition; only
 # the model-facing tool is per-session.
 - id: tool-web
-  name: '@deepseek-ai/dsh-tool-web'
+  name: '@mutantcat/dsh-tool-web'
   config:
     fetch: true
     searchTimeoutMs: 60000
@@ -258,7 +258,7 @@
 
 # Discover the Host and Client APIs used by installed plugins.
 - id: tool-cordis
-  name: '@deepseek-ai/dsh-tool-cordis'
+  name: '@mutantcat/dsh-tool-cordis'
 
 # The composition-authoring skill travels with this preset rather than living
 # in the user's skill root: it documents THIS deployment's two planes, and a
@@ -268,16 +268,16 @@
 # they need no realm; the agent's merged catalog also carries whatever the
 # deployment registered globally (repository plugins).
 - id: skill-filesystem
-  name: '@deepseek-ai/dsh-skill-filesystem'
+  name: '@mutantcat/dsh-skill-filesystem'
   config:
     customSkillDirs:
       - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
 
 - id: tool-skill
-  name: '@deepseek-ai/dsh-tool-skill'
+  name: '@mutantcat/dsh-tool-skill'
 
 - id: present
-  name: '@deepseek-ai/dsh-tool-present'
+  name: '@mutantcat/dsh-tool-present'
 
 - id: tool-plugin-manager
-  name: '@deepseek-ai/dsh-plugin-manager/tools'
+  name: '@mutantcat/dsh-plugin-manager/tools'

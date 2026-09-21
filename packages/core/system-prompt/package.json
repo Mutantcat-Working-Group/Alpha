@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-system-prompt",
+  "name": "@mutantcat/dsh-system-prompt",
   "description": "System prompt assembly registry for the DeepSeek Harness",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -32,18 +32,18 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

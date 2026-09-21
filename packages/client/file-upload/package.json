@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-file-upload",
+  "name": "@mutantcat/dsh-client-file-upload",
   "description": "Agent-scoped browser file upload, streaming intake, and staged receipt service",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -40,7 +40,7 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-api-remotes"
+        "@mutantcat/dsh-api-remotes"
       ],
       "platform": "web",
       "immediately": true
@@ -63,22 +63,22 @@
   ],
   "dependencies": {
     "zod": "^4.4.3",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^"
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-client-connection": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-util-crypto": "workspace:^",
-    "@deepseek-ai/dsh-api-remotes": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-client-connection": "workspace:^",
+    "@mutantcat/dsh-commands": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/dsh-util-crypto": "workspace:^",
+    "@mutantcat/dsh-api-remotes": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^"
   }
 }

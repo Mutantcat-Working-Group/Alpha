@@ -1,21 +1,21 @@
 // @vitest-environment jsdom
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import type { CommandContribution, CommandUiContract } from '@deepseek-ai/dsh-client-ui-commands/client'
-import type { ISession, SessionReference } from '@deepseek-ai/dsh-api-session-controller/client'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+import type { CommandContribution, CommandUiContract } from '@mutantcat/dsh-client-ui-commands/client'
+import type { ISession, SessionReference } from '@mutantcat/dsh-api-session-controller/client'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import type { ObservableSnapshot } from '@mutantcat/dsh-client-store'
 import {
   SlotTestRuntime, stubSettingsScope, usePinnedBrowserLanguages,
-} from '@deepseek-ai/dsh-client-test-runtime'
-import type { SessionBehaviorOverrides } from '@deepseek-ai/dsh-client-test-runtime'
+} from '@mutantcat/dsh-client-test-runtime'
+import type { SessionBehaviorOverrides } from '@mutantcat/dsh-client-test-runtime'
 import {
   apply, inject, type ComposerBarInjected, type ConversationInjected,
   type ConversationSessionHeaderInjected, type ConversationSessionInjected, type ViewTab,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { WorkspaceId } from '@deepseek-ai/dsh-workspace/types'
+} from '@mutantcat/dsh-client-ui-conversation/client'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import type { WorkspaceId } from '@mutantcat/dsh-workspace/types'
 import { createConversationStore } from '../src/client/stores.ts'
-import { RemoteError } from '@deepseek-ai/dsh-client-test-runtime'
+import { RemoteError } from '@mutantcat/dsh-client-test-runtime'
 
 usePinnedBrowserLanguages('zh-CN')
 

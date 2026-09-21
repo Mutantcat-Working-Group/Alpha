@@ -1,11 +1,11 @@
 /** Office preview registration backed by authorized Host rendering and the existing PDF body. */
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context } from '@mutantcat/cordis'
 import { retainDocumentTabs } from '../document/tab-lifetime.ts'
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type {} from '@deepseek-ai/dsh-office-to-pdf/remote'
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
-import type {} from '@deepseek-ai/dsh-client-connection/client'
+import type {} from '@mutantcat/dsh-client-ui-renderer/client'
+import type {} from '@mutantcat/dsh-office-to-pdf/remote'
+import type {} from '@mutantcat/dsh-client-locale/client'
+import type {} from '@mutantcat/dsh-api-workspace-files/remote'
+import type {} from '@mutantcat/dsh-client-connection/client'
 import { documentFileBytes } from '../rpc.ts'
 import { failureLine } from '../failure-line.ts'
 import { documentTabInfoFactory } from '../document/contract.ts'
@@ -17,7 +17,7 @@ import { OfficeBody, type OfficeBodyInjected } from './OfficeBody.tsx'
 import { createOfficeStore } from './store.ts'
 import type { Config } from '../../config.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     sidebarOffice: OfficePreviewKey
   }
@@ -29,7 +29,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
  * @param config - Resolved Office preview cache limits.
  */
 export function apply(ctx: Context, config: Config['office']): void {
-  const id = '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office'
+  const id = '@mutantcat/dsh-client-ui-sidebar-documentpreview/office'
   const extensions = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
   ctx.effect(() => ctx.locale.register('sidebarOffice', { zh, en }))
   const t = ctx.locale.bind('sidebarOffice')

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-workspace",
+  "name": "@mutantcat/dsh-workspace",
   "description": "Workspace entity registry (ctx.workspaceRegistry): durable workspace records with validated session attachment over the domain data form for the DeepSeek Harness",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -37,25 +37,25 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-storage": "workspace:^",
-    "@deepseek-ai/dsh-storage-domain": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-persistence": "workspace:^",
+    "@mutantcat/dsh-storage": "workspace:^",
+    "@mutantcat/dsh-storage-domain": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-storage": "workspace:^",
-    "@deepseek-ai/dsh-storage-domain": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-persistence": "workspace:^",
+    "@mutantcat/dsh-storage": "workspace:^",
+    "@mutantcat/dsh-storage-domain": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^"
   }
 }

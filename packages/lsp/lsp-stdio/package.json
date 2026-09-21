@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-lsp-stdio",
+  "name": "@mutantcat/dsh-lsp-stdio",
   "description": "Generic stdio language-server provider for the DeepSeek Harness LSP capability seam (ctx.lsp) — spawns configured servers, translates JSON-RPC, and serves transient-open goToDefinition/findReferences/goToImplementation/hover queries in the host filesystem namespace",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,28 +27,28 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-lsp": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-lsp": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-util-values": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-fs-local": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-lsp": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-fs-local": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-lsp": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-subprocess-local": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
     "typescript": "^6.0.3",
     "typescript-language-server": "^5.0.0"
   }

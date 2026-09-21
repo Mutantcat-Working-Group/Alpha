@@ -1,6 +1,6 @@
 /** Shared native-open status for delivery cards, the changed-files card, and closing-message file mentions. */
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
+import type { SessionId } from '@mutantcat/dsh-session/types'
 import { changedFileUrl } from '../changes.ts'
 import { presentedFileUrl, PRESENT_HOST_PATH, isPresentedHost, type PresentedAction, type PresentedHost } from '../presented.ts'
 

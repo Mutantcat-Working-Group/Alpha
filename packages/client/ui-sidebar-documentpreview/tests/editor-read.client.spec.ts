@@ -1,8 +1,8 @@
 /** The complete-text read walks every page to the file's end. */
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { RemoteError } from '@deepseek-ai/dsh-client-test-runtime'
-import type { WorkspaceFileText } from '@deepseek-ai/dsh-api-workspace-files/types'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import { RemoteError } from '@mutantcat/dsh-client-test-runtime'
+import type { WorkspaceFileText } from '@mutantcat/dsh-api-workspace-files/types'
 import { readEditorText } from '../src/client/editor/read.ts'
 import type { ReadWorkspaceFilePage } from '../src/client/rpc.ts'
 

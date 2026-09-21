@@ -1,10 +1,10 @@
 /** Editor registration: one file revision as a CodeMirror document, saved under the version guard. */
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
-import type {} from '@deepseek-ai/dsh-client-connection/client'
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-client-locale/client'
+import type {} from '@mutantcat/dsh-api-workspace-files/remote'
+import type {} from '@mutantcat/dsh-client-connection/client'
+import type {} from '@mutantcat/dsh-client-ui-renderer/client'
+import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
 import { retainDocumentTabs } from '../document/tab-lifetime.ts'
 import { failureLine } from '../failure-line.ts'
 import { createReadPage, createWorkspaceFileWrite } from '../rpc.ts'
@@ -26,7 +26,7 @@ import type { ReadEditorText } from './read.ts'
  * @param ctx - Client renderer registry, localized copy, and the Remote face.
  */
 export function apply(ctx: Context): void {
-  const id = '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/editor'
+  const id = '@mutantcat/dsh-client-ui-sidebar-documentpreview/editor'
   ctx.effect(() => ctx.locale.register('sidebarEditor', { zh, en }))
   const t = ctx.locale.bind('sidebarEditor')
   const unavailable: ReadEditorText = (_file, signal) => {

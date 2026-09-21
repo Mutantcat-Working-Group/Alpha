@@ -2,17 +2,17 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { RunningToolCall, ToolResultNode } from '@deepseek-ai/dsh-client-ui-chat/client'
-import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
+import { bindSnapshotSelector } from '@mutantcat/dsh-client-test-runtime'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
+import type { RunningToolCall, ToolResultNode } from '@mutantcat/dsh-client-ui-chat/client'
+import type { SessionListState } from '@mutantcat/dsh-api-session-controller/client'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import { makeTranslate } from '@mutantcat/dsh-client-test-runtime'
+import { zh as commonZh } from '@mutantcat/dsh-client-locale/src/locales/zh.ts'
 import { CHAT_DIFF_MAX_LINES, diffCardModel } from '../src/client/tool/models/diff-card-model.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
 import { FileMutationRow, fileMutationToolview } from '../src/client/tool/toolviews/file-mutation-row.tsx'
-import { zh } from '@deepseek-ai/dsh-client-ui-conversation/src/client/locales.ts'
+import { zh } from '@mutantcat/dsh-client-ui-conversation/src/client/locales.ts'
 
 afterEach(cleanup)
 

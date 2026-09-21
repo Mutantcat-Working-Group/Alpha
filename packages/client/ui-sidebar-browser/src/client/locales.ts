@@ -53,7 +53,7 @@ export const en = {
   'web.unknown': 'The page navigated inside the iframe; Web mode cannot read its current URL.',
 } satisfies Record<SidebarBrowserKey, string>
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Sidebar Browser labels, navigation controls, and failures. */
     sidebarBrowser: SidebarBrowserKey

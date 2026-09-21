@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-checkpoint-policy",
+  "name": "@mutantcat/dsh-session-checkpoint-policy",
   "description": "Semantic session durability checkpoints before model requests and tool side effects",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,25 +27,25 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-persistence": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-persistence": "workspace:^",
+    "@mutantcat/dsh-session-persistence-jsonl": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^"
   }
 }

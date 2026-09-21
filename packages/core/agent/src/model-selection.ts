@@ -1,15 +1,15 @@
 /**
  * Agent-scoped model selection shared by runtime entry points.
- * @module @deepseek-ai/dsh-agent/model-selection
+ * @module @mutantcat/dsh-agent/model-selection
  */
 
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context } from '@mutantcat/cordis'
 import {
   boundContextSummary,
   createUserMessage,
   type LlmCallConfig,
   type ReasoningEffortId,
-} from '@deepseek-ai/dsh-llm'
+} from '@mutantcat/dsh-llm'
 import type { PreStepDecision } from './runtime-types.ts'
 
 /** Complete provider, model, and optional reasoning effort selected for one live Agent. */

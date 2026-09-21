@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
-import { IconLoadingOutline16, IconRefreshOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { ImageAttachmentRef } from '@mutantcat/dsh-attachment'
+import { IconLoadingOutline16, IconRefreshOutline16 } from '@mutantcat/dsh-client-ui-primitives'
 import { ImageLightbox } from './ImageLightbox.tsx'
 import type { ImageLightboxLabels } from './ImageLightbox.tsx'
 import css from './MessageImage.module.css'

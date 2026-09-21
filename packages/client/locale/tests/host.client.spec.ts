@@ -1,9 +1,9 @@
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { describe, expect, it } from 'vitest'
-import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
+import { SettingsProvider, type SettingsNamespace } from '@mutantcat/dsh-settings'
 import {
   LOCALE_SETTINGS_NAMESPACE, apply,
-} from '@deepseek-ai/dsh-client-locale'
+} from '@mutantcat/dsh-client-locale'
 
 class MemorySettings extends SettingsProvider {
   readonly writable = true

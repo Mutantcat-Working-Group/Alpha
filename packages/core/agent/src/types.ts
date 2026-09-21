@@ -1,13 +1,13 @@
 /**
  * Durable agent session-event vocabulary shared with type-only consumers.
  *
- * @module @deepseek-ai/dsh-agent/types
+ * @module @mutantcat/dsh-agent/types
  */
 
-import type { UserMessage } from '@deepseek-ai/dsh-llm/types'
-import type { OptionalSessionSeq, SessionId, SessionSeq } from '@deepseek-ai/dsh-session/types'
-import type { TypertContext, TypertLookup } from '@deepseek-ai/dsh-typert-protocol'
-import type { JsonValue } from '@deepseek-ai/dsh-util-values'
+import type { UserMessage } from '@mutantcat/dsh-llm/types'
+import type { OptionalSessionSeq, SessionId, SessionSeq } from '@mutantcat/dsh-session/types'
+import type { TypertContext, TypertLookup } from '@mutantcat/dsh-typert-protocol'
+import type { JsonValue } from '@mutantcat/dsh-util-values'
 
 /** Public live-agent handle; the runtime face augments its live capabilities. */
 export interface Agent {
@@ -15,7 +15,7 @@ export interface Agent {
   readonly id: SessionId
 }
 
-declare module '@deepseek-ai/dsh-typert-protocol' {
+declare module '@mutantcat/dsh-typert-protocol' {
   interface TypertLookupMap {
     agent: TypertLookup<Agent, SessionId>
   }
@@ -46,7 +46,7 @@ export interface InboxWireState {
   readonly 'next-step': readonly JsonValue[]
 }
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@mutantcat/dsh-session-projection/types' {
   interface SessionProjectionStateMap {
     /** Pending agent input reconstructed from durable inbox splices. */
     inbox: InboxState
@@ -77,7 +77,7 @@ export interface TurnBoundaryProjection {
   readonly lastTurn: number
 }
 
-declare module '@deepseek-ai/dsh-session/types' {
+declare module '@mutantcat/dsh-session/types' {
   interface SessionEventMap {
     /**
      * One normalized mutation of an agent's durable pending-message lists.

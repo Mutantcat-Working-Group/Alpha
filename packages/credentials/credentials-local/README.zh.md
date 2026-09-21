@@ -3,7 +3,7 @@ description: "面向用户与维护者的文件型凭据提供方：选择、配
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-credentials-local
+# @mutantcat/dsh-credentials-local
 
 [English](README.md) | 中文
 
@@ -34,7 +34,7 @@ kind: "package-reference"
 ### 设置
 
 ```yaml
-- name: '@deepseek-ai/dsh-credentials-local'
+- name: '@mutantcat/dsh-credentials-local'
   config:
     path: /absolute/path/to/.credentials.yaml
 ```
@@ -46,15 +46,15 @@ kind: "package-reference"
 | `watch` | `true` | 文件在磁盘上变化时自动重载 |
 | `debounceMs` | `100` | 变化后等待这么久再重载，单位为毫秒 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-credentials-local)完整列出了所有受支持字段及其 JSDoc，是这些信息的真源。
+生成的[配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-credentials-local)完整列出了所有受支持字段及其 JSDoc，是这些信息的真源。
 
 ### 存储与移除密钥
 
 用 `set` 保存密钥、用 `unset` 移除、用 `describe` 检查密钥是否已配置——与凭据 API 提供的操作相同：
 
 ```ts
-import type { Context } from '@deepseek-ai/cordis'
-import { credentialRef } from '@deepseek-ai/dsh-credentials'
+import type { Context } from '@mutantcat/cordis'
+import { credentialRef } from '@mutantcat/dsh-credentials'
 
 declare const ctx: Context
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import type { ShellProcess } from '@deepseek-ai/dsh-shell'
+import type { ShellProcess } from '@mutantcat/dsh-shell'
 import { processJob } from '../src/background.ts'
 
 function processHandle() {

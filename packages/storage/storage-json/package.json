@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-storage-json",
+  "name": "@mutantcat/dsh-storage-json",
   "description": "JSON file KV storage backend for the DeepSeek Harness storage hub",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,14 +27,14 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-storage": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-storage": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-storage": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-storage": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

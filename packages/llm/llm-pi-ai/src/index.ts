@@ -11,7 +11,7 @@
  *
  * ```yaml
  * - id: llm
- *   name: '@deepseek-ai/dsh-llm-pi-ai'
+ *   name: '@mutantcat/dsh-llm-pi-ai'
  *   config:
  *     providers:
  *       # Catalog route: everything but the credential comes from pi-ai.
@@ -52,16 +52,16 @@
  *               max: ultra
  * ```
  *
- * @module @deepseek-ai/dsh-llm-pi-ai
+ * @module @mutantcat/dsh-llm-pi-ai
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import { launchEnvironmentOf } from '@deepseek-ai/dsh-launch-environment'
-import { assertUsableApiKey, LlmError, resolveImageAttachmentAccess } from '@deepseek-ai/dsh-llm'
-import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, LlmConfigurableProvider } from '@deepseek-ai/dsh-llm'
-import type {} from '@deepseek-ai/dsh-fs'
-import type {} from '@deepseek-ai/dsh-settings'
-import { deepEqualJson } from '@deepseek-ai/dsh-util-values'
+import type { Context } from '@mutantcat/cordis'
+import { launchEnvironmentOf } from '@mutantcat/dsh-launch-environment'
+import { assertUsableApiKey, LlmError, resolveImageAttachmentAccess } from '@mutantcat/dsh-llm'
+import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, LlmConfigurableProvider } from '@mutantcat/dsh-llm'
+import type {} from '@mutantcat/dsh-fs'
+import type {} from '@mutantcat/dsh-settings'
+import { deepEqualJson } from '@mutantcat/dsh-util-values'
 import { PiAiAdapter } from './adapter.ts'
 import { authContextFrom, credentialStoreFrom } from './auth.ts'
 import { catalogProviderIds } from './catalog.ts'

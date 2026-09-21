@@ -1,7 +1,7 @@
 /** One sentence per write outcome, and the carrier's own words for anything else. */
 import { describe, expect, it } from 'vitest'
-import type { RemoteFailure } from '@deepseek-ai/dsh-api-remotes/client'
-import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
+import type { RemoteFailure } from '@mutantcat/dsh-api-remotes/client'
+import type { TranslateNS } from '@mutantcat/dsh-client-ui-slots'
 // The namespace declaration `TranslateNS<'sidebarEditor'>` resolves against.
 import type {} from '../src/client/index.ts'
 import { writeFailureLine } from '../src/client/editor/write-failure.ts'

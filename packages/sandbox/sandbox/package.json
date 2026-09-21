@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-sandbox",
+  "name": "@mutantcat/dsh-sandbox",
   "description": "Abstract process-sandbox seam (ctx.sandbox) for the DeepSeek Harness: same-world confinement vocabulary and the SandboxProvider contract",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,16 +27,16 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-util-values": "workspace:^"
+    "@mutantcat/dsh-util-values": "workspace:^"
   }
 }

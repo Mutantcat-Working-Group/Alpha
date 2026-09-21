@@ -3,7 +3,7 @@ description: "The managed DSH_* shell environment for users and maintainers choo
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-shell-env
+# @mutantcat/dsh-shell-env
 
 English | [中文](README.zh.md)
 
@@ -36,8 +36,8 @@ Every call receives `DSH_HOME` (the absolute Harness home), `DSH_SHELL=1`, and, 
 Other plugins contribute facts by registering a contributor with a stable name, the complete set of `DSH_*` keys it may return, a description per key, and a resolver that computes values for one execution:
 
 ```ts
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-shell-env'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-shell-env'
 
 export const inject = ['shellEnv']
 
@@ -60,7 +60,7 @@ The single config field picks the home directory exposed as `DSH_HOME`; the defa
 |---|---|---|
 | `dshHome` | `$DSH_HOME`, then `~/.dsh` | Absolute Harness home exposed as `DSH_HOME` |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-shell-env) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-shell-env) is the exhaustive source for every accepted field and its JSDoc.
 
 ### What can go wrong
 
@@ -107,7 +107,7 @@ Read these pages when the package-level contract is not enough. They move from t
 - [tool-bash](../tool-bash/README.md) — the bash tool that consumes this environment.
 - [tool-pwsh](../tool-pwsh/README.md) — the pwsh tool that consumes this environment.
 - [home paths package](../../util/home-paths/README.md) — how `DSH_HOME` is resolved.
-- [Generated configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-shell-env) — every accepted config field and its source declaration.
+- [Generated configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-shell-env) — every accepted config field and its source declaration.
 
 -----
 

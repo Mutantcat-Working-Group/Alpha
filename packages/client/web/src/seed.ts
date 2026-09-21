@@ -10,11 +10,11 @@ import * as React from 'react'
 import * as ReactJsxRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
-import * as Cordis from '@deepseek-ai/cordis'
-import * as ClientStore from '@deepseek-ai/dsh-client-store'
-import * as UiSlots from '@deepseek-ai/dsh-client-ui-slots'
-import * as UiPrimitives from '@deepseek-ai/dsh-client-ui-primitives'
-import * as UiDockkit from '@deepseek-ai/dsh-client-ui-dockkit'
+import * as Cordis from '@mutantcat/cordis'
+import * as ClientStore from '@mutantcat/dsh-client-store'
+import * as UiSlots from '@mutantcat/dsh-client-ui-slots'
+import * as UiPrimitives from '@mutantcat/dsh-client-ui-primitives'
+import * as UiDockkit from '@mutantcat/dsh-client-ui-dockkit'
 import type { PlatformModule } from './platform.ts'
 
 /**
@@ -30,10 +30,10 @@ export function getStaticModules(): Record<string, unknown> {
     'react/jsx-runtime': ReactJsxRuntime,
     'react-dom': ReactDom,
     'react-dom/client': ReactDomClient,
-    '@deepseek-ai/cordis': Cordis,
-    '@deepseek-ai/dsh-client-store': ClientStore,
-    '@deepseek-ai/dsh-client-ui-slots': UiSlots,
-    '@deepseek-ai/dsh-client-ui-primitives': UiPrimitives,
-    '@deepseek-ai/dsh-client-ui-dockkit': UiDockkit,
+    '@mutantcat/cordis': Cordis,
+    '@mutantcat/dsh-client-store': ClientStore,
+    '@mutantcat/dsh-client-ui-slots': UiSlots,
+    '@mutantcat/dsh-client-ui-primitives': UiPrimitives,
+    '@mutantcat/dsh-client-ui-dockkit': UiDockkit,
   } satisfies Record<PlatformModule, unknown>
 }

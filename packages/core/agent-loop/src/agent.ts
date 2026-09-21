@@ -14,24 +14,24 @@ import type {
   InboxTarget,
   PreStepDecision,
   RequestErrorAction,
-} from '@deepseek-ai/dsh-agent'
-import { agentEvents, assembleContextFor } from '@deepseek-ai/dsh-agent'
-import type { GenerateOptions, LlmCallConfig, Message, PreparedLlmCall } from '@deepseek-ai/dsh-llm'
+} from '@mutantcat/dsh-agent'
+import { agentEvents, assembleContextFor } from '@mutantcat/dsh-agent'
+import type { GenerateOptions, LlmCallConfig, Message, PreparedLlmCall } from '@mutantcat/dsh-llm'
 import {
   LlmError,
   createAssistantMessage,
   errorChain,
   markAgentLoopRequest,
-} from '@deepseek-ai/dsh-llm'
-import { deepFreeze } from '@deepseek-ai/dsh-util-values'
-import type { Scope } from '@deepseek-ai/dsh-scope'
-import { createScope } from '@deepseek-ai/dsh-scope'
-import type { EpochHeader, RequestContext, Session, SessionId, TurnEndReason, UserMessage } from '@deepseek-ai/dsh-session'
-import { canonicalHeader, headerEquals } from '@deepseek-ai/dsh-session'
-import { joinContextSections, renderContextSections, renderPrompt } from '@deepseek-ai/dsh-system-prompt'
-import type { PromptAssembly } from '@deepseek-ai/dsh-system-prompt'
-import type {} from '@deepseek-ai/dsh-session-projection'
-import type { Context } from '@deepseek-ai/cordis'
+} from '@mutantcat/dsh-llm'
+import { deepFreeze } from '@mutantcat/dsh-util-values'
+import type { Scope } from '@mutantcat/dsh-scope'
+import { createScope } from '@mutantcat/dsh-scope'
+import type { EpochHeader, RequestContext, Session, SessionId, TurnEndReason, UserMessage } from '@mutantcat/dsh-session'
+import { canonicalHeader, headerEquals } from '@mutantcat/dsh-session'
+import { joinContextSections, renderContextSections, renderPrompt } from '@mutantcat/dsh-system-prompt'
+import type { PromptAssembly } from '@mutantcat/dsh-system-prompt'
+import type {} from '@mutantcat/dsh-session-projection'
+import type { Context } from '@mutantcat/cordis'
 import { ReactLoopInbox } from './inbox.ts'
 import { RuntimeContextProjection } from './runtime-context.ts'
 import { AssistantStreamAttempt } from './assistant-stream.ts'

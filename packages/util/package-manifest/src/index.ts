@@ -1,6 +1,6 @@
 /**
  * Public package manifest types, with no runtime exports.
- * @module @deepseek-ai/dsh-package-manifest
+ * @module @mutantcat/dsh-package-manifest
  */
 
 export type {

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-projection-cache",
+  "name": "@mutantcat/dsh-session-projection-cache",
   "description": "Persisted projection cache (ctx.sessionProjectionCache): durable per-session checkpoint records on the session_projcache storage domain (per-record layout), throttled write-behind, and the cached listing read",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,22 +27,22 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-util-values": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-storage-domain": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-storage-domain": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-storage": "workspace:^",
-    "@deepseek-ai/dsh-storage-domain": "workspace:^",
-    "@deepseek-ai/dsh-storage-json": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-storage": "workspace:^",
+    "@mutantcat/dsh-storage-domain": "workspace:^",
+    "@mutantcat/dsh-storage-json": "workspace:^"
   }
 }

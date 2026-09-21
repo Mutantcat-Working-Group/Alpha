@@ -6,8 +6,8 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium, type Browser, type Page } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import type {} from '@deepseek-ai/dsh-workspace-changes'
-import { deriveReplayScript, parseSessionLog } from '@deepseek-ai/dsh-llm-replay'
+import type {} from '@mutantcat/dsh-workspace-changes'
+import { deriveReplayScript, parseSessionLog } from '@mutantcat/dsh-llm-replay'
 import {
   assertFinalWorkspaceSnapshot, captureExpandedTurnProcessAria, compareOrRefreshGolden,
   fixtureUserPrompts, launchWebScaffold, recordFixture, watchConsole,

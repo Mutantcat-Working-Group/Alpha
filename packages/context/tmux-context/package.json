@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tmux-context",
+  "name": "@mutantcat/dsh-tmux-context",
   "description": "Opt-in durable per-step context with this agent's tmux pane and window location",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,24 +27,24 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-shell": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-shell": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^"
   }
 }

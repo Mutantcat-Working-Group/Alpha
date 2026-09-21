@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-reference",
+  "name": "@mutantcat/dsh-session-reference",
   "description": "Cross-session snapshot references and durable untrusted model context (ctx.sessionReferenceResolver)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -44,56 +44,56 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-util-values": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-compaction": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-output-retention": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-session-projection-cache": "workspace:^",
-    "@deepseek-ai/dsh-session-query": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-spill": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-compaction": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-output-retention": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-session-projection-cache": "workspace:^",
+    "@mutantcat/dsh-session-query": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-spill": "workspace:^",
+    "@mutantcat/dsh-subagent": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/dsh-spill": {
+    "@mutantcat/dsh-spill": {
       "optional": true
     },
-    "@deepseek-ai/dsh-session-projection-cache": {
+    "@mutantcat/dsh-session-projection-cache": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-compaction": "workspace:^",
-    "@deepseek-ai/dsh-fs-local": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-output-retention": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-session-projection-cache": "workspace:^",
-    "@deepseek-ai/dsh-session-query": "workspace:^",
-    "@deepseek-ai/dsh-session-query-sqlite": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-spill": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-spill-local": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tool-fs": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-compaction": "workspace:^",
+    "@mutantcat/dsh-fs-local": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-output-retention": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-session-projection-cache": "workspace:^",
+    "@mutantcat/dsh-session-query": "workspace:^",
+    "@mutantcat/dsh-session-query-sqlite": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-spill": "workspace:^",
+    "@mutantcat/dsh-subagent": "workspace:^",
+    "@mutantcat/dsh-spill-local": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tool-fs": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^"
   }
 }

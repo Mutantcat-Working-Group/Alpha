@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-log-deepseek",
+  "name": "@mutantcat/dsh-session-log-deepseek",
   "description": "Incremental lossless session-log request extension for the official DeepSeek LLM API",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -37,28 +37,28 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-util-values": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-deepseek-llm-api-extensions": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-deepseek-llm-api-extensions": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-command-feedback": "workspace:^",
-    "@deepseek-ai/dsh-deepseek-llm-api-extensions": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-llm-mock-server": "workspace:^",
-    "@deepseek-ai/dsh-message-feedback": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-command-feedback": "workspace:^",
+    "@mutantcat/dsh-deepseek-llm-api-extensions": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-llm-deepseek": "workspace:^",
+    "@mutantcat/dsh-llm-mock-server": "workspace:^",
+    "@mutantcat/dsh-message-feedback": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-persistence-jsonl": "workspace:^"
   }
 }

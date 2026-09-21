@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-desktop-host",
+  "name": "@mutantcat/dsh-desktop-host",
   "description": "Private Node-mode host process for the Electron desktop application",
   "version": "1.0.20260921",
   "private": true,
@@ -10,15 +10,15 @@
     "lib/index.js"
   ],
   "dependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-app-boot": "workspace:^",
-    "@deepseek-ai/dsh-client-connection": "workspace:^",
-    "@deepseek-ai/dsh-host-webserver": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-jobs": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-skill-office": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-app-boot": "workspace:^",
+    "@mutantcat/dsh-client-connection": "workspace:^",
+    "@mutantcat/dsh-host-webserver": "workspace:^",
+    "@mutantcat/dsh-home-paths": "workspace:^",
+    "@mutantcat/dsh-jobs": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-skill-office": "workspace:^"
   }
 }

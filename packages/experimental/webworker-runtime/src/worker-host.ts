@@ -19,11 +19,11 @@
  * image, so entry mounting, the activation audit, and its diagnostics are the
  * same code the Node deployment runs. Only the module seam and the command line
  * are supplied from here.
- * @module @deepseek-ai/dsh-experimental-webworker-runtime/src/worker-host
+ * @module @mutantcat/dsh-experimental-webworker-runtime/src/worker-host
  */
 import { setActiveModuleLoader, WorkerModuleLoader, type StaticModuleFactory } from './module-system/module-loader.ts'
-import type { TypertGateway } from '@deepseek-ai/dsh-api-gateway'
-import type { HostConnectionHandle } from '@deepseek-ai/dsh-client-connection'
+import type { TypertGateway } from '@mutantcat/dsh-api-gateway'
+import type { HostConnectionHandle } from '@mutantcat/dsh-client-connection'
 import type { AlsCausality } from './polyfill/async-context/als-runtime.ts'
 import { dirname, join } from './module-system/posix-path.ts'
 import { installProcessGlobal } from './node/globals/process.ts'
@@ -218,7 +218,7 @@ export function createWorkerHost(options: WorkerHostOptions): WorkerHost {
       modules = loader
 
       const require = loader.requireFrom(dirname(configPath))
-      const appBoot = require('@deepseek-ai/dsh-app-boot') as {
+      const appBoot = require('@mutantcat/dsh-app-boot') as {
         boot(
           binName: string,
           configPath: string,
@@ -226,7 +226,7 @@ export function createWorkerHost(options: WorkerHostOptions): WorkerHost {
           prepare: (ctx: HostContext) => void,
         ): Promise<HostContext>
       }
-      const cmdline = require('@deepseek-ai/dsh-cmdline') as {
+      const cmdline = require('@mutantcat/dsh-cmdline') as {
         provideCmdline(ctx: unknown, host: { args: readonly string[]; exit: (code: number) => void }): void
       }
 
@@ -302,7 +302,7 @@ export interface LogRenderer {
  * @param require - Image resolver, for cordis's own message renderer.
  */
 export function installLogSink(ctx: HostContext, require: (specifier: string) => unknown): void {
-  const { Logger } = require('@deepseek-ai/cordis') as { Logger: LogRenderer }
+  const { Logger } = require('@mutantcat/cordis') as { Logger: LogRenderer }
   const exporter: LogExporter = {
     colors: false,
     // cordis compares `exporter.levels ?? logger.level ?? INFO` against the
@@ -375,7 +375,7 @@ function bootPatches(
     rows = JSON.parse(text)
   } else {
     // The roster's `!!js` scalars need Include's own YAML dialect.
-    const include = loader.load(loader.resolve('@deepseek-ai/cordis-plugin-include', root)) as { entryListSchema: unknown }
+    const include = loader.load(loader.resolve('@mutantcat/cordis-plugin-include', root)) as { entryListSchema: unknown }
     const yaml = loader.load(loader.resolve('js-yaml', root)) as { load(source: string, options: { schema: unknown }): unknown }
     rows = yaml.load(text, { schema: include.entryListSchema })
   }

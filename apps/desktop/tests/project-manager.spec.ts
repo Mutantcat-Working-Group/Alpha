@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resolveDesktopPaths } from '../src/paths.ts'
 import { DesktopProjectManager } from '../src/project-manager.ts'
-import { readProfilePlugins } from '@deepseek-ai/dsh-app-boot'
+import { readProfilePlugins } from '@mutantcat/dsh-app-boot'
 import { runtimeFixture } from './runtime-fixture.ts'
 
 const roots: string[] = []
@@ -29,7 +29,7 @@ function seedPlugin(manager: DesktopProjectManager): void {
 }
 function plugins(manager: DesktopProjectManager) {
   return readProfilePlugins({ binName: 'dsh', profileDir: manager.paths.profile,
-    installAnchor: join(manager.runtime.dsh, 'node_modules/@deepseek-ai/dsh/package.json') }).dependencies
+    installAnchor: join(manager.runtime.dsh, 'node_modules/@mutantcat/dsh/package.json') }).dependencies
     .map(({ name, version, enabled }) => ({ name, version, enabled }))
 }
 function setup(): { root: string; manager: DesktopProjectManager } {
@@ -46,7 +46,7 @@ describe('desktop external plugin profile', () => {
   it('cleans application packages only when preparing a production launch', async () => {
     const { manager } = setup()
     await manager.applyRelease()
-    const name = '@deepseek-ai/dsh-web-app'
+    const name = '@mutantcat/dsh-web-app'
     const path = join(manager.paths.profile, 'node_modules', name)
     mkdirSync(path, { recursive: true })
     await manager.applyRelease()
@@ -100,7 +100,7 @@ describe('desktop external plugin profile', () => {
     }
     expect(manifest.dependencies.plugin).toBe('1.0.0')
     expect(manifest.dsh.profile.bundles).not.toContain('plugin')
-    expect(manifest.dsh.profile.bundles).toContain('@deepseek-ai/dsh-web-app')
+    expect(manifest.dsh.profile.bundles).toContain('@mutantcat/dsh-web-app')
     await manager.applyRelease()
     expect(readFileSync(patch, 'utf8')).toContain('[]')
   })
@@ -138,7 +138,7 @@ describe('desktop external plugin profile', () => {
     await manager.applyRelease()
     const path = join(target, 'pnpm-workspace.yaml')
     const defaults = readFileSync(path, 'utf8')
-    writeFileSync(path, `${defaults}strictDepBuilds: true\nallowBuilds:\n  node-pty: true\n  koffi: true\n  fs-ext: true\n  "@deepseek-ai/dsh-subprocess-local": true\n  '@google/genai': false\n  protobufjs: false\n  node-addon-require-builtin: false\n`)
+    writeFileSync(path, `${defaults}strictDepBuilds: true\nallowBuilds:\n  node-pty: true\n  koffi: true\n  fs-ext: true\n  "@mutantcat/dsh-subprocess-local": true\n  '@google/genai': false\n  protobufjs: false\n  node-addon-require-builtin: false\n`)
     await manager.applyRelease()
     expect(readFileSync(path, 'utf8')).toBe(defaults)
     const custom = `${defaults}allowBuilds:\n  my-plugin: true\n`

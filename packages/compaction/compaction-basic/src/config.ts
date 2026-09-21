@@ -1,11 +1,11 @@
 /**
  * Load-time validation and routed-model policy resolution for compaction-basic.
  *
- * @module @deepseek-ai/dsh-compaction-basic/config
+ * @module @mutantcat/dsh-compaction-basic/config
  */
 
-import type { LlmCallConfig } from '@deepseek-ai/dsh-llm'
-import { deepFreeze } from '@deepseek-ai/dsh-util-values'
+import type { LlmCallConfig } from '@mutantcat/dsh-llm'
+import { deepFreeze } from '@mutantcat/dsh-util-values'
 import type {
   BasicCompactionConfig,
   CompactionPolicyConfig,

@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { Context } from '@deepseek-ai/cordis'
-import SessionStore from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import { Context } from '@mutantcat/cordis'
+import SessionStore from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
 import {
   SessionLogOffset,
   SessionSeq,
   SESSION_FORMAT_VERSION,
   SessionId,
-} from '@deepseek-ai/dsh-session'
-import type { SessionEvent, SessionHeader } from '@deepseek-ai/dsh-session'
+} from '@mutantcat/dsh-session'
+import type { SessionEvent, SessionHeader } from '@mutantcat/dsh-session'
 import {
   subagentCatalogProjectionDefinition,
 } from '../src/catalog.ts'

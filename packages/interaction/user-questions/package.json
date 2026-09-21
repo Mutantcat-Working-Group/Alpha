@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-user-questions",
+  "name": "@mutantcat/dsh-user-questions",
   "description": "Abstract user-questions seam (ctx.userQuestions) for asking the human during agent runs",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -32,15 +32,15 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

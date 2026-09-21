@@ -1,8 +1,8 @@
 /** Map system snapshots and conversation turns to Messages using the configured route capability. */
 
-import { LlmError, requestImageHandleText } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, GenerateOptions, ImageAttachmentAccessResolver, Message } from '@deepseek-ai/dsh-llm'
-import type { ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
+import { LlmError, requestImageHandleText } from '@mutantcat/dsh-llm'
+import type { ContentBlock, GenerateOptions, ImageAttachmentAccessResolver, Message } from '@mutantcat/dsh-llm'
+import type { ImageAttachmentRef, RequestImageAttachment } from '@mutantcat/dsh-attachment'
 import type { DeepSeekConnectionOptions as Connection } from '../../common/types.ts'
 import type { DeepSeekFileId } from '../../common/file-id.ts'
 import { readReplay } from './replay.ts'

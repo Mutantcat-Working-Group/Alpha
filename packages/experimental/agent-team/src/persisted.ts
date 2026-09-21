@@ -1,7 +1,7 @@
 /** Short-lived read-handle access to persisted Team member Sessions. */
 
-import type { SessionEvent, SessionHeader, SessionId , SessionLogOffset } from '@deepseek-ai/dsh-session'
-import type { SessionPersistence } from '@deepseek-ai/dsh-session-persistence'
+import type { SessionEvent, SessionHeader, SessionId , SessionLogOffset } from '@mutantcat/dsh-session'
+import type { SessionPersistence } from '@mutantcat/dsh-session-persistence'
 
 /** One persisted Session's detached header and complete committed event log. */
 export interface PersistedSessionView {

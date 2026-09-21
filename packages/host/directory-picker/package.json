@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-host-directory-picker",
+  "name": "@mutantcat/dsh-host-directory-picker",
   "description": "Abstract workspace-directory picking seam (ctx.directoryPicker) for the DeepSeek Harness web GUI host",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -32,9 +32,9 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   }
 }

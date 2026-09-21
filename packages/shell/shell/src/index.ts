@@ -1,12 +1,12 @@
 /**
  * Service Definition for the `ctx.shell` capability seam, covering foreground commands and background process
  * handles. Job ids, ownership, polling, and notices belong to
- * `@deepseek-ai/dsh-jobs`, keeping executors independent of sessions.
- * @module @deepseek-ai/dsh-shell
+ * `@mutantcat/dsh-jobs`, keeping executors independent of sessions.
+ * @module @mutantcat/dsh-shell
  */
 
-import { Context, Service } from '@deepseek-ai/cordis'
-import type { SandboxMode } from '@deepseek-ai/dsh-sandbox'
+import { Context, Service } from '@mutantcat/cordis'
+import type { SandboxMode } from '@mutantcat/dsh-sandbox'
 import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from './types.ts'
 
 /**
@@ -36,7 +36,7 @@ export type {
 export { parseExitStatus } from './render.ts'
 export type { ParsedExitStatus } from './render.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     shell: ShellExecutor
   }

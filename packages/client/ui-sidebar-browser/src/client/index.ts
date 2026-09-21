@@ -1,9 +1,9 @@
 /** Register the HTTP(S) Browser tab type in the right Sidebar. */
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type {} from '@deepseek-ai/dsh-client-ui-session/client'
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-client-locale/client'
+import type {} from '@mutantcat/dsh-client-ui-renderer/client'
+import type {} from '@mutantcat/dsh-client-ui-session/client'
+import type {} from '@mutantcat/dsh-client-ui-sidebar-right/client'
 import { BrowserBody } from './view/BrowserBody.tsx'
 import { BrowserTitle } from './view/BrowserTitle.tsx'
 import { createBrowserControllers } from './browser/BrowserController.ts'
@@ -19,7 +19,7 @@ export type { SidebarBrowserKey } from './locales.ts'
 export type { BrowserState } from './browser/store.ts'
 export type { BrowserAddressFailure, BrowserAddressResult, BrowserTarget } from './browser/url.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
+declare module '@mutantcat/dsh-client-ui-sidebar-right/client' {
   interface SidebarRightTabParamsMap {
     /** Optional initial Browser URL. */
     browser: { readonly url?: string }

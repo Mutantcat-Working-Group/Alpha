@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 import { zstdDecompress } from 'node:zlib'
-import { resolveExampleLaunch } from '@deepseek-ai/dsh-loader-smoke'
+import { resolveExampleLaunch } from '@mutantcat/dsh-loader-smoke'
 import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
 
@@ -71,7 +71,7 @@ describe('Python SDK dsh profile keyless smoke', () => {
     if (editorEnabled) await writeFile(editorPatch, [
       '- insert:',
       '    - id: tool-str-replace-editor',
-      "      name: '@deepseek-ai/dsh-tool-str-replace-editor'",
+      "      name: '@mutantcat/dsh-tool-str-replace-editor'",
       '',
     ].join('\n'))
     const modelRequests: Record<string, unknown>[] = []
@@ -295,7 +295,7 @@ describe('Python SDK dsh profile keyless smoke', () => {
         await readFile(join(root, '.dsh', 'profiles', 'sdk-minimal', 'package.json'), 'utf8'),
       ) as { dsh?: { profile?: { bundles?: string[] } } }
       expect(profile.dsh?.profile).toEqual({
-        bundles: ['@deepseek-ai/dsh-sdk-minimal'],
+        bundles: ['@mutantcat/dsh-sdk-minimal'],
       })
       expect(modelRequests[0]?.tools).toEqual(expect.any(Array))
       const tools = modelRequests[0]?.tools as { name?: string }[]
@@ -401,7 +401,7 @@ describe('Python SDK dsh profile keyless smoke', () => {
       expect(exitCode, stderr).toBe(1)
       expect(stdout).toBe('')
       expect(stderr).toContain('startup failed:')
-      expect(stderr).toContain('sdk-jsonrpc-server (required)\n    Package: @deepseek-ai/dsh-sdk-jsonrpc-server\n    SyntaxError')
+      expect(stderr).toContain('sdk-jsonrpc-server (required)\n    Package: @mutantcat/dsh-sdk-jsonrpc-server\n    SyntaxError')
       expect(stderr).toContain('sometimes')
     } finally {
       await rm(root, { recursive: true, force: true })

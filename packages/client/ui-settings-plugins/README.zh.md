@@ -3,7 +3,7 @@ description: "dsh Web 客户端的「内置插件」设置分区，以及注册�
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-client-ui-settings-plugins
+# @mutantcat/dsh-client-ui-settings-plugins
 
 [English](README.md) | 中文
 

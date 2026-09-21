@@ -2,23 +2,23 @@
 
 import { Readable } from 'node:stream'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { brandString } from '@deepseek-ai/dsh-brand'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
+import { Context } from '@mutantcat/cordis'
+import { brandString } from '@mutantcat/dsh-brand'
+import AgentRegistry from '@mutantcat/dsh-agent'
 import type {
   Agent,
   AgentHandle,
   AssistantStreamFrame,
   CreateAgentOptions,
   ResumeAgentOptions,
-} from '@deepseek-ai/dsh-agent'
-import AgentDefaultModelConfig from '@deepseek-ai/dsh-agent-default-model'
-import { LlmAttemptId, ToolCallId, createAssistantMessage, createToolResultMessage, type StreamChunk } from '@deepseek-ai/dsh-llm'
-import SessionStore from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import type { Session, SessionId, UserMessage } from '@deepseek-ai/dsh-session'
-import { SessionQueryError } from '@deepseek-ai/dsh-session-query'
-import { createInboxStub } from '@deepseek-ai/dsh-agent-loop-testkit'
+} from '@mutantcat/dsh-agent'
+import AgentDefaultModelConfig from '@mutantcat/dsh-agent-default-model'
+import { LlmAttemptId, ToolCallId, createAssistantMessage, createToolResultMessage, type StreamChunk } from '@mutantcat/dsh-llm'
+import SessionStore from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import type { Session, SessionId, UserMessage } from '@mutantcat/dsh-session'
+import { SessionQueryError } from '@mutantcat/dsh-session-query'
+import { createInboxStub } from '@mutantcat/dsh-agent-loop-testkit'
 import { apply, Config } from '../src/index.ts'
 import { internals } from '../src/runner-internals.ts'
 

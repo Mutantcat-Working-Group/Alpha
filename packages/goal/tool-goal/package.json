@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-goal",
+  "name": "@mutantcat/dsh-tool-goal",
   "description": "Model-facing same-session goal tools with execution-time authority checks",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,29 +27,29 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-goal": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-goal": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-goal": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^"
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-goal": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^"
   }
 }

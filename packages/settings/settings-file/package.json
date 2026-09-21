@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-settings-file",
+  "name": "@mutantcat/dsh-settings-file",
   "description": "File-backed settings provider (settings.yaml) for the DeepSeek Harness",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,21 +27,21 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-atomic-write": "workspace:^",
+    "@mutantcat/dsh-home-paths": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-util-values": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "chokidar": "^4.0.3",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-atomic-write": "workspace:^",
+    "@mutantcat/dsh-home-paths": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^"
   }
 }

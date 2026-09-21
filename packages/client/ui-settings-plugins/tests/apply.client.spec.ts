@@ -1,14 +1,14 @@
 /** What the browser half registers, and that it all leaves with the fiber. */
 
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
-import { RemoteError, TestRemote } from '@deepseek-ai/dsh-client-test-runtime'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { apply as settingsApply, inject as settingsInject } from '@deepseek-ai/dsh-client-ui-settings/client'
-import { apply, inject } from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
-import type { PluginsSettingsSectionInjected } from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
+import { resolveSlotLabel } from '@mutantcat/dsh-client-ui-slots'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
+import { RemoteError, TestRemote } from '@mutantcat/dsh-client-test-runtime'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import { apply as settingsApply, inject as settingsInject } from '@mutantcat/dsh-client-ui-settings/client'
+import { apply, inject } from '@mutantcat/dsh-client-ui-settings-plugins/client'
+import type { PluginsSettingsSectionInjected } from '@mutantcat/dsh-client-ui-settings-plugins/client'
 import { SubagentModelSelectionCardController } from '../src/client/subagent-model-selection-card-controller.ts'
 import { apply as hostApply } from '../src/index.ts'
 

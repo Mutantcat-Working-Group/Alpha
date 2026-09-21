@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-webhook",
+  "name": "@mutantcat/dsh-webhook",
   "description": "Fire-and-forget webhook rule runtime that creates Workspace-backed DeepSeek Harness Sessions",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -37,33 +37,33 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-default-model": "workspace:^",
-    "@deepseek-ai/dsh-agent-presets": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-permission-presets": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-workspace": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-default-model": "workspace:^",
+    "@mutantcat/dsh-agent-presets": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-permission-presets": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-workspace": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-default-model": "workspace:^",
-    "@deepseek-ai/dsh-agent-presets": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-permission-presets": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-workspace": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-default-model": "workspace:^",
+    "@mutantcat/dsh-agent-presets": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-permission-presets": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-workspace": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-util-values": "workspace:^"
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^"
   }
 }

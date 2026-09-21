@@ -1,9 +1,9 @@
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context } from '@mutantcat/cordis'
 import type {
   ConversationMatch, ConversationNodeContext, ConversationNodeDefinition, RunningToolCall,
   ToolCallBlock, ToolResultNode,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type {} from '@deepseek-ai/dsh-tools/types'
+} from '@mutantcat/dsh-client-ui-conversation/client'
+import type {} from '@mutantcat/dsh-tools/types'
 import { trajectoryNode } from './trajectory-definition-common.ts'
 
 /* jscpd:ignore-start -- Target-owned Definitions intentionally keep their event

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-workflow",
+  "name": "@mutantcat/dsh-workflow",
   "description": "Workflow capability seam: ctx.workflowEngine service, run vocabulary, and workflow/* events",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -37,19 +37,19 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

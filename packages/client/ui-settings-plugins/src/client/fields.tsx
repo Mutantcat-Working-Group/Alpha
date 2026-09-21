@@ -7,7 +7,7 @@
  */
 
 import { useState, type ReactNode } from 'react'
-import { IconInfoOutline14, Tag } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconInfoOutline14, Tag } from '@mutantcat/dsh-client-ui-primitives'
 import css from './fields.module.css'
 
 /** What every field control needs regardless of its value type. */

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-stats",
+  "name": "@mutantcat/dsh-session-stats",
   "description": "Whole-log conversation counts and wall times projection (sessionStats) for the DeepSeek Harness",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -36,20 +36,20 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

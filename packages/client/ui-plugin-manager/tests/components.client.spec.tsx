@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { PluginEntryId } from '@deepseek-ai/dsh-api-remotes/client'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type { PluginEntryId } from '@mutantcat/dsh-api-remotes/client'
+import { bindSnapshotSelector } from '@mutantcat/dsh-client-test-runtime'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
 import type { ReactNode } from 'react'
 import { PluginManagerPage } from '../src/client/PluginManagerPage.tsx'
 import type { PluginManagerPageProps } from '../src/client/PluginManagerPage.tsx'
@@ -122,19 +122,19 @@ describe('PluginManagerPage', () => {
       packages: [
         pkg({ description: 'A sidebar.' }),
         pkg({ name: 'dsh-broken', enabled: false, error: { code: 'not-bundle' } }),
-        pkg({ name: '@deepseek-ai/dsh-web-app', installed: false }),
+        pkg({ name: '@mutantcat/dsh-web-app', installed: false }),
         pkg({ name: 'dsh-protected', readOnlyReason: 'management-required' }),
         pkg({ name: '@acme/dsh-tool', enabled: false }),
         // Selected by the profile but not a bundle: a problem the person can switch off, in the profile's own group.
         pkg({ name: 'dsh-selected', installed: false, error: { code: 'not-bundle' } }),
-        pkg({ name: '@deepseek-ai/dsh-experimental-agent-team-profile', installed: false, optional: true, enabled: false }),
+        pkg({ name: '@mutantcat/dsh-experimental-agent-team-profile', installed: false, optional: true, enabled: false }),
       ],
       busy: ['dsh-protected'],
     })
     const cards = screen.getAllByRole('listitem')
     // The Official group comes first.
     expect(cards.map(card => card.getAttribute('data-plugin-package'))).toEqual([
-      '@deepseek-ai/dsh-experimental-agent-team-profile', 'dsh-better-sidebar', 'dsh-broken', 'dsh-protected', '@acme/dsh-tool', 'dsh-selected',
+      '@mutantcat/dsh-experimental-agent-team-profile', 'dsh-better-sidebar', 'dsh-broken', 'dsh-protected', '@acme/dsh-tool', 'dsh-selected',
     ])
     expect(cards.map(card => card.getAttribute('data-plugin-status'))).toEqual(['disabled', 'running', 'problem', 'running', 'disabled', 'problem'])
     // Each group heads with its title and its bare count; the official bundle carries its beta tag, no official tag.
@@ -159,27 +159,27 @@ describe('PluginManagerPage', () => {
     renderTab({
       packages: [
         ...[
-          '@deepseek-ai/dsh-base',
-          '@deepseek-ai/dsh-web-app',
-          '@deepseek-ai/dsh-headless',
-          '@deepseek-ai/dsh-sdk-app',
-          '@deepseek-ai/dsh-acp-app',
-          '@deepseek-ai/dsh-sdk-minimal',
+          '@mutantcat/dsh-base',
+          '@mutantcat/dsh-web-app',
+          '@mutantcat/dsh-headless',
+          '@mutantcat/dsh-sdk-app',
+          '@mutantcat/dsh-acp-app',
+          '@mutantcat/dsh-sdk-minimal',
         ].map(name => pkg({ name })),
         pkg({ name: '@acme/dsh-base', readOnlyReason: 'management-required' }),
         pkg({ name: 'dsh-better-sidebar' }),
-        pkg({ name: '@deepseek-ai/dsh-experimental-agent-team-profile', installed: false, optional: true }),
+        pkg({ name: '@mutantcat/dsh-experimental-agent-team-profile', installed: false, optional: true }),
       ],
     })
     expect(screen.getAllByRole('listitem').map(card => card.getAttribute('data-plugin-package'))).toEqual([
-      '@deepseek-ai/dsh-experimental-agent-team-profile', '@acme/dsh-base', 'dsh-better-sidebar',
+      '@mutantcat/dsh-experimental-agent-team-profile', '@acme/dsh-base', 'dsh-better-sidebar',
     ])
     expect([...document.querySelectorAll('[data-plugin-count]')].map(count => count.textContent)).toEqual(['1', '2'])
   })
 
   it.each([false, true])('shows an empty list for built-in bundles with errors and installed=%s', (installed) => {
     renderTab({
-      packages: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'].map(name => pkg({
+      packages: ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'].map(name => pkg({
         name, installed, error: { code: 'operation-error', diagnostic: 'Unreadable bundle' },
       })),
     })
@@ -190,14 +190,14 @@ describe('PluginManagerPage', () => {
 
   it('opens an official bundle\'s page with its beta tag and no uninstall, and switches it on', () => {
     const { actions } = renderTab({
-      packages: [pkg({ name: '@deepseek-ai/dsh-experimental-agent-team-profile', installed: false, optional: true, enabled: false })],
+      packages: [pkg({ name: '@mutantcat/dsh-experimental-agent-team-profile', installed: false, optional: true, enabled: false })],
     })
     fireEvent.click(screen.getByRole('button', { name: en.openDetail.replace('{name}', en.builtinAgentTeamTitle) }))
     const detail = document.querySelector('[data-plugin-detail]') as HTMLElement
     expect(within(detail).getByText(en.statusBeta)).toBeTruthy()
     expect(within(detail).queryByRole('button', { name: en.uninstallLabel.replace('{name}', en.builtinAgentTeamTitle) })).toBeNull()
     fireEvent.click(within(detail).getByRole('switch', { name: en.enableToggle.replace('{name}', en.builtinAgentTeamTitle) }))
-    expect(actions.setEnabled).toHaveBeenCalledExactlyOnceWith('@deepseek-ai/dsh-experimental-agent-team-profile', true)
+    expect(actions.setEnabled).toHaveBeenCalledExactlyOnceWith('@mutantcat/dsh-experimental-agent-team-profile', true)
   })
 
   it.each([
@@ -205,7 +205,7 @@ describe('PluginManagerPage', () => {
     ['agent-team-web-profile', 'builtinAgentTeamWebTitle', 'builtinAgentTeamWebDescription'],
     ['auto-review', 'builtinAutoReviewTitle', 'builtinAutoReviewDescription'],
   ] as const)('localizes %s across cards, details, switches, and uninstall confirmation', (suffix, titleKey, descriptionKey) => {
-    const name = `@deepseek-ai/dsh-experimental-${suffix}`
+    const name = `@mutantcat/dsh-experimental-${suffix}`
     const { actions, set, setLanguage } = renderTab({ packages: [pkg({ name, description: 'Original metadata.' })] })
     const assertCard = (dict: typeof en) => {
       expect(screen.getByRole('button', { name: dict.openDetail.replace('{name}', dict[titleKey]) }).textContent).toBe(dict[titleKey])
@@ -245,13 +245,13 @@ describe('PluginManagerPage', () => {
 
     it('lists an official plugin after the official bundles with its summary, and opens its page', () => {
       renderTab(
-        { packages: [pkg({ name: '@deepseek-ai/dsh-experimental-agent-team-profile', installed: false, optional: true, enabled: false })] },
+        { packages: [pkg({ name: '@mutantcat/dsh-experimental-agent-team-profile', installed: false, optional: true, enabled: false })] },
         { items: [{ id: 'bash', label: 'Shell' }] },
         bodies,
       )
       const official = document.querySelector('[data-plugin-group="official"]') as HTMLElement
       expect(within(official).getAllByRole('listitem').map(card => card.getAttribute('data-plugin-item') ?? card.getAttribute('data-plugin-package')))
-        .toEqual(['@deepseek-ai/dsh-experimental-agent-team-profile', 'bash'])
+        .toEqual(['@mutantcat/dsh-experimental-agent-team-profile', 'bash'])
       expect(document.querySelector('[data-plugin-count]')?.textContent).toBe('2')
       expect(within(official).getByText('Limits every command.')).toBeTruthy()
       // An official plugin has no switch of its own: the Host composes it.

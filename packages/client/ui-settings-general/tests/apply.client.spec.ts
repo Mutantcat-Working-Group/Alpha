@@ -6,20 +6,20 @@
  * across Loader rebuilds of the declaring chain.
  */
 import { describe, expect, onTestFinished, vi } from 'vitest'
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-import { ok, type RemoteMock } from '@deepseek-ai/dsh-remote-mock'
-import type { SettingsNamespaceView } from '@deepseek-ai/dsh-settings/types'
-import { createClientTest, type TestClient, webApp } from '@deepseek-ai/dsh-client-test-runtime/src/assembly/index.ts'
-import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
-import { LOCALE_SETTINGS_NAMESPACE, LocaleSettingsSchema } from '@deepseek-ai/dsh-client-locale/src/locale-settings.ts'
+import type {} from '@mutantcat/dsh-client-ui-renderer/client'
+import { ok, type RemoteMock } from '@mutantcat/dsh-remote-mock'
+import type { SettingsNamespaceView } from '@mutantcat/dsh-settings/types'
+import { createClientTest, type TestClient, webApp } from '@mutantcat/dsh-client-test-runtime/src/assembly/index.ts'
+import { resolveSlotLabel } from '@mutantcat/dsh-client-ui-slots'
+import { LOCALE_SETTINGS_NAMESPACE, LocaleSettingsSchema } from '@mutantcat/dsh-client-locale/src/locale-settings.ts'
 import { inject } from '../src/client/index.ts'
 import { CloseLabel, HeaderContent, TriggerContent } from '../src/client/chrome.tsx'
 import { GeneralSection } from '../src/client/GeneralSection.tsx'
 import { SettingsDocumentAction } from '../src/client/SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from '../src/client/SettingsDocumentAction.tsx'
 
-const SELF = '@deepseek-ai/dsh-client-ui-settings-general'
-const SIDEBAR = '@deepseek-ai/dsh-client-ui-sidebar'
+const SELF = '@mutantcat/dsh-client-ui-settings-general'
+const SIDEBAR = '@mutantcat/dsh-client-ui-sidebar'
 const it = createClientTest({ roster: webApp })
 /** The whole roster's first boot pays the cold module transform of every plugin package. */
 const COLD_BOOT_TIMEOUT_MS = 60_000

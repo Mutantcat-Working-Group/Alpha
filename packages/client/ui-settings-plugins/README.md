@@ -3,7 +3,7 @@ description: "Built-in plugins settings section for the dsh web client, and the 
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-client-ui-settings-plugins
+# @mutantcat/dsh-client-ui-settings-plugins
 
 English | [中文](README.zh.md)
 

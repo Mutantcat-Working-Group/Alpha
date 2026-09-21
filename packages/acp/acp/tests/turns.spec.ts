@@ -1,7 +1,7 @@
-import { createUserMessage, type StreamChunk } from '@deepseek-ai/dsh-llm'
+import { createUserMessage, type StreamChunk } from '@mutantcat/dsh-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
-import { SessionId } from '@deepseek-ai/dsh-session'
+import { SessionId } from '@mutantcat/dsh-session'
 import {
   errorResponse,
   makeBridgeHarness,

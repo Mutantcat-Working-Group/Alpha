@@ -331,7 +331,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
   commandId: CommandId
   kind: 'success' | 'error'
   text?: string
-  sourceEventSeq?: import('@deepseek-ai/dsh-session/types').SessionSeq
+  sourceEventSeq?: import('@mutantcat/dsh-session/types').SessionSeq
 }
 ```
 
@@ -831,11 +831,11 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 /** Records that the configured endpoint accepted one delivery through `throughSeq`. */
 'session-log-deepseek/delivery-accepted': {
   /** Session identity the accepted delivery carried; inherited fork markers retain the parent's id. */
-  sessionId: import('@deepseek-ai/dsh-session/types').SessionId
+  sessionId: import('@mutantcat/dsh-session/types').SessionId
   /** Accepted Session format generation; absence identifies version 0. */
   sessionFormatVersion?: number
   /** Last canonical event included in the accepted request. */
-  throughSeq: import('@deepseek-ai/dsh-session/types').SessionSeq
+  throughSeq: import('@mutantcat/dsh-session/types').SessionSeq
 }
 ```
 

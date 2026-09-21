@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-subagent-spawn-in-process",
+  "name": "@mutantcat/dsh-subagent-spawn-in-process",
   "description": "In-process spawn subagent backend: runs a fresh child agent on ctx.agents",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,29 +27,29 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subagent-in-process-driver": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-subagent": "workspace:^",
+    "@mutantcat/dsh-subagent-in-process-driver": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-bash-local": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subagent-in-process-driver": "workspace:^",
-    "@deepseek-ai/dsh-tool-bash": "workspace:^",
-    "@deepseek-ai/dsh-tool-subagent": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^"
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-bash-local": "workspace:^",
+    "@mutantcat/dsh-subprocess-local": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-llm-deepseek": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-subagent": "workspace:^",
+    "@mutantcat/dsh-subagent-in-process-driver": "workspace:^",
+    "@mutantcat/dsh-tool-bash": "workspace:^",
+    "@mutantcat/dsh-tool-subagent": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^"
   }
 }

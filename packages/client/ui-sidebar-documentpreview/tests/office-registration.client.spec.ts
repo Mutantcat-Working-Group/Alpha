@@ -1,17 +1,17 @@
 /** Authorized Host PDFs remain binary through Client reuse and disposal. */
-import type { OfficeToPdfGeneration } from '@deepseek-ai/dsh-office-to-pdf/types'
-import { Context } from '@deepseek-ai/cordis'
+import type { OfficeToPdfGeneration } from '@mutantcat/dsh-office-to-pdf/types'
+import { Context } from '@mutantcat/cordis'
 import { expect, it, vi } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { ClientRemote } from '@deepseek-ai/dsh-api-remotes/client'
-import type {} from '@deepseek-ai/dsh-office-to-pdf/remote'
-import { makeTranslate, RemoteError } from '@deepseek-ai/dsh-client-test-runtime'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import type { ClientRemote } from '@mutantcat/dsh-api-remotes/client'
+import type {} from '@mutantcat/dsh-office-to-pdf/remote'
+import { makeTranslate, RemoteError } from '@mutantcat/dsh-client-test-runtime'
 import { DocumentPreviewRegistry } from '../src/client/document/registry.ts'
 import { apply } from '../src/client/office/index.ts'
 import { Config } from '../src/config.ts'
 import { OfficeBody, type OfficeBodyInjected } from '../src/client/office/OfficeBody.tsx'
 import type { OfficeStore } from '../src/client/office/store.ts'
-import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
+import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
 import { en, zh } from '../src/client/office/locales.ts'
 import { en as documentEn } from '../src/client/locales.ts'
 
@@ -97,7 +97,7 @@ it.each(['remote', 'render', 'files'] as const)('keeps Office registration and g
   expect(h.registry.getSnapshot()).toEqual([])
   expect(h.removeLocale).toHaveBeenCalledOnce()
   expect(h.register).toHaveBeenCalledWith(expect.objectContaining({
-    name: 'sidebar.right.tab.document', key: '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office', locale: 'sidebarOffice',
+    name: 'sidebar.right.tab.document', key: '@mutantcat/dsh-client-ui-sidebar-documentpreview/office', locale: 'sidebarOffice',
   }), OfficeBody)
   expect(h.removeNotice).toHaveBeenCalledTimes(2)
 })

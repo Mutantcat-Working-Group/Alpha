@@ -2,12 +2,12 @@
 /** Editor registration lifetimes through the production document and Slot registries. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act } from '@testing-library/react'
-import { Context } from '@deepseek-ai/cordis'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { ClientRemote } from '@deepseek-ai/dsh-api-remotes/client'
-import { makeTranslate, RemoteError, SlotTestRuntime } from '@deepseek-ai/dsh-client-test-runtime'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
+import { Context } from '@mutantcat/cordis'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import type { ClientRemote } from '@mutantcat/dsh-api-remotes/client'
+import { makeTranslate, RemoteError, SlotTestRuntime } from '@mutantcat/dsh-client-test-runtime'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
 import { apply } from '../src/client/editor/index.ts'
 import { EditorBody } from '../src/client/editor/EditorBody.tsx'
 import type { EditorBodyInjected, RetainedEditorState } from '../src/client/editor/EditorBody.tsx'
@@ -18,7 +18,7 @@ import { en as documentEn } from '../src/client/locales.ts'
 import { DocumentPreviewRegistry } from '../src/client/document/registry.ts'
 import { documentTabInfoFactory } from '../src/client/document/contract.ts'
 
-const ID = '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/editor'
+const ID = '@mutantcat/dsh-client-ui-sidebar-documentpreview/editor'
 const SLOT = 'sidebar.right.tab.document'
 const plugin = { inject: ['slots', 'locale', 'documentPreviews'], apply }
 let runtime: SlotTestRuntime | undefined

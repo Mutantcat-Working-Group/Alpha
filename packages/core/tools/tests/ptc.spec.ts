@@ -1,21 +1,21 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { createUserMessage, ToolCallId  } from '@deepseek-ai/dsh-llm'
-import type { ToolSchema } from '@deepseek-ai/dsh-llm'
-import { createScope } from '@deepseek-ai/dsh-scope'
-import type { Scope } from '@deepseek-ai/dsh-scope'
-import SystemPrompt, { renderPrompt } from '@deepseek-ai/dsh-system-prompt'
-import { PtcRuntime } from '@deepseek-ai/dsh-ptc-runtime'
-import type { PtcRunRequest, PtcRunResult } from '@deepseek-ai/dsh-ptc-runtime'
-import ToolRuntime, { CodeRunFailedError, RUN_CODE_NAME, TOOL_ABORTED_BEFORE_DISPATCH, defineContentToolFixture, defineTool } from '@deepseek-ai/dsh-tools'
-import type { Config, JsonSchemaNode, PostToolDecision, ToolExecutionResult } from '@deepseek-ai/dsh-tools'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
-import ApprovalService, { type ApprovalOutcome, type ApprovalRequest } from '@deepseek-ai/dsh-user-approval'
-import type { SessionEventMap } from '@deepseek-ai/dsh-session'
-import type { JsonValue } from '@deepseek-ai/dsh-util-values'
-import SandboxPolicy from '@deepseek-ai/dsh-sandbox-policy'
-import SessionProjections from '@deepseek-ai/dsh-session-projection'
+import { Context } from '@mutantcat/cordis'
+import { createUserMessage, ToolCallId  } from '@mutantcat/dsh-llm'
+import type { ToolSchema } from '@mutantcat/dsh-llm'
+import { createScope } from '@mutantcat/dsh-scope'
+import type { Scope } from '@mutantcat/dsh-scope'
+import SystemPrompt, { renderPrompt } from '@mutantcat/dsh-system-prompt'
+import { PtcRuntime } from '@mutantcat/dsh-ptc-runtime'
+import type { PtcRunRequest, PtcRunResult } from '@mutantcat/dsh-ptc-runtime'
+import ToolRuntime, { CodeRunFailedError, RUN_CODE_NAME, TOOL_ABORTED_BEFORE_DISPATCH, defineContentToolFixture, defineTool } from '@mutantcat/dsh-tools'
+import type { Config, JsonSchemaNode, PostToolDecision, ToolExecutionResult } from '@mutantcat/dsh-tools'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { Session, SessionId } from '@mutantcat/dsh-session'
+import ApprovalService, { type ApprovalOutcome, type ApprovalRequest } from '@mutantcat/dsh-user-approval'
+import type { SessionEventMap } from '@mutantcat/dsh-session'
+import type { JsonValue } from '@mutantcat/dsh-util-values'
+import SandboxPolicy from '@mutantcat/dsh-sandbox-policy'
+import SessionProjections from '@mutantcat/dsh-session-projection'
 
 const testToolSignal = new AbortController().signal
 
@@ -29,7 +29,7 @@ const testToolSignal = new AbortController().signal
 
 /** A scriptable in-repo PtcRuntime: each test sets `behavior` to drive the bindings however it needs. */
 class FakeRuntime extends PtcRuntime {
-  resolve(request: import('@deepseek-ai/dsh-ptc-runtime').PtcRunRequest): import('@deepseek-ai/dsh-ptc-runtime').PtcRunSpec { return { ...request, cwd: request.cwd ?? process.cwd(), timeoutMs: request.timeoutMs ?? 120_000 } }
+  resolve(request: import('@mutantcat/dsh-ptc-runtime').PtcRunRequest): import('@mutantcat/dsh-ptc-runtime').PtcRunSpec { return { ...request, cwd: request.cwd ?? process.cwd(), timeoutMs: request.timeoutMs ?? 120_000 } }
 
   readonly language: string
   readonly isolation = 'fake'
@@ -1997,7 +1997,7 @@ describe('per-agent presentation', () => {
   })
 
   it('inherits a STANDING preset scope\'s mode down the chain, agents beside it unaffected', async () => {
-    const { bindScopeParent } = await import('@deepseek-ai/dsh-scope')
+    const { bindScopeParent } = await import('@mutantcat/dsh-scope')
     const { ctx, systemPrompt } = await setup({ mode: 'native' })
     const calls = registerEcho(ctx)
     // The preset's standing scope declares once; the agent only PARENTS to it

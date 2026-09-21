@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-call-timeout-policy",
+  "name": "@mutantcat/dsh-tool-call-timeout-policy",
   "description": "Tool-call timeout policy: a tools/execute wrapper that arms a per-tool deadline on exec.signal and returns TOOL_TIMEOUT when it wins",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,15 +27,15 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

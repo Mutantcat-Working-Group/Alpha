@@ -6,8 +6,8 @@
  * change made on another surface shows here without a manual refresh.
  */
 
-import { randomUUID } from '@deepseek-ai/dsh-util-crypto'
-import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import { randomUUID } from '@mutantcat/dsh-util-crypto'
+import type { Context as ClientContext } from '@mutantcat/cordis'
 import type {
   BundleInfo,
   ChangeResult,
@@ -21,9 +21,9 @@ import type {
   PluginInstallRequestId,
   PluginSpecInspection,
   ReadOnlyReason,
-} from '@deepseek-ai/dsh-api-remotes/client'
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
+} from '@mutantcat/dsh-api-remotes/client'
+import { createSnapshotStore, type SnapshotStore } from '@mutantcat/dsh-client-store'
+import type { HostObservable } from '@mutantcat/dsh-client-ui-slots'
 import type { ConfigLedger } from './config-ledger.ts'
 import { shortName } from './presentation.ts'
 

@@ -3,7 +3,7 @@ description: "Official Alpha brand occupants for the sidebar and conversation he
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-client-ui-brand-official
+# @mutantcat/dsh-client-ui-brand-official
 
 English | [中文](README.zh.md)
 

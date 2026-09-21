@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-fs-search",
+  "name": "@mutantcat/dsh-tool-fs-search",
   "description": "Model-facing filesystem discovery tools (glob, grep) backed by the packaged ripgrep binary (@vscode/ripgrep)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -28,31 +28,31 @@
   "license": "MIT",
   "dependencies": {
     "@vscode/ripgrep": "^1.18.0",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-output-retention": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-spill": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-output-retention": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-spill": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-output-retention": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-spill": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-subprocess-local": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-output-retention": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-spill": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^"
   }
 }

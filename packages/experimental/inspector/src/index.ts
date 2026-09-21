@@ -1,7 +1,7 @@
 /** Repository-facing Host package entry over the mirrored implementation tree. */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
+import type { Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
 import {
   apply as applyHost,
 } from './host/plugin.ts'
@@ -49,7 +49,7 @@ export interface InspectorService {
   readonly cordis: CordisRuntimeTreeReader
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     /** Publish Host-realm observations and query the shared Inspector state. */
     inspector: InspectorService

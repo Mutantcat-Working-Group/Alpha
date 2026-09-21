@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-llm-pi-ai",
+  "name": "@mutantcat/dsh-llm-pi-ai",
   "description": "pi-ai-backed DeepSeek adapter for the DeepSeek Harness LLM seam (design-verification twin of dsh-llm-deepseek)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,33 +27,33 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-authorization": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-authorization": "workspace:^",
+    "@mutantcat/dsh-credentials": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-launch-environment": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-util-values": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "@earendil-works/pi-ai": "^0.85.1"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-authorization": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-http-proxy": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-authorization": "workspace:^",
+    "@mutantcat/dsh-credentials": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-launch-environment": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-llm-deepseek": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-http-proxy": "workspace:^"
   }
 }

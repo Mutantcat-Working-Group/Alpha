@@ -17,10 +17,10 @@
 - text: Stream one TypeScript fence for the highlighting snapshot. {{clock}}
 - button "Copy":
   - img
-- button "Context injection @deepseek-ai/dsh-system-prompt":
+- button "Context injection @mutantcat/dsh-system-prompt":
   - img
   - img
-  - text: Context injection @deepseek-ai/dsh-system-prompt
+  - text: Context injection @mutantcat/dsh-system-prompt
 - text: ts
 - button "Copy"
 - code: "const first: number = 1 const second = \"two\" let tail"

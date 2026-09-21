@@ -96,7 +96,7 @@ describe('web e2e: plugin manager', () => {
     const panel = await openPluginsPanel()
     await panel.getByRole('button', { name: '查看 智能体团队', exact: true }).click()
     const packageName = panel.locator('[data-plugin-name]')
-    expect(await packageName.textContent()).toBe('@deepseek-ai/dsh-experimental-agent-team-profile')
+    expect(await packageName.textContent()).toBe('@mutantcat/dsh-experimental-agent-team-profile')
     expect(await panel.getByText('启用智能体团队协作与团队工具。').count()).toBe(1)
     try {
       await page.getByRole('button', { name: '设置', exact: true }).click()
@@ -105,7 +105,7 @@ describe('web e2e: plugin manager', () => {
       await page.getByRole('dialog', { name: 'Settings' }).waitFor()
       await page.keyboard.press('Escape')
       await panel.getByRole('heading', { name: 'Agent Teams', exact: true }).waitFor()
-      expect(await packageName.textContent()).toBe('@deepseek-ai/dsh-experimental-agent-team-profile')
+      expect(await packageName.textContent()).toBe('@mutantcat/dsh-experimental-agent-team-profile')
       expect(await panel.getByText('Enable agent team collaboration and team tools.').count()).toBe(1)
       await panel.getByRole('button', { name: 'Back to plugins' }).click()
       for (const title of ['Agent Teams', 'Agent Teams Web UI']) {
@@ -173,7 +173,7 @@ describe('web e2e: plugin manager', () => {
     const bundles = async () => (JSON.parse(await homeFile('profiles', 'scaffold', 'package.json')) as {
       dsh: { profile: { bundles: string[] } }
     }).dsh.profile.bundles
-    await expect.poll(bundles, { timeout: 10_000 }).toEqual(['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@fixture/bundle'])
+    await expect.poll(bundles, { timeout: 10_000 }).toEqual(['@mutantcat/dsh-base', '@mutantcat/dsh-web-app', '@fixture/bundle'])
     // A live profile: the row mounts once the whole tree recomposed, the switch is on, and nothing waits for a restart.
     await expect.poll(() => mounted()?.fiber?.state, { timeout: 20_000 }).toBe(2)
     await expect.poll(() => toggle.getAttribute('aria-checked'), { timeout: 10_000 }).toBe('true')
@@ -231,7 +231,7 @@ describe('web e2e: startup-applied plugin management', () => {
       expect(mounted()?.fiber?.state).toBeUndefined()
       await toggle.click()
       // The selection is saved and the switch turns on, but nothing mounts before the next start; a toast says so.
-      await expect.poll(bundles).toEqual(['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@fixture/bundle'])
+      await expect.poll(bundles).toEqual(['@mutantcat/dsh-base', '@mutantcat/dsh-web-app', '@fixture/bundle'])
       await expect.poll(() => toggle.getAttribute('aria-checked')).toBe('true')
       await page.getByText('更改将在下次启动生效', { exact: true }).waitFor({ timeout: 10_000 })
       expect(mounted()?.fiber?.state).toBeUndefined()
@@ -242,7 +242,7 @@ describe('web e2e: startup-applied plugin management', () => {
       await panel.getByRole('button', { name: '返回插件列表' }).click()
 
       await toggle.click()
-      await expect.poll(bundles).toEqual(['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'])
+      await expect.poll(bundles).toEqual(['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'])
       await expect.poll(() => toggle.getAttribute('aria-checked')).toBe('false')
       expect(tripwire.pageErrors).toEqual([])
     } finally {

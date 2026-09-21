@@ -1,7 +1,7 @@
 /** Shared model fields and actions for both adapter catalog editors. */
 
 import type { ReactNode } from 'react'
-import { IconChevronDownOutline14, IconChevronRightOutline14, IconTrashOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconChevronDownOutline14, IconChevronRightOutline14, IconTrashOutline16 } from '@mutantcat/dsh-client-ui-primitives'
 import type { DeepSeekModelDraft } from './DeepSeekModelsEditor.tsx'
 import type { ModelsKey } from './locales.ts'
 import { ModelInputTypes } from './ModelInputTypes.tsx'

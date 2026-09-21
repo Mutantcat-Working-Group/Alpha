@@ -4,8 +4,8 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import type { SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
-import { RemoteError, stubSettingsScope, type StubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
+import type { SettingsPathOpView } from '@mutantcat/dsh-api-remotes/client'
+import { RemoteError, stubSettingsScope, type StubSettingsScope } from '@mutantcat/dsh-client-test-runtime'
 import { CardForm, numberField, textField } from '../src/client/card-form.ts'
 import { SubagentLimitsCardController, type SubagentLimitsSettings } from '../src/client/subagent-limits-card-controller.ts'
 import { subagentCardFace, subagentCardShell } from '../src/client/subagent-card-controller.ts'

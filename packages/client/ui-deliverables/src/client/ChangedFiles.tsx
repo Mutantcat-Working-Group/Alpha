@@ -1,8 +1,8 @@
 /** The changed-files card: a header and per-file rows that open the turn's review, and a three-row fold. */
 import { useState } from 'react'
-import { resolveWorkspacePath } from '@deepseek-ai/dsh-util-workspace-path'
-import { IconChevronDownOutline14, IconChevronUpOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+import { resolveWorkspacePath } from '@mutantcat/dsh-util-workspace-path'
+import { IconChevronDownOutline14, IconChevronUpOutline14 } from '@mutantcat/dsh-client-ui-primitives'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
 import type { ChangesSummary } from '../changes.ts'
 import { IconCodeBracketsOutline16 } from './icons.tsx'
 import type { NS } from './locales.ts'

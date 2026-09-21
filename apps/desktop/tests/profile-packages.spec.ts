@@ -42,14 +42,14 @@ afterEach(() => {
 
 it('removes recorded links and state without interpreting obsolete runtime fields', () => {
   const { profile, target } = fixture()
-  const packagePath = join(profile, 'node_modules', '@deepseek-ai/cordis')
+  const packagePath = join(profile, 'node_modules', '@mutantcat/cordis')
   link(target, packagePath)
-  writeFileSync(join(target, 'package.json'), '{"name":"@deepseek-ai/cordis"}')
-  writeState(profile, [{ name: '@deepseek-ai/cordis', target }])
+  writeFileSync(join(target, 'package.json'), '{"name":"@mutantcat/cordis"}')
+  writeState(profile, [{ name: '@mutantcat/cordis', target }])
   migrateDesktopProfileLinks(profile)
   expect(existsSync(packagePath)).toBe(false)
   expect(existsSync(join(profile, DESKTOP_PROFILE_STATE))).toBe(false)
-  expect(readFileSync(join(target, 'package.json'), 'utf8')).toContain('@deepseek-ai/cordis')
+  expect(readFileSync(join(target, 'package.json'), 'utf8')).toContain('@mutantcat/cordis')
   expect(() => { migrateDesktopProfileLinks(profile) }).not.toThrow()
 })
 

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-spill-local",
+  "name": "@mutantcat/dsh-spill-local",
   "description": "Local-filesystem implementation of the DeepSeek Harness spill storage seam (private session-scoped files)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,19 +27,19 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-spill": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-spill": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-spill": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-spill": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

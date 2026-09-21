@@ -20,12 +20,12 @@ import {
   MarkdownText,
   Tooltip,
   writeClipboard,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { JsonTreeLabels, JsonTreeProps, MarkdownLabels } from '@deepseek-ai/dsh-client-ui-primitives'
+} from '@mutantcat/dsh-client-ui-primitives'
+import type { JsonTreeLabels, JsonTreeProps, MarkdownLabels } from '@mutantcat/dsh-client-ui-primitives'
 import { structuredPatch } from 'diff'
 import type {
   AssistantRequestConfig, ConversationPromptSnapshot, RenderMessageImages,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
 import type {
   AssistantMetricDetail, TrajectoryCellKind, TrajectoryCellProps, TrajectorySourceBlock,
 } from './trajectory-record.ts'

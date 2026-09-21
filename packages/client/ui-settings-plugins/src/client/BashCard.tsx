@@ -1,7 +1,7 @@
 /** The shell plugin's configuration page: the limits every command the agent runs is bound by. */
 
-import type {} from '@deepseek-ai/dsh-client-ui-plugin-manager/client'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type {} from '@mutantcat/dsh-client-ui-plugin-manager/client'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@mutantcat/dsh-client-ui-slots'
 import { ValueField } from './fields.tsx'
 import { PluginConfigForm } from './PluginConfigForm.tsx'
 import type { BashCardFace } from './bash-card-controller.ts'

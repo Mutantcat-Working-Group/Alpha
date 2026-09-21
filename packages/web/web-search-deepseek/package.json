@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-web-search-deepseek",
+  "name": "@mutantcat/dsh-web-search-deepseek",
   "description": "DeepSeek-backed search provider (native web_search via the Anthropic-compatible API) for the DeepSeek Harness web capability seam (ctx.web)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,26 +27,26 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-web": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-credentials": "workspace:^",
+    "@mutantcat/dsh-launch-environment": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-web": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-credentials-local": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-web": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-http-proxy": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-credentials": "workspace:^",
+    "@mutantcat/dsh-credentials-local": "workspace:^",
+    "@mutantcat/dsh-launch-environment": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-web": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^",
+    "@mutantcat/dsh-http-proxy": "workspace:^"
   }
 }

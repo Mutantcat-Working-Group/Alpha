@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-format-catalog",
+  "name": "@mutantcat/dsh-session-format-catalog",
   "description": "Build-static first-party Session format codec and migration catalog",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -32,18 +32,18 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-session-format": "workspace:^",
-    "@deepseek-ai/dsh-session-format-v0-to-v1": "workspace:^",
-    "@deepseek-ai/dsh-session-format-v1-to-v2": "workspace:^",
-    "@deepseek-ai/dsh-session-format-v2-to-v3": "workspace:^",
-    "@deepseek-ai/dsh-compaction-image-offload": "workspace:^"
+    "@mutantcat/dsh-session-format": "workspace:^",
+    "@mutantcat/dsh-session-format-v0-to-v1": "workspace:^",
+    "@mutantcat/dsh-session-format-v1-to-v2": "workspace:^",
+    "@mutantcat/dsh-session-format-v2-to-v3": "workspace:^",
+    "@mutantcat/dsh-compaction-image-offload": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^"
   }
 }

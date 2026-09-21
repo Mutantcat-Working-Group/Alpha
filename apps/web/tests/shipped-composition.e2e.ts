@@ -8,21 +8,21 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, expect, it } from 'vitest'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { LlmAdapter, ToolCallId } from '@deepseek-ai/dsh-llm'
-import type { GenerateOptions, LlmResolvedModelInfo, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { canonicalPath, writableRoots } from '@deepseek-ai/dsh-sandbox'
-import { SESSION_FORMAT_VERSION, SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
-import { auditStartupEntries, composeEntries, loadOverlayPatches } from '@deepseek-ai/dsh-app-boot'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { LlmAdapter, ToolCallId } from '@mutantcat/dsh-llm'
+import type { GenerateOptions, LlmResolvedModelInfo, StreamChunk } from '@mutantcat/dsh-llm'
+import { canonicalPath, writableRoots } from '@mutantcat/dsh-sandbox'
+import { SESSION_FORMAT_VERSION, SessionId, type SessionEvent } from '@mutantcat/dsh-session'
+import { auditStartupEntries, composeEntries, loadOverlayPatches } from '@mutantcat/dsh-app-boot'
 // These imports carry the tools/sandboxPolicy/approval Context merges.
-import { RUN_CODE_NAME } from '@deepseek-ai/dsh-tools'
-import type {} from '@deepseek-ai/dsh-sandbox-policy'
-import type {} from '@deepseek-ai/dsh-user-approval'
-import type {} from '@deepseek-ai/dsh-permission-presets'
-import type {} from '@deepseek-ai/dsh-agent-presets'
-import type {} from '@deepseek-ai/dsh-commands'
-import type {} from '@deepseek-ai/dsh-system-prompt'
-import type {} from '@deepseek-ai/dsh-terminal'
+import { RUN_CODE_NAME } from '@mutantcat/dsh-tools'
+import type {} from '@mutantcat/dsh-sandbox-policy'
+import type {} from '@mutantcat/dsh-user-approval'
+import type {} from '@mutantcat/dsh-permission-presets'
+import type {} from '@mutantcat/dsh-agent-presets'
+import type {} from '@mutantcat/dsh-commands'
+import type {} from '@mutantcat/dsh-system-prompt'
+import type {} from '@mutantcat/dsh-terminal'
 import { launchWebScaffold, readPersistedEvents, type WebScaffold } from './scaffold.ts'
 import { AUTO_REVIEW_FIXTURE } from './auto-review-fixture.ts'
 import { REPO_ROOT } from './support.ts'
@@ -631,7 +631,7 @@ it('assembles the shipped Web transport, catalog, guidance, and defaults', async
   })
   try {
     expect(scaffold.ctx.commands.list(commandHandle.agent)).toContainEqual({
-      definitionId: '@deepseek-ai/dsh-command-feedback',
+      definitionId: '@mutantcat/dsh-command-feedback',
       name: 'feedback',
       description: 'Record feedback about this session',
       input: { hint: '<text>' },

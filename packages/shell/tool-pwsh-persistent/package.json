@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-pwsh-persistent",
+  "name": "@mutantcat/dsh-tool-pwsh-persistent",
   "description": "Model-facing owner-scoped persistent PowerShell tool backed by the Harness PTY service",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -26,32 +26,32 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-terminal": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-terminal": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-terminal": "workspace:^",
-    "@deepseek-ai/dsh-terminal-bash": "workspace:^",
-    "@deepseek-ai/dsh-pwsh-local": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-terminal": "workspace:^",
+    "@mutantcat/dsh-terminal-bash": "workspace:^",
+    "@mutantcat/dsh-pwsh-local": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-subprocess-local": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

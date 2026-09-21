@@ -1,17 +1,17 @@
 /** Chat-owned Slot declarations and composed component props. */
-import type { MessageId } from '@deepseek-ai/dsh-llm/brand'
-import type { SessionId, SessionSeq } from '@deepseek-ai/dsh-session/types'
+import type { MessageId } from '@mutantcat/dsh-llm/brand'
+import type { SessionId, SessionSeq } from '@mutantcat/dsh-session/types'
 import type {
   CommandNode, CompactionSummaryNode, ConversationLocationDataStore, ConversationTurnDataMap,
   MessageImageLoader, MessageImagesOwnerProps, RenderMessageImages, TurnLocation,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
 import type {
   InjectFace, KeyedSnapshotSelectorHook, PropsLocale, PropsRenderSlots, PropsRuntime, PropsStore,
   SlotHookFactory, SnapshotSelectorHook,
-} from '@deepseek-ai/dsh-client-ui-slots'
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { MarkdownFileMentions } from '@deepseek-ai/dsh-client-ui-primitives'
-import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+} from '@mutantcat/dsh-client-ui-slots'
+import type { SnapshotStore } from '@mutantcat/dsh-client-store'
+import type { MarkdownFileMentions } from '@mutantcat/dsh-client-ui-primitives'
+import type {} from '@mutantcat/dsh-client-ui-layout/client'
 import type { createChatStore } from '../stores.ts'
 import type { ToolCallId } from './store.ts'
 import type { ChatConversationViewNode, ChatNode, ChatNodeKind } from './chat-nodes.ts'
@@ -59,7 +59,7 @@ export interface ChatFileMentions {
   forClosing(owner: TurnTailOwnerProps, sessionId: SessionId): MarkdownFileMentions | undefined
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     /** Optional prose file-mention provider. */
     chatFileMentions: ChatFileMentions
@@ -168,7 +168,7 @@ export type ChatViewSlotProps =
 /** Full props of the durable-message image renderer. */
 export type MessageImagesProps = PropsRuntime<'conversation.message.images'> & PropsLocale<'conversation'>
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface SessionStandardProps {
     /** Selector hook over the current Conversation binding's Chat target. */
     useChat: UseChat

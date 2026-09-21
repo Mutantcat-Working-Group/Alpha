@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-experimental-computer-use-cua-driver-native",
+  "name": "@mutantcat/dsh-experimental-computer-use-cua-driver-native",
   "description": "Experimental computer-use provider embedding the Cua Driver native npm SDK",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,31 +27,31 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-computer-use": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-computer-use": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-mcp-client": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/dsh-mcp-client": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "@trycua/cua-driver": "0.28.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-attachment-local": "workspace:^",
-    "@deepseek-ai/dsh-computer-use": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-attachment-local": "workspace:^",
+    "@mutantcat/dsh-computer-use": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^"
   }
 }

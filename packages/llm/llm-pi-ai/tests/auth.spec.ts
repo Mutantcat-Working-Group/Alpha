@@ -2,9 +2,9 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import LocalCredentialProvider from '@deepseek-ai/dsh-credentials-local'
-import { credentialKey, credentialRef } from '@deepseek-ai/dsh-credentials'
+import { Context } from '@mutantcat/cordis'
+import LocalCredentialProvider from '@mutantcat/dsh-credentials-local'
+import { credentialKey, credentialRef } from '@mutantcat/dsh-credentials'
 import { authContextFrom, credentialStoreFrom, recordKeyFor } from '../src/auth.ts'
 
 const CODEX = recordKeyFor('openai-codex')

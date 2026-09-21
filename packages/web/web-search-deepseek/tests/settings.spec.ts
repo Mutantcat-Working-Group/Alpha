@@ -1,13 +1,13 @@
 /** The `web-search-deepseek` settings section layered over the composition entry. */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import type { Fiber } from '@deepseek-ai/cordis'
-import { SettingsProvider } from '@deepseek-ai/dsh-settings'
-import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
-import WebRuntime from '@deepseek-ai/dsh-web'
-import * as deepseekPlugin from '@deepseek-ai/dsh-web-search-deepseek'
-import { WEB_SEARCH_DEEPSEEK_SETTINGS_NAMESPACE } from '@deepseek-ai/dsh-web-search-deepseek'
+import { Context } from '@mutantcat/cordis'
+import type { Fiber } from '@mutantcat/cordis'
+import { SettingsProvider } from '@mutantcat/dsh-settings'
+import type { SettingsNamespace } from '@mutantcat/dsh-settings'
+import WebRuntime from '@mutantcat/dsh-web'
+import * as deepseekPlugin from '@mutantcat/dsh-web-search-deepseek'
+import { WEB_SEARCH_DEEPSEEK_SETTINGS_NAMESPACE } from '@mutantcat/dsh-web-search-deepseek'
 
 /** The smallest real provider: one in-memory document, always writable. */
 class MemorySettings extends SettingsProvider {

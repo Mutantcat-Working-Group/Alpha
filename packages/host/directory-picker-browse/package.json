@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-host-directory-picker-browse",
+  "name": "@mutantcat/dsh-host-directory-picker-browse",
   "description": "In-app browsing backend of the directory-picker seam (listing/creation primitives over the host filesystem)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,13 +27,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-host-directory-picker": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/dsh-host-directory-picker": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   }
 }

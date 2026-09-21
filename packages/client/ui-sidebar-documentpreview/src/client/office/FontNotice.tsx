@@ -1,8 +1,8 @@
 /** Missing-font notice and a non-modal details panel for one source version. */
 import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
-import { Button, IconCloseOutline16, IconWarningOutline16, useAnchoredPosition, useDismissOnOutsidePointer } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
+import { Button, IconCloseOutline16, IconWarningOutline16, useAnchoredPosition, useDismissOnOutsidePointer } from '@mutantcat/dsh-client-ui-primitives'
 import css from './FontNotice.module.css'
 
 /** Notice inputs supplied by the document owner and Office locale registration. */

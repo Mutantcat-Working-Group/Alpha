@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
-import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
+import { makeTranslate } from '@mutantcat/dsh-client-test-runtime'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
 import { apply, inject } from '../src/client/index.ts'
 import { OfficialBrandMark, OfficialBrandName } from '../src/client/Brand.tsx'
 import { OfficialHeroBrandMark } from '../src/client/HeroMark.tsx'

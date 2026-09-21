@@ -7,10 +7,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { cleanup, render } from '@testing-library/react'
-import { Context } from '@deepseek-ai/cordis'
-import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import { SidebarRightTabRegistry } from '@deepseek-ai/dsh-client-ui-sidebar-right/src/client/tab-registry.ts'
-import { sessionFileAddress } from '@deepseek-ai/dsh-util-workspace-path'
+import { Context } from '@mutantcat/cordis'
+import { makeTranslate } from '@mutantcat/dsh-client-test-runtime'
+import { SidebarRightTabRegistry } from '@mutantcat/dsh-client-ui-sidebar-right/src/client/tab-registry.ts'
+import { sessionFileAddress } from '@mutantcat/dsh-util-workspace-path'
 import {
   FILES_ID, FILES_KIND, filesDefinition,
 } from '../src/client/definition.tsx'

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-title-llm",
+  "name": "@mutantcat/dsh-session-title-llm",
   "description": "Shared LLM generation policy for DeepSeek Harness session-title providers",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,21 +27,21 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-util-values": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^"
   }
 }

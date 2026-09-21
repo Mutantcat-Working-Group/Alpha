@@ -3,7 +3,7 @@ description: "Document previews in the right Sidebar: shared file loading and co
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-client-ui-sidebar-documentpreview
+# @mutantcat/dsh-client-ui-sidebar-documentpreview
 
 English | [中文](README.zh.md)
 
@@ -28,7 +28,7 @@ Preview readable files in the right Sidebar and choose among registered renderer
 <a id="what-it-registers"></a>
 ## What it registers
 
-- **The type** — `ctx.sidebarRightTabs.register(...)` with id `@deepseek-ai/dsh-client-ui-sidebar-documentpreview` (this implementation's identity in the tab system, and the key its body registers under), kind `text`, pattern `dsh-resource://file/**`, band `fallback`. `canOpen` accepts only Session addresses, whose paths may be relative or absolute; bare `absolute` addresses are not claimed. A type registered at the `extension` or `builtin` band for a narrower pattern (say `*.png`) takes those addresses; other supported files land here. The whole address is the content identity, so two files with one name in different directories, or one path under two sessions, are two tabs; the decoded basename is the tab title, and the keyed `sidebar.right.pane.tab.title` seat places its extension-specific `FileTypeIcon` before that title.
+- **The type** — `ctx.sidebarRightTabs.register(...)` with id `@mutantcat/dsh-client-ui-sidebar-documentpreview` (this implementation's identity in the tab system, and the key its body registers under), kind `text`, pattern `dsh-resource://file/**`, band `fallback`. `canOpen` accepts only Session addresses, whose paths may be relative or absolute; bare `absolute` addresses are not claimed. A type registered at the `extension` or `builtin` band for a narrower pattern (say `*.png`) takes those addresses; other supported files land here. The whole address is the content identity, so two files with one name in different directories, or one path under two sessions, are two tabs; the decoded basename is the tab title, and the keyed `sidebar.right.pane.tab.title` seat places its extension-specific `FileTypeIcon` before that title.
 - **The body** — the keyed `sidebar.right.pane.tab` seat under the type's id. Its fixed header shows the Host's absolute path when available, otherwise the requested path; directories use tertiary label colour, the name uses primary label colour, and a clipped path retains and fades toward its final segment while its tooltip exposes the full value. A dropdown appears when multiple supported renderers are available. Plain text is offered only for text-compatible sources; a single renderer shows no viewer control. A known binary container suffix without a registered renderer shows the file-type icon and an unsupported-preview message under the path header, without issuing a read. A wrap toggle appears only when the selected renderer declares `wrap: true`; its glyph describes the mode the click selects, and the per-tab preference starts on. Reload stays in this header, not the Sidebar's tab strip. The body reaches every pane edge; each renderer owns its content inset and may own an inner scrollport. This intentionally differs from the Files tab's 2px right-side scrollbar offset: previews keep the full pane width so edge-to-edge HTML and code scrollports end at the pane edge.
 - **Shared loading and view state**, session-scoped and bucketed by tab id. The store holds accumulated pages or complete bytes, read and observed versions, loading/failure state, renderer choice, scroll offset, wrap, and the answered navigation revision. The ordinary inject face calls Remote readers and writes through declared store actions. Reloads and loading-mode changes retire older requests; the tab's abort signal forgets its state.
 
@@ -83,7 +83,7 @@ The editor provides no autocomplete, diagnostics, or cross-file search, and it d
 
 Open `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, and `.pptx` as PDF previews with the same loading state, controls, cancellation, and selectable text as PDF files. The [Host provider](../../document/office-to-pdf/README.md) performs local conversion; invalid files, conversion failures, and timeouts receive localized messages. Missing Host services show configuration guidance.
 
-The [Web bundle](../../bundle/web-app/README.md) mounts this package as `ui-sidebar-documentpreview`. Configure its transient Office cache through that entry's `office` settings; the [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-client-ui-sidebar-documentpreview) defines accepted values. Settings are embedded in each served page; reload the browser page after changing YAML.
+The [Web bundle](../../bundle/web-app/README.md) mounts this package as `ui-sidebar-documentpreview`. Configure its transient Office cache through that entry's `office` settings; the [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-client-ui-sidebar-documentpreview) defines accepted values. Settings are embedded in each served page; reload the browser page after changing YAML.
 
 | Field | Default | Meaning |
 |---|---|---|

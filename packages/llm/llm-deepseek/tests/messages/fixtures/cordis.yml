@@ -1,21 +1,21 @@
-- name: '@deepseek-ai/dsh-llm'
-- name: '@deepseek-ai/dsh-session'
-- name: '@deepseek-ai/dsh-session-projection'
-- name: '@deepseek-ai/dsh-system-prompt'
-- name: '@deepseek-ai/dsh-tools'
-- name: '@deepseek-ai/dsh-agent'
-- name: '@deepseek-ai/dsh-agent-loop'
+- name: '@mutantcat/dsh-llm'
+- name: '@mutantcat/dsh-session'
+- name: '@mutantcat/dsh-session-projection'
+- name: '@mutantcat/dsh-system-prompt'
+- name: '@mutantcat/dsh-tools'
+- name: '@mutantcat/dsh-agent'
+- name: '@mutantcat/dsh-agent-loop'
   config:
     agents: []
-- name: '@deepseek-ai/dsh-settings-file'
+- name: '@mutantcat/dsh-settings-file'
   config:
     path: {{settings}}
     watch: false
-- name: '@deepseek-ai/dsh-credentials-local'
+- name: '@mutantcat/dsh-credentials-local'
   config:
     path: {{credentials}}
     watch: false
-- name: '@deepseek-ai/dsh-llm-deepseek'
+- name: '@mutantcat/dsh-llm-deepseek'
   config:
     apiKeyEnv: DEEPSEEK_API_KEY
     baseURL: {{endpoint}}

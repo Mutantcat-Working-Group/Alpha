@@ -20,7 +20,7 @@
  * dependency closure through Node's ordinary parent-walk. Plain Node uses
  * symlinks for that shared fallback; packaged executables use ESM proxies so
  * external plugins retain the installation's module instances.
- * @module @deepseek-ai/dsh-app-boot/profile
+ * @module @mutantcat/dsh-app-boot/profile
  */
 
 import { createRequire } from 'node:module'
@@ -30,11 +30,11 @@ import {
 } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { withFileLock } from '@deepseek-ai/dsh-atomic-write'
-import type { EntryOptions } from '@deepseek-ai/cordis-plugin-loader'
-import { applyEntryPatches, type PatchOptions } from '@deepseek-ai/cordis-plugin-include'
-import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
-import type { DshPackageManifest } from '@deepseek-ai/dsh-package-manifest'
+import { withFileLock } from '@mutantcat/dsh-atomic-write'
+import type { EntryOptions } from '@mutantcat/cordis-plugin-loader'
+import { applyEntryPatches, type PatchOptions } from '@mutantcat/cordis-plugin-include'
+import { resolveDshHome } from '@mutantcat/dsh-home-paths'
+import type { DshPackageManifest } from '@mutantcat/dsh-package-manifest'
 import { resolve as resolvePackage, type Package as ResolvePackageManifest } from 'resolve.exports'
 import { loadOverlayPatches } from './index.ts'
 import {
@@ -134,29 +134,29 @@ export function resolveProfileDir(name: string, home: string = resolveDshHome())
 /** The shipped profile templates auto-initialized on first use, by name. */
 export const PROFILE_TEMPLATES: Record<string, ProfileTemplate> = {
   acp: {
-    bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-acp-app'],
+    bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-acp-app'],
   },
   web: {
-    bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'],
+    bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'],
   },
   headless: {
-    bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-headless'],
+    bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-headless'],
   },
   sdk: {
-    bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-sdk-app'],
+    bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-sdk-app'],
   },
   'sdk-minimal': {
-    bundles: ['@deepseek-ai/dsh-sdk-minimal'],
+    bundles: ['@mutantcat/dsh-sdk-minimal'],
   },
 }
 
 /** Installation-owned bundle tuples normalized to the shipped template. */
 const INSTALLATION_OWNED_PROFILE_TUPLES: Record<string, readonly string[]> = {
-  headless: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@deepseek-ai/dsh-headless'],
+  headless: ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app', '@mutantcat/dsh-headless'],
 }
 
 /** The bundle list a `dsh plugin` init uses for a name with no shipped template. */
-export const DEFAULT_PROFILE_BUNDLES: readonly string[] = ['@deepseek-ai/dsh-base']
+export const DEFAULT_PROFILE_BUNDLES: readonly string[] = ['@mutantcat/dsh-base']
 
 /**
  * The bundles the dsh installation ships for a person to switch on: each a
@@ -165,8 +165,8 @@ export const DEFAULT_PROFILE_BUNDLES: readonly string[] = ['@deepseek-ai/dsh-bas
  * manager ([rationale](../../../../.agents/notes/implemented/process/2026-09-15-shipped-optional-bundles.md)).
  */
 export const OPTIONAL_BUNDLES: readonly string[] = [
-  '@deepseek-ai/dsh-experimental-agent-team-profile',
-  '@deepseek-ai/dsh-experimental-agent-team-web-profile',
+  '@mutantcat/dsh-experimental-agent-team-profile',
+  '@mutantcat/dsh-experimental-agent-team-web-profile',
 ]
 
 const PROFILE_PATCH_TEMPLATE = `# Your patch layer for this dsh profile, applied after every bundle layer:
@@ -844,7 +844,7 @@ function packageDirFromAnchor(
 /**
  * Resolve one bundle package's directory: installation anchor first, then the
  * profile directory. The installation-first order is the contract that
- * `@deepseek-ai/dsh-base` (and every other in-box bundle) always comes from
+ * `@mutantcat/dsh-base` (and every other in-box bundle) always comes from
  * the same installation as the running dsh, never from a profile-local copy.
  * Resolution does not require the package to export `./package.json`.
  * @param binName - the diagnostic prefix on the thrown error.

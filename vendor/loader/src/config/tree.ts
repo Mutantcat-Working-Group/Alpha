@@ -1,7 +1,36 @@
-import { composeError, Context } from '@deepseek-ai/cordis'
-import { isNonNullable, type Dict } from '@deepseek-ai/cosmokit'
+import { composeError, Context } from '@mutantcat/cordis'
+import { isNonNullable, type Dict } from '@mutantcat/cosmokit'
 import { Entry, type EntryOptions } from './entry.ts'
 import { EntryGroup } from './group.ts'
+
+/** Scope the harness packages published under before the rename. */
+const LEGACY_SCOPE = '@deepseek-ai/'
+
+/** Scope the harness packages this repository publishes under. */
+const SCOPE = '@mutantcat/'
+
+/** Suffixes of the external engine family, which keeps its registry scope. */
+const EXTERNAL_ENGINE = /^libreoffice-kit(?:-|[/@]|$)/
+
+/**
+ * Name a loader entry's specifier under the scope the harness now publishes under.
+ *
+ * A plugin published against the pre-rescope scope names both itself and its
+ * dependencies with `@deepseek-ai/`, and its config row reaches
+ * {@link EntryTree.import} verbatim, so every such row would fail to import.
+ * The external engine family keeps its registry scope: those packages come from
+ * the registry, not from this repository, so rewriting them would name a
+ * package that does not exist.
+ *
+ * @param name - the specifier a loader entry declares.
+ * @returns The specifier to import.
+ */
+function rescopeSpecifier(name: string): string {
+  if (!name.startsWith(LEGACY_SCOPE)) return name
+  const suffix = name.slice(LEGACY_SCOPE.length)
+  if (EXTERNAL_ENGINE.test(suffix)) return name
+  return `${SCOPE}${suffix}`
+}
 
 /** Mutable tree of loader entries. Persistence is supplied by subclasses. */
 export abstract class EntryTree {
@@ -113,17 +142,18 @@ export abstract class EntryTree {
     if (name.startsWith('cordis:')) {
       return this.ctx.loader.builtins[name.slice(7)]
     }
+    const specifier = rescopeSpecifier(name)
     return composeError(async (info) => {
       // ModuleJob.run
       // onImport.tracePromise.__proto__
       // internal.import
       info.offset += 3
       if (this.ctx.loader.internal) {
-        return await this.ctx.loader.internal.import(name, this.ctx.baseUrl!, {})
+        return await this.ctx.loader.internal.import(specifier, this.ctx.baseUrl!, {})
       } else if (name.startsWith('.')) {
-        return await import(/* @vite-ignore */new URL(name, this.ctx.baseUrl).href)
+        return await import(/* @vite-ignore */new URL(specifier, this.ctx.baseUrl).href)
       } else {
-        return await import(/* @vite-ignore */name)
+        return await import(/* @vite-ignore */specifier)
       }
     }, getOuterStack)
   }

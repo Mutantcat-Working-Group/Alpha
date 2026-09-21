@@ -1,19 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
 import type {
   SessionEventLike, SessionEventLikeEntry, SessionLiveEventEntry,
-} from '@deepseek-ai/dsh-api-session-controller/client'
-import { LlmAttemptId } from '@deepseek-ai/dsh-llm/brand'
-import type { StreamChunk } from '@deepseek-ai/dsh-llm'
-import { SessionSeq } from '@deepseek-ai/dsh-session/types'
-import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
+} from '@mutantcat/dsh-api-session-controller/client'
+import { LlmAttemptId } from '@mutantcat/dsh-llm/brand'
+import type { StreamChunk } from '@mutantcat/dsh-llm'
+import { SessionSeq } from '@mutantcat/dsh-session/types'
+import type { SessionEvent } from '@mutantcat/dsh-session/types'
 import {
   ConversationLocationIndex,
   ConversationNodeAssembler as RuntimeConversationNodeAssembler,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
 import type {
   ConversationMatch, ConversationNodeContext,
   ConversationNodeDefinition, ConversationViewDefinition, ConversationViewNode,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
 
 interface ScopeProbeStepData {
   readonly value: number
@@ -23,7 +23,7 @@ interface ScopeProbeTurnData {
   readonly valueSeenFromStep: number
 }
 
-declare module '@deepseek-ai/dsh-client-ui-conversation/client' {
+declare module '@mutantcat/dsh-client-ui-conversation/client' {
   interface ConversationStepDataMap {
     'scope-probe': ScopeProbeStepData
   }

@@ -12,23 +12,23 @@ import { isAbsolute, join } from 'node:path'
 import {
   SESSION_FORMAT_VERSION,
   SessionLogOffset,
-} from '@deepseek-ai/dsh-session'
+} from '@mutantcat/dsh-session'
 import type {
   SessionEvent,
   SessionHeader,
   SessionId,
   SessionLogOffset as SessionLogOffsetType,
-} from '@deepseek-ai/dsh-session'
-import { parseSessionFormatLogFilename, sessionFormatLogFilename, SessionFormatUnsupportedMigrationError } from '@deepseek-ai/dsh-session-format'
-import type { SessionFormatEvent } from '@deepseek-ai/dsh-session-format'
-import type { SessionFormatRecovery, SessionFormatRestore } from '@deepseek-ai/dsh-session-format'
-import { sessionFormatCatalog } from '@deepseek-ai/dsh-session-format-catalog'
-import { assertV3RowAdmission } from '@deepseek-ai/dsh-session-format-v2-to-v3'
+} from '@mutantcat/dsh-session'
+import { parseSessionFormatLogFilename, sessionFormatLogFilename, SessionFormatUnsupportedMigrationError } from '@mutantcat/dsh-session-format'
+import type { SessionFormatEvent } from '@mutantcat/dsh-session-format'
+import type { SessionFormatRecovery, SessionFormatRestore } from '@mutantcat/dsh-session-format'
+import { sessionFormatCatalog } from '@mutantcat/dsh-session-format-catalog'
+import { assertV3RowAdmission } from '@mutantcat/dsh-session-format-v2-to-v3'
 import {
   SessionFormatUnsupportedError,
   sessionFormatVersionRefusal,
   type SessionStorageMetadata,
-} from '@deepseek-ai/dsh-session-persistence'
+} from '@mutantcat/dsh-session-persistence'
 
 /** Physical encoding selected for JSONL session artifacts. */
 export type JsonlCompression = 'zstd' | 'none'

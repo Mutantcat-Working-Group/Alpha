@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { toolPairingBalancedAfter, toolPairingBalancedBefore } from '@deepseek-ai/dsh-compaction'
-import { createUserMessage, createSystemMessage, CONTEXT_WINDOW_EXCEEDED_CODE, LlmError, resolveRetryPolicy , createMessage } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, GenerateOptions, LlmResolvedModelInfo, ResolvedRetryPolicy, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { ToolCallId, LlmAdapter } from '@deepseek-ai/dsh-llm'
-import { defineContentToolFixture } from '@deepseek-ai/dsh-tools'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
-import * as SessionInvariant from '@deepseek-ai/dsh-session/invariant'
-import * as AgentInvariant from '@deepseek-ai/dsh-agent/invariant'
-import * as AgentLoopInvariant from '@deepseek-ai/dsh-agent-loop/invariant'
-import { BasicCompactionEngine } from '@deepseek-ai/dsh-compaction-basic'
-import TokenMeter from '@deepseek-ai/dsh-token-meter'
-import * as LlmRetry from '@deepseek-ai/dsh-llm-retry'
-import { Session, SessionId, type SessionEvent, type SurfaceEvent } from '@deepseek-ai/dsh-session'
+import { Context } from '@mutantcat/cordis'
+import { toolPairingBalancedAfter, toolPairingBalancedBefore } from '@mutantcat/dsh-compaction'
+import { createUserMessage, createSystemMessage, CONTEXT_WINDOW_EXCEEDED_CODE, LlmError, resolveRetryPolicy , createMessage } from '@mutantcat/dsh-llm'
+import type { ContentBlock, GenerateOptions, LlmResolvedModelInfo, ResolvedRetryPolicy, StreamChunk } from '@mutantcat/dsh-llm'
+import { ToolCallId, LlmAdapter } from '@mutantcat/dsh-llm'
+import { defineContentToolFixture } from '@mutantcat/dsh-tools'
+import type { Agent } from '@mutantcat/dsh-agent'
+import AgentLoop from '@mutantcat/dsh-agent-loop'
+import { mountAgentLoopTestDependencies } from '@mutantcat/dsh-agent-loop-testkit'
+import InvariantRegistry from '@mutantcat/dsh-invariants'
+import * as SessionInvariant from '@mutantcat/dsh-session/invariant'
+import * as AgentInvariant from '@mutantcat/dsh-agent/invariant'
+import * as AgentLoopInvariant from '@mutantcat/dsh-agent-loop/invariant'
+import { BasicCompactionEngine } from '@mutantcat/dsh-compaction-basic'
+import TokenMeter from '@mutantcat/dsh-token-meter'
+import * as LlmRetry from '@mutantcat/dsh-llm-retry'
+import { Session, SessionId, type SessionEvent, type SurfaceEvent } from '@mutantcat/dsh-session'
 
 /**
  * CBR-001 regression through the real loop. A replacement checkpoint has a high
@@ -336,7 +336,7 @@ describe('token pressure after loop-admitted system prompts', () => {
         agent.session.append('system/message', {
           turn,
           step,
-          message: createSystemMessage('retry guidance', '@deepseek-ai/dsh-system-prompt'),
+          message: createSystemMessage('retry guidance', '@mutantcat/dsh-system-prompt'),
         }, { surfaceOp: { op: 'replace', startSeq: node, endSeq: node }, sourceEventSeqs: [node] })
         return { kind: 'retry' }
       })

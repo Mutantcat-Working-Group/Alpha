@@ -10,17 +10,17 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createScope } from '@deepseek-ai/dsh-scope'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import CommandRuntime from '@deepseek-ai/dsh-commands'
-import PermissionPresetService from '@deepseek-ai/dsh-permission-presets'
-import { AUTO_PRESET } from '@deepseek-ai/dsh-permission-presets'
-import type { Config } from '@deepseek-ai/dsh-permission-presets'
-import ApprovalService from '@deepseek-ai/dsh-user-approval'
+import { Context } from '@mutantcat/cordis'
+import SessionStore, { SessionId } from '@mutantcat/dsh-session'
+import type { Session } from '@mutantcat/dsh-session'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { createScope } from '@mutantcat/dsh-scope'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import CommandRuntime from '@mutantcat/dsh-commands'
+import PermissionPresetService from '@mutantcat/dsh-permission-presets'
+import { AUTO_PRESET } from '@mutantcat/dsh-permission-presets'
+import type { Config } from '@mutantcat/dsh-permission-presets'
+import ApprovalService from '@mutantcat/dsh-user-approval'
 
 async function harness(options: { withPermission?: boolean; config?: Config } = {}): Promise<{ ctx: Context; session: Session }> {
   const ctx = new Context()

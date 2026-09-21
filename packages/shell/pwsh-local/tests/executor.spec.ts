@@ -1,5 +1,5 @@
 /**
- * Real-process tests for `@deepseek-ai/dsh-pwsh-local`: the LOCAL subprocess
+ * Real-process tests for `@mutantcat/dsh-pwsh-local`: the LOCAL subprocess
  * service plus a REAL pwsh executable, exercised through the executor seam
  * (`resolve` → `run`/`start`). These verify the world — actual PowerShell
  * runs, output capture, truncation and spill, deadlines, kill escalation, and
@@ -14,13 +14,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { PwshLocalExecutor, ENCODING_PREAMBLE, candidatePwshPaths, resolvePwshPath } from '@deepseek-ai/dsh-pwsh-local'
-import LocalSubprocessRuntime from '@deepseek-ai/dsh-subprocess-local'
-import SubprocessRuntime from '@deepseek-ai/dsh-subprocess'
-import type { SubprocessHandle, SubprocessOutcome, SubprocessOutputReader, SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
-import type { ShellProcess } from '@deepseek-ai/dsh-shell'
+import { Context } from '@mutantcat/cordis'
+import { PwshLocalExecutor, ENCODING_PREAMBLE, candidatePwshPaths, resolvePwshPath } from '@mutantcat/dsh-pwsh-local'
+import LocalSubprocessRuntime from '@mutantcat/dsh-subprocess-local'
+import SubprocessRuntime from '@mutantcat/dsh-subprocess'
+import type { SubprocessHandle, SubprocessOutcome, SubprocessOutputReader, SubprocessSpawnSpec } from '@mutantcat/dsh-subprocess'
+import { MAX_TIMER_DELAY_MS } from '@mutantcat/dsh-timeout'
+import type { ShellProcess } from '@mutantcat/dsh-shell'
 
 const spillDir = mkdtempSync(join(tmpdir(), 'dsh-pwsh-exec-spec-'))
 

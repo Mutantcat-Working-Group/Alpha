@@ -1,6 +1,6 @@
 /** Optional Electron status presentation; the native shell owns actions and Web owns visible copy. */
-import { IconDownloadOutline16, IconLoadingOutline16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import { IconDownloadOutline16, IconLoadingOutline16, Tooltip } from '@mutantcat/dsh-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@mutantcat/dsh-client-ui-slots'
 import css from './DesktopUpdateIndicator.module.css'
 import type { DesktopUpdateFailureKind, DesktopUpdatePresentation, DesktopUpdateView } from './desktop-update-bridge.ts'
 import type { SettingsRootInjected } from './shell-contract.ts'

@@ -9,27 +9,27 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { Context, FiberState } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import LlmRuntime from '@deepseek-ai/dsh-llm'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
+import { Context, FiberState } from '@mutantcat/cordis'
+import Loader from '@mutantcat/cordis-plugin-loader'
+import Include from '@mutantcat/cordis-plugin-include'
+import LlmRuntime from '@mutantcat/dsh-llm'
+import SessionStore, { SessionId } from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import ToolRuntime from '@mutantcat/dsh-tools'
+import AgentRegistry from '@mutantcat/dsh-agent'
+import AgentLoop from '@mutantcat/dsh-agent-loop'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import AgentPresets, { COMPOSITION_FILE, METADATA_FILE } from '@deepseek-ai/dsh-agent-presets'
-import type { Config } from '@deepseek-ai/dsh-agent-presets'
-import { evaluate } from '@deepseek-ai/cordis-plugin-loader'
+import AgentPresets, { COMPOSITION_FILE, METADATA_FILE } from '@mutantcat/dsh-agent-presets'
+import type { Config } from '@mutantcat/dsh-agent-presets'
+import { evaluate } from '@mutantcat/cordis-plugin-loader'
 import { fileComposition, mountedCompositionRows } from '../src/composition-inventory.ts'
 import { livePresetMounts } from '../src/mount.ts'
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'fixtures')
 const SYSTEM_ROOT = { path: join(FIXTURES, 'system'), trust: 'system' as const }
 // A row naming a package installed beside the harness, the way authored rows do.
-const VALID = '- id: prompt\n  name: \'@deepseek-ai/dsh-system-prompt\'\n'
+const VALID = '- id: prompt\n  name: \'@mutantcat/dsh-system-prompt\'\n'
 
 const contexts: Context[] = []
 
@@ -213,10 +213,10 @@ describe('AgentPresets.compositionInventory', () => {
     await writeFile(join(userRoot, 'documented', COMPOSITION_FILE), [
       VALID.trimEnd(),
       '- id: gated',
-      '  name: \'@deepseek-ai/dsh-system-prompt\'',
+      '  name: \'@mutantcat/dsh-system-prompt\'',
       '  disabled: !!js 1 === 1',
       '- id: undecidable',
-      '  name: \'@deepseek-ai/dsh-system-prompt\'',
+      '  name: \'@mutantcat/dsh-system-prompt\'',
       '  disabled: !!js nothing.here',
     ].join('\n'))
     await writeFile(join(userRoot, 'documented', METADATA_FILE), 'name: 我的模式\n')
@@ -249,14 +249,14 @@ describe('AgentPresets.compositionInventory', () => {
         name: '我的模式',
         isDefault: false,
         rows: [
-          { entryId: 'prompt', moduleName: '@deepseek-ai/dsh-system-prompt', enabled: true },
+          { entryId: 'prompt', moduleName: '@mutantcat/dsh-system-prompt', enabled: true },
           // The platform-gate shape: the service evaluates it with the
           // Loader's own scope, so the file answer matches a mount's.
-          { entryId: 'gated', moduleName: '@deepseek-ai/dsh-system-prompt', enabled: false, condition: '1 === 1' },
+          { entryId: 'gated', moduleName: '@mutantcat/dsh-system-prompt', enabled: false, condition: '1 === 1' },
           // An expression the evaluator refuses stays a mount's decision.
           {
             entryId: 'undecidable',
-            moduleName: '@deepseek-ai/dsh-system-prompt',
+            moduleName: '@mutantcat/dsh-system-prompt',
             enabled: 'conditional',
             condition: 'nothing.here',
           },

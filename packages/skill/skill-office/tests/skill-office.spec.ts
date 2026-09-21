@@ -2,11 +2,11 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import SkillRegistry from '@deepseek-ai/dsh-skill'
-import * as SkillOffice from '@deepseek-ai/dsh-skill-office'
+import { Context } from '@mutantcat/cordis'
+import Loader from '@mutantcat/cordis-plugin-loader'
+import Include from '@mutantcat/cordis-plugin-include'
+import SkillRegistry from '@mutantcat/dsh-skill'
+import * as SkillOffice from '@mutantcat/dsh-skill-office'
 import { describe, expect, it } from 'vitest'
 
 const assets = fileURLToPath(new URL('../assets/', import.meta.url))
@@ -43,8 +43,8 @@ describe('bundled Office skills', () => {
       await cp(assets, external, { recursive: true })
       const configPath = join(root, 'cordis.yml')
       await writeFile(configPath, [
-        "- name: '@deepseek-ai/dsh-skill'",
-        "- name: '@deepseek-ai/dsh-skill-office'",
+        "- name: '@mutantcat/dsh-skill'",
+        "- name: '@mutantcat/dsh-skill-office'",
         '  config:',
         `    assetRoot: ${JSON.stringify(external)}`,
         '',
@@ -53,8 +53,8 @@ describe('bundled Office skills', () => {
       await ctx.plugin(Loader)
       ctx.loader.builtins.include = Include
       const modules = new Map<string, unknown>([
-        ['@deepseek-ai/dsh-skill', SkillRegistry],
-        ['@deepseek-ai/dsh-skill-office', SkillOffice],
+        ['@mutantcat/dsh-skill', SkillRegistry],
+        ['@mutantcat/dsh-skill-office', SkillOffice],
       ])
       ctx.loader.internal = {
         version: 'v2',

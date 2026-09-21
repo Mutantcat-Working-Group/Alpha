@@ -5,7 +5,7 @@
   - paragraph: 输入插件的包名、GitHub 仓库地址或本地目录路径。
   - text: 包名或地址
   - textbox "包名或地址":
-    - /placeholder: 例如 @deepseek-ai/dsh-experimental-auto-review
+    - /placeholder: 例如 @mutantcat/dsh-experimental-auto-review
     - text: slow-package
   - button "不知道该填什么？":
     - img

@@ -8,10 +8,10 @@
 - button "7 次工具调用" [expanded]:
   - text: 7 次工具调用
   - img
-- button "上下文注入 @deepseek-ai/dsh-system-prompt":
+- button "上下文注入 @mutantcat/dsh-system-prompt":
   - img
   - img
-  - text: 上下文注入 @deepseek-ai/dsh-system-prompt
+  - text: 上下文注入 @mutantcat/dsh-system-prompt
 - button "思考 The user wants four things done directly. But I need to read intro.md before editing (fs-observation-policy requires reading existing file first). The user says don't look at the directory first, but reading intro.md is needed for the edit tool. Let me just do it.":
   - img
   - img

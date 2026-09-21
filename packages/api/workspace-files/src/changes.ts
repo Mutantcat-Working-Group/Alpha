@@ -7,9 +7,9 @@
  * root with `ready` before emitting any queued or live changes.
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import { Deque } from '@deepseek-ai/dsh-deque'
-import type { FsObservation, FsTarget } from '@deepseek-ai/dsh-fs'
+import type { Context } from '@mutantcat/cordis'
+import { Deque } from '@mutantcat/dsh-deque'
+import type { FsObservation, FsTarget } from '@mutantcat/dsh-fs'
 import type { WorkspaceFileWatchFrame } from './types.ts'
 
 /** One `fs/observed` emission as received, before any generation filters it. */

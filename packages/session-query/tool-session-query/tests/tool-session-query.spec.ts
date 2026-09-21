@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context, type Fiber } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage, ToolCallId, HarnessError , createMessage } from '@deepseek-ai/dsh-llm'
-import { MAX_TIMER_DELAY_MS, TimeoutReason } from '@deepseek-ai/dsh-timeout'
-import * as TimeoutPolicy from '@deepseek-ai/dsh-tool-call-timeout-policy'
+import { Context, type Fiber } from '@mutantcat/cordis'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { createUserMessage, ToolCallId, HarnessError , createMessage } from '@mutantcat/dsh-llm'
+import { MAX_TIMER_DELAY_MS, TimeoutReason } from '@mutantcat/dsh-timeout'
+import * as TimeoutPolicy from '@mutantcat/dsh-tool-call-timeout-policy'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   SessionId,
@@ -12,9 +12,9 @@ import SessionStore, {
   type SessionEvent,
   type SessionHeader,
   type SessionId as SessionIdValue,
-} from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import { turnBoundaryProjectionDefinition } from '@deepseek-ai/dsh-agent-loop'
+} from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import { turnBoundaryProjectionDefinition } from '@mutantcat/dsh-agent-loop'
 import SessionQueryEngine, {
   SessionQueryError,
   SessionSearchCursor,
@@ -27,10 +27,10 @@ import SessionQueryEngine, {
   type SessionSearchPage,
   type SessionSearchRequest,
   type SessionTitleObservationResult,
-} from '@deepseek-ai/dsh-session-query'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime, { type ToolExecutionResult } from '@deepseek-ai/dsh-tools'
-import * as ToolSessionQuery from '@deepseek-ai/dsh-tool-session-query'
+} from '@mutantcat/dsh-session-query'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import ToolRuntime, { type ToolExecutionResult } from '@mutantcat/dsh-tools'
+import * as ToolSessionQuery from '@mutantcat/dsh-tool-session-query'
 
 const activeContexts: Context[] = []
 

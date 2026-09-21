@@ -1,14 +1,14 @@
 /** Cold-safe Session list and search projection. */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-agent-presets'
-import type { ImageAttachmentLimits } from '@deepseek-ai/dsh-attachment'
-import { SessionLogOffset } from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@deepseek-ai/dsh-session'
-import type {} from '@deepseek-ai/dsh-session-projection'
-import type {} from '@deepseek-ai/dsh-session-projection-cache'
-import { SessionQueryError, type SessionSearchCursor } from '@deepseek-ai/dsh-session-query'
-import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-agent-presets'
+import type { ImageAttachmentLimits } from '@mutantcat/dsh-attachment'
+import { SessionLogOffset } from '@mutantcat/dsh-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@mutantcat/dsh-session'
+import type {} from '@mutantcat/dsh-session-projection'
+import type {} from '@mutantcat/dsh-session-projection-cache'
+import { SessionQueryError, type SessionSearchCursor } from '@mutantcat/dsh-session-query'
+import { RemoteError } from '@mutantcat/dsh-typert-protocol'
 import { z } from 'zod'
 import {
   SESSION_SEARCH_RESULT_LIMIT,
@@ -170,7 +170,7 @@ export class ApiSessionList {
     if (provider === undefined) {
       throw new RemoteError(
         'gateway/internal',
-        'session search is unavailable: this deployment does not mount @deepseek-ai/dsh-session-query',
+        'session search is unavailable: this deployment does not mount @mutantcat/dsh-session-query',
         {},
       )
     }

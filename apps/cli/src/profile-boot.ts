@@ -7,14 +7,14 @@
  * App flags are not the launcher's business: the invocation's inner arguments
  * are provided to the tree through `ctx.cmdlineArgs`, where any injected app
  * plugin may read the same immutable snapshot.
- * @module @deepseek-ai/dsh/profile-boot
+ * @module @mutantcat/dsh/profile-boot
  */
 
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { FiberState, type Context } from '@deepseek-ai/cordis'
-import type { PatchOptions } from '@deepseek-ai/cordis-plugin-include'
+import { FiberState, type Context } from '@mutantcat/cordis'
+import type { PatchOptions } from '@mutantcat/cordis-plugin-include'
 import {
   boot,
   readProfilePatches,
@@ -33,11 +33,11 @@ import {
   type Profile,
   type ProfileResolutionGeneration,
   type ProfileResolutionMode,
-} from '@deepseek-ai/dsh-app-boot'
-import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
-import { installProxyFromEnvironment } from '@deepseek-ai/dsh-http-proxy'
-import { DSH_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@deepseek-ai/dsh-launch-environment'
-import { provideCmdline, type AppReady } from '@deepseek-ai/dsh-cmdline'
+} from '@mutantcat/dsh-app-boot'
+import { resolveDshHome } from '@mutantcat/dsh-home-paths'
+import { installProxyFromEnvironment } from '@mutantcat/dsh-http-proxy'
+import { DSH_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@mutantcat/dsh-launch-environment'
+import { provideCmdline, type AppReady } from '@mutantcat/dsh-cmdline'
 import { createProcessShutdown, type ProcessShutdown } from './process-shutdown.ts'
 
 const NAME = 'dsh'

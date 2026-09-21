@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
+import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
 import { BrowserController, createBrowserControllers } from '../src/client/browser/BrowserController.ts'
 import { createBrowserStore } from '../src/client/browser/store.ts'
 

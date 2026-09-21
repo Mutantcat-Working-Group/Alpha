@@ -5,37 +5,37 @@ const CLIENT_FACE_INCLUDE: readonly string[] = []
 
 /** Packages exempted from automatic Client/Host treatment despite declaring `dsh.client`. */
 const CLIENT_FACE_EXCLUDE: readonly string[] = [
-  '@deepseek-ai/dsh-api-session-controller',
-  '@deepseek-ai/dsh-api-workspace-controller',
+  '@mutantcat/dsh-api-session-controller',
+  '@mutantcat/dsh-api-workspace-controller',
 ]
 
 /** Host-only packages whose peer relays are deliberately flattened. */
 const HOST_DEPENDENCY_PACKAGES: readonly string[] = [
-  '@deepseek-ai/dsh-llm',
-  '@deepseek-ai/dsh-session',
+  '@mutantcat/dsh-llm',
+  '@mutantcat/dsh-session',
 ]
 
 /** Development-only package relationships not represented by source imports. */
 const CONFIGURATION_ONLY_DEV_DEPENDENCIES = {
-  '@deepseek-ai/dsh-client-locale': ['@deepseek-ai/dsh-api-remotes'],
-  '@deepseek-ai/dsh-client-ui-conversation': [
-    '@deepseek-ai/dsh-api-remotes',
-    '@deepseek-ai/dsh-client-ui-workspace',
+  '@mutantcat/dsh-client-locale': ['@mutantcat/dsh-api-remotes'],
+  '@mutantcat/dsh-client-ui-conversation': [
+    '@mutantcat/dsh-api-remotes',
+    '@mutantcat/dsh-client-ui-workspace',
   ],
-  '@deepseek-ai/dsh-client-ui-model-selection': ['@deepseek-ai/dsh-client-ui-input-trigger'],
-  '@deepseek-ai/dsh-client-ui-sidebar': ['@deepseek-ai/dsh-client-ui-workspace'],
-  '@deepseek-ai/dsh-client-ui-subagent': ['@deepseek-ai/dsh-client-ui-input-trigger'],
-  '@deepseek-ai/dsh-client-ui-theme': ['@deepseek-ai/dsh-api-remotes'],
-  '@deepseek-ai/dsh-client-ui-tool': ['@deepseek-ai/dsh-api-remotes'],
+  '@mutantcat/dsh-client-ui-model-selection': ['@mutantcat/dsh-client-ui-input-trigger'],
+  '@mutantcat/dsh-client-ui-sidebar': ['@mutantcat/dsh-client-ui-workspace'],
+  '@mutantcat/dsh-client-ui-subagent': ['@mutantcat/dsh-client-ui-input-trigger'],
+  '@mutantcat/dsh-client-ui-theme': ['@mutantcat/dsh-api-remotes'],
+  '@mutantcat/dsh-client-ui-tool': ['@mutantcat/dsh-api-remotes'],
 } as const satisfies Readonly<Record<string, readonly string[]>>
 
 /** Workspace packages whose complete runtime surface is safe across duplicate installations. */
 const DUPLICATE_SAFE_PACKAGES: readonly string[] = [
-  '@deepseek-ai/dsh-brand',
-  '@deepseek-ai/dsh-lazy-require',
-  '@deepseek-ai/dsh-typert-protocol',
-  '@deepseek-ai/dsh-util-crypto',
-  '@deepseek-ai/dsh-util-values',
+  '@mutantcat/dsh-brand',
+  '@mutantcat/dsh-lazy-require',
+  '@mutantcat/dsh-typert-protocol',
+  '@mutantcat/dsh-util-crypto',
+  '@mutantcat/dsh-util-values',
 ]
 
 /**
@@ -45,20 +45,20 @@ const DUPLICATE_SAFE_PACKAGES: readonly string[] = [
  * prominent heading in the pull request description.
  */
 const SAFE_HOST_DEPENDENCY_EXPORTS = {
-  '@deepseek-ai/dsh-credentials': ['credentialKey'],
-  '@deepseek-ai/dsh-deque': ['Deque'],
-  '@deepseek-ai/dsh-llm': ['callConfigEquals'],
-  '@deepseek-ai/dsh-session-format': ['sessionFormatLogFilename'],
-  '@deepseek-ai/dsh-timeout': ['MAX_TIMER_DELAY_MS'],
-  '@deepseek-ai/schemastery': ['default'],
+  '@mutantcat/dsh-credentials': ['credentialKey'],
+  '@mutantcat/dsh-deque': ['Deque'],
+  '@mutantcat/dsh-llm': ['callConfigEquals'],
+  '@mutantcat/dsh-session-format': ['sessionFormatLogFilename'],
+  '@mutantcat/dsh-timeout': ['MAX_TIMER_DELAY_MS'],
+  '@mutantcat/schemastery': ['default'],
 } as const satisfies HostDependencyExports
 
 /** Runtime exports that require every consumer to resolve the provider's shared peer instance. */
 const PEER_REQUIRED_HOST_EXPORTS = {
-  '@deepseek-ai/dsh-subprocess': ['SubprocessExecutableNotFoundError'],
-  '@deepseek-ai/dsh-scope': ['carrierKeyOf', 'scopeOf', 'scopeTarget'],
-  '@deepseek-ai/dsh-session': ['SESSION_FORMAT_VERSION'],
-  '@deepseek-ai/dsh-session-persistence': ['SessionPersistenceNotFoundError'],
+  '@mutantcat/dsh-subprocess': ['SubprocessExecutableNotFoundError'],
+  '@mutantcat/dsh-scope': ['carrierKeyOf', 'scopeOf', 'scopeTarget'],
+  '@mutantcat/dsh-session': ['SESSION_FORMAT_VERSION'],
+  '@mutantcat/dsh-session-persistence': ['SessionPersistenceNotFoundError'],
 } as const satisfies HostDependencyExports
 
 /** Exact import specifier to reviewed runtime exports. */

@@ -1,14 +1,14 @@
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
-import { RemoteError, TestRemote } from '@deepseek-ai/dsh-client-test-runtime'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { apply, inject } from '@deepseek-ai/dsh-client-ui-workspace/client'
-import type { WorkspaceBrowserInjected, WorkspacePickerInjected } from '@deepseek-ai/dsh-client-ui-workspace/client'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
+import { RemoteError, TestRemote } from '@mutantcat/dsh-client-test-runtime'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import { apply, inject } from '@mutantcat/dsh-client-ui-workspace/client'
+import type { WorkspaceBrowserInjected, WorkspacePickerInjected } from '@mutantcat/dsh-client-ui-workspace/client'
 import { WorkspaceBrowser } from '../src/client/rows/WorkspaceBrowser.tsx'
 import { WorkspacePicker } from '../src/client/WorkspacePicker.tsx'
 import { apply as hostApply } from '../src/index.ts'
-import type { SessionReference } from '@deepseek-ai/dsh-api-session-controller/client'
+import type { SessionReference } from '@mutantcat/dsh-api-session-controller/client'
 
 async function bench() {
   const ctx = new Context()

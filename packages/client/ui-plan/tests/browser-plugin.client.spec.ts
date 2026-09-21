@@ -5,13 +5,13 @@
  * outcomes into null (admitted) or a user-visible failure line; teardown
  * empties the seat (HMR safety).
  */
-import { ConversationEventRegistry } from '@deepseek-ai/dsh-client-ui-conversation/client'
-import { Context } from '@deepseek-ai/cordis'
+import { ConversationEventRegistry } from '@mutantcat/dsh-client-ui-conversation/client'
+import { Context } from '@mutantcat/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { RemoteError } from '@deepseek-ai/dsh-client-test-runtime'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import { RemoteError } from '@mutantcat/dsh-client-test-runtime'
 import { PlanChip } from '../src/client/PlanModeControl.tsx'
 import { PlanCards, PlanReviewOpen, type PlanOpenInjected, type PlanReviewOpenInjected } from '../src/client/PlanCard.tsx'
 import { PlanPreview, PlanTitle } from '../src/client/PlanPreview.tsx'

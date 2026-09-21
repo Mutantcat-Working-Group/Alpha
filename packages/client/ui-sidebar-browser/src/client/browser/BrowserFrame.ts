@@ -1,7 +1,7 @@
 /** BrowserFrame interface and the current iframe implementation. */
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
+import type { SnapshotStore } from '@mutantcat/dsh-client-store'
+import type { HostObservable } from '@mutantcat/dsh-client-ui-slots'
 import type { BrowserTarget } from './url.ts'
 
 /** One prepared document rendered by a BrowserFrame implementation. */

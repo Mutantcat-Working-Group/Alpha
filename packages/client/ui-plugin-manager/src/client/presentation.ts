@@ -1,7 +1,7 @@
 /** Display labels and toast sentences for global plugin management. */
 
-import type { ManagementError } from '@deepseek-ai/dsh-api-remotes/client'
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+import type { ManagementError } from '@mutantcat/dsh-api-remotes/client'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
 import type { PluginManagerLocaleKey } from './locales.ts'
 import type { FailedAction, ManagerNotice, PackageView } from './manager-store.ts'
 
@@ -10,13 +10,13 @@ export type Translate = PropsLocale<'pluginManager'>['t']
 
 /** The official packages with copy of their own, and whether each is a beta feature the page tags as such. */
 const BUILTIN_COPY = new Map<string, { title: PluginManagerLocaleKey; description: PluginManagerLocaleKey; beta: boolean }>([
-  ['@deepseek-ai/dsh-experimental-agent-team-profile', {
+  ['@mutantcat/dsh-experimental-agent-team-profile', {
     title: 'builtinAgentTeamTitle', description: 'builtinAgentTeamDescription', beta: true,
   }],
-  ['@deepseek-ai/dsh-experimental-agent-team-web-profile', {
+  ['@mutantcat/dsh-experimental-agent-team-web-profile', {
     title: 'builtinAgentTeamWebTitle', description: 'builtinAgentTeamWebDescription', beta: true,
   }],
-  ['@deepseek-ai/dsh-experimental-auto-review', {
+  ['@mutantcat/dsh-experimental-auto-review', {
     title: 'builtinAutoReviewTitle', description: 'builtinAutoReviewDescription', beta: true,
   }],
 ])

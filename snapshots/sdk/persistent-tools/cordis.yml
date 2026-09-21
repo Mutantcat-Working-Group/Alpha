@@ -4,12 +4,12 @@
 
 - insert:
     - id: tool-str-replace-editor
-      name: '@deepseek-ai/dsh-tool-str-replace-editor'
+      name: '@mutantcat/dsh-tool-str-replace-editor'
       config:
         maxOutputChars: 16000
 
 - id: llm-deepseek
-  name: '@deepseek-ai/dsh-llm-deepseek'
+  name: '@mutantcat/dsh-llm-deepseek'
   config:
     apiKeyEnv: DEEPSEEK_API_KEY
     streamIdleTimeoutMs: 172800000
@@ -18,139 +18,139 @@
         contextWindow: !!js Number(process.env.DSH_CONTEXT_WINDOW ?? 1000000)
 
 - id: sandbox-policy
-  name: '@deepseek-ai/dsh-sandbox-policy'
+  name: '@mutantcat/dsh-sandbox-policy'
   config:
     mode: danger-full-access
     workspaceRoot: !!js process.cwd()
 
 - id: approval
-  name: '@deepseek-ai/dsh-user-approval'
+  name: '@mutantcat/dsh-user-approval'
   config:
     policy: never
 
 - id: permission
-  name: '@deepseek-ai/dsh-permission-presets'
+  name: '@mutantcat/dsh-permission-presets'
   disabled: true
 
 - id: bash-sandbox
-  name: '@deepseek-ai/dsh-bash-sandbox'
+  name: '@mutantcat/dsh-bash-sandbox'
   disabled: true
 
 - id: pwsh-sandbox
-  name: '@deepseek-ai/dsh-pwsh-sandbox'
+  name: '@mutantcat/dsh-pwsh-sandbox'
   disabled: true
 
 - id: fs-sandbox
-  name: '@deepseek-ai/dsh-fs-sandbox'
+  name: '@mutantcat/dsh-fs-sandbox'
   disabled: true
 
 - id: tool-bash
-  name: '@deepseek-ai/dsh-tool-bash'
+  name: '@mutantcat/dsh-tool-bash'
   disabled: true
 
 - id: tool-pwsh
-  name: '@deepseek-ai/dsh-tool-pwsh'
+  name: '@mutantcat/dsh-tool-pwsh'
   disabled: true
 
 - id: agent-instructions
-  name: '@deepseek-ai/dsh-agent-instructions'
+  name: '@mutantcat/dsh-agent-instructions'
   disabled: true
 
 - id: skill
-  name: '@deepseek-ai/dsh-skill'
+  name: '@mutantcat/dsh-skill'
   disabled: true
 
 - id: skill-filesystem
-  name: '@deepseek-ai/dsh-skill-filesystem'
+  name: '@mutantcat/dsh-skill-filesystem'
   disabled: true
 
 - id: tool-skill
-  name: '@deepseek-ai/dsh-tool-skill'
+  name: '@mutantcat/dsh-tool-skill'
   disabled: true
 
 - id: tool-jobs
-  name: '@deepseek-ai/dsh-tool-jobs'
+  name: '@mutantcat/dsh-tool-jobs'
   disabled: true
 
 - id: tool-fs
-  name: '@deepseek-ai/dsh-tool-fs'
+  name: '@mutantcat/dsh-tool-fs'
   disabled: true
 
 - id: tool-fs-search
-  name: '@deepseek-ai/dsh-tool-fs-search'
+  name: '@mutantcat/dsh-tool-fs-search'
   disabled: true
 
 - id: tool-subagent-control
-  name: '@deepseek-ai/dsh-tool-subagent-control'
+  name: '@mutantcat/dsh-tool-subagent-control'
   disabled: true
 
 - id: tool-subagent-list-agents
-  name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+  name: '@mutantcat/dsh-tool-subagent-control/list-agents'
   disabled: true
 
 - id: tool-subagent
-  name: '@deepseek-ai/dsh-tool-subagent'
+  name: '@mutantcat/dsh-tool-subagent'
   disabled: true
 
 - id: tool-subagent-fork
-  name: '@deepseek-ai/dsh-tool-subagent'
+  name: '@mutantcat/dsh-tool-subagent'
   disabled: true
 
 - id: tool-workflow
-  name: '@deepseek-ai/dsh-tool-workflow'
+  name: '@mutantcat/dsh-tool-workflow'
   disabled: true
 
 - id: tool-todo
-  name: '@deepseek-ai/dsh-tool-todo'
+  name: '@mutantcat/dsh-tool-todo'
   disabled: true
 
 - id: tool-goal
-  name: '@deepseek-ai/dsh-tool-goal'
+  name: '@mutantcat/dsh-tool-goal'
   disabled: true
 
 - id: tool-ralph
-  name: '@deepseek-ai/dsh-tool-ralph'
+  name: '@mutantcat/dsh-tool-ralph'
   disabled: true
 
 - id: tool-web
-  name: '@deepseek-ai/dsh-tool-web'
+  name: '@mutantcat/dsh-tool-web'
   disabled: true
 
 - id: plan-mode
-  name: '@deepseek-ai/dsh-plan-mode'
+  name: '@mutantcat/dsh-plan-mode'
   disabled: true
 
 - id: system-prompt
-  name: '@deepseek-ai/dsh-system-prompt'
+  name: '@mutantcat/dsh-system-prompt'
   config:
     includeHarnessIdentity: false
     personaPrefix: !!js process.env.DSH_SYSTEM_PROMPT ?? 'You are a helpful software engineer assistant.'
 
 - id: session-persistence-jsonl
-  name: '@deepseek-ai/dsh-session-persistence-jsonl'
+  name: '@mutantcat/dsh-session-persistence-jsonl'
   config:
     root: !!js dshHomePath('sessions')
     compression: none
 
 - insert:
     - id: bash-local
-      name: '@deepseek-ai/dsh-bash-local'
+      name: '@mutantcat/dsh-bash-local'
 
     - id: fs-local
-      name: '@deepseek-ai/dsh-fs-local'
+      name: '@mutantcat/dsh-fs-local'
       config:
         cwd: !!js process.cwd()
 
     - id: terminal
-      name: '@deepseek-ai/dsh-terminal'
+      name: '@mutantcat/dsh-terminal'
 
     - id: terminal-bash
-      name: '@deepseek-ai/dsh-terminal-bash'
+      name: '@mutantcat/dsh-terminal-bash'
       config:
         timeoutMs: 300000
 
     - id: persistent-bash
-      name: '@deepseek-ai/dsh-tool-bash-persistent'
+      name: '@mutantcat/dsh-tool-bash-persistent'
       config:
         timeoutMs: 300000
         description: |-

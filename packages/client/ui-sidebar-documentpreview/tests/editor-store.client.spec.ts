@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { createEditorStore } from '../src/client/editor/store.ts'
-import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
+import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
 
 const TAB_1 = 'tab-1' as TabId
 const TAB_2 = 'tab-2' as TabId

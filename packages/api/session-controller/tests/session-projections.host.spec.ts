@@ -11,25 +11,25 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { z } from 'zod'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import { AttachmentStore } from '@deepseek-ai/dsh-attachment'
-import { agentPresetProjectionDefinition } from '@deepseek-ai/dsh-agent-presets'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SESSION_FORMAT_VERSION, SessionId, SessionLogOffset, SessionSeq } from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent, SessionHeader, UserMessage } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
-import SessionProjectionCache, { projectionCacheDomainSpec } from '@deepseek-ai/dsh-session-projection-cache'
-import Storage from '@deepseek-ai/dsh-storage'
-import * as StorageDomain from '@deepseek-ai/dsh-storage-domain'
-import * as StorageJson from '@deepseek-ai/dsh-storage-json'
-import type { SessionControlFrame, SessionFollowFrame } from '@deepseek-ai/dsh-api-session-controller/types'
+import AgentRegistry from '@mutantcat/dsh-agent'
+import { AttachmentStore } from '@mutantcat/dsh-attachment'
+import { agentPresetProjectionDefinition } from '@mutantcat/dsh-agent-presets'
+import { createUserMessage } from '@mutantcat/dsh-llm'
+import SessionStore, { SESSION_FORMAT_VERSION, SessionId, SessionLogOffset, SessionSeq } from '@mutantcat/dsh-session'
+import type { Session, SessionEvent, SessionHeader, UserMessage } from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import type { ProjectionDefinition } from '@mutantcat/dsh-session-projection'
+import SessionProjectionCache, { projectionCacheDomainSpec } from '@mutantcat/dsh-session-projection-cache'
+import Storage from '@mutantcat/dsh-storage'
+import * as StorageDomain from '@mutantcat/dsh-storage-domain'
+import * as StorageJson from '@mutantcat/dsh-storage-json'
+import type { SessionControlFrame, SessionFollowFrame } from '@mutantcat/dsh-api-session-controller/types'
 import {
   mountAgentLoopTestDependencies,
   mountAgentLoopTestHarness,
-} from '@deepseek-ai/dsh-agent-loop-testkit'
+} from '@mutantcat/dsh-agent-loop-testkit'
 import { createSessionTestRemote, testSessionPersistence, type TestSessionRemote } from './test-remote.ts'
 
 const ownedContexts = new Set<Context>()
@@ -39,7 +39,7 @@ afterEach(async () => {
 })
 let nextHarnessSession = 1
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@mutantcat/dsh-session-projection/types' {
   interface SessionProjectionStateMap {
     'test/last-user': LastUserState
     'test/internal-count': number

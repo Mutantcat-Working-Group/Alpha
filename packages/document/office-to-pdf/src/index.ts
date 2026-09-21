@@ -3,13 +3,13 @@ import { randomUUID } from 'node:crypto'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { extname, isAbsolute, join } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { createConverter, type Converter, type ConverterOptions } from '@deepseek-ai/libreoffice-kit'
-import z from '@deepseek-ai/schemastery'
-import type { WorkspaceFileScope, WorkspaceFileStat } from '@deepseek-ai/dsh-api-workspace-files'
-import type {} from '@deepseek-ai/dsh-fs'
-import { brandString } from '@deepseek-ai/dsh-brand'
-import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
+import z from '@mutantcat/schemastery'
+import type { WorkspaceFileScope, WorkspaceFileStat } from '@mutantcat/dsh-api-workspace-files'
+import type {} from '@mutantcat/dsh-fs'
+import { brandString } from '@mutantcat/dsh-brand'
+import { Remote, RemoteError, TypertRemoteService } from '@mutantcat/dsh-typert-protocol'
 import { OfficeToPdfError } from './errors.ts'
 import { OfficeToPdfGeneration, type OfficeSourceKey } from './identity.ts'
 import type { OfficeExtension, OfficeToPdfRequest, OfficeToPdfResult, OfficeToPdfPriority, RenderedDocumentBytes } from './types.ts'
@@ -20,7 +20,7 @@ export * from './errors.ts'
 export * from './identity.ts'
 export * from './types.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     /** Shared Office conversion and authorized workspace-file rendering. */
     officeToPdf: OfficeToPdf

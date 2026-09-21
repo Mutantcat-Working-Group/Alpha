@@ -16,10 +16,10 @@
  */
 
 import { Client, type Transport } from '@modelcontextprotocol/client'
-import type { Context } from '@deepseek-ai/cordis'
-import { assertNever, type JsonValue } from '@deepseek-ai/dsh-util-values'
+import type { Context } from '@mutantcat/cordis'
+import { assertNever, type JsonValue } from '@mutantcat/dsh-util-values'
 import type { ServerContext } from './server-context.ts'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import { MAX_TIMER_DELAY_MS } from '@mutantcat/dsh-timeout'
 import { createTransport } from './transport.ts'
 import { syncTools } from './tools.ts'
 import type { ToolBridgeOptions, ToolDisposers } from './tools.ts'

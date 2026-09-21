@@ -169,7 +169,7 @@ export async function preparePrimaryRuntime(options: { deferSmoke?: boolean } = 
     rmSync(staging, { recursive: true, force: true })
   }
   const hostRequire = createRequire(resolve(import.meta.dirname, '..', '..', 'desktop-host', 'package.json'))
-  await prepareOfficeSkillAssets(join(dirname(hostRequire.resolve('@deepseek-ai/dsh-skill-office/package.json')), 'assets'),
+  await prepareOfficeSkillAssets(join(dirname(hostRequire.resolve('@mutantcat/dsh-skill-office/package.json')), 'assets'),
     join(paths.runtime, 'office-skills'))
   if (!options.deferSmoke) smokePrimaryRuntime(join(paths.runtime, 'primary-runtime'))
 }

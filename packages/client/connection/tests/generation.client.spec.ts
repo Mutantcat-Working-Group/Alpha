@@ -1,4 +1,4 @@
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   apply,

@@ -12,13 +12,13 @@
  * armed claim folds with zero delta because bounded state cannot reconstruct
  * the replaced range; this preserves replay at the cost of possible drift.
  *
- * @module @deepseek-ai/dsh-token-meter/surface-projection
+ * @module @mutantcat/dsh-token-meter/surface-projection
  */
 
-import { deriveEventMessage, isSurfaceEvent, SessionSeq } from '@deepseek-ai/dsh-session'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import { deriveEventMessage, isSurfaceEvent, SessionSeq } from '@mutantcat/dsh-session'
+import type { SessionEvent } from '@mutantcat/dsh-session'
 // Type-only: the `compaction/*` SessionEventMap merges (shadow-price events).
-import type {} from '@deepseek-ai/dsh-compaction'
+import type {} from '@mutantcat/dsh-compaction'
 import { estimateMessage } from './estimate.ts'
 
 /**

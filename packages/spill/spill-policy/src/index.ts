@@ -7,7 +7,7 @@
  * locator and retrieval guidance.
  *
  * It registers NO service and owns NO storage or preview mechanics: preview is
- * `@deepseek-ai/dsh-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
+ * `@mutantcat/dsh-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
  * The policy only decides WHEN to spill and composes the notice.
  *
  * A second arm applies the SAME cap to the durable log: the
@@ -40,18 +40,18 @@
  * replaced content still has its replacement bounded, and value replacements
  * and `block` decisions pass through unchanged.
  *
- * @module @deepseek-ai/dsh-spill-policy
+ * @module @mutantcat/dsh-spill-policy
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import { TextRetainer } from '@deepseek-ai/dsh-output-retention'
-import type { Omitted } from '@deepseek-ai/dsh-output-retention'
-import type { SaveTextSpill, SpillRef } from '@deepseek-ai/dsh-spill'
-import type { SessionId } from '@deepseek-ai/dsh-session'
-import type { ToolCallId } from '@deepseek-ai/dsh-llm'
-import type { PostToolDecision, ToolExecution } from '@deepseek-ai/dsh-tools'
+import type { Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import type { ContentBlock } from '@mutantcat/dsh-llm'
+import { TextRetainer } from '@mutantcat/dsh-output-retention'
+import type { Omitted } from '@mutantcat/dsh-output-retention'
+import type { SaveTextSpill, SpillRef } from '@mutantcat/dsh-spill'
+import type { SessionId } from '@mutantcat/dsh-session'
+import type { ToolCallId } from '@mutantcat/dsh-llm'
+import type { PostToolDecision, ToolExecution } from '@mutantcat/dsh-tools'
 import type { SpillPolicyExec } from './types.ts'
 import { formatSpillNotice } from './notice.ts'
 

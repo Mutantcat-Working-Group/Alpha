@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { getEnvironmentData } from 'node:worker_threads'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { afterEach, describe, expect, it } from 'vitest'
 import { PluginPackages } from '../src/profile-resolution/service.ts'
 import type { ProfileResolutionGeneration } from '../src/profile.ts'
@@ -164,7 +164,7 @@ describe('profile package metadata service', () => {
       join(profilesDir, 'node_modules', 'metadata-lib'),
       process.platform === 'win32' ? 'junction' : 'dir',
     )
-    const key = '@deepseek-ai/dsh-app-boot/profile-resolution'
+    const key = '@mutantcat/dsh-app-boot/profile-resolution'
     const previous = getEnvironmentData(key)
     const ctx = new Context()
     contexts.push(ctx)

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-connection",
+  "name": "@mutantcat/dsh-client-connection",
   "description": "Authenticated RPC transport and generation lifecycle",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -34,8 +34,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/dsh-credentials": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "files": [
@@ -44,14 +44,14 @@
     "lib/types/**/*.d.ts"
   ],
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-host-webserver": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-host-webserver": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^"
   }
 }

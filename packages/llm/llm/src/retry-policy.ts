@@ -4,11 +4,11 @@
  * Adapters expose one resolved policy per registered provider route; the
  * optional dsh-llm-retry plugin executes it on the agent's failed-step extension point.
  *
- * @module @deepseek-ai/dsh-llm/retry-policy
+ * @module @mutantcat/dsh-llm/retry-policy
  */
 
-import z from '@deepseek-ai/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import z from '@mutantcat/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@mutantcat/dsh-timeout'
 import { EMPTY_RESPONSE_CODE } from './error.ts'
 
 const DEFAULT_MAX_RETRIES = 5

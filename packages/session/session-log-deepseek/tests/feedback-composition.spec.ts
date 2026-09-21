@@ -3,17 +3,17 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
-import MessageFeedback from '@deepseek-ai/dsh-message-feedback'
-import { recordFeedback } from '@deepseek-ai/dsh-command-feedback'
-import LlmRuntime, { createAssistantMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import * as LlmDeepSeek from '@deepseek-ai/dsh-llm-deepseek'
-import DeepSeekLlmApiExtensions from '@deepseek-ai/dsh-deepseek-llm-api-extensions'
-import { startMockLlmServer, type MockLlmServer } from '@deepseek-ai/dsh-llm-mock-server'
+import { Context } from '@mutantcat/cordis'
+import Loader from '@mutantcat/cordis-plugin-loader'
+import Include from '@mutantcat/cordis-plugin-include'
+import SessionStore, { SessionId } from '@mutantcat/dsh-session'
+import JsonlSessionPersistence from '@mutantcat/dsh-session-persistence-jsonl'
+import MessageFeedback from '@mutantcat/dsh-message-feedback'
+import { recordFeedback } from '@mutantcat/dsh-command-feedback'
+import LlmRuntime, { createAssistantMessage, createUserMessage } from '@mutantcat/dsh-llm'
+import * as LlmDeepSeek from '@mutantcat/dsh-llm-deepseek'
+import DeepSeekLlmApiExtensions from '@mutantcat/dsh-deepseek-llm-api-extensions'
+import { startMockLlmServer, type MockLlmServer } from '@mutantcat/dsh-llm-mock-server'
 import * as SessionLogDeepSeek from '../src/index.ts'
 import type { DeepSeekSessionLogExtension } from '../src/types.ts'
 
@@ -37,24 +37,24 @@ it('uploads freeform feedback and message put/edit/delete through the unchanged 
   vi.stubEnv('DEEPSEEK_API_KEY', 'feedback-test-key')
   server = await startMockLlmServer({ sequence: ['invalid_request', 'success', 'success'] })
   const modules = new Map<string, unknown>([
-    ['@deepseek-ai/dsh-session', SessionStore],
-    ['@deepseek-ai/dsh-session-persistence-jsonl', JsonlSessionPersistence],
-    ['@deepseek-ai/dsh-message-feedback', MessageFeedback],
-    ['@deepseek-ai/dsh-llm', LlmRuntime],
-    ['@deepseek-ai/dsh-llm-deepseek', LlmDeepSeek],
-    ['@deepseek-ai/dsh-deepseek-llm-api-extensions', DeepSeekLlmApiExtensions],
-    ['@deepseek-ai/dsh-session-log-deepseek', SessionLogDeepSeek],
+    ['@mutantcat/dsh-session', SessionStore],
+    ['@mutantcat/dsh-session-persistence-jsonl', JsonlSessionPersistence],
+    ['@mutantcat/dsh-message-feedback', MessageFeedback],
+    ['@mutantcat/dsh-llm', LlmRuntime],
+    ['@mutantcat/dsh-llm-deepseek', LlmDeepSeek],
+    ['@mutantcat/dsh-deepseek-llm-api-extensions', DeepSeekLlmApiExtensions],
+    ['@mutantcat/dsh-session-log-deepseek', SessionLogDeepSeek],
   ])
   const config = join(root, 'cordis.yml')
   await writeFile(config, JSON.stringify([...modules.keys()].map(name => ({
     name,
-    ...name === '@deepseek-ai/dsh-session-persistence-jsonl'
+    ...name === '@mutantcat/dsh-session-persistence-jsonl'
       ? { config: { root: join(root!, 'sessions'), compression: 'none' } }
-      : name === '@deepseek-ai/dsh-message-feedback'
+      : name === '@mutantcat/dsh-message-feedback'
         ? { config: { maxNoteBytes: 1024 } }
-        : name === '@deepseek-ai/dsh-llm-deepseek'
+        : name === '@mutantcat/dsh-llm-deepseek'
           ? { config: { protocol: 'chat-completions', baseURL: server!.baseURL } }
-          : name === '@deepseek-ai/dsh-session-log-deepseek'
+          : name === '@mutantcat/dsh-session-log-deepseek'
             ? { config: { enabled: true } }
             : {},
   }))))

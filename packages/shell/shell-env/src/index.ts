@@ -5,17 +5,17 @@
  * the registry itself while plugins can register additional, enumerable facts
  * with effect-scoped disposal.
  *
- * @module @deepseek-ai/dsh-shell-env
+ * @module @mutantcat/dsh-shell-env
  */
 
-import { Service, type Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { DSH_ENV_PREFIX } from '@deepseek-ai/dsh-shell'
-import type { DshEnvironment, DshEnvironmentKey } from '@deepseek-ai/dsh-shell'
-import { DSH_HOME_ENV, resolveDshHome } from '@deepseek-ai/dsh-home-paths'
-import type { ToolExecution } from '@deepseek-ai/dsh-tools'
+import { Service, type Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import { DSH_ENV_PREFIX } from '@mutantcat/dsh-shell'
+import type { DshEnvironment, DshEnvironmentKey } from '@mutantcat/dsh-shell'
+import { DSH_HOME_ENV, resolveDshHome } from '@mutantcat/dsh-home-paths'
+import type { ToolExecution } from '@mutantcat/dsh-tools'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     shellEnv: ShellEnvRegistry
   }

@@ -3,12 +3,12 @@
  * API. Exports the `LlmRuntime` default, the abstract `LlmAdapter` for
  * provider backends, and `BlockAssembler` for chunk assembly.
  *
- * @module @deepseek-ai/dsh-llm
+ * @module @mutantcat/dsh-llm
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
-import { deepFreeze } from '@deepseek-ai/dsh-util-values'
+import { Context } from '@mutantcat/cordis'
+import { Remote, RemoteError, TypertRemoteService } from '@mutantcat/dsh-typert-protocol'
+import { deepFreeze } from '@mutantcat/dsh-util-values'
 import type {
   GenerateOptions,
   LlmConfigurableProvider,
@@ -36,7 +36,7 @@ import { normalizeApiKey } from './api-key.ts'
 import {
   contentHasFile, contentHasImage, fileHandleText, projectFilesToText, projectImagesForTextModel,
 } from './content.ts'
-import type { FileAttachmentRef } from '@deepseek-ai/dsh-attachment'
+import type { FileAttachmentRef } from '@mutantcat/dsh-attachment'
 
 export * from './attribution.ts'
 export * from './brand.ts'
@@ -51,7 +51,7 @@ export { BlockAssembler } from './assembler.ts'
 export { callConfigEquals, isAgentLoopRequest, markAgentLoopRequest } from './call-config.ts'
 export type { LlmCallConfig, LlmCallConfigAdapterDefaults } from './call-config.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     llm: LlmRuntime
   }

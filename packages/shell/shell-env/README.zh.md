@@ -3,7 +3,7 @@ description: "受管 DSH_* shell 环境，供选择、配置或扩展每次模�
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-shell-env
+# @mutantcat/dsh-shell-env
 
 [English](README.md) | 中文
 
@@ -36,8 +36,8 @@ kind: "package-reference"
 其他插件通过注册一个 contributor 来贡献事实，需要提供稳定名称、它可能返回的完整 `DSH_*` 键集合、每个键的描述，以及为一次执行计算取值的 resolver：
 
 ```ts
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-shell-env'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-shell-env'
 
 export const inject = ['shellEnv']
 
@@ -60,7 +60,7 @@ contributor 必须声明它返回的每个键；返回未声明或非字符串�
 |---|---|---|
 | `dshHome` | `$DSH_HOME`，然后 `~/.dsh` | 暴露为 `DSH_HOME` 的 Harness 主目录绝对路径 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-shell-env)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-shell-env)是每个受支持字段及其 JSDoc 的穷尽式真源。
 
 ### 可能出什么问题
 
@@ -107,7 +107,7 @@ contributor 必须声明它返回的每个键；返回未声明或非字符串�
 - [tool-bash](../tool-bash/README.zh.md)——消费本环境的 bash 工具。
 - [tool-pwsh](../tool-pwsh/README.zh.md)——消费本环境的 pwsh 工具。
 - [home paths 包](../../util/home-paths/README.zh.md)——`DSH_HOME` 如何解析。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-shell-env)——每个受支持配置字段及其源声明。
+- [生成的配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-shell-env)——每个受支持配置字段及其源声明。
 
 -----
 

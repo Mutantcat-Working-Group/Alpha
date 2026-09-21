@@ -6,18 +6,18 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import { ToolCallId } from '@deepseek-ai/dsh-llm'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import * as ToolTodo from '@deepseek-ai/dsh-tool-todo'
-import { unsupportedInbox } from '@deepseek-ai/dsh-agent-loop-testkit'
+import { Context } from '@mutantcat/cordis'
+import Loader from '@mutantcat/cordis-plugin-loader'
+import Include from '@mutantcat/cordis-plugin-include'
+import { ToolCallId } from '@mutantcat/dsh-llm'
+import { Session, SessionId } from '@mutantcat/dsh-session'
+import AgentRegistry from '@mutantcat/dsh-agent'
+import type { Agent } from '@mutantcat/dsh-agent'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import ToolRuntime from '@mutantcat/dsh-tools'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import * as ToolTodo from '@mutantcat/dsh-tool-todo'
+import { unsupportedInbox } from '@mutantcat/dsh-agent-loop-testkit'
 
 let root: string | undefined
 let context: Context | undefined
@@ -57,11 +57,11 @@ async function boot(configLines: readonly string[]): Promise<Context> {
   root = await mkdtemp(join(tmpdir(), 'dsh-todo-loader-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [
-    "- name: '@deepseek-ai/dsh-agent'",
-    "- name: '@deepseek-ai/dsh-system-prompt'",
-    "- name: '@deepseek-ai/dsh-tools'",
-    "- name: '@deepseek-ai/dsh-session-projection'",
-    "- name: '@deepseek-ai/dsh-tool-todo'",
+    "- name: '@mutantcat/dsh-agent'",
+    "- name: '@mutantcat/dsh-system-prompt'",
+    "- name: '@mutantcat/dsh-tools'",
+    "- name: '@mutantcat/dsh-session-projection'",
+    "- name: '@mutantcat/dsh-tool-todo'",
     ...configLines.length > 0 ? ['  config:', ...configLines] : [],
     '',
   ].join('\n'))
@@ -72,11 +72,11 @@ async function boot(configLines: readonly string[]): Promise<Context> {
   await ctx.plugin(Loader)
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@deepseek-ai/dsh-agent', AgentRegistry],
-    ['@deepseek-ai/dsh-system-prompt', SystemPrompt],
-    ['@deepseek-ai/dsh-tools', ToolRuntime],
-    ['@deepseek-ai/dsh-session-projection', SessionProjectionRegistry],
-    ['@deepseek-ai/dsh-tool-todo', ToolTodo],
+    ['@mutantcat/dsh-agent', AgentRegistry],
+    ['@mutantcat/dsh-system-prompt', SystemPrompt],
+    ['@mutantcat/dsh-tools', ToolRuntime],
+    ['@mutantcat/dsh-session-projection', SessionProjectionRegistry],
+    ['@mutantcat/dsh-tool-todo', ToolTodo],
   ])
   ctx.loader.internal = {
     version: 'v2',

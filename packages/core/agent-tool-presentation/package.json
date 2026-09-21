@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-agent-tool-presentation",
+  "name": "@mutantcat/dsh-agent-tool-presentation",
   "description": "Agent-plane presentation selector: composes one agent's tools as PTC mode, native, or both",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,19 +27,19 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-ptc-runtime": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-ptc-runtime": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

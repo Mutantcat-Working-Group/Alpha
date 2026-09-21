@@ -1,5 +1,5 @@
 /** Client-owned observation of the optional Desktop preload. */
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
 import type { DesktopUpdateBridge, DesktopUpdateView } from './desktop-update-bridge.ts'
 
 /** Owns one preload subscription across both sidebar locations. */

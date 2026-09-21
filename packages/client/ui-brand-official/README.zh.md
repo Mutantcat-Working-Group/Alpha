@@ -3,7 +3,7 @@ description: "面向侧栏与会话首屏的官方 Alpha 品牌填充；供选�
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-client-ui-brand-official
+# @mutantcat/dsh-client-ui-brand-official
 
 [English](README.md) | 中文
 

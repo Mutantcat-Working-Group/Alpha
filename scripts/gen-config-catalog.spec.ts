@@ -8,7 +8,7 @@ import { collectConfigCatalog } from './gen-config-catalog.ts'
 
 const roots: string[] = []
 const sharedSchema = `
-import Schema from '@deepseek-ai/schemastery'
+import Schema from '@mutantcat/schemastery'
 export interface LaunchConfig {
   /** Browser ownership mode. */
   mode: 'launch'

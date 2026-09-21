@@ -8,17 +8,17 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mkdtemp, readFile, realpath, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
-import SandboxedFileSystem from '@deepseek-ai/dsh-fs-sandbox'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import SandboxPolicyService, { setSandboxMode } from '@deepseek-ai/dsh-sandbox-policy'
-import { Session, SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
-import * as ToolFs from '@deepseek-ai/dsh-tool-fs'
-import ApprovalService from '@deepseek-ai/dsh-user-approval'
-import { snapshotSubagentDescriptor } from '@deepseek-ai/dsh-subagent'
+import { Context } from '@mutantcat/cordis'
+import type { Agent } from '@mutantcat/dsh-agent'
+import AgentLoop from '@mutantcat/dsh-agent-loop'
+import { mountAgentLoopTestDependencies } from '@mutantcat/dsh-agent-loop-testkit'
+import SandboxedFileSystem from '@mutantcat/dsh-fs-sandbox'
+import type { ContentBlock } from '@mutantcat/dsh-llm'
+import SandboxPolicyService, { setSandboxMode } from '@mutantcat/dsh-sandbox-policy'
+import { Session, SessionId, type SessionEvent } from '@mutantcat/dsh-session'
+import * as ToolFs from '@mutantcat/dsh-tool-fs'
+import ApprovalService from '@mutantcat/dsh-user-approval'
+import { snapshotSubagentDescriptor } from '@mutantcat/dsh-subagent'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import { startInProcessRun } from '../src/index.ts'
 
@@ -174,7 +174,7 @@ describe('in-process policy inheritance', () => {
       const runtimeContext = child.session.snapshotEvents().find(
         (event): event is SessionEvent<'user/message'> => event.type === 'user/message'
           && event.data.source.kind === 'plugin'
-          && event.data.source.plugin === '@deepseek-ai/dsh-system-prompt',
+          && event.data.source.plugin === '@mutantcat/dsh-system-prompt',
       )
       if (request === undefined || systemNode === undefined || runtimeContext === undefined) {
         throw new Error('child request lacks its system node or runtime policy context')

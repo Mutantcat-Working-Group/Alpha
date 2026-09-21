@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-web-fetch-http",
+  "name": "@mutantcat/dsh-web-fetch-http",
   "description": "Anonymous public HTTP(S) fetch provider for the DeepSeek Harness web capability seam (ctx.web)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,20 +27,20 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-web": "workspace:^",
-    "@deepseek-ai/dsh-http-proxy": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-web": "workspace:^",
+    "@mutantcat/dsh-http-proxy": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "ipaddr.js": "^2.5.0",
     "undici": "^8.10.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-web": "workspace:^",
-    "@deepseek-ai/dsh-http-proxy": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/dsh-web": "workspace:^",
+    "@mutantcat/dsh-http-proxy": "workspace:^"
   }
 }

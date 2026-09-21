@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-hmr",
+  "name": "@mutantcat/dsh-hmr",
   "description": "Coordinated module and profile configuration hot reload",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -28,29 +28,29 @@
   "author": "Shigma <shigma10826@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis-plugin-timer": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/dsh-app-boot": "workspace:^",
-    "@deepseek-ai/dsh-cmdline": "workspace:^"
+    "@mutantcat/cordis-plugin-timer": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/dsh-app-boot": "workspace:^",
+    "@mutantcat/dsh-cmdline": "workspace:^"
   },
   "dependencies": {
     "@babel/code-frame": "^7.29.0",
     "chokidar": "^4.0.3",
     "picomatch": "^4.0.3",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
     "@types/babel__code-frame": "^7.27.0",
     "@types/picomatch": "^3.0.2",
     "esbuild": "^0.28.1",
-    "@deepseek-ai/cordis-plugin-timer": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/dsh-app-boot": "workspace:^",
-    "@deepseek-ai/dsh-cmdline": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^"
+    "@mutantcat/cordis-plugin-timer": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/dsh-app-boot": "workspace:^",
+    "@mutantcat/dsh-cmdline": "workspace:^",
+    "@mutantcat/dsh-atomic-write": "workspace:^"
   }
 }

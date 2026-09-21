@@ -1,6 +1,6 @@
 /** Delegation-limit fields inside the shared Subagent settings card. */
 
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
 import { ValueField } from './fields.tsx'
 import type { SubagentLimitsCardFace, SubagentLimitsCardState } from './subagent-limits-card-controller.ts'
 import css from './SubagentLimitsFields.module.css'

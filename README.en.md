@@ -20,7 +20,7 @@ Alpha is an open-source AI code editor derived from [DeepSeek Harness](https://g
 <a id="run"></a>
 
 1. Download the installer for your platform from [Releases](https://github.com/Mutantcat-Working-Group/Alpha/releases). Double-clicking it installs and runs Alpha with no further configuration.
-2. To try the Web edition only, install Node.js and run `npx @deepseek-ai/dsh web`, which serves `http://127.0.0.1:3080` by default; `--no-open` starts the server without opening a browser.
+2. To try the Web edition only, install Node.js and run `npx @mutantcat/dsh web`, which serves `http://127.0.0.1:3080` by default; `--no-open` starts the server without opening a browser.
 
 <a id="run-from-source"></a>
 

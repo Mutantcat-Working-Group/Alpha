@@ -5,8 +5,8 @@
  */
 import {
   createSnapshotStore, type SnapshotStore,
-} from '@deepseek-ai/dsh-client-store'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+} from '@mutantcat/dsh-client-store'
+import type { SettingsScope } from '@mutantcat/dsh-client-ui-settings/client'
 import type {
   BusyEnterBehavior, ComposerSubmitGesture, InputSubmitMode,
 } from '../contract/composer-submission.ts'

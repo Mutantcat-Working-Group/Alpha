@@ -1,7 +1,7 @@
 /** Desktop tool exposing bundled interpreters without modifying command resolution. */
 
-import type { Context } from '@deepseek-ai/cordis'
-import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { Context } from '@mutantcat/cordis'
+import { defineTool } from '@mutantcat/dsh-tools'
 import { installPrimaryRuntime, type WorkspaceDependencies } from './primary-runtime.ts'
 
 export const name = 'desktop-workspace-dependencies'

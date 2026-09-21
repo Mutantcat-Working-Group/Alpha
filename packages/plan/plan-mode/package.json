@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-plan-mode",
+  "name": "@mutantcat/dsh-plan-mode",
   "description": "Logged per-agent plan mode with deployment guidance, a direct slash command, and a user-reviewed exit",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -41,38 +41,38 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-user-questions": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-commands": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-user-questions": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/dsh-commands": {
+    "@mutantcat/dsh-commands": {
       "optional": true
     }
   },
   "dependencies": {
-    "@deepseek-ai/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-ptc-runtime": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-user-questions": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-ptc-runtime": "workspace:^",
+    "@mutantcat/dsh-commands": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-user-questions": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

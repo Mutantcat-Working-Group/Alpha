@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-desktop",
+  "name": "@mutantcat/dsh-desktop",
   "description": "Electron desktop shell for a bundled dsh runtime and external plugins",
   "version": "1.0.20260921",
   "private": true,
@@ -43,8 +43,8 @@
     "semver": "^7.8.5"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-app-boot": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
+    "@mutantcat/dsh-app-boot": "workspace:^",
+    "@mutantcat/dsh-home-paths": "workspace:^",
     "@electron/get": "^5.1.0",
     "@electron/notarize": "2.5.0",
     "@types/js-yaml": "^4.0.9",

@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { type Agent } from '@deepseek-ai/dsh-agent'
+import { Context } from '@mutantcat/cordis'
+import AgentRegistry, { type Agent } from '@mutantcat/dsh-agent'
 import UserQuestionService, {
   UserQuestionError,
   type AskUserQuestionAnswer,
   type AskUserQuestionRequest,
-} from '@deepseek-ai/dsh-user-questions'
+} from '@mutantcat/dsh-user-questions'
 
 interface QuestionAnswerer {
   ask(request: AskUserQuestionRequest): Promise<AskUserQuestionAnswer>

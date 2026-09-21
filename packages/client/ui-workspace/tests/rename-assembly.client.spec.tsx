@@ -13,13 +13,13 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, waitFor, within } from '@testing-library/react'
-import type { ISession } from '@deepseek-ai/dsh-api-session-controller/client'
-import type { WorkspaceId } from '@deepseek-ai/dsh-api-workspace-controller/client'
-import { SessionSeq, type SessionId } from '@deepseek-ai/dsh-session/types'
-import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
-import { RemoteError, SlotTestRuntime, usePinnedBrowserLanguages } from '@deepseek-ai/dsh-client-test-runtime'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { apply, inject } from '@deepseek-ai/dsh-client-ui-workspace/client'
+import type { ISession } from '@mutantcat/dsh-api-session-controller/client'
+import type { WorkspaceId } from '@mutantcat/dsh-api-workspace-controller/client'
+import { SessionSeq, type SessionId } from '@mutantcat/dsh-session/types'
+import type { PropsRenderSlots } from '@mutantcat/dsh-client-ui-slots'
+import { RemoteError, SlotTestRuntime, usePinnedBrowserLanguages } from '@mutantcat/dsh-client-test-runtime'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import { apply, inject } from '@mutantcat/dsh-client-ui-workspace/client'
 
 // The service reads its initial locale from the browser; these specs assert
 // the shipped Chinese copy, so they state the browser they assume.

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-fs-ssh",
+  "name": "@mutantcat/dsh-fs-ssh",
   "description": "Filesystem provider over the shared POSIX SSH helper",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,21 +27,21 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-ssh": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-ssh": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-ssh": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-ssh": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^"
   }
 }

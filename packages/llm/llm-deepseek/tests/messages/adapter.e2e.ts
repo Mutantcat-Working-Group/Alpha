@@ -7,16 +7,16 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context, LoggerLevel } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import LocalAttachments from '@deepseek-ai/dsh-attachment-local'
-import DeepSeekLlmApiExtensionRegistry from '@deepseek-ai/dsh-deepseek-llm-api-extensions'
-import LlmRuntime, { BlockAssembler, createAssistantMessage, createSystemMessage, createToolResultMessage, ReasoningEffortId, ToolCallId } from '@deepseek-ai/dsh-llm'
-import type { Message } from '@deepseek-ai/dsh-llm'
-import * as PluginPackageInventoryDeepSeek from '@deepseek-ai/dsh-plugin-package-inventory-deepseek'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import * as SessionLogDeepSeek from '@deepseek-ai/dsh-session-log-deepseek'
+import { Context, LoggerLevel } from '@mutantcat/cordis'
+import Loader from '@mutantcat/cordis-plugin-loader'
+import AgentRegistry from '@mutantcat/dsh-agent'
+import LocalAttachments from '@mutantcat/dsh-attachment-local'
+import DeepSeekLlmApiExtensionRegistry from '@mutantcat/dsh-deepseek-llm-api-extensions'
+import LlmRuntime, { BlockAssembler, createAssistantMessage, createSystemMessage, createToolResultMessage, ReasoningEffortId, ToolCallId } from '@mutantcat/dsh-llm'
+import type { Message } from '@mutantcat/dsh-llm'
+import * as PluginPackageInventoryDeepSeek from '@mutantcat/dsh-plugin-package-inventory-deepseek'
+import SessionStore, { SessionId } from '@mutantcat/dsh-session'
+import * as SessionLogDeepSeek from '@mutantcat/dsh-session-log-deepseek'
 import * as Messages from '../../src/index.ts'
 import { DeepSeekFilesClient } from '../../src/common/files-api.ts'
 import { MESSAGES_FILES_BETA } from '../../src/common/messages-api.ts'
@@ -146,11 +146,11 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('DeepSeek Messages real API', () 
     ctx.loader.internal = {
       version: 'v2',
       async import(specifier: string) {
-        if (specifier !== '@deepseek-ai/dsh-plugin-package-inventory-deepseek') throw new Error(`unexpected Loader import: ${specifier}`)
+        if (specifier !== '@mutantcat/dsh-plugin-package-inventory-deepseek') throw new Error(`unexpected Loader import: ${specifier}`)
         return PluginPackageInventoryDeepSeek
       },
     } as unknown as NonNullable<typeof ctx.loader.internal>
-    await ctx.loader.create({ name: '@deepseek-ai/dsh-plugin-package-inventory-deepseek' })
+    await ctx.loader.create({ name: '@mutantcat/dsh-plugin-package-inventory-deepseek' })
     await ctx.loader.await()
     const packageIdentity = JSON.parse(await readFile(new URL('../../../plugin-package-inventory-deepseek/package.json', import.meta.url), 'utf8')) as { name: string; version: string }
     const session = ctx.sessions.create(SessionId(`real-messages-extensions-${randomUUID()}`))

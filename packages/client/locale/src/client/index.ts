@@ -4,16 +4,16 @@
  * preference row into the settings General section — the locale feature owns
  * its own settings surface.
  */
-import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { Context as ClientContext } from '@mutantcat/cordis'
 import {
   type BoundActions, type LocaleDictOf, type LocaleNamespaceMap, type Translate, type TranslateNS,
-} from '@deepseek-ai/dsh-client-ui-slots'
+} from '@mutantcat/dsh-client-ui-slots'
 // Type-only: the ctx.settingsScope Context merge and the settings slot types.
 // Cross-plugin collaboration goes through the service, never a value import
 // (client bundle purity gate).
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { SettingsScope } from '@mutantcat/dsh-client-ui-settings/client'
 // Type-only: pulls the SlotRegistry service merge (ctx.slots).
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+import type {} from '@mutantcat/dsh-client-ui-renderer/client'
 import {
   LOCALE_ID_PATTERN, LOCALE_IDS, LOCALE_PREFERENCE_FIELD, LOCALE_SETTINGS_NAMESPACE,
   type BuiltInLocaleId, type LocaleId, type LocaleSettings,
@@ -34,9 +34,9 @@ export type { BuiltInLocaleId, LocaleId, LocaleSettings } from '../locale-settin
 // The translate currency lives in ui-slots (the render machinery synthesizes
 // the seat); re-exported here so dictionary owners import one package.
 // TranslateNS<'model'> is the namespace-addressed developer-facing form.
-export type { Translate, TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
+export type { Translate, TranslateNS } from '@mutantcat/dsh-client-ui-slots'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Shared cross-feature vocabulary, consulted by the lookup chain after the entry's own namespace misses. */
     common: CommonKey
@@ -78,7 +78,7 @@ export interface LocaleSnapshot {
   revision: number
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     locale: LocaleRuntime
   }

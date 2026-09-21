@@ -1,5 +1,5 @@
-import type { SessionEventLike } from '@deepseek-ai/dsh-api-session-controller/client'
-import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
+import type { SessionEventLike } from '@mutantcat/dsh-api-session-controller/client'
+import type { SessionEvent } from '@mutantcat/dsh-session/types'
 
 /** Definition-local identity and lifecycle role extracted from one event. */
 export interface ConversationMatchResult {

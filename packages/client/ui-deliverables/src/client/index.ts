@@ -8,14 +8,14 @@
  * cap, and copy — so composing this plugin out of cordis.yml removes every
  * surface; the owning view renders an empty list and inert prose at zero cost.
  */
-import type { Context as ClientContext } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-api-remotes/client'
-import type {} from '@deepseek-ai/dsh-client-connection/client'
-import type { ChatFileMentions } from '@deepseek-ai/dsh-client-ui-chat/client'
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
+import type { Context as ClientContext } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-api-remotes/client'
+import type {} from '@mutantcat/dsh-client-connection/client'
+import type { ChatFileMentions } from '@mutantcat/dsh-client-ui-chat/client'
+import type {} from '@mutantcat/dsh-client-locale/client'
+import type {} from '@mutantcat/dsh-client-ui-conversation/client'
+import type {} from '@mutantcat/dsh-client-ui-renderer/client'
+import type {} from '@mutantcat/dsh-client-ui-sidebar-right/client'
 import { changesReviewAddress } from '../changes.ts'
 import { ChangesDiffStore } from './changes-diff.ts'
 import { ChangesSummaryStore } from './changes-summary.ts'
@@ -30,7 +30,7 @@ import {
   deliverablesDefinition, presentedForClosing, producedFileMentions, selectProducedFiles,
 } from './turn-deliverables.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Changed-files card, review tab, delivery card, and file-mention copy. */
     'deliverables': DeliverablesKey
@@ -60,7 +60,7 @@ export function apply(ctx: ClientContext): void {
     'conversation.chat.turnTail',
     () => ctx.slots.register({
       name: 'conversation.chat.turnTail',
-      id: '@deepseek-ai/dsh-client-ui-deliverables',
+      id: '@mutantcat/dsh-client-ui-deliverables',
       locale: NS,
       inject: (): DeliverablesInjected => ({
         hooks: { presentedOpen: opener.state, presentedHost: opener.host, changesSummary: summaries.state },

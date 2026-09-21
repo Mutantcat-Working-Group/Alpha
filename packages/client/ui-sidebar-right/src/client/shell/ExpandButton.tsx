@@ -14,9 +14,9 @@
  * on the other edge.
  */
 import type { ReactNode } from 'react'
-import { IconPanelLeftOutline16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
-import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import { IconPanelLeftOutline16, Tooltip } from '@mutantcat/dsh-client-ui-primitives'
+import type { PropsLocale, PropsRuntime, PropsStore } from '@mutantcat/dsh-client-ui-slots'
+import type {} from '@mutantcat/dsh-client-ui-conversation/client'
 import type { createSidebarRightStore } from '../stores.ts'
 import css from './ExpandButton.module.css'
 

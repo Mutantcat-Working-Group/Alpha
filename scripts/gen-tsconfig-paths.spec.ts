@@ -16,9 +16,9 @@ describe('generated tsconfig package aliases', () => {
   it('maps each package to its own source directory', () => {
     const aliases = collectPackageAliases()
     expect(aliases.length).toBeGreaterThan(100)
-    const session = aliases.find(alias => alias.specifier === '@deepseek-ai/dsh-session')
+    const session = aliases.find(alias => alias.specifier === '@mutantcat/dsh-session')
     expect(session).toEqual({
-      specifier: '@deepseek-ai/dsh-session',
+      specifier: '@mutantcat/dsh-session',
       source: './packages/core/session/src',
       hasInvariant: true,
     })
@@ -26,21 +26,29 @@ describe('generated tsconfig package aliases', () => {
     expect([...aliases].sort((a, b) => a.specifier.localeCompare(b.specifier))).toEqual(aliases)
     // Only packages named after their directory: the rest carry hand-written
     // aliases, because the removed wildcards could never have resolved them.
-    expect(aliases.some(alias => alias.specifier === '@deepseek-ai/dsh-typert-protocol')).toBe(false)
+    expect(aliases.some(alias => alias.specifier === '@mutantcat/dsh-typert-protocol')).toBe(false)
   })
 
   it('yields to a hand-written alias and closes without a trailing comma', () => {
     const aliases = [
-      { specifier: '@deepseek-ai/dsh-a', source: './packages/g/a/src', hasInvariant: true },
-      { specifier: '@deepseek-ai/dsh-b', source: './packages/g/b/src', hasInvariant: false },
+      { specifier: '@mutantcat/dsh-a', source: './packages/g/a/src', hasInvariant: true },
+      { specifier: '@mutantcat/dsh-b', source: './packages/g/b/src', hasInvariant: false },
     ]
-    const body = renderAliases(aliases, new Set(['@deepseek-ai/dsh-a']))
+    const handWritten = [{ specifier: '@mutantcat/dsh-a', source: './packages/g/a/src' }]
+    const body = renderAliases(aliases, handWritten)
 
     // The hand-written bare alias is skipped; its /invariant sibling is not.
+    // A hand-written alias earns a legacy twin beside the current-scope rows.
     expect(body).toBe([
-      '      "@deepseek-ai/dsh-a/invariant": ["./packages/g/a/src/invariant.ts"]',
-      '      "@deepseek-ai/dsh-b": ["./packages/g/b/src"]',
-    ].join(',\n'))
+      '      "@mutantcat/dsh-a/invariant": ["./packages/g/a/src/invariant.ts"]',
+      '      "@mutantcat/dsh-b": ["./packages/g/b/src"]',
+    ].join(',\n') + ',\n'
+      + '      // Pre-rescope names, kept resolvable for plugins published against them.\n'
+      + [
+        '      "@deepseek-ai/dsh-a": ["./packages/g/a/src"]',
+        '      "@deepseek-ai/dsh-a/invariant": ["./packages/g/a/src/invariant.ts"]',
+        '      "@deepseek-ai/dsh-b": ["./packages/g/b/src"]',
+      ].join(',\n'))
     expect(body.endsWith(',')).toBe(false)
   })
 
@@ -71,11 +79,11 @@ describe('generated tsconfig package aliases', () => {
     // directory is skipped by the generator, so without this check it would
     // resolve through the workspace symlink to built lib/types instead.
     expect(uncoveredPackages(
-      ['@deepseek-ai/dsh-a', '@deepseek-ai/dsh-b'],
-      new Set(['@deepseek-ai/dsh-a', '@deepseek-ai/dsh-a/invariant']),
-    )).toEqual(['@deepseek-ai/dsh-b'])
+      ['@mutantcat/dsh-a', '@mutantcat/dsh-b'],
+      new Set(['@mutantcat/dsh-a', '@mutantcat/dsh-a/invariant']),
+    )).toEqual(['@mutantcat/dsh-b'])
 
-    expect(uncoveredPackages(['@deepseek-ai/dsh-a'], new Set(['@deepseek-ai/dsh-a']))).toEqual([])
+    expect(uncoveredPackages(['@mutantcat/dsh-a'], new Set(['@mutantcat/dsh-a']))).toEqual([])
   })
 
   it('covers every workspace package in the committed config', () => {
@@ -83,7 +91,7 @@ describe('generated tsconfig package aliases', () => {
     // Includes the packages the generator skips because their name does not
     // match their directory: those carry hand-written aliases.
     const names = collectPackageNames()
-    expect(names).toContain('@deepseek-ai/dsh-typert-protocol')
+    expect(names).toContain('@mutantcat/dsh-typert-protocol')
     expect(uncoveredPackages(names, mappedSpecifiers(config))).toEqual([])
   })
 
@@ -92,7 +100,7 @@ describe('generated tsconfig package aliases', () => {
     // These two listed one candidate per group, so resolving a package late in
     // the list cost a filesystem probe — and under tsx a decorated module
     // error — for every group before it.
-    expect(config).not.toContain('"@deepseek-ai/dsh-*":')
-    expect(config).not.toContain('"@deepseek-ai/dsh-*/invariant":')
+    expect(config).not.toContain('"@mutantcat/dsh-*":')
+    expect(config).not.toContain('"@mutantcat/dsh-*/invariant":')
   })
 })

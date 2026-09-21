@@ -1,16 +1,16 @@
 /**
  * Registry for ordered system sections, dynamic context, tool schemas, and prompt variables.
  *
- * @module @deepseek-ai/dsh-system-prompt
+ * @module @mutantcat/dsh-system-prompt
  */
 
-import { Context, Service } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { AnonymousEntries, NamedEntries, ScopedLayers, scopeTarget } from '@deepseek-ai/dsh-scope'
-import type { ScopeKey, ScopeLayer, Scoped } from '@deepseek-ai/dsh-scope'
-import type { ContextSnapshotSection, ToolSchema } from '@deepseek-ai/dsh-llm'
+import { Context, Service } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import { AnonymousEntries, NamedEntries, ScopedLayers, scopeTarget } from '@mutantcat/dsh-scope'
+import type { ScopeKey, ScopeLayer, Scoped } from '@mutantcat/dsh-scope'
+import type { ContextSnapshotSection, ToolSchema } from '@mutantcat/dsh-llm'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     systemPrompt: SystemPrompt
   }
@@ -18,7 +18,7 @@ declare module '@deepseek-ai/cordis' {
   interface Events {
     /**
      * Expert waterfall over the assembled sections, contexts, tools, and variables.
-     * Scope-filtered dispatch (`@deepseek-ai/dsh-scope`): scoped listeners
+     * Scope-filtered dispatch (`@mutantcat/dsh-scope`): scoped listeners
      * receive only that scope's assemblies. The returned value is authoritative.
      * A supplied signal controls only this explicit assembly request and must not
      * be retained to control later turns. A registered complete section is

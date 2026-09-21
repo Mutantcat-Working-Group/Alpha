@@ -3,7 +3,7 @@ description: "Read-only runtime API discovery for agents developing and configur
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-tool-cordis
+# @mutantcat/dsh-tool-cordis
 
 English | [中文](README.zh.md)
 
@@ -25,7 +25,7 @@ Inspect Host and Client runtime APIs before writing plugin code. Creator mode pr
 <a id="use-this-package"></a>
 ## Use this package
 
-Creator mode includes this toolset. Other compositions mount `@deepseek-ai/dsh-tool-cordis` alongside the host runner that provides `cordisInspect`. Call `cordis_inspect_list` to discover providers, then `cordis_inspect_query` for a provider's exact methods and types. Use [Plugin Manager](../../boot/plugin-manager/README.md) to install bundles containing plugin code or MCP configuration.
+Creator mode includes this toolset. Other compositions mount `@mutantcat/dsh-tool-cordis` alongside the host runner that provides `cordisInspect`. Call `cordis_inspect_list` to discover providers, then `cordis_inspect_query` for a provider's exact methods and types. Use [Plugin Manager](../../boot/plugin-manager/README.md) to install bundles containing plugin code or MCP configuration.
 
 -----
 
@@ -54,7 +54,7 @@ Host providers combine generated Service/Event catalogs and the requesting agent
 
 #### What the model sees
 
-The [tool catalog](../../../docs/tool-catalog.md#deepseek-aidsh-tool-cordis) describes two read-only inspection tools. The [prompt](src/prompt.ts) directs persistent changes through Plugin Manager and describes MCP setup. Creator visual requests default to an installed UI plugin displayed in the current Web page; the development skill covers Client packaging and slot registration. Query results contain the requested API declarations or live tool schemas.
+The [tool catalog](../../../docs/tool-catalog.md#mutantcatdsh-tool-cordis) describes two read-only inspection tools. The [prompt](src/prompt.ts) directs persistent changes through Plugin Manager and describes MCP setup. Creator visual requests default to an installed UI plugin displayed in the current Web page; the development skill covers Client packaging and slot registration. Query results contain the requested API declarations or live tool schemas.
 
 #### Token effect
 

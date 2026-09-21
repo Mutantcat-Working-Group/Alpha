@@ -4,23 +4,23 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context, LoggerLevel, Service } from '@deepseek-ai/cordis'
-import LocalAttachments from '@deepseek-ai/dsh-attachment-local'
-import AgentRegistry, { installModelSelection } from '@deepseek-ai/dsh-agent'
-import type { Agent, ModelSelectionRef } from '@deepseek-ai/dsh-agent'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import { AttachmentId } from '@deepseek-ai/dsh-attachment'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import LlmRuntime, { createAssistantMessage, createSystemMessage } from '@deepseek-ai/dsh-llm'
-import type { Message } from '@deepseek-ai/dsh-llm'
-import { credentialRef } from '@deepseek-ai/dsh-credentials'
-import LocalCredentials from '@deepseek-ai/dsh-credentials-local'
-import FileSettings from '@deepseek-ai/dsh-settings-file'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
+import { Context, LoggerLevel, Service } from '@mutantcat/cordis'
+import LocalAttachments from '@mutantcat/dsh-attachment-local'
+import AgentRegistry, { installModelSelection } from '@mutantcat/dsh-agent'
+import type { Agent, ModelSelectionRef } from '@mutantcat/dsh-agent'
+import AgentLoop from '@mutantcat/dsh-agent-loop'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import ToolRuntime from '@mutantcat/dsh-tools'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import { AttachmentId } from '@mutantcat/dsh-attachment'
+import Loader from '@mutantcat/cordis-plugin-loader'
+import Include from '@mutantcat/cordis-plugin-include'
+import LlmRuntime, { createAssistantMessage, createSystemMessage } from '@mutantcat/dsh-llm'
+import type { Message } from '@mutantcat/dsh-llm'
+import { credentialRef } from '@mutantcat/dsh-credentials'
+import LocalCredentials from '@mutantcat/dsh-credentials-local'
+import FileSettings from '@mutantcat/dsh-settings-file'
+import SessionStore, { SessionId } from '@mutantcat/dsh-session'
 import { DeepSeekMessagesAdapter } from '../../src/protocols/messages/adapter.ts'
 import { DeepSeekFileStore } from '../../src/common/file-store.ts'
 import * as Messages from '../../src/index.ts'
@@ -218,11 +218,11 @@ describe('Cordis provider composition', () => {
     await ctx.plugin(Loader)
     ctx.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@deepseek-ai/dsh-llm', LlmRuntime], ['@deepseek-ai/dsh-llm-deepseek', Messages],
-      ['@deepseek-ai/dsh-credentials-local', LocalCredentials], ['@deepseek-ai/dsh-settings-file', FileSettings],
-      ['@deepseek-ai/dsh-agent', AgentRegistry], ['@deepseek-ai/dsh-agent-loop', AgentLoop],
-      ['@deepseek-ai/dsh-session', SessionStore], ['@deepseek-ai/dsh-session-projection', SessionProjectionRegistry],
-      ['@deepseek-ai/dsh-system-prompt', SystemPrompt], ['@deepseek-ai/dsh-tools', ToolRuntime],
+      ['@mutantcat/dsh-llm', LlmRuntime], ['@mutantcat/dsh-llm-deepseek', Messages],
+      ['@mutantcat/dsh-credentials-local', LocalCredentials], ['@mutantcat/dsh-settings-file', FileSettings],
+      ['@mutantcat/dsh-agent', AgentRegistry], ['@mutantcat/dsh-agent-loop', AgentLoop],
+      ['@mutantcat/dsh-session', SessionStore], ['@mutantcat/dsh-session-projection', SessionProjectionRegistry],
+      ['@mutantcat/dsh-system-prompt', SystemPrompt], ['@mutantcat/dsh-tools', ToolRuntime],
     ])
     // The importer supplies source modules while Loader still owns configuration and effects.
     for (const name of modules.keys()) {

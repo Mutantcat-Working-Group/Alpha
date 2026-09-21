@@ -7,16 +7,16 @@
  * imports no provider.
  *
  * Namespace plugin (named exports, no default export).
- * @module @deepseek-ai/dsh-tool-lsp
+ * @module @mutantcat/dsh-tool-lsp
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { defineTool } from '@deepseek-ai/dsh-tools'
-import { LspError } from '@deepseek-ai/dsh-lsp'
-import type {} from '@deepseek-ai/dsh-lsp'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
-import { assertNever } from '@deepseek-ai/dsh-util-values'
+import type { Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import { defineTool } from '@mutantcat/dsh-tools'
+import { LspError } from '@mutantcat/dsh-lsp'
+import type {} from '@mutantcat/dsh-lsp'
+import { MAX_TIMER_DELAY_MS } from '@mutantcat/dsh-timeout'
+import { assertNever } from '@mutantcat/dsh-util-values'
 import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,

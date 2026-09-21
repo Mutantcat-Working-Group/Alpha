@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-fs",
+  "name": "@mutantcat/dsh-tool-fs",
   "description": "Model-facing filesystem tools (read, write, edit) over the DeepSeek Harness filesystem seam (ctx.fs)",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -28,39 +28,39 @@
   "license": "MIT",
   "dependencies": {
     "diff": "^9.0.0",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-user-approval": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-fs-local": "workspace:^",
-    "@deepseek-ai/dsh-fs-observation-policy": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-ptc-runtime": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-attachment": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-fs-local": "workspace:^",
+    "@mutantcat/dsh-fs-observation-policy": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-llm-deepseek": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-user-approval": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/dsh-ptc-runtime": "workspace:^"
   }
 }

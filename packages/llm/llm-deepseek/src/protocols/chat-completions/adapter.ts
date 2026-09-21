@@ -8,7 +8,7 @@
  * @module dsh-llm-deepseek/adapter
  */
 
-import { attributionHeaders, contentHasImage, CONTEXT_WINDOW_EXCEEDED_CODE, isContextWindowExceededError, isQuotaExceededError, LlmAdapter, LlmError, ProviderRequestId, QUOTA_EXCEEDED_CODE } from '@deepseek-ai/dsh-llm'
+import { attributionHeaders, contentHasImage, CONTEXT_WINDOW_EXCEEDED_CODE, isContextWindowExceededError, isQuotaExceededError, LlmAdapter, LlmError, ProviderRequestId, QUOTA_EXCEEDED_CODE } from '@mutantcat/dsh-llm'
 import type {
   ContentBlock,
   GenerateOptions,
@@ -19,18 +19,18 @@ import type {
   LlmResolvedModelInfo,
   ResolvedRetryPolicy,
   StreamChunk,
-} from '@deepseek-ai/dsh-llm'
+} from '@mutantcat/dsh-llm'
 import type {
   AttachmentId,
   AttachmentStore,
   ImageAttachmentRef,
   RequestImageAttachment,
-} from '@deepseek-ai/dsh-attachment'
-import type { AnonymousUserId } from '@deepseek-ai/dsh-anonymous-user-id'
-import { idleWatchdog, timeoutOf } from '@deepseek-ai/dsh-timeout'
+} from '@mutantcat/dsh-attachment'
+import type { AnonymousUserId } from '@mutantcat/dsh-anonymous-user-id'
+import { idleWatchdog, timeoutOf } from '@mutantcat/dsh-timeout'
 import type {
   DeepSeekLlmApiJson,
-} from '@deepseek-ai/dsh-deepseek-llm-api-extensions'
+} from '@mutantcat/dsh-deepseek-llm-api-extensions'
 import { serializeRequest, serializeRequestWithImages } from './serialize.ts'
 import { deepSeekImageRequestPricing, resolveRequestImageTarget } from '../../common/request-pricing.ts'
 import { catalogModelInfo, modelInfo } from '../../common/model-info.ts'

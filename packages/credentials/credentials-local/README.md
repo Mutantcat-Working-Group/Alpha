@@ -3,7 +3,7 @@ description: "The file-backed credentials provider for users and maintainers cho
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-credentials-local
+# @mutantcat/dsh-credentials-local
 
 English | [中文](README.zh.md)
 
@@ -34,7 +34,7 @@ Use it as the default local store: the product's base composition loads it, and 
 ### Setting it up
 
 ```yaml
-- name: '@deepseek-ai/dsh-credentials-local'
+- name: '@mutantcat/dsh-credentials-local'
   config:
     path: /absolute/path/to/.credentials.yaml
 ```
@@ -46,15 +46,15 @@ Use it as the default local store: the product's base composition loads it, and 
 | `watch` | `true` | Reload the file automatically when it changes on disk |
 | `debounceMs` | `100` | Wait this long after a change before reloading, in milliseconds |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-credentials-local) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-credentials-local) is the exhaustive source for every accepted field and its JSDoc.
 
 ### Storing and removing keys
 
 Save a key with `set`, remove it with `unset`, and check whether a key is configured with `describe` — the same operations the credential API provides:
 
 ```ts
-import type { Context } from '@deepseek-ai/cordis'
-import { credentialRef } from '@deepseek-ai/dsh-credentials'
+import type { Context } from '@mutantcat/cordis'
+import { credentialRef } from '@mutantcat/dsh-credentials'
 
 declare const ctx: Context
 

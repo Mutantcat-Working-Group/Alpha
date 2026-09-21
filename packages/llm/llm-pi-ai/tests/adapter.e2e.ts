@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import LlmRuntime, { createUserMessage, ToolCallId, ReasoningEffortId  } from '@deepseek-ai/dsh-llm'
-import type { Message, ToolSchema } from '@deepseek-ai/dsh-llm'
-import * as LlmPiAi from '@deepseek-ai/dsh-llm-pi-ai'
-import type { PiAiProviderProfile } from '@deepseek-ai/dsh-llm-pi-ai'
-import * as LlmDeepSeek from '@deepseek-ai/dsh-llm-deepseek'
+import { Context } from '@mutantcat/cordis'
+import LlmRuntime, { createUserMessage, ToolCallId, ReasoningEffortId  } from '@mutantcat/dsh-llm'
+import type { Message, ToolSchema } from '@mutantcat/dsh-llm'
+import * as LlmPiAi from '@mutantcat/dsh-llm-pi-ai'
+import type { PiAiProviderProfile } from '@mutantcat/dsh-llm-pi-ai'
+import * as LlmDeepSeek from '@mutantcat/dsh-llm-deepseek'
 import { assemble, type AssembledResult } from './assemble.ts'
 
 /**

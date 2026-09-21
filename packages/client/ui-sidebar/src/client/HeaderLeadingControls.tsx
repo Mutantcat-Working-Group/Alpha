@@ -1,10 +1,10 @@
 /** macOS-desktop conversation-header controls for the fully hidden sidebar. */
 import {
   IconNewChatOutline16, IconPanelLeftOutline16, isDarwinDesktop, Tooltip,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+} from '@mutantcat/dsh-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@mutantcat/dsh-client-ui-slots'
 // Type-only: pulls the conversation header slot declarations.
-import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type {} from '@mutantcat/dsh-client-ui-conversation/client'
 import type { SidebarRootInjected } from './contract/slots.ts'
 import css from './HeaderLeadingControls.module.css'
 

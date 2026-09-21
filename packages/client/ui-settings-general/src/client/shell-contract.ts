@@ -6,15 +6,15 @@
  * reference graph closes a cycle through ui-sidebar → ui-layout → ui-theme.
  * The settings SLOT types (what registrants contribute) stay in ui-settings.
  */
-import type { ConnectionState } from '@deepseek-ai/dsh-client-connection/client'
+import type { ConnectionState } from '@mutantcat/dsh-client-connection/client'
 import type {
   HostObservable, InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime,
-} from '@deepseek-ai/dsh-client-ui-slots'
+} from '@mutantcat/dsh-client-ui-slots'
 // Type-only: pulls ui-sidebar's SlotMap merge (the 'sidebar.settings' entry)
 // into every program that sees this contract.
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@mutantcat/dsh-client-ui-sidebar/client'
 // Type-only: pulls the settings slot declarations the shell renders into.
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@mutantcat/dsh-client-ui-settings/client'
 import type { DesktopUpdateView } from './desktop-update-bridge.ts'
 
 /** One nav row projected from a settings.section registration's options. */

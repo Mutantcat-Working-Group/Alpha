@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-sdk-minimal",
+  "name": "@mutantcat/dsh-sdk-minimal",
   "description": "The standalone minimal SDK profile bundle: JSON-RPC, one DeepSeek adapter, persistent shell, and JSONL sessions",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -34,39 +34,39 @@
     }
   },
   "dependencies": {
-    "@deepseek-ai/cordis-plugin-timer": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-deepseek-llm-api-extensions": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-jobs-local": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-llm-retry": "workspace:^",
-    "@deepseek-ai/dsh-mcp-resources": "workspace:^",
-    "@deepseek-ai/dsh-plugin-package-inventory-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-local": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-sdk-app": "workspace:^",
-    "@deepseek-ai/dsh-sdk-jsonrpc-server": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-log-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-terminal": "workspace:^",
-    "@deepseek-ai/dsh-terminal-bash": "workspace:^",
-    "@deepseek-ai/dsh-tool-bash-persistent": "workspace:^",
-    "@deepseek-ai/dsh-tool-pwsh-persistent": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^"
+    "@mutantcat/cordis-plugin-timer": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-deepseek-llm-api-extensions": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-jobs-local": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-llm-deepseek": "workspace:^",
+    "@mutantcat/dsh-llm-retry": "workspace:^",
+    "@mutantcat/dsh-mcp-resources": "workspace:^",
+    "@mutantcat/dsh-plugin-package-inventory-deepseek": "workspace:^",
+    "@mutantcat/dsh-sandbox-local": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/dsh-sdk-app": "workspace:^",
+    "@mutantcat/dsh-sdk-jsonrpc-server": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-log-deepseek": "workspace:^",
+    "@mutantcat/dsh-session-persistence-jsonl": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-subprocess-local": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-terminal": "workspace:^",
+    "@mutantcat/dsh-terminal-bash": "workspace:^",
+    "@mutantcat/dsh-tool-bash-persistent": "workspace:^",
+    "@mutantcat/dsh-tool-pwsh-persistent": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   }
 }

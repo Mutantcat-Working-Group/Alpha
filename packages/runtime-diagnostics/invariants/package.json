@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-invariants",
+  "name": "@mutantcat/dsh-invariants",
   "description": "Registry service for package-owned DeepSeek Harness runtime invariants",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,12 +27,12 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   }
 }

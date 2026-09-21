@@ -8,18 +8,18 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import SessionStore from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import type { TodoItem } from '@deepseek-ai/dsh-tool-todo'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import * as ToolTodo from '@deepseek-ai/dsh-tool-todo'
+import { Context } from '@mutantcat/cordis'
+import AgentRegistry from '@mutantcat/dsh-agent'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { createUserMessage } from '@mutantcat/dsh-llm'
+import SessionStore from '@mutantcat/dsh-session'
+import type { Session } from '@mutantcat/dsh-session'
+import type { TodoItem } from '@mutantcat/dsh-tool-todo'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import ToolRuntime from '@mutantcat/dsh-tools'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import UserQuestionService from '@mutantcat/dsh-user-questions'
+import * as ToolTodo from '@mutantcat/dsh-tool-todo'
 
 interface Bench {
   ctx: Context

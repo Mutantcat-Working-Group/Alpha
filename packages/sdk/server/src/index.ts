@@ -6,13 +6,13 @@
  * owns EOF and signal exits. Keep named plugin exports with no default export so
  * Loader `unwrapExports` preserves `name`, `inject`, `Config`, and `apply`.
  *
- * @module @deepseek-ai/dsh-sdk-jsonrpc-server
+ * @module @mutantcat/dsh-sdk-jsonrpc-server
  */
 
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context } from '@mutantcat/cordis'
 import type { Readable, Writable } from 'node:stream'
-import Schema from '@deepseek-ai/schemastery'
-import { JsonRpcLineTransport } from '@deepseek-ai/dsh-sdk-protocol'
+import Schema from '@mutantcat/schemastery'
+import { JsonRpcLineTransport } from '@mutantcat/dsh-sdk-protocol'
 import { HarnessSdkJsonRpcServer } from './server.ts'
 
 export * from './server.ts'

@@ -33,7 +33,7 @@ For a simple drawing, prefer a slot with allocated space, such as `conversation.
     "client": {
       "platform": "web",
       "immediately": true,
-      "inject": ["@deepseek-ai/dsh-client-ui-conversation"]
+      "inject": ["@mutantcat/dsh-client-ui-conversation"]
     }
   }
 }
@@ -97,7 +97,7 @@ Create a configuration-only bundle: its manifest needs a unique name, version, a
 ```yaml
 - insert:
     - id: demo-mcp
-      name: '@deepseek-ai/dsh-mcp-client'
+      name: '@mutantcat/dsh-mcp-client'
       config:
         serverName: demo
         transport: streamable-http

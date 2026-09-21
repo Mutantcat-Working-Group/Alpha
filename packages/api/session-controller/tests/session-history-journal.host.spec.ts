@@ -1,13 +1,13 @@
 /** Raw Session journal transport and message-aligned pagination coverage. */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { type Agent, type AssistantStreamFrame } from '@deepseek-ai/dsh-agent'
-import SessionStore from '@deepseek-ai/dsh-session'
-import { LlmAttemptId, ToolCallId, createMessage, createToolResultMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { Session, SessionEvent, SessionId } from '@deepseek-ai/dsh-session'
-import { SessionHistoryController } from '@deepseek-ai/dsh-api-session-controller/src/history.ts'
-import type { SessionFollowFrame, SessionPage, SessionWireEvent } from '@deepseek-ai/dsh-api-session-controller/types'
+import { Context } from '@mutantcat/cordis'
+import AgentRegistry, { type Agent, type AssistantStreamFrame } from '@mutantcat/dsh-agent'
+import SessionStore from '@mutantcat/dsh-session'
+import { LlmAttemptId, ToolCallId, createMessage, createToolResultMessage, createUserMessage } from '@mutantcat/dsh-llm'
+import type { Session, SessionEvent, SessionId } from '@mutantcat/dsh-session'
+import { SessionHistoryController } from '@mutantcat/dsh-api-session-controller/src/history.ts'
+import type { SessionFollowFrame, SessionPage, SessionWireEvent } from '@mutantcat/dsh-api-session-controller/types'
 import { createSessionTestRemote, installSessionReadTestServices } from './test-remote.ts'
 
 /** Append a production-shaped human prompt to the session surface. */

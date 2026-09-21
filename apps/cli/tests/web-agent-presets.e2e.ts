@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, stat, symlink, writeFile } from 'node:fs/prom
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import {
   boot,
   initProfile,
@@ -12,22 +12,22 @@ import {
   loadProfile,
   PluginPackages,
   type Profile,
-} from '@deepseek-ai/dsh-app-boot'
-import { provideCmdline } from '@deepseek-ai/dsh-cmdline'
-import { SessionId, SessionLogOffset } from '@deepseek-ai/dsh-session'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { PatchOptions } from '@deepseek-ai/cordis-plugin-include'
+} from '@mutantcat/dsh-app-boot'
+import { provideCmdline } from '@mutantcat/dsh-cmdline'
+import { SessionId, SessionLogOffset } from '@mutantcat/dsh-session'
+import type { Agent } from '@mutantcat/dsh-agent'
+import type { PatchOptions } from '@mutantcat/cordis-plugin-include'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { SUBAGENT_MODEL_SELECTION_SETTINGS_NAMESPACE } from '@deepseek-ai/dsh-tool-subagent/model-selection-settings'
-import { SETTINGS_NAMESPACE, SHIPPED_PRESET_ROOT } from '@deepseek-ai/dsh-agent-presets'
-import { applyChildComposition, childSessionMeta } from '@deepseek-ai/dsh-subagent'
-import { ToolCallId } from '@deepseek-ai/dsh-llm'
-import type {} from '@deepseek-ai/dsh-compaction-basic'
-import type {} from '@deepseek-ai/dsh-skill'
-import type {} from '@deepseek-ai/dsh-tools'
+import { SUBAGENT_MODEL_SELECTION_SETTINGS_NAMESPACE } from '@mutantcat/dsh-tool-subagent/model-selection-settings'
+import { SETTINGS_NAMESPACE, SHIPPED_PRESET_ROOT } from '@mutantcat/dsh-agent-presets'
+import { applyChildComposition, childSessionMeta } from '@mutantcat/dsh-subagent'
+import { ToolCallId } from '@mutantcat/dsh-llm'
+import type {} from '@mutantcat/dsh-compaction-basic'
+import type {} from '@mutantcat/dsh-skill'
+import type {} from '@mutantcat/dsh-tools'
 // Type-only: resolves `ctx.get('sessionProjections')` and `ctx.get('tokenMeter')`.
-import type {} from '@deepseek-ai/dsh-session-projection'
-import type {} from '@deepseek-ai/dsh-token-meter'
+import type {} from '@mutantcat/dsh-session-projection'
+import type {} from '@mutantcat/dsh-token-meter'
 
 const REPO_ROOT = fileURLToPath(new URL('../../..', import.meta.url))
 /** The shipped Web surface: the dsh-base and dsh-web-app bundle patches over an empty preset root. */
@@ -111,8 +111,8 @@ async function bootWeb(
     // supplies `directoryPicker` without one.
     { id: 'directory-picker', disabled: true },
     { insert: [
-      { id: 'directory-picker-browse', name: '@deepseek-ai/dsh-host-directory-picker-browse' },
-      { id: 'ui-directory-picker-browse', name: '@deepseek-ai/dsh-client-ui-directory-picker-browse' },
+      { id: 'directory-picker-browse', name: '@mutantcat/dsh-host-directory-picker-browse' },
+      { id: 'ui-directory-picker-browse', name: '@mutantcat/dsh-client-ui-directory-picker-browse' },
     ] },
     // Pin the roster away from the developer's machine: `includeUserRoot`
     // false keeps `~/.dsh/.agent-presets` from changing a test's outcome.
@@ -125,7 +125,7 @@ async function bootWeb(
   const home = dirname(settingsFile)
   const profileDir = join(home, 'profiles', 'spec')
   await mkdir(profileDir, { recursive: true })
-  if (profileBundles === undefined) initProfile(profileDir, ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'])
+  if (profileBundles === undefined) initProfile(profileDir, ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'])
   // Product Bundles are installed into the Profile, not the dsh app. Model
   // pnpm's package link for only the selected products; their own production
   // dependencies resolve from the linked workspace packages, while shared
@@ -162,7 +162,7 @@ async function bootWeb(
   return await boot('dsh-test', rootConfig, [...bundlePatches, ...overrides], async (bootCtx) => {
     bootCtx.provide('profileContext', { name: 'spec', dir: profileDir, patchPath: profile.patchPath,
       installAnchor: INSTALL_ANCHOR, home, cwd: home,
-      startedBundles: profileBundles ?? ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'],
+      startedBundles: profileBundles ?? ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'],
       overlays: overrides, telemetryDisabledEnv: '1' })
     await bootCtx.plugin(PluginPackages, { generation: resolution })
     bootCtx.provide('connection', {
@@ -548,8 +548,8 @@ describe('product Bundle and user-preset intersection', () => {
     )
     const packageName = (product: Product): string => (
       product === 'codex'
-        ? '@deepseek-ai/dsh-subagent-codex'
-        : '@deepseek-ai/dsh-subagent-claude-code'
+        ? '@mutantcat/dsh-subagent-codex'
+        : '@mutantcat/dsh-subagent-claude-code'
     )
     return await bootWeb(settingsFile, [
       {
@@ -562,8 +562,8 @@ describe('product Bundle and user-preset intersection', () => {
         },
       },
     ], installed.map(packageDir), [
-      '@deepseek-ai/dsh-base',
-      '@deepseek-ai/dsh-web-app',
+      '@mutantcat/dsh-base',
+      '@mutantcat/dsh-web-app',
       ...installed.map(packageName),
     ])
   }
@@ -777,7 +777,7 @@ describe('a launcher that configures no writable root', () => {
     await mkdir(join(home, '.agent-presets', 'derived-mine'), { recursive: true })
     await writeFile(
       join(home, '.agent-presets', 'derived-mine', 'agent.cordis.yml'),
-      '- id: tool-todo\n  name: \'@deepseek-ai/dsh-tool-todo\'\n  config:\n    allowParallelInProgress: true\n',
+      '- id: tool-todo\n  name: \'@mutantcat/dsh-tool-todo\'\n  config:\n    allowParallelInProgress: true\n',
     )
     const settingsFile = join(await mkdtemp(join(tmpdir(), 'dsh-preset-derived-settings-')), 'settings.yaml')
     await writeFile(settingsFile, '{}\n')

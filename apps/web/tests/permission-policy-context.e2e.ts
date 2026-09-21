@@ -10,10 +10,10 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import { canonicalPath } from '@deepseek-ai/dsh-sandbox'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
-import type { WebTerminalId } from '@deepseek-ai/dsh-api-terminal-controller/types'
-import type {} from '@deepseek-ai/dsh-api-terminal-controller'
+import { canonicalPath } from '@mutantcat/dsh-sandbox'
+import type { SessionEvent } from '@mutantcat/dsh-session'
+import type { WebTerminalId } from '@mutantcat/dsh-api-terminal-controller/types'
+import type {} from '@mutantcat/dsh-api-terminal-controller'
 import {
   assertFinalWorkspaceSnapshot, assertFixtureInventory, fixtureUserPrompts, launchWebScaffold, recordFixture,
   watchConsole, webSnapshotMode, type WebScaffold,
@@ -44,7 +44,7 @@ function runtimeContexts(events: readonly SessionEvent[]): string[] {
   return events.flatMap((event) => {
     if (event.type !== 'user/message'
       || event.data.source.kind !== 'plugin'
-      || event.data.source.plugin !== '@deepseek-ai/dsh-system-prompt') return []
+      || event.data.source.plugin !== '@mutantcat/dsh-system-prompt') return []
     return event.data.content.flatMap(block => block.type === 'text' ? [block.text] : [])
   })
 }

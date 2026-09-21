@@ -1,8 +1,8 @@
 /** Desktop Office skills and bundled authoring dependencies. */
 
 import { dirname, join } from 'node:path'
-import type { Context } from '@deepseek-ai/cordis'
-import * as officeSkills from '@deepseek-ai/dsh-skill-office'
+import type { Context } from '@mutantcat/cordis'
+import * as officeSkills from '@mutantcat/dsh-skill-office'
 import * as workspaceDependencies from './workspace-dependencies.ts'
 
 /** Loader identity for the application-owned Office composition. */

@@ -1,4 +1,4 @@
-# `@deepseek-ai/dsh`
+# `@mutantcat/dsh`
 
 English | [中文](README.zh.md)
 
@@ -41,7 +41,7 @@ The tree composes over an empty root:
 - then the profile's `cordis.patch.yml`, then the home-level `$DSH_HOME/cordis.patch.yml`
 - then `--patch` overlays
 
-Bundles named in `dsh.profile.bundles` resolve from the dsh installation first (`@deepseek-ai/dsh-base`, `@deepseek-ai/dsh-web-app`, `@deepseek-ai/dsh-headless`, `@deepseek-ai/dsh-sdk-app`, `@deepseek-ai/dsh-sdk-minimal`, `@deepseek-ai/dsh-acp-app`), then from the profile's own `node_modules`, where pnpm installs out-of-tree plugins.
+Bundles named in `dsh.profile.bundles` resolve from the dsh installation first (`@mutantcat/dsh-base`, `@mutantcat/dsh-web-app`, `@mutantcat/dsh-headless`, `@mutantcat/dsh-sdk-app`, `@mutantcat/dsh-sdk-minimal`, `@mutantcat/dsh-acp-app`), then from the profile's own `node_modules`, where pnpm installs out-of-tree plugins.
 
 Use `--dump-default-config` and `--dump-config` to inspect the composed tree without booting it.
 
@@ -55,6 +55,6 @@ The [CLI behavior reference](reference/README.md) owns exact layer precedence, f
 
 Production runs require built package and frontend artifacts. From the repository root, run `pnpm run build` separately, then use `pnpm dsh <args...>` to run the TypeScript entry and forward every argument; the [source-execution reference](reference/README.md#source-execution) owns the module-resolution contract.
 
-The `@deepseek-ai/dsh/profile-boot` export provides the shared profile lifecycle to the Desktop host. A resolved application profile supplies its own installation anchor for runtime package resolution while retaining the Harness home patch, proxy environment, telemetry switch, patch reload, and bounded shutdown.
+The `@mutantcat/dsh/profile-boot` export provides the shared profile lifecycle to the Desktop host. A resolved application profile supplies its own installation anchor for runtime package resolution while retaining the Harness home patch, proxy environment, telemetry switch, patch reload, and bounded shutdown.
 
 The [Web failure matrix](tests/profiles/web/tests/web-failure-matrix.expected.e2e.ts) runs the built CLI through startup failures and native configuration HMR with `awaitWriteFinish` enabled in `test:expected`. It verifies authenticated HTTP responses, diagnostics, recovery, process exits, and disposal without model API calls; the [startup acceptance](tests/profiles/web/tests/web-best-effort-startup.expected.e2e.ts) also covers the shipped required Web dependencies and port conflicts.

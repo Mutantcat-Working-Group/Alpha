@@ -1,8 +1,8 @@
 /** Incrementally highlighted source; the document owner supplies the accumulated text and wrap preference. */
 import type { ReactNode } from 'react'
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
-import { CodeBlock } from '@deepseek-ai/dsh-client-ui-primitives'
-import { parseFileAddress } from '@deepseek-ai/dsh-util-workspace-path'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
+import { CodeBlock } from '@mutantcat/dsh-client-ui-primitives'
+import { parseFileAddress } from '@mutantcat/dsh-util-workspace-path'
 import type { DocumentPreviewProps } from '../document/contract.ts'
 import { languageForPath } from './languages.ts'
 import type {} from './locales.ts'

@@ -1,8 +1,8 @@
 /** Public plugin management records shared with clients. */
-import type { Branded } from '@deepseek-ai/dsh-brand'
-import type { PluginInventoryEntry } from '@deepseek-ai/dsh-host-plugin-inventory/types'
-export type { PluginEntryId } from '@deepseek-ai/dsh-host-plugin-inventory/types'
-import type { PluginEntryId } from '@deepseek-ai/dsh-host-plugin-inventory/types'
+import type { Branded } from '@mutantcat/dsh-brand'
+import type { PluginInventoryEntry } from '@mutantcat/dsh-host-plugin-inventory/types'
+export type { PluginEntryId } from '@mutantcat/dsh-host-plugin-inventory/types'
+import type { PluginEntryId } from '@mutantcat/dsh-host-plugin-inventory/types'
 
 /** Reasons a profile control cannot modify its target. */
 export type ReadOnlyReason = 'management-required' | 'unaddressable'
@@ -176,7 +176,7 @@ export interface PluginChange {
   readonly reason: 'plugin' | 'bundle' | 'install' | 'remove'
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Events {
     /**
      * The profile's plugins, bundles, or composition changed: a manager

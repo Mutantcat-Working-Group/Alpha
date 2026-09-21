@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-office-to-pdf",
+  "name": "@mutantcat/dsh-office-to-pdf",
   "description": "Shared Office-to-PDF conversion with bounded queues and caching",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -44,21 +44,21 @@
     "lib/typert.remote-client.d.ts"
   ],
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/dsh-api-workspace-files": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/dsh-api-workspace-files": "workspace:^",
+    "@mutantcat/dsh-fs": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^"
   },
   "dependencies": {
     "@deepseek-ai/libreoffice-kit": "0.0.1",
-    "@deepseek-ai/schemastery": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
     "zod": "^4.4.3"
   }
 }

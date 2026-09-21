@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-renderer",
+  "name": "@mutantcat/dsh-client-ui-renderer",
   "description": "Browser UI renderer: React slot bindings, ctx.uiRenderer, and the assembled application root",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -41,13 +41,13 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-client-test-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-client-test-runtime": "workspace:^",
+    "@mutantcat/dsh-client-ui-slots": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
     "@types/use-sync-external-store": "^1.5.0",

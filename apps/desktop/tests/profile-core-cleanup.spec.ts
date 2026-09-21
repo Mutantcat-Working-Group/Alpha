@@ -6,8 +6,8 @@ import { load } from 'js-yaml'
 import { cleanProfileCorePackages } from '../src/profile-core-cleanup.ts'
 
 const roots: string[] = []
-const core = '@deepseek-ai/dsh-web-app'
-const extra = '@deepseek-ai/optional-plugin'
+const core = '@mutantcat/dsh-web-app'
+const extra = '@mutantcat/optional-plugin'
 
 function fixture(): string {
   const root = mkdtempSync(join(tmpdir(), 'desktop-core-cleanup-'))
@@ -77,7 +77,7 @@ it('unlinks development fallbacks without deleting their target, including dangl
 
 it('uses the old package inventory to remove retired core names', () => {
   const root = fixture()
-  const names = ['@deepseek-ai/dsh', '@deepseek-ai/dsh-desktop-host', core].sort()
+  const names = ['@mutantcat/dsh', '@mutantcat/dsh-desktop-host', core].sort()
   writeFileSync(join(root, 'desktop-packages.json'), JSON.stringify({ schemaVersion: 1, packages: names.map((name, index) => ({
     name, version: '0.1.2', file: `${index}.tgz`, bytes: 1, integrity: 'sha512-YQ==',
   })) }))
@@ -99,8 +99,8 @@ it('refuses redirected package parents without deleting their contents', () => {
   const root = fixture()
   const target = join(root, 'external-scope')
   mkdirSync(join(target, 'dsh-web-app'), { recursive: true })
-  rmSync(join(root, 'node_modules', '@deepseek-ai'), { recursive: true })
-  symlinkSync(target, join(root, 'node_modules', '@deepseek-ai'), 'junction')
+  rmSync(join(root, 'node_modules', '@mutantcat'), { recursive: true })
+  symlinkSync(target, join(root, 'node_modules', '@mutantcat'), 'junction')
   expect(() => { cleanProfileCorePackages(root, [core], true) }).toThrow('not a real directory')
   expect(existsSync(join(target, 'dsh-web-app'))).toBe(true)
 })

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-bash-local",
+  "name": "@mutantcat/dsh-bash-local",
   "description": "Local-subprocess implementation of the DeepSeek Harness bash executor seam",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,21 +27,21 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^"
+    "@mutantcat/dsh-shell": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-subprocess-local": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^"
+    "@mutantcat/dsh-shell": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-subprocess-local": "workspace:^",
+    "@mutantcat/dsh-timeout": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^"
   }
 }

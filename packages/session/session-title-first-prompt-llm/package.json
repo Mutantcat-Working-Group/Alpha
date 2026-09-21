@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-title-first-prompt-llm",
+  "name": "@mutantcat/dsh-session-title-first-prompt-llm",
   "description": "First-message LLM provider plugin for DeepSeek Harness session titles",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -23,25 +23,25 @@
   "files": ["lib/index.js", "lib/types/**/*.d.ts"],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-session-title-llm": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-session-title-llm": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-session-title-llm": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^"
+    "@mutantcat/cordis-plugin-include": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-llm-deepseek": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-title": "workspace:^",
+    "@mutantcat/dsh-session-title-llm": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^"
   }
 }

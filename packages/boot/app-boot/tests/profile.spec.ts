@@ -11,7 +11,7 @@ import {
 import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
-import { withFileLock } from '@deepseek-ai/dsh-atomic-write'
+import { withFileLock } from '@mutantcat/dsh-atomic-write'
 import { afterAll, describe, expect, it } from 'vitest'
 import {
   composeEntries,
@@ -209,15 +209,15 @@ describe('initProfile', () => {
   it('creates manifest, user patch layer, and pnpm workspace once, never overwriting', () => {
     const home = tmp()
     const dir = resolveProfileDir('tui', home)
-    initProfile(dir, ['@deepseek-ai/dsh-base'])
+    initProfile(dir, ['@mutantcat/dsh-base'])
     const manifest = readProfileManifest('t', dir)
-    expect(manifest.dsh?.profile?.bundles).toEqual(['@deepseek-ai/dsh-base'])
+    expect(manifest.dsh?.profile?.bundles).toEqual(['@mutantcat/dsh-base'])
     expect(readFileSync(join(dir, PROFILE_PATCH_FILENAME), 'utf8')).toContain('[]')
     expect(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8')).toContain('nodeLinker: hoisted')
     // Re-init keeps user edits.
     writeFileSync(join(dir, PROFILE_PATCH_FILENAME), '- id: x\n  config: {}\n')
     initProfile(dir, ['other'])
-    expect(readProfileManifest('t', dir).dsh?.profile?.bundles).toEqual(['@deepseek-ai/dsh-base'])
+    expect(readProfileManifest('t', dir).dsh?.profile?.bundles).toEqual(['@mutantcat/dsh-base'])
     expect(readFileSync(join(dir, PROFILE_PATCH_FILENAME), 'utf8')).toContain('- id: x')
   })
 })
@@ -310,16 +310,16 @@ describe('loadProfile', () => {
       .toThrow('profile "custom" does not exist')
     // The web template auto-initializes on first load. Bundle resolution
     // cannot be asserted to fail here: the source-plane test runner resolves
-    // @deepseek-ai/* through tsconfig paths regardless of the staged anchor.
-    expect(PROFILE_TEMPLATES.web?.bundles).toContain('@deepseek-ai/dsh-base')
+    // @mutantcat/* through tsconfig paths regardless of the staged anchor.
+    expect(PROFILE_TEMPLATES.web?.bundles).toContain('@mutantcat/dsh-base')
     expect(PROFILE_TEMPLATES.acp).toEqual({
-      bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-acp-app'],
+      bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-acp-app'],
     })
     expect(PROFILE_TEMPLATES.sdk).toEqual({
-      bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-sdk-app'],
+      bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-sdk-app'],
     })
     expect(PROFILE_TEMPLATES['sdk-minimal']).toEqual({
-      bundles: ['@deepseek-ai/dsh-sdk-minimal'],
+      bundles: ['@mutantcat/dsh-sdk-minimal'],
     })
     try {
       loadProfile('t', 'web', anchor, home)
@@ -332,31 +332,31 @@ describe('loadProfile', () => {
 
   it('normalizes only the exact installation-owned headless bundle tuple', () => {
     const anchor = stageInstallation({
-      '@deepseek-ai/dsh-base': { patch: '[]\n' },
-      '@deepseek-ai/dsh-web-app': { patch: '[]\n' },
-      '@deepseek-ai/dsh-headless': { patch: '[]\n' },
+      '@mutantcat/dsh-base': { patch: '[]\n' },
+      '@mutantcat/dsh-web-app': { patch: '[]\n' },
+      '@mutantcat/dsh-headless': { patch: '[]\n' },
       'custom-bundle': { patch: '[]\n' },
     })
     const home = tmp()
     const stock = resolveProfileDir('headless', home)
     initProfile(stock, [
-      '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@deepseek-ai/dsh-headless',
+      '@mutantcat/dsh-base', '@mutantcat/dsh-web-app', '@mutantcat/dsh-headless',
     ])
     const retiredManifest = readProfileManifest('t', stock)
     writeProfileManifest(stock, retiredManifest)
     loadProfile('t', 'headless', anchor, home)
     expect(readProfileManifest('t', stock).dsh?.profile).toEqual({
-      bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-headless'],
+      bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-headless'],
     })
 
     const customHome = tmp()
     const custom = resolveProfileDir('headless', customHome)
     initProfile(custom, [
-      '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@deepseek-ai/dsh-headless', 'custom-bundle',
+      '@mutantcat/dsh-base', '@mutantcat/dsh-web-app', '@mutantcat/dsh-headless', 'custom-bundle',
     ])
     loadProfile('t', 'headless', anchor, customHome)
     expect(readProfileManifest('t', custom).dsh?.profile?.bundles).toEqual([
-      '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@deepseek-ai/dsh-headless', 'custom-bundle',
+      '@mutantcat/dsh-base', '@mutantcat/dsh-web-app', '@mutantcat/dsh-headless', 'custom-bundle',
     ])
   })
 

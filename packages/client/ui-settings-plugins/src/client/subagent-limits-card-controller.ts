@@ -1,7 +1,7 @@
 /** Staged delegation limits backed by the Host's subagent settings section. */
 
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { SnapshotStore } from '@mutantcat/dsh-client-store'
+import type { SettingsScope } from '@mutantcat/dsh-client-ui-settings/client'
 import { CardForm, numberField, type CardActions, type CardFieldSpec, type CardFieldState, type CardShell } from './card-form.ts'
 
 /** Host-owned delegation defaults and live capacity. */

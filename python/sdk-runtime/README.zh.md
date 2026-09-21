@@ -12,7 +12,7 @@ wheel 包会安装 `dsh` 控制台命令和 `deepseek_harness_runtime` Python �
 
 每个目标还要求 `<executable-stem>-office/`，其中 stem 不含 `.exe`。该目录包含完整的已安装 Office 包及其依赖，保留引擎资源、清单、许可证、源码清单与辅助程序权限。复制可执行文件时必须一并复制此目录。缺少目标引擎会使 sidecar 构建失败，错误会指出其 npm 包名与目标平台／架构。
 
-仓库构建还会物化仅限开发的 `runtime/node/` 载体。它在系统 Node 22.19 或更高版本上运行 `node runtime/node/node_modules/@deepseek-ai/dsh/lib/bin.js`。系统不会自动选择它，而且 wheel 包与 sdist 均不包含它。
+仓库构建还会物化仅限开发的 `runtime/node/` 载体。它在系统 Node 22.19 或更高版本上运行 `node runtime/node/node_modules/@mutantcat/dsh/lib/bin.js`。系统不会自动选择它，而且 wheel 包与 sdist 均不包含它。
 
 两种载体执行相同的 `dsh` 语法与随附 profile，包括独立的 `sdk-minimal` 配置树，以及包含前端产物的完整 `web` profile。私有 `dsh-python-runtime-closure` manifest（元数据清单）定义打包依赖闭包；不存在 Python 专用 Node 应用或检入的默认 `cordis.yml`。
 

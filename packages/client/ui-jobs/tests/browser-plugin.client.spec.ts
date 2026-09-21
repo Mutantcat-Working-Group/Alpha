@@ -3,11 +3,11 @@
  * registrations against the real SlotRegistry (with fiber teardown proving
  * removal — HMR safety), and the inert node entry.
  */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { describe, expect, it } from 'vitest'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
-import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
-import { apply as applyLocale, inject as localeInject } from '@deepseek-ai/dsh-client-locale/client'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
+import { stubSettingsScope } from '@mutantcat/dsh-client-test-runtime'
+import { apply as applyLocale, inject as localeInject } from '@mutantcat/dsh-client-locale/client'
 import { apply, inject } from '../src/client/index.ts'
 import { apply as applyNode } from '../src/index.ts'
 import { en, NS, zh } from '../src/client/locales.ts'

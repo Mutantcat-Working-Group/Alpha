@@ -3,7 +3,7 @@ description: "为开发和配置已安装 Harness 插件的 agent 提供只读�
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-tool-cordis
+# @mutantcat/dsh-tool-cordis
 
 [English](README.md) | 中文
 
@@ -25,7 +25,7 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-创造模式包含这组工具。其他组合需要同时挂载 `@deepseek-ai/dsh-tool-cordis` 和提供 `cordisInspect` 的 host runner。调用 `cordis_inspect_list` 发现 provider，再用 `cordis_inspect_query` 查询其具体方法和类型。通过 [Plugin Manager](../../boot/plugin-manager/README.zh.md) 安装包含插件代码或 MCP 配置的组合包。
+创造模式包含这组工具。其他组合需要同时挂载 `@mutantcat/dsh-tool-cordis` 和提供 `cordisInspect` 的 host runner。调用 `cordis_inspect_list` 发现 provider，再用 `cordis_inspect_query` 查询其具体方法和类型。通过 [Plugin Manager](../../boot/plugin-manager/README.zh.md) 安装包含插件代码或 MCP 配置的组合包。
 
 -----
 
@@ -54,7 +54,7 @@ Host provider 结合生成的 Service/Event 目录与请求 agent 的工具注�
 
 #### 模型所见
 
-[工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-cordis) 描述两个只读检查工具。[提示词](src/prompt.ts) 指引模型通过 Plugin Manager 进行持久化变更并说明 MCP 设置方式。创造模式的视觉请求默认通过已安装的 UI 插件显示在当前 Web 页面；开发技能说明 Client 打包和 slot 注册方法。查询结果包含所请求的 API 声明或当前工具 schema。
+[工具目录](../../../docs/tool-catalog.zh.md#mutantcatdsh-tool-cordis) 描述两个只读检查工具。[提示词](src/prompt.ts) 指引模型通过 Plugin Manager 进行持久化变更并说明 MCP 设置方式。创造模式的视觉请求默认通过已安装的 UI 插件显示在当前 Web 页面；开发技能说明 Client 打包和 slot 注册方法。查询结果包含所请求的 API 声明或当前工具 schema。
 
 #### Token 影响
 

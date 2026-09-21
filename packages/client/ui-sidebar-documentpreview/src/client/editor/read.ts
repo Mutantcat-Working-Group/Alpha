@@ -1,5 +1,5 @@
 /** Complete-text reads for the editor: the page walk the text preview performs, to the file's end. */
-import type { RemoteResult } from '@deepseek-ai/dsh-api-remotes/client'
+import type { RemoteResult } from '@mutantcat/dsh-api-remotes/client'
 import type { ReadWorkspaceFilePage, SessionFile } from '../rpc.ts'
 
 /** One complete file read as text, with the version its first page reported. */

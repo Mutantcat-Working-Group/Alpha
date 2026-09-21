@@ -1,7 +1,7 @@
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context } from '@mutantcat/cordis'
 import type {
   ConversationNodeDefinition, ConversationPreviousContext,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
 
 interface InboxIdentity {
   readonly id: string

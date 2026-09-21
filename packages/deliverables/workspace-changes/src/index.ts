@@ -9,12 +9,12 @@
  * git, the summary lists file-tool edits only.
  */
 import { homedir, tmpdir } from 'node:os'
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type {} from '@deepseek-ai/dsh-agent'
-import type { Session, SessionId } from '@deepseek-ai/dsh-session'
-import type {} from '@deepseek-ai/dsh-subprocess'
-import type {} from '@deepseek-ai/dsh-tools'
+import type { Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import type {} from '@mutantcat/dsh-agent'
+import type { Session, SessionId } from '@mutantcat/dsh-session'
+import type {} from '@mutantcat/dsh-subprocess'
+import type {} from '@mutantcat/dsh-tools'
 import { GitRunner } from './git.ts'
 import { TurnRecorder } from './recorder.ts'
 import type { WorkspaceChanges } from './types.ts'

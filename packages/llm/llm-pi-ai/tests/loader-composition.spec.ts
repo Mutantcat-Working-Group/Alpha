@@ -13,13 +13,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import LlmRuntime, { createMessage, createUserMessage, userAgent } from '@deepseek-ai/dsh-llm'
-import LocalCredentialProvider from '@deepseek-ai/dsh-credentials-local'
-import FileSettingsProvider from '@deepseek-ai/dsh-settings-file'
-import * as LlmPiAi from '@deepseek-ai/dsh-llm-pi-ai'
+import { Context } from '@mutantcat/cordis'
+import Loader from '@mutantcat/cordis-plugin-loader'
+import Include from '@mutantcat/cordis-plugin-include'
+import LlmRuntime, { createMessage, createUserMessage, userAgent } from '@mutantcat/dsh-llm'
+import LocalCredentialProvider from '@mutantcat/dsh-credentials-local'
+import FileSettingsProvider from '@mutantcat/dsh-settings-file'
+import * as LlmPiAi from '@mutantcat/dsh-llm-pi-ai'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
@@ -56,17 +56,17 @@ async function loadComposition(): Promise<{ ctx: Context; settingsPath: string }
     '- id: llm',
     "  name: 'test-llm-service'",
     '- id: settings',
-    "  name: '@deepseek-ai/dsh-settings-file'",
+    "  name: '@mutantcat/dsh-settings-file'",
     '  config:',
     `    path: ${JSON.stringify(settingsPath)}`,
     '    debounceMs: 10',
     '- id: credentials',
-    "  name: '@deepseek-ai/dsh-credentials-local'",
+    "  name: '@mutantcat/dsh-credentials-local'",
     '  config:',
     `    path: ${JSON.stringify(join(root, '.credentials.yaml'))}`,
     '    debounceMs: 10',
     '- id: llm-pi-ai',
-    "  name: '@deepseek-ai/dsh-llm-pi-ai'",
+    "  name: '@mutantcat/dsh-llm-pi-ai'",
     '',
   ].join('\n'))
 
@@ -77,9 +77,9 @@ async function loadComposition(): Promise<{ ctx: Context; settingsPath: string }
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
     ['test-llm-service', LlmRuntime],
-    ['@deepseek-ai/dsh-settings-file', FileSettingsProvider],
-    ['@deepseek-ai/dsh-credentials-local', LocalCredentialProvider],
-    ['@deepseek-ai/dsh-llm-pi-ai', LlmPiAi],
+    ['@mutantcat/dsh-settings-file', FileSettingsProvider],
+    ['@mutantcat/dsh-credentials-local', LocalCredentialProvider],
+    ['@mutantcat/dsh-llm-pi-ai', LlmPiAi],
   ])
   ctx.loader.internal = {
     version: 'v2',

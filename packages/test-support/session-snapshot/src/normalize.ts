@@ -3,13 +3,13 @@
  * timestamps, goal lifecycle clocks, and hook duration while preserving semantic payload values.
  * The prompt-text and tool-schema scrubbers stay composable so one scenario per header class can
  * pin prompt and tool-schema sidecars.
- * @module @deepseek-ai/dsh-session-snapshot/normalize
+ * @module @mutantcat/dsh-session-snapshot/normalize
  */
 
 import {
   decodeSeqRanges,
-} from '@deepseek-ai/dsh-session'
-import { prepareSessionSnapshotFixtureForComparison } from '@deepseek-ai/dsh-llm-replay'
+} from '@mutantcat/dsh-session'
+import { prepareSessionSnapshotFixtureForComparison } from '@mutantcat/dsh-llm-replay'
 import { redactSessionSnapshotIds } from './identity.ts'
 
 const SESSION_ID = '{{sessionId}}'

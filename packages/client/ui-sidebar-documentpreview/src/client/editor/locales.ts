@@ -1,7 +1,7 @@
 /** Editor renderer copy: the implementation name, read progress, and save outcomes. */
-import type {} from '@deepseek-ai/dsh-client-ui-slots'
+import type {} from '@mutantcat/dsh-client-ui-slots'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Editor implementation name, loading, saving, and failure copy. */
     sidebarEditor: keyof typeof zh

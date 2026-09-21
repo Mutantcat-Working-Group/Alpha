@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 
-import { Context, type Fiber } from '@deepseek-ai/cordis'
-import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
+import { Context, type Fiber } from '@mutantcat/cordis'
+import { stubSettingsScope } from '@mutantcat/dsh-client-test-runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type { SlotRendererHost } from '@deepseek-ai/dsh-client-ui-slots'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { apply as themeApply, inject as themeInject, ThemeRuntime } from '@deepseek-ai/dsh-client-ui-theme/client'
-import { apply, inject, LayoutController } from '@deepseek-ai/dsh-client-ui-layout/client'
-import { apply as nodeApply } from '@deepseek-ai/dsh-client-ui-layout'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
+import type { SlotRendererHost } from '@mutantcat/dsh-client-ui-slots'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import { apply as themeApply, inject as themeInject, ThemeRuntime } from '@mutantcat/dsh-client-ui-theme/client'
+import { apply, inject, LayoutController } from '@mutantcat/dsh-client-ui-layout/client'
+import { apply as nodeApply } from '@mutantcat/dsh-client-ui-layout'
 import type { MainPanelId } from '../src/client/service.ts'
 import type { createLayoutStore } from '../src/client/stores.ts'
 

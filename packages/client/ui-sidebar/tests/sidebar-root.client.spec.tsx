@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
+import type { GlobalStandardProps } from '@mutantcat/dsh-client-ui-slots'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Tooltip } from '@mutantcat/dsh-client-ui-primitives'
 import type { ReactNode } from 'react'
 import type {
   SidebarFooterActionOwnerProps, SidebarRootComponentProps, SidebarSectionOwnerProps,
@@ -11,7 +11,7 @@ import type {
 import { HeaderLeadingControls, type HeaderLeadingControlsProps } from '../src/client/HeaderLeadingControls.tsx'
 import { SidebarRoot } from '../src/client/SidebarRoot.tsx'
 import { en } from '../src/client/locales.ts'
-import { en as commonEn } from '@deepseek-ai/dsh-client-locale/src/locales/en.ts'
+import { en as commonEn } from '@mutantcat/dsh-client-locale/src/locales/en.ts'
 
 // Every fixture carries the resource hook the resources plugin merges into GlobalStandardProps.
 const useResource = (() => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} })) as GlobalStandardProps['useResource']

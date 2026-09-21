@@ -1,16 +1,16 @@
 /** Inbox projection delivery and queue-operation transport. */
 
 import { describe, expect, onTestFinished } from 'vitest'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { InboxState } from '@deepseek-ai/dsh-agent/types'
-import type { SessionControlFrame } from '@deepseek-ai/dsh-api-session-controller/types'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import { createUserMessage } from '@mutantcat/dsh-llm'
+import type { InboxState } from '@mutantcat/dsh-agent/types'
+import type { SessionControlFrame } from '@mutantcat/dsh-api-session-controller/types'
+import type { SessionId } from '@mutantcat/dsh-session/types'
 import { SessionManager } from '../src/client/sessions/manager.ts'
-import { ok } from '@deepseek-ai/dsh-remote-mock'
-import { createClientTest, type ClientTestFixtures, webApp } from '@deepseek-ai/dsh-client-test-runtime/src/assembly/index.ts'
+import { ok } from '@mutantcat/dsh-remote-mock'
+import { createClientTest, type ClientTestFixtures, webApp } from '@mutantcat/dsh-client-test-runtime/src/assembly/index.ts'
 import type { SessionRemotes } from '../src/client/sessions/remotes.ts'
 
-const it = createClientTest({ roster: webApp.closure(['@deepseek-ai/dsh-api-gateway']) })
+const it = createClientTest({ roster: webApp.closure(['@mutantcat/dsh-api-gateway']) })
 
 function makeManager(remote: ClientTestFixtures['remote']): SessionManager {
   const manager = new SessionManager(remote as unknown as SessionRemotes)

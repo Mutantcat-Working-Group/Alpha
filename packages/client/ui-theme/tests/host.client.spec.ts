@@ -1,10 +1,10 @@
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { describe, expect, it } from 'vitest'
-import type { IndexInjection } from '@deepseek-ai/dsh-host-webserver'
-import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
+import type { IndexInjection } from '@mutantcat/dsh-host-webserver'
+import { SettingsProvider, type SettingsNamespace } from '@mutantcat/dsh-settings'
 import {
   DEFAULT_PREFERENCE, THEME_SETTINGS_NAMESPACE, apply,
-} from '@deepseek-ai/dsh-client-ui-theme'
+} from '@mutantcat/dsh-client-ui-theme'
 
 class MemorySettings extends SettingsProvider {
   readonly writable = true

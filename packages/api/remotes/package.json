@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-api-remotes",
+  "name": "@mutantcat/dsh-api-remotes",
   "description": "Remote BFF assembly for application-selected Host capabilities",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -32,7 +32,7 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-api-gateway"
+        "@mutantcat/dsh-api-gateway"
       ],
       "platform": "web",
       "immediately": true
@@ -50,45 +50,45 @@
     "lib/types/**/*.d.ts"
   ],
   "dependencies": {
-    "@deepseek-ai/dsh-deque": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-util-values": "workspace:^"
+    "@mutantcat/dsh-deque": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-presets": "workspace:^",
-    "@deepseek-ai/dsh-api-gateway": "workspace:^",
-    "@deepseek-ai/dsh-api-settings-controller": "workspace:^",
-    "@deepseek-ai/dsh-api-workspace-controller": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-cordis-host-runner": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-file-reference": "workspace:^",
-    "@deepseek-ai/dsh-goal": "workspace:^",
-    "@deepseek-ai/dsh-host-plugin-inventory": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-message-feedback": "workspace:^",
-    "@deepseek-ai/dsh-permission-presets": "workspace:^",
-    "@deepseek-ai/dsh-session-reference": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/dsh-user-questions": "workspace:^",
-    "@deepseek-ai/dsh-client-connection": "workspace:^",
-    "@deepseek-ai/dsh-client-file-upload": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-api-session-controller": "workspace:^",
-    "@deepseek-ai/dsh-api-workspace-files": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-presets": "workspace:^",
+    "@mutantcat/dsh-api-gateway": "workspace:^",
+    "@mutantcat/dsh-api-settings-controller": "workspace:^",
+    "@mutantcat/dsh-api-workspace-controller": "workspace:^",
+    "@mutantcat/dsh-commands": "workspace:^",
+    "@mutantcat/dsh-cordis-host-runner": "workspace:^",
+    "@mutantcat/dsh-credentials": "workspace:^",
+    "@mutantcat/dsh-file-reference": "workspace:^",
+    "@mutantcat/dsh-goal": "workspace:^",
+    "@mutantcat/dsh-host-plugin-inventory": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-message-feedback": "workspace:^",
+    "@mutantcat/dsh-permission-presets": "workspace:^",
+    "@mutantcat/dsh-session-reference": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^",
+    "@mutantcat/dsh-subagent": "workspace:^",
+    "@mutantcat/dsh-user-approval": "workspace:^",
+    "@mutantcat/dsh-user-questions": "workspace:^",
+    "@mutantcat/dsh-client-connection": "workspace:^",
+    "@mutantcat/dsh-client-file-upload": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/dsh-scope": "workspace:^",
+    "@mutantcat/dsh-api-session-controller": "workspace:^",
+    "@mutantcat/dsh-api-workspace-files": "workspace:^",
     "zod": "^4.4.3",
-    "@deepseek-ai/dsh-command-feedback": "workspace:^",
-    "@deepseek-ai/dsh-api-terminal-controller": "workspace:^",
-    "@deepseek-ai/dsh-plugin-manager": "workspace:^",
-    "@deepseek-ai/dsh-office-to-pdf": "workspace:^"
+    "@mutantcat/dsh-command-feedback": "workspace:^",
+    "@mutantcat/dsh-api-terminal-controller": "workspace:^",
+    "@mutantcat/dsh-plugin-manager": "workspace:^",
+    "@mutantcat/dsh-office-to-pdf": "workspace:^"
   }
 }

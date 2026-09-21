@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
-import { Service, type Context } from '@deepseek-ai/cordis'
+import { Service, type Context } from '@mutantcat/cordis'
 import {
   barePackageName,
   installProfileResolution,
@@ -13,7 +13,7 @@ import {
 } from './resolver.ts'
 import type { ProfileResolutionGeneration } from '../profile.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     /** Deterministic package lookup for configured plugin specifiers. */
     pluginPackages: PluginPackages

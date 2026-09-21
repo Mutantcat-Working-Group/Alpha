@@ -1,17 +1,17 @@
 /** Session Controller fork boundaries, lineage, and inherited model routing. */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { agentEvents } from '@deepseek-ai/dsh-agent'
-import type { Agent, AgentHandle, CreateAgentOptions } from '@deepseek-ai/dsh-agent'
-import { mountAgentLoopTestDependencies, mountAgentLoopTestHarness } from '@deepseek-ai/dsh-agent-loop-testkit'
+import { Context } from '@mutantcat/cordis'
+import AgentRegistry, { agentEvents } from '@mutantcat/dsh-agent'
+import type { Agent, AgentHandle, CreateAgentOptions } from '@mutantcat/dsh-agent'
+import { mountAgentLoopTestDependencies, mountAgentLoopTestHarness } from '@mutantcat/dsh-agent-loop-testkit'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
-import { createUserMessage, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
-import type { LlmCallConfig } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SESSION_FORMAT_VERSION, SessionLogOffset, SessionSeq } from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@deepseek-ai/dsh-session'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import type { Workspace } from '@deepseek-ai/dsh-workspace'
+import { createUserMessage, ReasoningEffortId } from '@mutantcat/dsh-llm'
+import type { LlmCallConfig } from '@mutantcat/dsh-llm'
+import SessionStore, { SESSION_FORMAT_VERSION, SessionLogOffset, SessionSeq } from '@mutantcat/dsh-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@mutantcat/dsh-session'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import type { Workspace } from '@mutantcat/dsh-workspace'
 import {
   createSessionTestRemote, installSessionReadTestServices, testSessionPersistence,
 } from './test-remote.ts'

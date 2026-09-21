@@ -3,7 +3,7 @@ description: "通过 Web 侧边栏或 agent 启停 profile 插件，并安装、
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-plugin-manager
+# @mutantcat/dsh-plugin-manager
 
 [English](README.md) | 中文
 
@@ -85,7 +85,7 @@ pnpm 11 拦下依赖脚本时，失败的安装在 `pendingBuilds` 里报告 pro
 
 #### 模型看到什么
 
-[`plugin_manager` 工具](../../../docs/tool-catalog.zh.md#deepseek-aidsh-plugin-manager) 列出插件条目和组合包，并执行影响整个 profile 的改动。结果包含保存状态变化、应用状态和包管理诊断。管理操作不会向 Agent 注入消息。
+[`plugin_manager` 工具](../../../docs/tool-catalog.zh.md#mutantcatdsh-plugin-manager) 列出插件条目和组合包，并执行影响整个 profile 的改动。结果包含保存状态变化、应用状态和包管理诊断。管理操作不会向 Agent 注入消息。
 
 #### Token 影响
 

@@ -2,14 +2,14 @@
  * Concrete agent-loop plugin: creates scoped ReactLoopAgents, publishes them
  * through the agent/session registries, and owns their ordered teardown.
  *
- * @module @deepseek-ai/dsh-agent-loop
+ * @module @mutantcat/dsh-agent-loop
  */
 
-import { Context, FiberState, Service } from '@deepseek-ai/cordis'
+import { Context, FiberState, Service } from '@mutantcat/cordis'
 import { randomUUID } from 'node:crypto'
-import z from '@deepseek-ai/schemastery'
+import z from '@mutantcat/schemastery'
 import { z as zod } from 'zod'
-import { brandString } from '@deepseek-ai/dsh-brand'
+import { brandString } from '@mutantcat/dsh-brand'
 import type {
   Agent,
   AgentFactory,
@@ -20,17 +20,17 @@ import type {
   ResumeAgentOptions,
   SessionStartSource,
   TurnBoundaryProjection,
-} from '@deepseek-ai/dsh-agent'
-import { errorChain, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
-import type {} from '@deepseek-ai/dsh-settings'
-import { interruptedTurnClosers, SessionLogOffset, SessionPreparation, SessionSeq } from '@deepseek-ai/dsh-session'
-import type { Session, SessionHeader, SessionId } from '@deepseek-ai/dsh-session'
-import type {} from '@deepseek-ai/dsh-system-prompt'
-import type {} from '@deepseek-ai/dsh-tools'
-import type {} from '@deepseek-ai/dsh-session-projection'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
-import { SessionPersistenceNotFoundError } from '@deepseek-ai/dsh-session-persistence'
-import type { SessionHandle, SessionPersistence } from '@deepseek-ai/dsh-session-persistence'
+} from '@mutantcat/dsh-agent'
+import { errorChain, ReasoningEffortId } from '@mutantcat/dsh-llm'
+import type {} from '@mutantcat/dsh-settings'
+import { interruptedTurnClosers, SessionLogOffset, SessionPreparation, SessionSeq } from '@mutantcat/dsh-session'
+import type { Session, SessionHeader, SessionId } from '@mutantcat/dsh-session'
+import type {} from '@mutantcat/dsh-system-prompt'
+import type {} from '@mutantcat/dsh-tools'
+import type {} from '@mutantcat/dsh-session-projection'
+import type { ProjectionDefinition } from '@mutantcat/dsh-session-projection'
+import { SessionPersistenceNotFoundError } from '@mutantcat/dsh-session-persistence'
+import type { SessionHandle, SessionPersistence } from '@mutantcat/dsh-session-persistence'
 import { ReactLoopAgent } from './agent.ts'
 import { inboxProjectionDefinition } from './inbox.ts'
 import { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from './constants.ts'
@@ -220,7 +220,7 @@ interface PreparedAgent {
   dispose(): Promise<void>
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     agentLoop: AgentLoop
     /**

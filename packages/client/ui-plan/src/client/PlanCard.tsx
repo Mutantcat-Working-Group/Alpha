@@ -1,12 +1,12 @@
 /** Persistent transcript cards and pending-review sidebar navigation. */
 import { useEffect } from 'react'
-import { FileTypeIcon, IconChevronRightOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { ChatNode } from '@deepseek-ai/dsh-client-ui-chat/client'
-import { shallowEqual } from '@deepseek-ai/dsh-client-store'
+import { FileTypeIcon, IconChevronRightOutline14 } from '@mutantcat/dsh-client-ui-primitives'
+import type { ChatNode } from '@mutantcat/dsh-client-ui-chat/client'
+import { shallowEqual } from '@mutantcat/dsh-client-store'
 import type {} from './plan-definition.ts'
-import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
-import type { ToolCallId } from '@deepseek-ai/dsh-llm/brand'
-import type {} from '@deepseek-ai/dsh-client-ui-user-questions/client'
+import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@mutantcat/dsh-client-ui-slots'
+import type { ToolCallId } from '@mutantcat/dsh-llm/brand'
+import type {} from '@mutantcat/dsh-client-ui-user-questions/client'
 import type { createPlanReviewStore } from './review-store.ts'
 import css from './PlanPreview.module.css'
 

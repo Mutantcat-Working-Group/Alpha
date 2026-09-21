@@ -10,7 +10,7 @@
  * mounted for the seat to exist. Data only — this module is the one legitimate
  * meeting point of the two planes, so it carries strings, never client imports.
  *
- * @module @deepseek-ai/dsh-cordis-client-runner/client/slot-catalog
+ * @module @mutantcat/dsh-cordis-client-runner/client/slot-catalog
  */
 
 /* jscpd:ignore-start */
@@ -349,7 +349,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'conversation.chat.node\' (client-ui-chat), so it exists while that entry is mounted',
     occupants: [
-      'client-ui-deliverables DeliverablesTail id \'@deepseek-ai/dsh-client-ui-deliverables\'',
+      'client-ui-deliverables DeliverablesTail id \'@mutantcat/dsh-client-ui-deliverables\'',
       'client-ui-plan PlanCards',
     ],
     replaceRisk: 'none',

@@ -3,18 +3,18 @@
  * the derived LLM message history. Persistence is a plugin concern (subscribe
  * to `session/event`, drain on `session/flush`).
  *
- * @module @deepseek-ai/dsh-session
+ * @module @mutantcat/dsh-session
  */
 
-import { Context, Service } from '@deepseek-ai/cordis'
+import { Context, Service } from '@mutantcat/cordis'
 import { isAbsolute } from 'node:path'
-import { brandString } from '@deepseek-ai/dsh-brand'
-import { assertNever, deepFreeze, snapshotJsonValue } from '@deepseek-ai/dsh-util-values'
-import { scopeOf, scopeTarget } from '@deepseek-ai/dsh-scope'
-import type { Scoped } from '@deepseek-ai/dsh-scope'
-import type { Message } from '@deepseek-ai/dsh-llm'
+import { brandString } from '@mutantcat/dsh-brand'
+import { assertNever, deepFreeze, snapshotJsonValue } from '@mutantcat/dsh-util-values'
+import { scopeOf, scopeTarget } from '@mutantcat/dsh-scope'
+import type { Scoped } from '@mutantcat/dsh-scope'
+import type { Message } from '@mutantcat/dsh-llm'
 import { SESSION_FORMAT_VERSION, SessionLogOffset, SessionSeq } from './types.ts'
-import type { TypertLookup } from '@deepseek-ai/dsh-typert-protocol'
+import type { TypertLookup } from '@mutantcat/dsh-typert-protocol'
 import type { CreateSessionOptions, EpochHeader, PrepareSessionOptions, RequestContext, SessionEvent, SessionEventMap, SessionEventType, SessionHeader, SessionId, SessionSeedEventState, SurfaceIntent, SurfaceEventType } from './types.ts'
 import { SurfaceManager, validateSessionEventData, validateSurfaceMetadata } from './surface.ts'
 import type { SessionSurface, SessionMessageProjection } from './surface.ts'
@@ -23,14 +23,14 @@ import { foldRequestHeader } from './request-header.ts'
 export * from './types.ts'
 export { SessionPreparation } from './preparation.ts'
 export type { SessionPreparationOptions } from './preparation.ts'
-export type { AssistantMessage, SystemMessage, ToolResultMessage, UserMessage } from '@deepseek-ai/dsh-llm'
+export type { AssistantMessage, SystemMessage, ToolResultMessage, UserMessage } from '@mutantcat/dsh-llm'
 export { interruptedTurnClosers, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from './repair.ts'
 export type { SessionSurface, SurfaceFoldReplacement, SurfaceFoldResult, SessionMessageProjection, SessionMessageProjectionContext } from './surface.ts'
 export { deriveEventMessage, foldSurface, isAppendSurfaceEvent, isReplacementSurfaceEvent, isSurfaceEvent, isSurfaceEligibleType } from './surface.ts'
 export { canonicalHeader, foldRequestHeader, headerEquals } from './request-header.ts'
 export { KNOWN_SESSION_EVENT_TYPES } from './known-event-types.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     sessions: SessionStore
   }
@@ -41,7 +41,7 @@ declare module '@deepseek-ai/cordis' {
      * back with a paired disposal; detach requested during dispatch is deferred.
      * A returned-promise rejection is logged but cannot retroactively veto this
      * synchronous boundary.
-     * Scope-filtered dispatch (`@deepseek-ai/dsh-scope`): agent-scoped listeners
+     * Scope-filtered dispatch (`@mutantcat/dsh-scope`): agent-scoped listeners
      * receive only sessions entered through that agent's context.
      * @param session - the session just entered and announced.
      * @dshScopeScan unsupported
@@ -52,7 +52,7 @@ declare module '@deepseek-ai/cordis' {
      * Emitted once when an announced session leaves the store, including
      * publication rollback, but never for an entry whose creation announcement
      * did not begin. Listener failures are logged and contained.
-     * Scope-filtered dispatch (`@deepseek-ai/dsh-scope`) reuses the owner scope.
+     * Scope-filtered dispatch (`@mutantcat/dsh-scope`) reuses the owner scope.
      * @param session - the session that is no longer live in the store.
      * @dshScopeScan unsupported
      * @mode emit
@@ -62,7 +62,7 @@ declare module '@deepseek-ai/cordis' {
      * Post-commit, fire-and-forget append feed. The listener snapshot resolves
      * before the log push, but callbacks run after it; observer failures are
      * logged and contained without making the committed append fail.
-     * Scope-filtered dispatch (`@deepseek-ai/dsh-scope`): agent-scoped listeners
+     * Scope-filtered dispatch (`@mutantcat/dsh-scope`): agent-scoped listeners
      * receive only events from sessions entered through that agent's context.
      * @param session - the session whose log grew.
      * @param event - the appended event, exactly as recorded.
@@ -73,7 +73,7 @@ declare module '@deepseek-ai/cordis' {
     /**
      * Awaited parallel durability checkpoint: every listener runs and the
      * caller awaits all of them, with no waterfall veto. Scope-filtered dispatch
-     * (`@deepseek-ai/dsh-scope`) reuses the session's owner scope.
+     * (`@mutantcat/dsh-scope`) reuses the session's owner scope.
      * @param session - the session whose buffered events must reach durable storage.
      * @dshScopeScan unsupported
      * @mode parallel
@@ -82,7 +82,7 @@ declare module '@deepseek-ai/cordis' {
   }
 }
 
-declare module '@deepseek-ai/dsh-typert-protocol' {
+declare module '@mutantcat/dsh-typert-protocol' {
   interface TypertLookupMap {
     session: TypertLookup<Session, SessionId>
   }
@@ -938,8 +938,8 @@ export class SessionStore extends Service {
       typeCtx.typert.lookups.register('session', {
         parameter: 'session',
         wire: 'sessionId',
-        hostTypeSymbol: '@deepseek-ai/dsh-session#Session',
-        wireTypeSymbol: '@deepseek-ai/dsh-session/types#SessionId',
+        hostTypeSymbol: '@mutantcat/dsh-session#Session',
+        wireTypeSymbol: '@mutantcat/dsh-session/types#SessionId',
         resolve: sessionId => this.get(sessionId),
       })
     })

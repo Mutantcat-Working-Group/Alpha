@@ -1,6 +1,6 @@
 /** Alpha mark occupant for the blank-session hero brand slot. */
-import type { HeroBrandMarkOwnerProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
-import { AlphaMark } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { HeroBrandMarkOwnerProps } from '@mutantcat/dsh-client-ui-conversation/client'
+import { AlphaMark } from '@mutantcat/dsh-client-ui-primitives'
 
 /**
  * Render the Alpha mark ahead of the blank-session headline.

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-file-reference",
+  "name": "@mutantcat/dsh-file-reference",
   "description": "File-reference discovery contract and shared @file grammar",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -36,11 +36,11 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

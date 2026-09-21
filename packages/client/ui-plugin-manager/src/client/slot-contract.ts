@@ -10,7 +10,7 @@
  * save control. The page draws the title, the icon, and the crumb itself.
  */
 
-import type {} from '@deepseek-ai/dsh-client-ui-slots'
+import type {} from '@mutantcat/dsh-client-ui-slots'
 
 /** The view the page asks a configuration entry for. */
 export interface PluginConfigViewProps {
@@ -18,7 +18,7 @@ export interface PluginConfigViewProps {
   readonly view: 'summary' | 'page'
 }
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface SlotMap {
     /**
      * One official plugin the Plugins page lists in its Official group after

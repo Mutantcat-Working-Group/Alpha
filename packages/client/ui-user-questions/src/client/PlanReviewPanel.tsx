@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Button, extractMarkdownPlainText, IconEditOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, extractMarkdownPlainText, IconEditOutline16 } from '@mutantcat/dsh-client-ui-primitives'
 import type { PendingQuestion, PlanReview, QuestionComposerProps } from './contract/slots.ts'
 import css from './PlanReviewPanel.module.css'
 

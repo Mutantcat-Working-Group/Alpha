@@ -20,7 +20,7 @@ Alpha 是一个开源 AI 代码编辑器，由 [DeepSeek Harness](https://github
 <a id="run"></a>
 
 1. 从 [Releases](https://github.com/Mutantcat-Working-Group/Alpha/releases) 下载对应平台的安装包，双击即可安装运行，无需额外配置。
-2. 只想试用 Web 版时，安装 Node.js 后执行 `npx @deepseek-ai/dsh web`，默认在 `http://127.0.0.1:3080` 打开；`--no-open` 只起服务不打开浏览器。
+2. 只想试用 Web 版时，安装 Node.js 后执行 `npx @mutantcat/dsh web`，默认在 `http://127.0.0.1:3080` 打开；`--no-open` 只起服务不打开浏览器。
 
 <a id="run-from-source"></a>
 

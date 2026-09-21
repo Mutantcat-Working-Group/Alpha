@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-permission-presets",
+  "name": "@mutantcat/dsh-permission-presets",
   "description": "User-facing permission presets (ctx.permissionPresets) for the DeepSeek Harness: one product-level Permissions select bundling the sandbox-mode and approval-policy knobs, written through to their own session events",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -53,33 +53,33 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-shell": "workspace:^",
+    "@mutantcat/dsh-commands": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/dsh-user-approval": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-shell": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/dsh-shell": "workspace:^",
+    "@mutantcat/dsh-commands": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-settings": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/dsh-user-approval": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   }
 }

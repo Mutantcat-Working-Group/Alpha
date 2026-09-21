@@ -4,7 +4,7 @@
  *
  * `tsconfig.base.json` is the resolution facade for the whole repository, and
  * two of its aliases used one key per *group* rather than per package:
- * `@deepseek-ai/dsh-*` listed 49 candidate globs and `@deepseek-ai/dsh-*\/invariant`
+ * `@mutantcat/dsh-*` listed 49 candidate globs and `@mutantcat/dsh-*\/invariant`
  * listed 45. TypeScript and tsx try those candidates in order, so a specifier
  * whose package sits late in the list pays for every earlier miss. Under tsx's
  * ESM hook each miss is an `ERR_MODULE_NOT_FOUND` that Node decorates with a
@@ -15,6 +15,11 @@
  * that region untouched. `--check` reports drift instead of writing, so a new
  * package that needs an alias fails a gate rather than silently resolving
  * through a fallback that no longer exists.
+ *
+ * Every alias is emitted twice: once under the scope this repository owns and
+ * once under the scope the harness published under before the rename. A plugin
+ * published against the old scope still imports `@deepseek-ai/dsh-<name>`, and
+ * both rows resolve to the same source, so such a plugin sees one module.
  *
  * @module scripts/gen-tsconfig-paths
  */
@@ -28,17 +33,43 @@ const CONFIG = join(ROOT, 'tsconfig.base.json')
 const BEGIN = '      // BEGIN generated package aliases — pnpm run gen-tsconfig-paths'
 const END = '      // END generated package aliases'
 
+/** Comment that separates the two scopes inside the generated region. */
+const LEGACY_COMMENT = '      // Pre-rescope names, kept resolvable for plugins published against them.'
+
+/** Scope this repository's packages moved away from; kept resolvable for plugins. */
+const LEGACY_SCOPE = '@deepseek-ai'
+
+/** Scope this repository's packages now live under. */
+const SCOPE = '@mutantcat'
+
 /** Package-name prefix the expanded aliases cover. */
-const PREFIX = '@deepseek-ai/dsh-'
+const PREFIX = `${SCOPE}/dsh-`
 
 /** One workspace package the generated region maps. */
 interface PackageAlias {
-  /** Bare specifier, e.g. `@deepseek-ai/dsh-session`. */
+  /** Bare specifier, e.g. `@mutantcat/dsh-session`. */
   readonly specifier: string
   /** Repository-relative source directory, e.g. `./packages/session/session/src`. */
   readonly source: string
   /** Whether the package carries `src/invariant.ts`, which earns a second alias. */
   readonly hasInvariant: boolean
+}
+
+/** An alias the config maps by hand, outside the generated region. */
+interface HandWrittenAlias {
+  /** Specifier as written in the config, e.g. `@mutantcat/cordis`. */
+  readonly specifier: string
+  /** Repository-relative source directory the alias points at. */
+  readonly source: string
+}
+
+/**
+ * Name a specifier under the scope the harness published under before the rename.
+ * @param specifier - a `@mutantcat` bare specifier or subpath.
+ * @returns The same package and subpath under the legacy scope.
+ */
+function legacySpecifier(specifier: string): string {
+  return `${LEGACY_SCOPE}/${specifier.slice(SCOPE.length + 1)}`
 }
 
 /**
@@ -68,7 +99,7 @@ interface WorkspacePackage {
 
 /**
  * Walk `packages/<group>/<directory>` once, in a stable order.
- * @returns Every directory whose manifest names a `@deepseek-ai/dsh-` package and that carries `src`.
+ * @returns Every directory whose manifest names a `@mutantcat/dsh-` package and that carries `src`.
  */
 function workspacePackages(): WorkspacePackage[] {
   const packages = join(ROOT, 'packages')
@@ -91,7 +122,7 @@ function workspacePackages(): WorkspacePackage[] {
  *
  * A wildcard substituted the specifier's suffix into `packages/<group>/<suffix>/src`,
  * so it only ever resolved a package whose declared name is exactly
- * `@deepseek-ai/dsh-<directory>`. Packages named after something other than
+ * `@mutantcat/dsh-<directory>`. Packages named after something other than
  * their directory already carry a hand-written alias and are skipped here.
  *
  * @returns Aliases sorted by specifier.
@@ -129,12 +160,42 @@ export function collectPackageAliases(): PackageAlias[] {
  * alias can — but they still have to be mapped by something, because deleting
  * the group wildcards removed the fallback that used to catch them.
  *
- * @returns Declared names of every `@deepseek-ai/dsh-` package carrying a `src` directory.
+ * @returns Declared names of every `@mutantcat/dsh-` package carrying a `src` directory.
  */
 export function collectPackageNames(): string[] {
   return workspacePackages()
     .map(({ name }) => name)
     .sort((left, right) => left.localeCompare(right))
+}
+
+/**
+ * Read the aliases a config maps by hand, generated region excluded.
+ * @param text - `tsconfig.base.json` contents.
+ * @returns Every `@mutantcat` alias outside the region, in file order.
+ * @throws When a key's value spans lines, which the single-line pattern cannot read.
+ */
+function handWrittenAliases(text: string): HandWrittenAlias[] {
+  const begin = text.indexOf(BEGIN)
+  const end = text.indexOf(END)
+  const outside = begin < 0 || end < begin ? text : text.slice(0, begin) + text.slice(end)
+  const keys: string[] = []
+  for (const match of outside.matchAll(/^\s*"(@mutantcat\/[^"]+)":/gm)) {
+    const key = match[1]
+    if (key !== undefined) keys.push(key)
+  }
+  const aliases: HandWrittenAlias[] = []
+  for (const match of outside.matchAll(/^\s*"(@mutantcat\/[^"]+)":\s*\["([^"]*)"\]/gm)) {
+    const specifier = match[1]
+    const source = match[2]
+    if (specifier !== undefined && source !== undefined) aliases.push({ specifier, source })
+  }
+  if (aliases.length !== keys.length) {
+    throw new Error(
+      `gen-tsconfig-paths: ${String(keys.length - aliases.length)} hand-written alias(es) in ${CONFIG} `
+      + 'do not fit the one-key-one-line-one-path pattern; render their legacy twin by hand.',
+    )
+  }
+  return aliases
 }
 
 /**
@@ -144,7 +205,7 @@ export function collectPackageNames(): string[] {
  */
 export function mappedSpecifiers(text: string): Set<string> {
   const keys = new Set<string>()
-  for (const match of text.matchAll(/^\s*"(@deepseek-ai\/dsh-[^"/]+)":/gm)) {
+  for (const match of text.matchAll(/^\s*"(@mutantcat\/dsh-[^"/]+)":/gm)) {
     const key = match[1]
     if (key !== undefined) keys.add(key)
   }
@@ -173,22 +234,41 @@ export function uncoveredPackages(
 /**
  * Render the generated region's alias lines.
  * @param aliases - packages to map, in emission order.
- * @param handWritten - specifiers already mapped outside the region; a duplicate key would shadow one silently.
- * @returns The region body, one JSON member per line.
+ * @param handWritten - aliases already mapped outside the region; a duplicate key would shadow one silently.
+ * @returns The region body, one JSON member per line, with a comment between the two scopes.
  */
-export function renderAliases(aliases: readonly PackageAlias[], handWritten: ReadonlySet<string>): string {
-  const lines: string[] = []
+export function renderAliases(aliases: readonly PackageAlias[], handWritten: readonly HandWrittenAlias[]): string {
+  const mapped = new Set(handWritten.map(alias => alias.specifier))
+  const current: string[] = []
   for (const alias of aliases) {
-    if (!handWritten.has(alias.specifier)) {
-      lines.push(`      ${JSON.stringify(alias.specifier)}: [${JSON.stringify(alias.source)}]`)
+    if (!mapped.has(alias.specifier)) {
+      current.push(`      ${JSON.stringify(alias.specifier)}: [${JSON.stringify(alias.source)}]`)
     }
     const invariant = `${alias.specifier}/invariant`
-    if (alias.hasInvariant && !handWritten.has(invariant)) {
-      lines.push(`      ${JSON.stringify(invariant)}: [${JSON.stringify(`${alias.source}/invariant.ts`)}]`)
+    if (alias.hasInvariant && !mapped.has(invariant)) {
+      current.push(`      ${JSON.stringify(invariant)}: [${JSON.stringify(`${alias.source}/invariant.ts`)}]`)
     }
   }
-  // The region closes `paths`, so the last member carries no trailing comma.
-  return lines.join(',\n')
+  // A plugin published against the pre-rescope scope still imports that name, so
+  // the region maps it to the same source. The vendored framework and every
+  // package whose name does not match its directory arrive as hand-written
+  // aliases, and their legacy twins come from the same rows.
+  const legacy = new Map<string, string>()
+  for (const alias of aliases) {
+    legacy.set(legacySpecifier(alias.specifier), alias.source)
+    if (alias.hasInvariant) {
+      legacy.set(legacySpecifier(`${alias.specifier}/invariant`), `${alias.source}/invariant.ts`)
+    }
+  }
+  for (const alias of handWritten) legacy.set(legacySpecifier(alias.specifier), alias.source)
+  const previous = [...legacy]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([specifier, source]) => `      ${JSON.stringify(specifier)}: [${JSON.stringify(source)}]`)
+  if (previous.length === 0) return current.join(',\n')
+  if (current.length === 0) return [LEGACY_COMMENT, previous.join(',\n')].join('\n')
+  // The region closes `paths`, so the last member carries no trailing comma. A
+  // comment takes no comma, so the member before it carries one explicitly.
+  return `${current.join(',\n')},\n${LEGACY_COMMENT}\n${previous.join(',\n')}`
 }
 
 /**
@@ -207,27 +287,11 @@ export function writeRegion(text: string, body: string): string {
   return `${text.slice(0, begin)}${BEGIN}\n${body}\n${END}${text.slice(end + END.length)}`
 }
 
-/**
- * Parse the config's `paths` keys, ignoring the generated region.
- * @param text - current `tsconfig.base.json` contents.
- * @returns Specifiers mapped by hand.
- */
-function handWrittenSpecifiers(text: string): Set<string> {
-  const begin = text.indexOf(BEGIN)
-  const end = text.indexOf(END)
-  const outside = begin < 0 || end < begin ? text : text.slice(0, begin) + text.slice(end)
-  const keys = new Set<string>()
-  for (const match of outside.matchAll(/^\s*"(@deepseek-ai\/[^"]+)":/gm)) {
-    const key = match[1]
-    if (key !== undefined) keys.add(key)
-  }
-  return keys
-}
-
 if (process.argv[1] && import.meta.filename === resolve(process.argv[1])) {
   const check = process.argv.includes('--check')
   const current = readFileSync(CONFIG, 'utf8')
-  const next = writeRegion(current, renderAliases(collectPackageAliases(), handWrittenSpecifiers(current)))
+  const handWritten = handWrittenAliases(current)
+  const next = writeRegion(current, renderAliases(collectPackageAliases(), handWritten))
   const uncovered = uncoveredPackages(collectPackageNames(), mappedSpecifiers(next))
   if (uncovered.length > 0) {
     console.error(

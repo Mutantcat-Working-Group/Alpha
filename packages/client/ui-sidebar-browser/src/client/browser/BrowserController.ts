@@ -1,7 +1,7 @@
 /** Per-tab Browser controller. */
-import type { BoundActions } from '@deepseek-ai/dsh-client-store'
-import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
-import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
+import type { BoundActions } from '@mutantcat/dsh-client-store'
+import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
+import type { HostObservable } from '@mutantcat/dsh-client-ui-slots'
 import { IframeImpl } from './BrowserFrame.ts'
 import type { BrowserFrame, BrowserFrameState } from './BrowserFrame.ts'
 import { BrowserNavigation } from './BrowserNavigation.ts'

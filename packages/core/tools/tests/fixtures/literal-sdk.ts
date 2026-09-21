@@ -1,7 +1,7 @@
 /** Tool documentation containing literal template syntax for recorded PTC replay. */
 
-import type { Context } from '@deepseek-ai/cordis'
-import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { Context } from '@mutantcat/cordis'
+import { defineTool } from '@mutantcat/dsh-tools'
 
 export const name = 'literal-sdk'
 export const inject = ['tools']

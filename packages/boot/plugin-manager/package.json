@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-plugin-manager",
+  "name": "@mutantcat/dsh-plugin-manager",
   "description": "Current-profile plugin and bundle management shared by dsh CLI, Web and agent tools",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -52,51 +52,51 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-app-boot": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@mutantcat/dsh-app-boot": "workspace:^",
+    "@mutantcat/dsh-atomic-write": "workspace:^",
+    "@mutantcat/schemastery": "workspace:^",
     "execa": "^10.0.0",
     "yaml": "^2.9.0",
     "zod": "^4.4.3",
-    "@deepseek-ai/dsh-util-values": "workspace:^"
+    "@mutantcat/dsh-util-values": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-host-plugin-inventory": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-hmr": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-host-plugin-inventory": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-hmr": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-user-approval": "workspace:^"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/dsh-hmr": {
+    "@mutantcat/dsh-hmr": {
       "optional": true
     },
-    "@deepseek-ai/dsh-user-approval": {
+    "@mutantcat/dsh-user-approval": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-host-plugin-inventory": "workspace:^",
-    "@deepseek-ai/dsh-subprocess": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-hmr": "workspace:^",
-    "@deepseek-ai/cordis-plugin-timer": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-sandbox-policy": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-sandbox": "workspace:^",
-    "@deepseek-ai/dsh-user-approval": "workspace:^"
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-host-plugin-inventory": "workspace:^",
+    "@mutantcat/dsh-subprocess": "workspace:^",
+    "@mutantcat/dsh-typert-protocol": "workspace:^",
+    "@mutantcat/dsh-tools": "workspace:^",
+    "@mutantcat/dsh-system-prompt": "workspace:^",
+    "@mutantcat/dsh-hmr": "workspace:^",
+    "@mutantcat/cordis-plugin-timer": "workspace:^",
+    "@mutantcat/dsh-brand": "workspace:^",
+    "@mutantcat/dsh-sandbox-policy": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^",
+    "@mutantcat/dsh-sandbox": "workspace:^",
+    "@mutantcat/dsh-user-approval": "workspace:^"
   }
 }

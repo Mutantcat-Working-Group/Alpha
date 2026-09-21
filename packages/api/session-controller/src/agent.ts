@@ -1,19 +1,19 @@
 /** Agent activation, composition, and model-selection policy owned by API Session. */
 
 import { mkdir } from 'node:fs/promises'
-import type { Context } from '@deepseek-ai/cordis'
-import { installModelSelection } from '@deepseek-ai/dsh-agent'
+import type { Context } from '@mutantcat/cordis'
+import { installModelSelection } from '@mutantcat/dsh-agent'
 import type {
   Agent, AgentOptions, AgentSetup, ModelSelection as AgentModelSelection, ModelSelectionRef,
-} from '@deepseek-ai/dsh-agent'
-import type {} from '@deepseek-ai/dsh-agent-default-model'
-import type {} from '@deepseek-ai/dsh-agent-presets'
-import { ReasoningEffortId } from '@deepseek-ai/dsh-llm'
-import type { Session, SessionId } from '@deepseek-ai/dsh-session'
-import type { SessionInspection } from '@deepseek-ai/dsh-session-persistence'
-import { SessionQueryError, type SessionObservation } from '@deepseek-ai/dsh-session-query'
-import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
-import type {} from '@deepseek-ai/dsh-typert-registry'
+} from '@mutantcat/dsh-agent'
+import type {} from '@mutantcat/dsh-agent-default-model'
+import type {} from '@mutantcat/dsh-agent-presets'
+import { ReasoningEffortId } from '@mutantcat/dsh-llm'
+import type { Session, SessionId } from '@mutantcat/dsh-session'
+import type { SessionInspection } from '@mutantcat/dsh-session-persistence'
+import { SessionQueryError, type SessionObservation } from '@mutantcat/dsh-session-query'
+import { RemoteError } from '@mutantcat/dsh-typert-protocol'
+import type {} from '@mutantcat/dsh-typert-registry'
 import type { ModelSelection } from './types.ts'
 
 /** Cold Session identity absent from persistence. */

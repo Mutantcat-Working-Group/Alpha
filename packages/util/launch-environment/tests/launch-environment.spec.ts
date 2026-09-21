@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import {
   createLaunchEnvironmentSnapshot, DSH_LAUNCH_ENVIRONMENT_KEY, launchedThroughSsh, launchEnvironmentOf,
 } from '../src/index.ts'

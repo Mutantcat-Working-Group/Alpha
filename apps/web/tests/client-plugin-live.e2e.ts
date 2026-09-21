@@ -85,7 +85,7 @@ it('synchronizes two pages, disposes effects and restores an offline page from t
     await otherContext.setOffline(true)
     // Chromium offline emulation leaves established SSE sockets open. Cycling this
     // fixture's transport plugin closes them without replacing the Host or profile.
-    const transport = [...scaffold.ctx.loader.entries()].find(entry => entry.options.name === '@deepseek-ai/dsh-client-hmr')!.fiber!
+    const transport = [...scaffold.ctx.loader.entries()].find(entry => entry.options.name === '@mutantcat/dsh-client-hmr')!.fiber!
     const reconnected = page.waitForResponse(response => response.url().includes('/plugins/events') && response.status() === 200)
     await transport.restart()
     await disconnected
@@ -188,7 +188,7 @@ it('reports bootstrap rebuilds without remounting the settings page or navigatin
     const originalInput = await draft.elementHandle()
     let navigations = 0
     page.on('framenavigated', () => { navigations++ })
-    scaffold.ctx.clientModules.rebuilt('@deepseek-ai/dsh-client-modules')
+    scaffold.ctx.clientModules.rebuilt('@mutantcat/dsh-client-modules')
     const failure = page.locator('[data-client-sync-failure]')
     await failure.getByText(/replacing bootstrap module .* requires a page reload/).waitFor()
     await failure.getByRole('button', { name: '重试本页面同步' }).click()

@@ -1,6 +1,6 @@
-import { AlphaMark } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
-import type { SidebarBrandMarkOwnerProps } from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import { AlphaMark } from '@mutantcat/dsh-client-ui-primitives'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
+import type { SidebarBrandMarkOwnerProps } from '@mutantcat/dsh-client-ui-sidebar/client'
 import type {} from './locales.ts'
 
 /**

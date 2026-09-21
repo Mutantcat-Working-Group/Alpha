@@ -1,34 +1,34 @@
 /** Host BFF entry and Loader shell for the Remote contribution assembly. */
 
 import { homedir } from 'node:os'
-import type { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
+import type { Context } from '@mutantcat/cordis'
+import type { Agent } from '@mutantcat/dsh-agent'
 import type {
   TypertRemoteEventDispatch,
   TypertRemoteEventInvocation,
   TypertRemoteEventOutcome,
   TypertRemoteEventSource,
-} from '@deepseek-ai/dsh-api-gateway'
-import { Deque } from '@deepseek-ai/dsh-deque'
-import { carrierKeyOf } from '@deepseek-ai/dsh-scope'
-import { isJsonValue, type JsonValue } from '@deepseek-ai/dsh-util-values'
+} from '@mutantcat/dsh-api-gateway'
+import { Deque } from '@mutantcat/dsh-deque'
+import { carrierKeyOf } from '@mutantcat/dsh-scope'
+import { isJsonValue, type JsonValue } from '@mutantcat/dsh-util-values'
 import { API_REMOTE_FORWARDED_EVENTS } from './remote-events.ts'
 
 // The owner packages' client-safe `./types` exports carry the cordis `Events`
 // declarations for every allowlisted event. Pulling them into this face is what
 // makes the shape assertion below judge real signatures rather than an empty
 // event vocabulary.
-import type {} from '@deepseek-ai/dsh-commands/types'
-import type {} from '@deepseek-ai/dsh-cordis-host-runner/types'
-import type {} from '@deepseek-ai/dsh-credentials/types'
-import type {} from '@deepseek-ai/dsh-goal/types'
-import type {} from '@deepseek-ai/dsh-llm/types'
-import type {} from '@deepseek-ai/dsh-agent-presets/types'
-import type {} from '@deepseek-ai/dsh-permission-presets/types'
-import type {} from '@deepseek-ai/dsh-settings/types'
-import type {} from '@deepseek-ai/dsh-user-approval'
-import type {} from '@deepseek-ai/dsh-user-questions'
-export type {} from '@deepseek-ai/dsh-api-session-controller/types'
+import type {} from '@mutantcat/dsh-commands/types'
+import type {} from '@mutantcat/dsh-cordis-host-runner/types'
+import type {} from '@mutantcat/dsh-credentials/types'
+import type {} from '@mutantcat/dsh-goal/types'
+import type {} from '@mutantcat/dsh-llm/types'
+import type {} from '@mutantcat/dsh-agent-presets/types'
+import type {} from '@mutantcat/dsh-permission-presets/types'
+import type {} from '@mutantcat/dsh-settings/types'
+import type {} from '@mutantcat/dsh-user-approval'
+import type {} from '@mutantcat/dsh-user-questions'
+export type {} from '@mutantcat/dsh-api-session-controller/types'
 
 export { API_REMOTE_FORWARDED_EVENTS } from './remote-events.ts'
 export type { ApiRemoteForwardedEvent } from './types.ts'

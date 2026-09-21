@@ -23,12 +23,12 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
-import type { ModelReasoningEffort, ModelSelection } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ModelReasoningEffort, ModelSelection } from '@mutantcat/dsh-api-remotes/client'
 import {
   IconCheckOutline16, IconChevronDownOutline14, IconChevronRightOutline14,
   IconDataOutline16, IconWarningOutline16, Toast,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+} from '@mutantcat/dsh-client-ui-primitives'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
 import type { ModelSelectInjected } from './slots.ts'
 import css from './ModelSelect.module.css'
 

@@ -40,9 +40,9 @@ describe.skipIf(!requiredArtifacts)('Agent Teams built LIB service', () => {
     expect(output).toEqual({
       className: 'TeamService',
       methods: [
-        '@deepseek-ai/dsh-experimental-agent-team#agentTeams/createTask',
-        '@deepseek-ai/dsh-experimental-agent-team#agentTeams/updateTask',
-        '@deepseek-ai/dsh-experimental-agent-team#agentTeams/view',
+        '@mutantcat/dsh-experimental-agent-team#agentTeams/createTask',
+        '@mutantcat/dsh-experimental-agent-team#agentTeams/updateTask',
+        '@mutantcat/dsh-experimental-agent-team#agentTeams/view',
       ],
     })
   })

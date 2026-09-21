@@ -4,25 +4,25 @@
  * `ctx.settings`, owned by the class below; and `credentials`, mounted from
  * here as its own plugin.
  *
- * @module @deepseek-ai/dsh-api-settings-controller
+ * @module @mutantcat/dsh-api-settings-controller
  */
 
 import { dirname } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
-import Schema from '@deepseek-ai/schemastery'
+import { Context } from '@mutantcat/cordis'
+import Schema from '@mutantcat/schemastery'
 // Type-only: resolves the `agentPresets` Context augmentation this controller reads.
-import type {} from '@deepseek-ai/dsh-agent-presets'
+import type {} from '@mutantcat/dsh-agent-presets'
 import {
   canOpenNativePath,
   openNativePath,
   openNativeTextFile,
-} from '@deepseek-ai/dsh-native-command'
-import type { SettingsDescriptor, SettingsPathOp, SettingsProvider } from '@deepseek-ai/dsh-settings'
+} from '@mutantcat/dsh-native-command'
+import type { SettingsDescriptor, SettingsPathOp, SettingsProvider } from '@mutantcat/dsh-settings'
 import type {
   SettingsDescribeValue, SettingsNamespaceView, SettingsPathOpView,
-} from '@deepseek-ai/dsh-settings/types'
-import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
-import type { JsonValue } from '@deepseek-ai/dsh-util-values'
+} from '@mutantcat/dsh-settings/types'
+import { Remote, RemoteError, TypertRemoteService } from '@mutantcat/dsh-typert-protocol'
+import type { JsonValue } from '@mutantcat/dsh-util-values'
 import { z } from 'zod'
 import { CredentialsController } from './credentials.ts'
 import type { AgentPresetDirectoryOpenValue, SettingsDocumentOpenValue } from './types.ts'
@@ -71,7 +71,7 @@ function namespaceView(descriptor: SettingsDescriptor): SettingsNamespaceView {
   }
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     /** Host owner of the `settings` Remote namespace. */
     settingsController: SettingsController
@@ -291,7 +291,7 @@ export class SettingsController extends TypertRemoteService {
     if (settings === undefined) {
       throw new RemoteError(
         'gateway/internal',
-        'settings service is absent: this deployment does not mount a settings provider (e.g. @deepseek-ai/dsh-settings-file) in its composition',
+        'settings service is absent: this deployment does not mount a settings provider (e.g. @mutantcat/dsh-settings-file) in its composition',
         {},
       )
     }

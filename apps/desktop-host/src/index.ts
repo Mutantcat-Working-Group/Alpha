@@ -1,11 +1,11 @@
 /** Launch the Desktop profile through the Web application and report its URL to Electron. */
 
 import { delimiter, join } from 'node:path'
-import { loadLayeredEnv, loadProfileDirectory } from '@deepseek-ai/dsh-app-boot'
-import { runProfile } from '@deepseek-ai/dsh/profile-boot'
-import type {} from '@deepseek-ai/dsh-client-connection'
-import type {} from '@deepseek-ai/dsh-host-webserver'
-import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
+import { loadLayeredEnv, loadProfileDirectory } from '@mutantcat/dsh-app-boot'
+import { runProfile } from '@mutantcat/dsh/profile-boot'
+import type {} from '@mutantcat/dsh-client-connection'
+import type {} from '@mutantcat/dsh-host-webserver'
+import { resolveDshHome } from '@mutantcat/dsh-home-paths'
 import * as desktopOffice from './office.ts'
 
 import { installDesktopUpdateTaskControl } from './update-tasks.ts'
@@ -13,7 +13,7 @@ import { installDesktopUpdateTaskControl } from './update-tasks.ts'
 async function main(): Promise<void> {
   const runtimeDir = process.argv[2] as string
   const projectDir = process.argv[3] as string
-  const installAnchor = join(runtimeDir, 'node_modules', '@deepseek-ai', 'dsh', 'package.json')
+  const installAnchor = join(runtimeDir, 'node_modules', '@mutantcat', 'dsh', 'package.json')
   const profile = loadProfileDirectory('dsh', projectDir, installAnchor)
   const application = runProfile({
     environment: loadLayeredEnv('dsh'),

@@ -4,17 +4,17 @@ import { realpath } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context } from '@mutantcat/cordis'
 import { expect, it, onTestFinished, vi } from 'vitest'
 import {
   boot, composeEntries, initProfile, readProfilePatches, readProfileManifest, reconcileProfilePatches, OPTIONAL_BUNDLES,
   type ProfileContext,
-} from '@deepseek-ai/dsh-app-boot'
+} from '@mutantcat/dsh-app-boot'
 import PluginManager, { type Config, type PluginChange, type PluginInstallLogChunk, type PluginInstallProgress, type PluginInstallRequestId } from '../src/index.ts'
-import Hmr from '@deepseek-ai/dsh-hmr'
-import Timer from '@deepseek-ai/cordis-plugin-timer'
-import type { PatchOptions } from '@deepseek-ai/cordis-plugin-include'
-import { Group } from '@deepseek-ai/cordis-plugin-loader'
+import Hmr from '@mutantcat/dsh-hmr'
+import Timer from '@mutantcat/cordis-plugin-timer'
+import type { PatchOptions } from '@mutantcat/cordis-plugin-include'
+import { Group } from '@mutantcat/cordis-plugin-loader'
 import * as operations from '../src/operations.ts'
 import { parse, parseDocument } from 'yaml'
 
@@ -338,9 +338,9 @@ it('refuses management bundle disablement and permits repeated bundle selections
 })
 
 it.each([
-  '@deepseek-ai/dsh-host-plugin-inventory',
-  '@deepseek-ai/dsh-typert-registry',
-  '@deepseek-ai/dsh-api-remotes',
+  '@mutantcat/dsh-host-plugin-inventory',
+  '@mutantcat/dsh-typert-registry',
+  '@mutantcat/dsh-api-remotes',
 ])('protects the management dependency %s and its containing bundle', async (name) => {
   const { ctx, manager, bundle, profile, dir } = await fixture('startup')
   bundle('extra', [{ id: 'dependency', name, disabled: true }])

@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-format",
+  "name": "@mutantcat/dsh-session-format",
   "description": "Streaming adjacent Session format migration machinery",
   "version": "1.0.20260921",
   "publishConfig": {
@@ -27,12 +27,12 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-util-values": "workspace:^"
+    "@mutantcat/dsh-util-values": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@mutantcat/cordis": "workspace:^"
   }
 }

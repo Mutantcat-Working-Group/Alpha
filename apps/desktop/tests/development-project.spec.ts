@@ -39,11 +39,11 @@ describe('desktop development project', () => {
     mkdirSync(join(cli, 'lib'), { recursive: true })
     mkdirSync(join(host, 'lib'), { recursive: true })
     mkdirSync(join(dependencies, '@scope'), { recursive: true })
-    mkdirSync(join(dependencies, '@deepseek-ai', 'dsh'), { recursive: true })
-    writeFileSync(join(cli, 'package.json'), '{"name":"@deepseek-ai/dsh","version":"1.2.3"}\n')
-    writeFileSync(join(host, 'package.json'), '{"name":"@deepseek-ai/dsh-desktop-host","version":"1.2.3"}\n')
+    mkdirSync(join(dependencies, '@mutantcat', 'dsh'), { recursive: true })
+    writeFileSync(join(cli, 'package.json'), '{"name":"@mutantcat/dsh","version":"1.2.3"}\n')
+    writeFileSync(join(host, 'package.json'), '{"name":"@mutantcat/dsh-desktop-host","version":"1.2.3"}\n')
     writeFileSync(join(host, 'lib', 'index.js'), '')
-    writeFileSync(join(dependencies, '@deepseek-ai', 'dsh', 'package.json'), '{}\n')
+    writeFileSync(join(dependencies, '@mutantcat', 'dsh', 'package.json'), '{}\n')
     mkdirSync(join(dependencies, 'plain-dependency'))
     writeFileSync(join(dependencies, 'plain-dependency', 'package.json'), '{}\n')
     mkdirSync(join(dependencies, '@scope', 'dependency'))
@@ -56,8 +56,8 @@ describe('desktop development project', () => {
       dependencyDir: dependencies,
       release: release(),
     })
-    expect(realpathSync(join(project, 'node_modules', '@deepseek-ai', 'dsh'))).toBe(realpathSync(cli))
-    expect(realpathSync(join(project, 'node_modules', '@deepseek-ai', 'dsh-desktop-host'))).toBe(realpathSync(host))
+    expect(realpathSync(join(project, 'node_modules', '@mutantcat', 'dsh'))).toBe(realpathSync(cli))
+    expect(realpathSync(join(project, 'node_modules', '@mutantcat', 'dsh-desktop-host'))).toBe(realpathSync(host))
     expect(realpathSync(join(project, 'node_modules', 'plain-dependency')))
       .toBe(realpathSync(join(dependencies, 'plain-dependency')))
     expect(realpathSync(join(project, 'node_modules', '@scope', 'dependency')))
@@ -65,14 +65,14 @@ describe('desktop development project', () => {
     const manifest = JSON.parse(readFileSync(join(project, 'package.json'), 'utf8')) as {
       dependencies: Record<string, string>
     }
-    expect(manifest.dependencies['@deepseek-ai/dsh']).toBe('1.2.3')
-    expect(manifest.dependencies['@deepseek-ai/dsh-desktop-host']).toBe('1.2.3')
+    expect(manifest.dependencies['@mutantcat/dsh']).toBe('1.2.3')
+    expect(manifest.dependencies['@mutantcat/dsh-desktop-host']).toBe('1.2.3')
     const manager = new DesktopProjectManager(resolveDesktopPaths(join(root, 'home')), {
       dsh: project,
     })
     await manager.applyRelease()
     await manager.disableAllPlugins()
-    expect(readFileSync(join(cli, 'package.json'), 'utf8')).toBe('{"name":"@deepseek-ai/dsh","version":"1.2.3"}\n')
+    expect(readFileSync(join(cli, 'package.json'), 'utf8')).toBe('{"name":"@mutantcat/dsh","version":"1.2.3"}\n')
     expect(readFileSync(join(host, 'lib', 'index.js'), 'utf8')).toBe('')
 
   })
@@ -85,8 +85,8 @@ describe('desktop development project', () => {
     mkdirSync(join(cli, 'lib'), { recursive: true })
     mkdirSync(join(host, 'lib'), { recursive: true })
     mkdirSync(dependencies, { recursive: true })
-    writeFileSync(join(cli, 'package.json'), '{"name":"@deepseek-ai/dsh","version":"2.0.0"}\n')
-    writeFileSync(join(host, 'package.json'), '{"name":"@deepseek-ai/dsh-desktop-host","version":"1.2.3"}\n')
+    writeFileSync(join(cli, 'package.json'), '{"name":"@mutantcat/dsh","version":"2.0.0"}\n')
+    writeFileSync(join(host, 'package.json'), '{"name":"@mutantcat/dsh-desktop-host","version":"1.2.3"}\n')
     writeFileSync(join(host, 'lib', 'index.js'), '')
     expect(() => prepareDevelopmentProject({
       projectDir: join(root, 'development'),
@@ -94,6 +94,6 @@ describe('desktop development project', () => {
       hostDir: host,
       dependencyDir: dependencies,
       release: release(),
-    })).toThrow(/must be @deepseek-ai\/dsh@1\.2\.3/u)
+    })).toThrow(/must be @mutantcat\/dsh@1\.2\.3/u)
   })
 })
