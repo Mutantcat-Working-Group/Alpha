@@ -6609,11 +6609,11 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'SubagentCatalogEntry',
-    declaration: 'export type SubagentCatalogEntry = {\n    readonly id: SessionId;\n    readonly createdAt: number;\n} & ({\n    readonly mode: \'one-shot\';\n    readonly label?: string;\n    readonly external?: true;\n} | {\n    readonly mode: \'continuable\';\n    readonly label: string;\n} | {\n    readonly mode: \'unknown\';\n    readonly label?: string;\n});',
+    declaration: 'export type SubagentCatalogEntry = {\n    readonly id: SessionId;\n    readonly createdAt: number;\n} & ({\n    readonly mode: \'one-shot\';\n    readonly label?: string;\n} | {\n    readonly mode: \'external\';\n    readonly label?: string;\n} | {\n    readonly mode: \'continuable\';\n    readonly label: string;\n} | {\n    readonly mode: \'unknown\';\n    readonly label?: string;\n});',
   },
   {
     name: 'SubagentCatalogRow',
-    declaration: 'export type SubagentCatalogRow = {\n    readonly id: SessionId;\n    readonly activity: \'running\' | \'inactive\';\n} & ({\n    readonly mode: \'one-shot\';\n    readonly external?: true;\n    readonly label?: string;\n} | {\n    readonly mode: \'continuable\';\n    readonly label: string;\n});',
+    declaration: 'export type SubagentCatalogRow = {\n    readonly id: SessionId;\n    readonly activity: \'running\' | \'inactive\';\n} & ({\n    readonly mode: \'one-shot\';\n    readonly label?: string;\n} | {\n    readonly mode: \'continuable\';\n    readonly label: string;\n});',
   },
   {
     name: 'SubagentDescendantListEntry',

@@ -108,7 +108,7 @@ kind: "package-reference"
 
 管理器预留 child 身份、解析持久化描述符、创建（或冷恢复）child、把它安装进 Activation 并提交提示词。模型编写的消息通过固定 Steer 调度跨一条 parent/child 边；浏览器人类 prompt 通过内部适配器选择 Queue 或 best-effort Steer，其他 host 协议仍可保留 Queue 以创建独立轮次。Session queue command 仅根据 child 自身的 continuable descriptor 准入在线 subagent-owned Agent。Settlement 会等待 Agent 活动结束、Inbox 为空且没有所拥有子级，再在准入开放时 flush 最终 Session 状态。管理器随后在 child lock 内重新验证 wake generation、Session 序号、Inbox 与所拥有子级；`Agent.runMaintenance()` 的同步 task 入口会占用 idle 阶段，并在同一个 JavaScript turn 内关闭私有 subagent Inbox，然后才释放句柄。直接 child 不存在 Activation 时会从持久化会话冷恢复。当驻留 Activation 结算时，管理器会在 parent 自身的轮次流中告知该 child 的直接 parent。
 
-本地与外部创建成功时，都向父 Session 追加 `subagent/catalog` 事实。外部条目以 `external: true` 标记没有本地 Session 的子级。目录仅在创建时记录一次成员关系，不携带执行状态。完整结果交给调用方或父级完成通知。投影排除继承事实。直接列表读取一个父级投影；后代列表通过语料中的身份枚举具有 Session 的子级。Catalog 载荷 v0 记录已知模式，v1 还接受未知模式，读取器支持两版。历史迁移在 descriptor 不可用时根据可读子 header 追加 v1 `subagent/catalog`；正常创建保留 v0。其 `mode: 'unknown'` 投影让子会话保持可见，但不表示支持继续执行；已有完整条目仍具有权威性。
+本地与外部创建成功时，都向父 Session 追加 `subagent/catalog` 事实。外部条目以 `mode: 'external'` 标记没有本地 Session 的子级。目录仅在创建时记录一次成员关系，不携带执行状态。完整结果交给调用方或父级完成通知。投影排除继承事实。直接列表读取一个父级投影；后代列表通过语料中的身份枚举具有 Session 的子级。Catalog 载荷 v0 记录本地模式，v1 还接受未知模式，v2 记录外部执行，读取器支持三版。历史迁移在 descriptor 不可用时根据可读子 header 追加 v1 `subagent/catalog`；本地创建保留 v0。其 `mode: 'unknown'` 投影让子会话保持可见，但不表示支持继续执行；已有完整条目仍具有权威性。
 
 ### 所有权与不变式
 

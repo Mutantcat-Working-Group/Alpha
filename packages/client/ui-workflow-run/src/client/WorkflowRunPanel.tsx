@@ -190,11 +190,9 @@ function navigableMembers(
     for (const member of phase.members) {
       const summary = sessions.byId[member.childId]
       if (member.status === 'running'
-        && ordinary.has(member.childId)
-        && summary?.origin === 'subagent'
-        && summary.parentId === parentId
-        && summary.running) {
-        result.push(member.childId)
+        && child !== undefined && child.mode !== 'external'
+        && (statuses.get(child.id)?.running ?? sessions.byId[child.id]?.running) === true) {
+        result.set(member.childId, child.mode)
       }
     }
   }

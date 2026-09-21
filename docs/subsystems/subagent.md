@@ -283,7 +283,7 @@ type SubagentInterruptAuthority =
 
 ## Durable enumeration
 
-`listChildren` reads the parent-owned catalog. `listDescendants` combines Session corpus identity with parent catalogs, including external leaves beneath ordinary Sessions. External one-shot entries carry `external: true` and cannot open a child Session or accept follow-ups. Catalog entries record membership at creation without execution status. Complete results go to the caller or the parent completion notice. `list_agents` exposes only continuable children with `running` or `inactive` activity; see the [control tool](../../packages/subagent/tool-subagent-control/README.md#list_agents) for its scopes and diagnostics.
+`listChildren` reads the parent-owned catalog. `listDescendants` enumerates Session-backed children through corpus identity. External entries carry `mode: 'external'` and cannot open a child Session or accept follow-ups. Catalog entries record membership at creation without execution status. Complete results go to the caller or the parent completion notice. `list_agents` exposes only continuable children with `running` or `inactive` activity; see the [control tool](../../packages/subagent/tool-subagent-control/README.md#list_agents) for its scopes and diagnostics.
 
 ```ts type-equiv
 /**

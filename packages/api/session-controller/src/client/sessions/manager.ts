@@ -173,10 +173,15 @@ export class SessionManager {
   navigationAddress(sessionId: SessionId): SubagentAddress | undefined {
     const retained = this.addresses.get(sessionId)
     if (retained !== undefined) return retained
-    for (const [parentSessionId, catalog] of this.catalogs) {
-      const child = catalog.entries.find(entry => entry.kind === 'child' && entry.id === sessionId)
-      if (child?.kind === 'child') {
-        return { parentSessionId, childSessionId: sessionId, mode: child.mode }
+    for (const parentSessionId of this.projectionStores.keys()) {
+      const child = this.projectionStores.get(parentSessionId)?.values().subagentCatalog
+        ?.find(entry => entry.id === sessionId)
+      if (child !== undefined && child.mode !== 'external') {
+        return {
+          parentSessionId,
+          childSessionId: sessionId,
+          mode: child.mode,
+        }
       }
     }
     return undefined
@@ -249,9 +254,9 @@ export class SessionManager {
         session.handleRunning(summary.running)
       } else {
         const address = this.addresses.get(sessionId)
-        const child = address === undefined ? undefined : this.catalogs.get(address.parentSessionId)?.entries
-          .find(entry => entry.kind === 'child' && entry.id === sessionId)
-        if (child?.kind === 'child') {
+        const child = address === undefined ? undefined : this.projectionStores.get(address.parentSessionId)?.values().subagentCatalog
+          ?.find(entry => entry.id === sessionId)
+        if (child !== undefined && child.mode !== 'external') {
           // A catalogued child exists only after its delegated session has
           // durable history, even though child rows do not carry `blank`.
           session.handleBlank(false)

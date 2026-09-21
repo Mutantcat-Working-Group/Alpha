@@ -647,9 +647,9 @@ export class ClientSessions implements ISessions {
         ...(entry.origin !== undefined ? { origin: entry.origin } : {}),
       }
     }
-    for (const [parentId, catalog] of Object.entries(subagentsByParent)) {
-      for (const child of catalog.entries) {
-        if (child.kind !== 'child') continue
+    for (const [parentId, projection] of Object.entries(projectionsBySession)) {
+      for (const child of projection.values.subagentCatalog ?? []) {
+        if (child.mode === 'external') continue
         const childId = child.id
         const summary = byId[childId]
         const projectionValues = summary?.projectionValues ?? this.manager.projectionValues(childId)

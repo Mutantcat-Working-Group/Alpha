@@ -9,7 +9,7 @@ English | [中文](2026-09-19-external-subagent-catalog.zh.md)
 
 ## Summary
 
-Add an optional external membership marker to one-shot parent catalog entries.
+Add external mode to parent catalog entries for children without a local Session.
 
 ## Table of Contents
 
@@ -28,19 +28,19 @@ baseline: false
 changes:
   - root: "event:subagent/catalog"
     previous: "2026-09-20-unknown-child-catalog"
-    after: "568d482eeba04a9422773e7563cf935bd06f16896758cf880cf19b6bab8b1ada"
+    after: "53750b9abf61efb7992b0aadc3e247ec927449c63266df28230fd1139f5590ac"
     decision: same-version
 ```
 
 <a id="compatibility"></a>
 ## Compatibility
 
-Existing version-0 and version-1 catalog facts remain valid without the optional external field. The literal true identifies a child without a local Session. Creation writes one membership fact; execution and cleanup do not update it. Duplicate child ids remain invalid. Unknown-mode and continuable entries do not accept the marker. This updates the unaccepted optional-field addition in this PR and does not change released generations or the Session format version.
+Existing version-0 and version-1 one-shot and continuable facts remain valid; version 1 also retains unknown mode. New external executions write payload version 2 with mode external, without a separate marker. Creation writes one membership fact; execution and cleanup do not update it. Duplicate child ids remain invalid. This replaces the unaccepted external-marker addition in this PR and does not change released generations or the Session format version.
 
 <a id="verification"></a>
 ## Verification
 
-Focused catalog, external activation, native V4 restoration, and client tests passed. They cover creation-time membership, no settlement update, cleanup failure independent of catalog membership, and duplicate-child rejection.
+Focused catalog, external activation, native V4 restoration, client navigation, and control-tool tests passed. They cover external membership, historical local modes, invalid marker rejection, non-navigable external leaves, and duplicate-child rejection.
 
 <a id="dev-note"></a>
 ## Dev Note

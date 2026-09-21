@@ -13,7 +13,8 @@ export type SubagentCatalogEntry =
     readonly createdAt: number
   }
   & (
-    | { readonly mode: 'one-shot'; readonly label?: string; readonly external?: true }
+    | { readonly mode: 'one-shot'; readonly label?: string }
+    | { readonly mode: 'external'; readonly label?: string }
     | { readonly mode: 'continuable'; readonly label: string }
     | { readonly mode: 'unknown'; readonly label?: string }
   )

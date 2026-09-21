@@ -9,7 +9,7 @@ kind: persistence-change
 
 ## 概述
 
-为一次性父级目录条目增加可选的外部成员标记。
+为父级目录中没有本地 Session 的子级添加 external 模式。
 
 ## 目录
 
@@ -28,19 +28,19 @@ baseline: false
 changes:
   - root: "event:subagent/catalog"
     previous: "2026-09-20-unknown-child-catalog"
-    after: "568d482eeba04a9422773e7563cf935bd06f16896758cf880cf19b6bab8b1ada"
+    after: "53750b9abf61efb7992b0aadc3e247ec927449c63266df28230fd1139f5590ac"
     decision: same-version
 ```
 
 <a id="compatibility"></a>
 ## 兼容性
 
-已有 version-0 与 version-1 目录事实无需 external 字段仍然有效。字面量 true 标记没有本地 Session 的子级。创建时写入一次成员事实，执行与清理均不更新该记录。重复子 id 仍然无效。未知模式与可继续条目不接受此标记。本次更新本 PR 尚未接受的可选字段新增记录，不改变已发布世代或 Session 格式版本。
+已有 version-0 和 version-1 的 one-shot 与 continuable 事实仍然有效；version 1 还保留 unknown 模式。新外部执行写入 payload version 2 和 external 模式，不使用单独的标记。创建时写入一次成员事实，执行和清理不更新它。重复的子 id 仍然无效。这替换本 PR 中尚未接受的 external 标记新增项，不改变已发布的代际或 Session 格式版本。
 
 <a id="verification"></a>
 ## 验证
 
-聚焦的目录、外部 activation、原生 V4 恢复与客户端测试通过，覆盖创建时成员登记、不发布结算更新、清理失败独立于目录成员关系以及拒绝重复子级。
+定向 catalog、外部 activation、原生 V4 恢复、客户端导航和控制工具测试通过，覆盖外部成员关系、历史本地模式、非法标记拒绝、不可导航的外部叶节点，以及重复子级拒绝。
 
 <a id="dev-note"></a>
 ## 开发备注

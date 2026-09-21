@@ -163,8 +163,19 @@ describe('V4 framing and restoration', () => {
 
 
 it('restores external membership and rejects duplicate catalog children', () => {
-  const data = { ...(catalog.data as SessionFormatJsonObject), mode: 'one-shot', label: 'External', external: true }
+  const data = { ...(catalog.data as SessionFormatJsonObject), version: 2, mode: 'external', label: 'External' }
   const entry = { ...catalog, data }
   expect(restore([entry]).events).toEqual([entry])
   expect(() => restore([entry, { ...entry, seq: 1 }])).toThrow('duplicate catalog child')
+})
+
+it.each([
+  { version: 0, mode: 'external' },
+  { version: 1, mode: 'external' },
+  { version: 2, mode: 'one-shot' },
+  { version: 2, mode: 'continuable' },
+  { version: 2, mode: 'unknown' },
+])('rejects a catalog mode outside its payload version: %j', (descriptor) => {
+  const data = { ...(catalog.data as SessionFormatJsonObject), ...descriptor }
+  expect(() => restore([{ ...catalog, data }])).toThrow('supported versioned catalog fact')
 })

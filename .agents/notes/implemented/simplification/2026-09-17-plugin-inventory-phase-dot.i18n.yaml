@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-09-17-unified-subagent-activations.md
-2026-09-17-unified-subagent-activations.md: ae663e7eab0673f6f6d7a43cd5ca4656e3f757e1
-2026-09-17-unified-subagent-activations.zh.md: 2a2a243f6c13e13bd4f9b0b59bcf5d4218077c07
+2026-09-17-unified-subagent-activations.md: 148b1ce4009bd40729835a8bb7cb079238c3cfa7
+2026-09-17-unified-subagent-activations.zh.md: fd36c19f3f8bbcdaf2eec0c64200339d49ba378c

@@ -824,6 +824,27 @@ describe('TypeScript SDK snapshots over the jsonrpc runtime', () => {
       )
       reconcileCatalogCreationTimes(ordered.map(log => log.content), 'validate')
       const actualContext = contextOf(ordered, cwd)
+      expect(logs.some(log => log.content.includes('llm-replay: script exhausted')), `${scenario.name}: replay script covers every model request`).toBe(false)
+      if (scenario.name === 'subagent-dsh-sdk-diagnostic' || scenario.name === 'subagent-dsh-sdk-dynamic-route') {
+        const parentEvents = records(ordered[0]!.content)
+        const notices = parentEvents.filter(event => event.type === 'user/message'
+          && (event.data as JsonObject | undefined)?.source !== undefined
+          && ((event.data as JsonObject).source as JsonObject).kind === 'subagent-settled')
+        const expectedCount = scenario.name === 'subagent-dsh-sdk-diagnostic' ? 2 : 1
+        expect(notices).toHaveLength(expectedCount)
+        const catalog = parentEvents.filter(event => event.type === 'subagent/catalog')
+        expect(catalog).toHaveLength(expectedCount)
+        expect(catalog.every(event => (event.data as JsonObject).mode === 'external')).toBe(true)
+        const expectedContent = scenario.name === 'subagent-dsh-sdk-diagnostic'
+          ? 'partial child loader answer'
+          : 'child route: mock/mock-routed/max/777; cwd:'
+        for (const notice of notices) expect(JSON.stringify(notice)).toContain(expectedContent)
+        const finalAssistant = parentEvents.findLastIndex(event => event.type === 'assistant/message')
+        for (const notice of notices) expect(parentEvents.indexOf(notice)).toBeLessThan(finalAssistant)
+        expect(parentEvents.filter(event => event.type === 'turn/end')).toEqual([
+          expect.objectContaining({ data: { turn: 1, reason: { kind: 'completed' } } }),
+        ])
+      }
       if (scenario.name === 'subagent-activation-limit') {
         expect(ordered).toHaveLength(2)
         const denied = records(ordered[0]!.content).find(record => record.type === 'tool/result'

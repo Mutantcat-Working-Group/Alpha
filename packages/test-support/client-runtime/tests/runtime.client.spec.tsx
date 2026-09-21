@@ -215,11 +215,12 @@ describe('sessions', () => {
     runtime.sessions.list.update((draft) => {
       draft.subagentsByParent = {
         [parentId]: {
-          state: 'ready', error: null, parentAvailable: true,
-          entries: [
-            { kind: 'child', id: 'other' as SessionId, mode: 'one-shot', activity: 'inactive', hasChildren: false },
-            { kind: 'child', id: 'child' as SessionId, mode: 'continuable', label: 'Child', activity: 'inactive', hasChildren: false },
-          ],
+          state: 'ready', error: null,
+          values: { subagentCatalog: [
+            { createdAt: 1, id: 'other' as SessionId, mode: 'one-shot' },
+            { createdAt: 2, id: 'child' as SessionId, mode: 'continuable', label: 'Child' },
+            { createdAt: 3, id: 'external' as SessionId, mode: 'external' },
+          ] },
         },
       }
     })
@@ -228,6 +229,9 @@ describe('sessions', () => {
       parentSessionId: parentId, childSessionId: 'child', mode: 'continuable',
     })
     expect(runtime.sessions.subagentAddress('missing' as SessionId)).toBeUndefined()
+    expect(runtime.sessions.subagentAddress('external' as SessionId)).toBeUndefined()
+    expect(runtime.sessions.binding(parentId)).toBeUndefined()
+    expect(runtime.sessions.binding('child')).toBeUndefined()
     await runtime.dispose()
   })
 

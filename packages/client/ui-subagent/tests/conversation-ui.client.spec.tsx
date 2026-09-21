@@ -25,7 +25,7 @@ const CHILD = 'child' as SessionId
 const GRANDCHILD = 'grandchild' as SessionId
 const t: SubagentHeaderLineageProps['t'] = makeTranslate(zh)
 
-type CatalogFixture = { entries: readonly (SubagentCatalogRow | { id: SessionId; mode: 'unknown'; label?: string; activity: 'inactive' })[]; parentAvailable: boolean; state: 'loading' | 'ready' | 'error'; error: SessionListState['projectionsBySession'][SessionId]['error'] }
+type CatalogFixture = { entries: readonly (SubagentCatalogRow | { id: SessionId; mode: 'unknown' | 'external'; label?: string; activity: 'inactive' })[]; parentAvailable: boolean; state: 'loading' | 'ready' | 'error'; error: SessionListState['projectionsBySession'][SessionId]['error'] }
 
 function catalog(over: Partial<CatalogFixture> = {}): CatalogFixture {
   return {
@@ -852,7 +852,7 @@ describe('SubagentReadOnlyComposer', () => {
 
 it('shows external membership without an execution status or child Session navigation', () => {
   const input = props(catalog({ entries: [
-    { id: CHILD, mode: 'one-shot', label: 'External review', activity: 'inactive', external: true },
+    { id: CHILD, mode: 'external', label: 'External review', activity: 'inactive' },
   ] }))
   render(<SubagentHeaderLineage {...input} />)
   hoverCatalog(screen.getByRole('button', { name: /子代理/ }))

@@ -305,7 +305,7 @@ describe('dsh-tool-subagent-control/list-agents', () => {
     await waitNoActivation(ctx, started.childId)
   })
 
-  it.each([undefined, true] as const)('omits one-shot intermediates with external marker %s while surfacing their descendants', async (external) => {
+  it('omits one-shot intermediates while surfacing their descendants', async () => {
     const { ctx, parent } = await setup([])
     // Deterministic service rows: a one-shot intermediate owning a continuable
     // leaf, plus a positioned diagnostic. The tool filters only the one-shot.
@@ -360,7 +360,7 @@ describe('dsh-tool-subagent-control/list-agents', () => {
   it('omits external children', async () => {
     const { ctx, parent } = await setup([])
     vi.spyOn(ctx.subagents, 'listChildren').mockResolvedValue([
-      { id: SessionId('external-task'), createdAt: 1, mode: 'one-shot', external: true },
+      { id: SessionId('external-task'), createdAt: 1, mode: 'external' },
       { id: SessionId('resumable-child'), createdAt: 2, mode: 'continuable', label: 'local task' },
     ])
     const result = await callTool(ctx, 'list_agents', {}, parent)

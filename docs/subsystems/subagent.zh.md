@@ -283,7 +283,7 @@ type SubagentInterruptAuthority =
 
 ## 持久枚举
 
-`listChildren` 读取父级拥有的目录。`listDescendants` 结合 Session 语料中的身份与父级目录，包括普通 Session 下的外部叶子项。外部一次性条目携带 `external: true`，不能打开子 Session 或接受后续消息。目录在创建时记录成员关系，不携带执行状态。完整结果交给调用方或父级完成通知。`list_agents` 只展示可继续子级，其活跃状态为 `running` 或 `inactive`；作用域与诊断信息见[控制工具](../../packages/subagent/tool-subagent-control/README.zh.md#list_agents)。
+`listChildren` 读取父级拥有的目录。`listDescendants` 通过语料中的身份枚举具有 Session 的子级。外部条目携带 `mode: 'external'`，不能打开子 Session 或接受后续消息。目录在创建时记录成员关系，不携带执行状态。完整结果交给调用方或父级完成通知。`list_agents` 只展示可继续子级，其活跃状态为 `running` 或 `inactive`；作用域与诊断信息见[控制工具](../../packages/subagent/tool-subagent-control/README.zh.md#list_agents)。
 
 ```ts type-equiv
 /**
