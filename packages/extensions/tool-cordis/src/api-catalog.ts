@@ -3318,6 +3318,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'the directory\'s children in the backend\'s stable name order, bounded by the entry cap.',
       },
       {
+        signature: '@Remote async write( workspaceFileScope: WorkspaceFileScope, path: string, content: string, intent: WorkspaceFileWriteIntent, signal: AbortSignal, ): Promise<WorkspaceFileWriteOutcome>',
+        description: 'Write UTF-8 text to one file inside the Session\'s workspace. Missing parent directories are created; a symlink at the target is refused rather than followed.',
+        parameters: [{ name: 'workspaceFileScope', description: 'header-derived workspace root for the Session identity on the wire.' }, { name: 'path', description: 'absolute path or path relative to the workspace root; a target outside it fails.' }, { name: 'content', description: 'the complete new file content.' }, { name: 'intent', description: 'guard on the write: create only when absent, or replace only at the named version.' }, { name: 'signal', description: 'caller cancellation.' }],
+        returns: 'the absolute path written, whether the write created or updated the file, and the version it produced.',
+      },
+      {
         signature: '@Remote({ mode: \'stream\' }) changes(workspaceFileScope: WorkspaceFileScope, signal: AbortSignal): AsyncIterable<WorkspaceFileWatchFrame>',
         description: 'Stream every `fs/observed` observation of a file inside the Session\'s workspace. Only instrumented filesystem operations report here; the OS is not watched.',
         parameters: [{ name: 'workspaceFileScope', description: 'header-derived workspace root for the Session identity on the wire.' }, { name: 'signal', description: 'generation cancellation.' }],
@@ -7183,6 +7189,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'WorkspaceFileWatchFrame',
     declaration: 'export type WorkspaceFileWatchFrame = {\n    readonly kind: \'ready\';\n} | {\n    readonly kind: \'change\';\n    readonly change: WorkspaceFileChange;\n};',
+  },
+  {
+    name: 'WorkspaceFileWriteIntent',
+    declaration: 'export type WorkspaceFileWriteIntent = {\n    readonly kind: \'createIfAbsent\';\n} | {\n    readonly kind: \'replaceIfVersion\';\n    readonly version: string;\n};',
+  },
+  {
+    name: 'WorkspaceFileWriteOutcome',
+    declaration: 'export interface WorkspaceFileWriteOutcome {\n    readonly absolutePath: string;\n    readonly operation: \'create\' | \'update\';\n    readonly version: string;\n}',
   },
   {
     name: 'WorkspaceFollowFrame',

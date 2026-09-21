@@ -8,7 +8,7 @@
  */
 import type { RemoteResult } from '@deepseek-ai/dsh-api-remotes/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { WorkspaceFileBytes, WorkspaceFileRange, WorkspaceFileText } from '@deepseek-ai/dsh-api-workspace-files/types'
+import type { WorkspaceFileBytes, WorkspaceFileRange, WorkspaceFileText, WorkspaceFileWriteIntent, WorkspaceFileWriteOutcome } from '@deepseek-ai/dsh-api-workspace-files/types'
 import { parseFileAddress } from '@deepseek-ai/dsh-util-workspace-path'
 
 /** The slice of the Client Remote this package calls. */
@@ -28,6 +28,28 @@ export interface WorkspaceFilesReadRemote {
       range: WorkspaceFileRange,
       signal?: AbortSignal,
     ): Promise<RemoteResult<WorkspaceFileText>>
+  }
+}
+
+/** The slice of the Client Remote an editor save calls. */
+export interface WorkspaceFilesWriteRemote {
+  readonly workspaceFiles: {
+    /**
+     * Write one file under the guard `intent` names.
+     * @param sessionId - the session whose workspace resolves `path`.
+     * @param path - workspace path, absolute or relative to the workspace root.
+     * @param content - complete file content, replacing whatever the target holds.
+     * @param intent - guard on the write: create only when absent, or replace only at the named version.
+     * @param signal - cancels the call.
+     * @returns the path written, whether the write created or updated it, and the version it produced, or the failure the Host declares.
+     */
+    write(
+      sessionId: SessionId,
+      path: string,
+      content: string,
+      intent: WorkspaceFileWriteIntent,
+      signal?: AbortSignal,
+    ): Promise<RemoteResult<WorkspaceFileWriteOutcome>>
   }
 }
 
@@ -79,6 +101,29 @@ export function hostFileOf(address: string): SessionFile {
  */
 export function createReadPage(remote: WorkspaceFilesReadRemote): ReadWorkspaceFilePage {
   return (sessionId, path, offset, signal) => remote.workspaceFiles.read(sessionId, path, { offset }, signal)
+}
+
+/**
+ * The guarded write one save performs, injected so the face stays host-free.
+ * A Remote call does not reject: the result carries the failure.
+ */
+export type WriteWorkspaceFile = (
+  file: SessionFile,
+  content: string,
+  version: string,
+  signal: AbortSignal,
+) => Promise<RemoteResult<WorkspaceFileWriteOutcome>>
+
+/**
+ * Bind the guarded write to one Remote face. An editor always replaces at the
+ * version it loaded, so a save never overwrites a change it has not seen.
+ * @param remote - the Client Remote carrying the `workspaceFiles` namespace.
+ * @returns the write the face performs.
+ */
+export function createWorkspaceFileWrite(remote: WorkspaceFilesWriteRemote): WriteWorkspaceFile {
+  return (file, content, version, signal) => remote.workspaceFiles.write(
+    file.sessionId, file.path, content, { kind: 'replaceIfVersion', version }, signal,
+  )
 }
 
 /** Complete document bytes borrowed read-only by renderers; copy before transferring to a Worker. */

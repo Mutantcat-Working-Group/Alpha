@@ -17,8 +17,12 @@ export interface DocumentPreviewDefinition {
    * Every entry must appear in `extensions`; `register` rejects strays.
    */
   readonly binaryExtensions?: readonly string[]
-  /** External implementations win over product implementations; defaults to extension. */
-  readonly priority?: 'builtin' | 'extension'
+  /**
+   * Which band claims a file automatically. `extension` (the default) outranks
+   * `builtin`, and `optional` stays a viewer choice without taking automatic
+   * selection from a builtin that matches the same suffix.
+   */
+  readonly priority?: 'builtin' | 'extension' | 'optional'
   /** Localized implementation label, evaluated when the toolbar renders. @returns the visible name. */
   readonly title: () => string
   /** Content delivery mode supplied by the document owner. */
@@ -28,10 +32,29 @@ export interface DocumentPreviewDefinition {
 }
 
 /**
+ * Rank a band for automatic selection: the highest rank among matching
+ * implementations becomes the viewer a file opens with.
+ * @param priority - declared band; an absent declaration is the extension band.
+ * @returns the band's rank.
+ */
+function priorityRank(priority: DocumentPreviewDefinition['priority']): number {
+  switch (priority) {
+    case 'optional':
+      return 0
+    case 'builtin':
+      return 1
+    case 'extension':
+    case undefined:
+      return 2
+  }
+}
+
+/**
  * Rank an observed definition snapshot without consulting mutable service state.
  * @param definitions - registered implementations in registration order.
  * @param path - decoded filename or file path.
- * @returns matching implementations, external band first, then longest suffix.
+ * @returns matching implementations, extension band first, then builtin, then
+ * optional, then the longest suffix, then registration order.
  */
 export function matchingDocumentPreviews(
   definitions: readonly DocumentPreviewDefinition[],
@@ -40,7 +63,7 @@ export function matchingDocumentPreviews(
   const name = documentFileName(path)
   return definitions.map((definition, order) => ({
     definition, order,
-    rank: definition.priority === 'builtin' ? 0 : 1,
+    rank: priorityRank(definition.priority),
     length: matchedSuffixLength(name, definition.extensions),
   }))
     .filter(candidate => candidate.length > 0)

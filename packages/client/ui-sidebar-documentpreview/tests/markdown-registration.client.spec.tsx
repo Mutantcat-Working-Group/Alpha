@@ -9,6 +9,7 @@ import { SessionId } from '@deepseek-ai/dsh-session/types'
 import { DocumentPreviewRegistry } from '../src/client/document/registry.ts'
 import { documentTabInfoFactory } from '../src/client/document/contract.ts'
 import { apply, MARKDOWN_BODY_ID, markdownDefinition } from '../src/client/markdown/index.ts'
+import { en as markdownEn, zh as markdownZh } from '../src/client/markdown/locales.ts'
 
 const runtimes: SlotTestRuntime[] = []
 
@@ -49,6 +50,8 @@ describe('Markdown implementation registration', () => {
     await reference.ready
     const feature = await runtime.mount({ inject: ['slots', 'locale', 'documentPreviews'], apply })
     expect(previews.getSnapshot().map(definition => definition.id)).toEqual([MARKDOWN_BODY_ID])
+    // The registered metadata names the implementation through the bound locale, so the toolbar reads a label.
+    expect(previews.candidates('notes.md')[0]?.title()).toBe(markdownEn['viewer.label'])
     const useTabInfo = vi.fn<UseSidebarRightTabInfo>(() => { throw new Error('Markdown rendering does not need tab actions') })
     await runtime.root.declare({
       'sidebar.right.tab.document': {
@@ -74,6 +77,7 @@ describe('Markdown implementation registration', () => {
     expect(runtime.slots.entries('sidebar.right.tab.document')).toHaveLength(1)
     const t = locale.bind('documentMarkdown')
     await act(async () => { locale.setLocale('zh') })
+    expect(previews.candidates('notes.md')[0]?.title()).toBe(markdownZh['viewer.label'])
     expect(locale.bind('documentMarkdown')).toBe(t)
     expect(view.getByRole('button', { name: '复制' })).toBeDefined()
     expect(useTabInfo).not.toHaveBeenCalled()

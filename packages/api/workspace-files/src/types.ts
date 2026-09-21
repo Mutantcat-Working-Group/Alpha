@@ -8,6 +8,8 @@
  *   filesystem's execution world, because their consumer is the Client
  *   resource system, whose `dsh-resource://file/session/<id>/<path>` address carries that
  *   same path.
+ * - `write` takes the same path vocabulary as the reads, but confines the resolved
+ *   target to the Session workspace: a write that escapes it fails.
  * - `list` speaks workspace paths — the same syntax its `path` argument accepts —
  *   because its consumer is a tree rooted at the workspace root.
  *
@@ -80,6 +82,31 @@ export interface WorkspaceFileBytes extends WorkspaceFileStat {
   readonly data: string
   /** Whether the window includes the file's last byte. */
   readonly eof: boolean
+}
+
+/** Guard on one `write`. */
+export type WorkspaceFileWriteIntent =
+  | {
+    /** Refuse the write when the target already exists. */
+    readonly kind: 'createIfAbsent'
+  }
+  | {
+    /**
+     * Refuse the write unless the target is still at this version, the opaque
+     * token a stat or page returned earlier.
+     */
+    readonly kind: 'replaceIfVersion'
+    readonly version: string
+  }
+
+/** Result of one `write`. */
+export interface WorkspaceFileWriteOutcome {
+  /** Absolute path written, in the same form as {@link WorkspaceFileStat.absolutePath}. */
+  readonly absolutePath: string
+  /** Whether the write created a new file or replaced an existing one. */
+  readonly operation: 'create' | 'update'
+  /** Opaque freshness token the write produced; the next guarded write names it. */
+  readonly version: string
 }
 
 /** One direct child of a listed workspace directory. */
@@ -162,5 +189,11 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
       readonly path: string
       readonly kind: 'file' | 'symlink' | 'other'
     }
+    /** A guarded write found the target absent, or at a version other than the guard named. */
+    'workspace-file/stale-version': { readonly path: string }
+    /** The Session's resolved sandbox policy refuses the write. */
+    'workspace-file/sandbox-denied': { readonly path: string }
+    /** The filesystem refused the write for a reason the other write codes do not name. */
+    'workspace-file/write-failed': { readonly path: string }
   }
 }

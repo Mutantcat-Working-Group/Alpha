@@ -29,6 +29,33 @@ describe('document preview implementations', () => {
     expect(registry.candidates('C:\\work\\archive.TAR.GZ')).toEqual([first, second, short])
   })
 
+  it('keeps an optional implementation as a choice beneath every builtin match', () => {
+    const registry = new DocumentPreviewRegistry()
+    const builtin = definition('builtin', { priority: 'builtin' })
+    const optional = definition('optional', { priority: 'optional' })
+    registry.register(builtin)
+    registry.register(optional)
+    expect(registry.candidates('/work/notes.md')).toEqual([builtin, optional])
+  })
+
+  it('lets an optional implementation open a suffix no builtin claims', () => {
+    const registry = new DocumentPreviewRegistry()
+    const optional = definition('optional', { extensions: ['txt'], priority: 'optional' })
+    registry.register(optional)
+    expect(registry.candidates('/work/notes.txt')).toEqual([optional])
+  })
+
+  it('keeps an extension band implementation ahead of a builtin and an optional one', () => {
+    const registry = new DocumentPreviewRegistry()
+    const builtin = definition('builtin', { priority: 'builtin' })
+    const optional = definition('optional', { priority: 'optional' })
+    const extension = definition('extension')
+    registry.register(builtin)
+    registry.register(optional)
+    registry.register(extension)
+    expect(registry.candidates('/work/notes.md')).toEqual([extension, builtin, optional])
+  })
+
   it('does not mistake directory names or unknown suffixes for file matches', () => {
     const registry = new DocumentPreviewRegistry()
     registry.register(definition('markdown'))

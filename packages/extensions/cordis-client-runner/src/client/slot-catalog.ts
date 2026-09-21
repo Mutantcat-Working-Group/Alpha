@@ -2698,6 +2698,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     declaredBy: 'an entry in \'sidebar.right.pane.tab\' (client-ui-sidebar-documentpreview), so it exists while that entry is mounted',
     occupants: [
       'client-ui-sidebar-documentpreview CodeBody',
+      'client-ui-sidebar-documentpreview EditorBody',
       'client-ui-sidebar-documentpreview HtmlBody',
       'client-ui-sidebar-documentpreview ImageBody',
       'client-ui-sidebar-documentpreview MarkdownBody',

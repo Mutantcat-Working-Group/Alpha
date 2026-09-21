@@ -415,6 +415,19 @@ Host Remote file reads and workspace directory observations over the composed fi
 @Remote async list(workspaceFileScope: WorkspaceFileScope, path: string, signal: AbortSignal): Promise<WorkspaceDirectoryListing>
 
 /**
+ * Write UTF-8 text to one file inside the Session's workspace. Missing
+ * parent directories are created; a symlink at the target is refused rather
+ * than followed.
+ * @param workspaceFileScope - header-derived workspace root for the Session identity on the wire.
+ * @param path - absolute path or path relative to the workspace root; a target outside it fails.
+ * @param content - the complete new file content.
+ * @param intent - guard on the write: create only when absent, or replace only at the named version.
+ * @param signal - caller cancellation.
+ * @returns the absolute path written, whether the write created or updated the file, and the version it produced.
+ */
+@Remote async write( workspaceFileScope: WorkspaceFileScope, path: string, content: string, intent: WorkspaceFileWriteIntent, signal: AbortSignal, ): Promise<WorkspaceFileWriteOutcome>
+
+/**
  * Stream every `fs/observed` observation of a file inside the Session's
  * workspace. Only instrumented filesystem operations report here; the OS is
  * not watched.

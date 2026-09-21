@@ -8,7 +8,10 @@
  * relative paths, with the sandbox policy root as its no-cwd fallback, not a
  * read-containment restriction. Directory listings and change observations
  * remain workspace-scoped. File-kind checks and configured read caps apply to
- * every preview; this service exposes no mutations.
+ * every preview. `write` joins the workspace-scoped half: it takes the reads'
+ * path vocabulary, but a target it resolves outside the workspace fails, it
+ * runs under the Session's resolved sandbox policy, and it refuses a target
+ * that is not a regular file.
  *
  * A page is cut from `streamText`, which decodes and rejects non-UTF-8 as it
  * goes, so the file is read only up to the first character past the page and
@@ -23,7 +26,15 @@ import { posix, win32 } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type {} from '@deepseek-ai/dsh-fs'
-import type { FsDirEntry, FsInfo, FsPathInfo, FsTarget } from '@deepseek-ai/dsh-fs'
+import type {
+  FsDirEntry,
+  FsInfo,
+  FsPathInfo,
+  FsTarget,
+  FsVersion,
+  FsWriteIntent,
+  FsWriteOutcome,
+} from '@deepseek-ai/dsh-fs'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
 import type {} from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-session-persistence'
@@ -38,6 +49,8 @@ import type {
   WorkspaceFileRange,
   WorkspaceFileStat,
   WorkspaceFileText,
+  WorkspaceFileWriteIntent,
+  WorkspaceFileWriteOutcome,
   WorkspaceFileWatchFrame,
 } from './types.ts'
 
@@ -352,6 +365,53 @@ export class WorkspaceFiles extends TypertRemoteService {
   }
 
   /**
+   * Write UTF-8 text to one file inside the Session's workspace. Missing
+   * parent directories are created; a symlink at the target is refused rather
+   * than followed.
+   * @param workspaceFileScope - header-derived workspace root for the Session identity on the wire.
+   * @param path - absolute path or path relative to the workspace root; a target outside it fails.
+   * @param content - the complete new file content.
+   * @param intent - guard on the write: create only when absent, or replace only at the named version.
+   * @param signal - caller cancellation.
+   * @returns the absolute path written, whether the write created or updated the file, and the version it produced.
+   */
+  @Remote
+  async write(
+    workspaceFileScope: WorkspaceFileScope,
+    path: string,
+    content: string,
+    intent: WorkspaceFileWriteIntent,
+    signal: AbortSignal,
+  ): Promise<WorkspaceFileWriteOutcome> {
+    if (path.length === 0) throw new RemoteError('gateway/bad-request', 'path is required', {})
+    const { workspaceRoot } = workspaceFileScope
+    const root = await this.ctx.fs.resolve(workspaceRoot, { signal })
+    const target = await this.confine(root, workspaceRoot, path, signal)
+    // Unlike a read, an absent target is a valid write, so only the kind of an
+    // entry that does exist is refused. Resolve already followed a terminal
+    // symlink and containment judged its destination; this lstat refuses the
+    // symlink itself.
+    const existing = await this.ctx.fs.lstat(path, { cwd: workspaceRoot }, signal)
+    if (existing !== undefined && existing.type !== 'file') {
+      throw new RemoteError('workspace-file/not-regular-file', `"${path}" is a ${existing.type}`, { path, kind: existing.type })
+    }
+    const session = this.ctx.sessions.get(workspaceFileScope.sessionId)
+    const policy = this.ctx.sandboxPolicy.resolve(session === undefined ? {} : { session })
+    let outcome: FsWriteOutcome
+    try {
+      outcome = await this.ctx.fs.writeText(target, content, fsIntentOf(intent), signal, policy)
+    } catch (error: unknown) {
+      throw writeFailureOf(error, path)
+    }
+    this.ctx.emit('fs/observed', target, { kind: 'present', version: outcome.version }, undefined)
+    return {
+      absolutePath: this.ctx.fs.processPath(target),
+      operation: outcome.operation,
+      version: outcome.version,
+    }
+  }
+
+  /**
    * Stream every `fs/observed` observation of a file inside the Session's
    * workspace. Only instrumented filesystem operations report here; the OS is
    * not watched.
@@ -473,6 +533,40 @@ export class WorkspaceFiles extends TypertRemoteService {
  */
 function isNotTextRefusal(error: unknown): boolean {
   return typeof error === 'object' && error !== null && 'code' in error && error.code === 'FS_NOT_TEXT'
+}
+
+/** The caller's guarded write, restated as the filesystem's write intent. */
+function fsIntentOf(intent: WorkspaceFileWriteIntent): FsWriteIntent {
+  return intent.kind === 'createIfAbsent'
+    ? { kind: 'createIfAbsent' }
+    : { kind: 'replaceIfVersion', version: intent.version as FsVersion }
+}
+
+/**
+ * One write failure as the Remote code that names it, recognized by the
+ * backend's error codes alone: the error class belongs to whichever `dsh-fs`
+ * instance the provider loaded, so no class identity is shared across the
+ * package boundary.
+ */
+function writeFailureOf(error: unknown, path: string): RemoteError {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined
+  if (code === 'FS_STALE_VERSION' || code === 'FS_NOT_OBSERVED') {
+    return new RemoteError(
+      'workspace-file/stale-version',
+      `"${path}" is not at the version the write guard named`,
+      { path },
+      { cause: error },
+    )
+  }
+  if (code === 'FS_SANDBOX_DENIED') {
+    return new RemoteError(
+      'workspace-file/sandbox-denied',
+      `the sandbox policy refuses writing "${path}"`,
+      { path },
+      { cause: error },
+    )
+  }
+  return new RemoteError('workspace-file/write-failed', `writing "${path}" failed`, { path }, { cause: error })
 }
 
 export default WorkspaceFiles

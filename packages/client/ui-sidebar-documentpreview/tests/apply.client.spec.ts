@@ -26,6 +26,7 @@ import { IMAGE_BODY_ID } from '../src/client/image/index.ts'
 import { LazyPdfBody } from '../src/client/pdf/LazyPdfBody.tsx'
 import { PDF_BODY_ID } from '../src/client/pdf/index.ts'
 import { CodeBody } from '../src/client/code/CodeBody.tsx'
+import { EditorBody } from '../src/client/editor/EditorBody.tsx'
 import { en, zh } from '../src/client/locales.ts'
 import { RemoteError } from '@deepseek-ai/dsh-client-test-runtime'
 import type { textFace } from '../src/client/face.ts'
@@ -97,6 +98,7 @@ describe('ui-sidebar-documentpreview apply', () => {
       ['sidebar.right.tab.document', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/code', 'sidebarCodePreview', CodeBody],
       ['sidebar.right.tab.document', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office', 'sidebarOffice', OfficeBody],
       ['sidebar.right.tab.document.office.pdf', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/office', 'sidebarPdf', LazyPdfBody],
+      ['sidebar.right.tab.document', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/editor', 'sidebarEditor', EditorBody],
     ])
     expect(registered[0]?.store).toBeDefined()
     expect(typeof registered[0]?.inject).toBe('function')

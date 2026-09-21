@@ -1,5 +1,5 @@
 ---
-description: "右侧 Sidebar 的文档预览：共享文件加载与控件，可选 Markdown、代码、图片、PDF、Office 和 HTML 渲染器，并以纯文本兜底。"
+description: "右侧 Sidebar 的文档预览：共享文件加载与控件，可选 Markdown、代码、图片、PDF、Office 和 HTML 渲染器，源码文件使用 CodeMirror 编辑器，并以纯文本兜底。"
 kind: "package-reference"
 ---
 
@@ -9,13 +9,14 @@ kind: "package-reference"
 
 ## 概述
 
-在右侧 Sidebar 预览可读文件，无需另开 tab 即可切换已注册的渲染器。Markdown 和代码接收累计文本页；PDF、HTML 和常见图片接收完整字节；未知文件扩展名使用纯文本。Office 文档在本地转换为 PDF。tab 负责加载、文件状态、渲染器选择、换行和重新载入，文档正文通过同一元数据注册表与子 slot 注册。Sidebar tab 的 kind 为 `text`。
+在右侧 Sidebar 预览可读文件，无需另开 tab 即可切换已注册的渲染器。Markdown 和代码接收累计文本页；PDF、HTML 和常见图片接收完整字节；源码、数据和标记类后缀在 CodeMirror 6 编辑器中打开，并带版本守卫保存；未知文件扩展名使用纯文本。Office 文档在本地转换为 PDF。tab 负责加载、文件状态、渲染器选择、换行和重新载入，文档正文通过同一元数据注册表与子 slot 注册。Sidebar tab 的 kind 为 `text`。
 
 ## 目录
 
 - [注册了什么](#what-it-registers)
 - [地址](#addresses)
 - [怎么读](#how-it-reads)
+- [编辑器](#editor)
 - [Office 预览](#office-preview)
 - [导航](#navigation)
 - [模型体验](#model-experience)
@@ -31,9 +32,11 @@ kind: "package-reference"
 - **正文** —— keyed slot `sidebar.right.pane.tab`，键为类型的 id。固定头部在可用时显示 Host 的绝对路径，否则显示请求路径；目录使用三级标签色，文件名使用一级标签色，路径过长时保留末段并向开头淡出，提示中仍提供完整值。有多个受支持的渲染器时才显示下拉菜单。仅文本兼容的源文件提供纯文本选项；只有一个渲染器时不显示查看器控件。已知的二进制容器后缀没有注册渲染器时，在路径头部下方显示文件类型图标和不支持预览的说明，并且不会发起读取。仅当所选渲染器声明 `wrap: true` 时显示换行开关；图标表示点击后切换到的模式，该偏好按 tab 保存，初始开启。重新载入仍在此头部，不放入 Sidebar 的 tab 条。正文贴合格的每条边，各渲染器自行提供内容留白，并可拥有内部滚动区。这与 Files tab 右侧预留 2px 滚动条间距的布局有意不同：Preview 使用格的完整宽度，使贴边 HTML 与代码滚动区终止于格的边缘。
 - **共享加载与视图状态**，会话作用域、按 tab id 分桶。store 持有累计页或完整字节、读取与观察版本、加载/失败状态、渲染器选择、滚动位置、换行和已响应的导航 revision。普通 inject face 调用 Remote 读取，并经声明的 store action 写入。重新载入和加载模式变化会淘汰旧请求；tab 的中止信号清理其状态。
 
-文档实现在 `ctx.documentPreviews.register({ id, extensions, binaryExtensions?, priority, title, loading, wrap? })` 注册元数据，并以相同 `id` 向 keyed、Session 作用域的子 slot `sidebar.right.tab.document` 注册正文。`binaryExtensions` 列出 `extensions` 中不可按文本阅读的后缀，这些后缀不提供纯文本选项。两处注册都由 effect 持有，通过 `ctx.slots.inject` 等待子 slot。正文接收 `resourceAddress`、`content`、`wrap`、`scrollportRef` 和标准 `useTabInfo`/`useResource` 钩子。内部滚动元素挂载 `scrollportRef`；卸载时恢复共享正文的滚动职责。注册表保留所有匹配备选：`extension`（默认）优先于 `builtin`，随后按更长的后缀、再按注册顺序排列。所选实现仍可用时，下拉选择保持不变。HTML、SVG 和未匹配的扩展名保留纯文本回退，与加载方式无关。
+文档实现在 `ctx.documentPreviews.register({ id, extensions, binaryExtensions?, priority, title, loading, wrap? })` 注册元数据，并以相同 `id` 向 keyed、Session 作用域的子 slot `sidebar.right.tab.document` 注册正文。`binaryExtensions` 列出 `extensions` 中不可按文本阅读的后缀，这些后缀不提供纯文本选项。两处注册都由 effect 持有，通过 `ctx.slots.inject` 等待子 slot。正文接收 `resourceAddress`、`content`、`wrap`、`scrollportRef` 和标准 `useTabInfo`/`useResource` 钩子。内部滚动元素挂载 `scrollportRef`；卸载时恢复共享正文的滚动职责。注册表保留所有匹配备选：`extension`（默认）优先于 `builtin`，`optional` 低于 `builtin`，只作为查看器选项、不会从它手里接过自动选择，随后按更长的后缀、再按注册顺序排列。所选实现仍可用时，下拉选择保持不变。HTML、SVG 和未匹配的扩展名保留纯文本回退，与加载方式无关。
 
 `loading: 'text-pages'` 和 `'bytes-complete'` 使用共享文件读取器。选择 `'renderer'` 时，所选正文在读取任何字节前挂载，并接收 `content: { kind: 'renderer', revision, loaded, reload }`。其注入回调负责内容加载、错误和取消。`loaded(version)` 为共享变更提示报告已展示的源版本；已被替换的 revision 所发出的报告会被忽略。`reload()` 增加 revision，正文据此取消并替换当前请求。正文也在卸载和 tab 关闭时取消请求，将已完成内容保留在自己声明的 tab store 中，并在 tab 结束时释放。[Office 预览](#office-preview) 使用此模式，转换后的字节和字体元数据不会进入共享文件 store。
+
+[编辑器](#editor) 为源码、数据和标记类后缀注册在 `extension` 档，声明 `loading: 'renderer'` 和 `wrap: true`。它通过分页端点读取到 EOF，把完整文本保存在 CodeMirror 文档中，并以首页报告的版本作为保存守卫。
 
 <a id="addresses"></a>
 ## 地址
@@ -57,6 +60,23 @@ PNG、JPEG、GIF、WebP、BMP、ICO 和 SVG 通过 Blob URL 在 `<img>` 静态�
 共享文案来自 `sidebarDocumentPreview`；各内置渲染器拥有自己的本地化标签。PDF 与转换后的 Office 预览在浅色模式下使用石墨灰底色，在深色模式下使用哑黑底色，页面带有轻微阴影并保留文档原色。
 
 首次读取、追加页及 HTML/PDF/图片准备共用仅图标的加载 spinner，其标签暴露给辅助技术，并遵循减少动态效果偏好；内容出现前的每个等待都把 spinner 居中在面板中，打开文件到正文出现始终是同一位置的一个 spinner。下一页加载期间保留已显示的内容。PDF 正文仅在 PDF 预览挂载时加载包内 `client.pdf.js` chunk；PDF.js、Worker 源码和内嵌支持数据不会进入启动 `client.js`。PDF 页面贴边占满面板宽度，组成一个纵向连续序列并在接近视口时惰性渲染；未渲染的页以安静的 3:4 占位块保持位置。PDF.js 官方 TextLayerBuilder 在与画面重合的文字层上管理选区边界和复制文本规范化。配套样式不高亮空白换行；对齐同时考虑 PDF 页面单位、页面旋转与视口宽度变化，页面释放时取消两层渲染。纯图片 PDF 不包含可选取的文字。代码预览默认显示源码行号，但复制文本不包含行号；纯文本与代码使用相同字号和行高。代码直接坐在分栏自身的背景上，而不是会话卡片的填充色；复制条与占满剩余高度的内部滚动区相邻，因此横纵滚动条都从复制控件下方开始。
+
+<a id="editor"></a>
+## 编辑器
+
+源码、数据和标记类后缀在只读查看器之外还提供一份 CodeMirror 6 文档。注册占据 `optional` 档，因此内置查看器保留每个文件的自动选择，编辑器则作为可编辑的备选项进入查看器菜单；它声明 `wrap: true`，于是 owner 的偏好能到达文档。内置语法覆盖 JavaScript 和 TypeScript、Python、Ruby、Go、Rust、Java、C/C++ 家族、Swift、PHP、shell、YAML、TOML、INI properties、Markdown、HTML、CSS 及其变体、SQL、XML 及其变体和 Lua；`.cs`、`.kt`、`.kts`、`.mdx`、`.txt`、`.text` 和 `.log` 打开时没有语法。
+
+读取沿分页端点走到 EOF，并按 Host 切分的方式拼接页面，因此超过一页的文件也能完整到达。首页报告的版本就是保存守卫的版本；页面之间发生版本变化时，读取被拒绝，而不是拼接两个版本的页面。
+
+保存通过 `replaceIfVersion` 按读取时的版本替换整个文件，因此别处的修改会被拒绝而不是被覆盖。Mod-s 与工具条的保存按钮都能保存，一次保存在途时的第二次保存会被拒绝。版本过期时提供放弃编辑并重新载入；沙箱拒绝与写入失败会保持文档可编辑，并在其上方显示失败行。文档已前进之后落地的保存会记录差异，因此文档在与新基线一致前保持脏状态。
+
+未保存的编辑优先于重新载入。更新的 revision 会被采用且文本保持原样，owner 的变更条继续报告磁盘上的版本，不会发起读取。放弃编辑会连同编辑一起丢弃保留的文档，于是下一次读取会落定一份新文档。
+
+每个 tab 一个 CodeMirror 文档，住在 store 旁边并在正文重新挂载后存活，因此回到某个 tab 不需要再读一次就能恢复光标、选区和撤销历史。加载计数器标识文档，新读取会递增它，因此重新载入不会显示上一份文本的撤销历史。关闭 tab 会释放该文档及其 store 分桶。
+
+声明的读取失败显示文件类型图标、本地化文案行和重试；rejection 显示同样的视图，并附上载体的消息。没有 Client Remote 时，正文报告不可用状态，而不是加载失败。换行由 CodeMirror compartment 承载，因此切换偏好只重配视图，不重建文档。
+
+编辑器不提供自动补全、诊断或跨文件搜索，也不消费源码行导航：导航 revision 只被响应，不滚动。
 
 <a id="office-preview"></a>
 ## Office 预览
@@ -89,7 +109,7 @@ Office 注册、加载、缓存和字体提示位于 `src/client/office/`。Offi
 <a id="navigation"></a>
 ## 导航
 
-`ctx.sidebarRight.openResource(address, { params: { line } })` 通过 `file` 参数携带 1 起算的源码行号。在 `text-pages` 模式下，owner 顺序加载到该行或 EOF。纯文本与代码渲染器提供源码行锚点；Markdown 不提供。所选渲染器没有锚点时，导航保持待处理；用户切换到纯文本或代码后执行。代码导航直接滚动内部源码视口。字节模式渲染器不消费源码行导航。每个完成的导航 revision 只响应一次。不带 `revealIfOpened: false` 打开同一文件时聚焦已有 tab，并送达新 revision。
+`ctx.sidebarRight.openResource(address, { params: { line } })` 通过 `file` 参数携带 1 起算的源码行号。在 `text-pages` 模式下，owner 顺序加载到该行或 EOF。纯文本与代码渲染器提供源码行锚点；Markdown 不提供。所选渲染器没有锚点时，导航保持待处理；用户切换到纯文本或代码后执行。代码导航直接滚动内部源码视口。字节模式渲染器不消费源码行导航，[编辑器](#editor) 响应一个 revision 但不滚动。每个完成的导航 revision 只响应一次。不带 `revealIfOpened: false` 打开同一文件时聚焦已有 tab，并送达新 revision。
 
 <a id="model-experience"></a>
 ## 模型体验
@@ -103,7 +123,9 @@ Office 注册、加载、缓存和字体提示位于 `src/client/office/`。Offi
 ## 已知限制与延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
-- **预览而非编辑。** 查看器不提供文件编辑或共享搜索接口；目录地址以 `not-regular-file` 失败。未知扩展名使用纯文本读取，仍受其 UTF-8/NUL 检查限制。
+- **编辑器之外是只读查看器。** 除编辑器外的每个渲染器都不提供文件编辑；目录地址以 `not-regular-file` 失败。未知扩展名使用纯文本读取，仍受其 UTF-8/NUL 检查限制。
+- **编辑器持有整个文件。** 文档出现前要读遍每一页，保存也写入完整文本，因此远超 Host 页上限的源码文件会消耗分页查看器不会消耗的内存。编辑器不提供自动补全、诊断或跨文件搜索，也不消费源码行导航；`.mdx`、`.cs`、`.kt` 和 `.kts` 打开时没有语法。
+- **编辑器保存存在竞态。** 版本守卫拒绝覆盖别处修改的保存，并提供放弃编辑；同一文件上的两个编辑器通过该守卫解决，而不是合并，被拒绝的保存会留下失败行，直到下一次尝试。
 - **Office 转换限制。** 预览不启动原生 Office 编辑器，也不下载引擎。二进制 `.doc`、`.xls` 和 `.ppt` 文件不返回缺失字体诊断。转换保真度与资源限制由 [LibreOffice 提供方](../../document/office-to-pdf/README.zh.md)负责。
 - **文本顺序分页，完整文件受限。** 定位到较深处的源码行需要先加载此前各页；PDF、HTML 和图片必须取得 Host `maxFileBytes` 上限内的完整结果。
 - **字节视图不恢复滚动位置。** PDF、HTML 与图片的渲染器重新挂载或重新载入时可能回到顶部；图片适配面板宽度、不产生横向滚动，HTML iframe 的滚动属于其不透明浏览上下文。

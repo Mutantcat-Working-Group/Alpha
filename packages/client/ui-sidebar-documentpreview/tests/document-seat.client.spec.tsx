@@ -69,7 +69,8 @@ async function boot() {
     act(() => { rt.ctx.sidebarRight.openResource('dsh-resource://file/session/documents/' + name) })
   }
   const register = (id: string, loading: DocumentLoadMode, priority: 'builtin' | 'extension') => rt.ctx.effect(() => {
-    const removeDefinition = rt.ctx.documentPreviews.register({ id, extensions: ['md'], priority, title: () => id, loading, wrap: loading === 'text-pages' })
+    // A suffix no renderer claims, so the banding under test stays isolated.
+    const removeDefinition = rt.ctx.documentPreviews.register({ id, extensions: ['custom'], priority, title: () => id, loading, wrap: loading === 'text-pages' })
     const removeBody = rt.slots.inject('sidebar.right.tab.document', () => rt.slots.register(
       { name: 'sidebar.right.tab.document', key: id },
       (props: DocumentPreviewProps) => {
@@ -138,7 +139,7 @@ describe('document extension seat', () => {
       h.register('builtin-reader', 'text-pages', 'builtin')
       h.register('extension-reader', 'bytes-complete', 'extension')
     })
-    h.open('notes.md')
+    h.open('notes.custom')
     await waitFor(() => {
       const body = h.view.container.querySelector('[data-renderer="extension-reader"]')
       expect(body?.textContent).toBe('all')
@@ -163,12 +164,12 @@ describe('document extension seat', () => {
       h.register('builtin-reader', 'text-pages', 'builtin')
       remove = h.register('extension-reader', 'text-pages', 'extension')
     })
-    h.open('notes.md')
+    h.open('notes.custom')
     await waitFor(() => {
       expect(h.view.container.querySelector('[data-renderer="extension-reader"]')?.getAttribute('data-renderer-version')).toBe('v1')
     })
     await act(async () => { await remove!() })
-    await waitFor(() => { expect(h.view.container.querySelector('[data-document-markdown]')).not.toBeNull() })
+    await waitFor(() => { expect(h.view.container.querySelector('[data-renderer="builtin-reader"]')).not.toBeNull() })
     expect(h.read).toHaveBeenCalledTimes(1)
   })
 })

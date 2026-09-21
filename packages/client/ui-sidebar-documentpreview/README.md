@@ -1,5 +1,5 @@
 ---
-description: "Document previews in the right Sidebar: shared file loading and controls, selectable Markdown, code, image, PDF, Office and HTML renderers, and plain-text fallback."
+description: "Document previews in the right Sidebar: shared file loading and controls, selectable Markdown, code, image, PDF, Office and HTML renderers, a CodeMirror editor for source files, and plain-text fallback."
 kind: "package-reference"
 ---
 
@@ -9,13 +9,14 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Preview readable files in the right Sidebar and choose among registered renderers without opening another tab. Markdown and code receive accumulated text pages; PDF, HTML, and common images receive complete bytes; unknown file extensions use plain text. Office documents convert locally to PDF. The tab owns loading, file status, renderer selection, wrap, and reload, while document bodies register through the same metadata registry and child slot. The Sidebar tab kind is `text`.
+Preview readable files in the right Sidebar and choose among registered renderers without opening another tab. Markdown and code receive accumulated text pages; PDF, HTML, and common images receive complete bytes; source, data, and markup suffixes open in a CodeMirror 6 editor with a version-guarded save; unknown file extensions use plain text. Office documents convert locally to PDF. The tab owns loading, file status, renderer selection, wrap, and reload, while document bodies register through the same metadata registry and child slot. The Sidebar tab kind is `text`.
 
 ## Table of Contents
 
 - [What it registers](#what-it-registers)
 - [Addresses](#addresses)
 - [How it reads](#how-it-reads)
+- [Editor](#editor)
 - [Office preview](#office-preview)
 - [Navigation](#navigation)
 - [Model Experience](#model-experience)
@@ -31,9 +32,11 @@ Preview readable files in the right Sidebar and choose among registered renderer
 - **The body** — the keyed `sidebar.right.pane.tab` seat under the type's id. Its fixed header shows the Host's absolute path when available, otherwise the requested path; directories use tertiary label colour, the name uses primary label colour, and a clipped path retains and fades toward its final segment while its tooltip exposes the full value. A dropdown appears when multiple supported renderers are available. Plain text is offered only for text-compatible sources; a single renderer shows no viewer control. A known binary container suffix without a registered renderer shows the file-type icon and an unsupported-preview message under the path header, without issuing a read. A wrap toggle appears only when the selected renderer declares `wrap: true`; its glyph describes the mode the click selects, and the per-tab preference starts on. Reload stays in this header, not the Sidebar's tab strip. The body reaches every pane edge; each renderer owns its content inset and may own an inner scrollport. This intentionally differs from the Files tab's 2px right-side scrollbar offset: previews keep the full pane width so edge-to-edge HTML and code scrollports end at the pane edge.
 - **Shared loading and view state**, session-scoped and bucketed by tab id. The store holds accumulated pages or complete bytes, read and observed versions, loading/failure state, renderer choice, scroll offset, wrap, and the answered navigation revision. The ordinary inject face calls Remote readers and writes through declared store actions. Reloads and loading-mode changes retire older requests; the tab's abort signal forgets its state.
 
-Document implementations register metadata with `ctx.documentPreviews.register({ id, extensions, binaryExtensions?, priority, title, loading, wrap? })` and a body under the same `id` in the keyed, Session-scoped `sidebar.right.tab.document` child slot. `binaryExtensions` lists suffixes in `extensions` that cannot be read as text and omit the plain-text option. Own both registrations with effects and wait for the child slot through `ctx.slots.inject`. Bodies receive `resourceAddress`, `content`, `wrap`, `scrollportRef`, and the standard `useTabInfo`/`useResource` hooks. An inner scrolling element attaches `scrollportRef`; unmounting restores the shared body as scroll owner. The registry retains all matching alternatives: `extension` (the default) ranks above `builtin`, then longer suffixes rank first, then registration order. The dropdown preserves a selected implementation while it remains available. HTML, SVG, and unmatched extensions retain the plain-text fallback independently of loading mode.
+Document implementations register metadata with `ctx.documentPreviews.register({ id, extensions, binaryExtensions?, priority, title, loading, wrap? })` and a body under the same `id` in the keyed, Session-scoped `sidebar.right.tab.document` child slot. `binaryExtensions` lists suffixes in `extensions` that cannot be read as text and omit the plain-text option. Own both registrations with effects and wait for the child slot through `ctx.slots.inject`. Bodies receive `resourceAddress`, `content`, `wrap`, `scrollportRef`, and the standard `useTabInfo`/`useResource` hooks. An inner scrolling element attaches `scrollportRef`; unmounting restores the shared body as scroll owner. The registry retains all matching alternatives: `extension` (the default) ranks above `builtin`, `optional` ranks below `builtin` as a viewer choice that never takes automatic selection from it, then longer suffixes rank first, then registration order. The dropdown preserves a selected implementation while it remains available. HTML, SVG, and unmatched extensions retain the plain-text fallback independently of loading mode.
 
 `loading: 'text-pages'` and `'bytes-complete'` use the shared file reader. With `'renderer'`, the selected body mounts before any bytes are read and receives `content: { kind: 'renderer', revision, loaded, reload }`. Its injected callbacks own content loading, errors, and cancellation. `loaded(version)` reports the displayed source version for the shared change notice; reports from replaced revisions are ignored. `reload()` increments the revision, which the body observes to cancel and replace its request. The body also cancels on unmount and tab closure, retains settled content in its declared tab store, and releases that state when the tab ends. [Office previews](#office-preview) use this mode without putting converted bytes or font metadata in the shared file store.
+
+The [editor](#editor) registers at the `extension` band for source, data, and markup suffixes with `loading: 'renderer'` and `wrap: true`. It reads through the paged endpoint to EOF, holds the complete text in a CodeMirror document, and saves it under the version the first page reported.
 
 <a id="addresses"></a>
 ## Addresses
@@ -57,6 +60,23 @@ PNG, JPEG, GIF, WebP, BMP, ICO, and SVG render through Blob URLs in an `<img>` s
 Shared copy comes from `sidebarDocumentPreview`; each builtin renderer owns its localized labels. PDF and converted Office previews use a graphite background in light mode and a matte-black background in dark mode, with subtle page shadows and original document colors.
 
 Initial reads, additional pages, and HTML/PDF/image preparation share an icon-only loading spinner that exposes its label to assistive technology and respects reduced-motion preferences; every wait before content exists centres the spinner in the pane, so opening a file shows one spinner in one position until the body appears. Loaded pages stay visible while another page loads. The PDF body loads its package-local `client.pdf.js` chunk only when a PDF preview mounts; PDF.js, its Worker source, and embedded support data stay out of the startup `client.js`. PDF pages fill the pane's width edge to edge as one vertical sequence and render lazily near the viewport; an unrendered page holds its place as a quiet 3:4 placeholder block. PDF.js’s official TextLayerBuilder manages selection boundaries and normalized copying over an aligned text layer. Its companion styles keep blank line breaks unhighlighted; alignment accounts for PDF page units, page rotation, and viewport resizing, and page disposal cancels both layers. Image-only PDFs contain no selectable text. Code previews show source line numbers by default without including them in copied text; plain text uses the same font size and line height as code. Code sits on the pane's own background rather than the chat card's fill; its banner is adjacent to a full-height inner scrollport, so both scrollbars begin below the copy control.
+
+<a id="editor"></a>
+## Editor
+
+Source, data, and markup suffixes offer a CodeMirror 6 document beside their read-only viewer. The registration claims the `optional` band, so a builtin viewer keeps every file's automatic choice and the editor joins the viewer menu as the editable alternative, and it declares `wrap: true`, so the owner's preference reaches the document. Bundled grammars cover JavaScript and TypeScript, Python, Ruby, Go, Rust, Java, the C/C++ family, Swift, PHP, shell, YAML, TOML, INI properties, Markdown, HTML, CSS and its variants, SQL, XML and its variants, and Lua; `.cs`, `.kt`, `.kts`, `.mdx`, `.txt`, `.text`, and `.log` open without one.
+
+The read walks the paged endpoint to EOF and joins the pages the way the Host splits them, so a file larger than one page arrives whole. The version the first page reported is the version the save guards, and a version change between pages refuses the read instead of joining pages of two versions.
+
+A save replaces the complete file at the version it read through `replaceIfVersion`, so a change made elsewhere is refused rather than overwritten. Mod-s and the strip's save button both save, and a second save while one is in flight is refused. A stale version offers discarding the edits and reloading; a sandbox refusal and a write failure keep the document editable with the failure line above it. A save that lands after the document moved on records the difference, so the document stays dirty until it matches the new baseline.
+
+Unsaved edits outrank a reload. A newer revision is adopted with the text intact, the owner's change bar keeps announcing the version on disk, and no read runs. Discarding drops the retained document together with the edits, so the next read settles a fresh one.
+
+One CodeMirror document per tab lives beside the store and outlives body remounts, so returning to a tab restores the cursor, the selections, and the undo history without another read. A load counter identifies the document, and a fresh read increments it, so a reload never shows the previous text's undo history. Closing the tab releases the document and its store bucket.
+
+A declared read failure shows the file-type icon, the localized line, and retry; a rejection shows the same view with the carrier's message. Without the Client Remote the body reports the unavailable state instead of failing to load. Line wrapping rides a CodeMirror compartment, so toggling the preference reconfigures the view without re-creating the document.
+
+The editor provides no autocomplete, diagnostics, or cross-file search, and it does not consume source-line navigation: a navigation revision is answered without scrolling.
 
 <a id="office-preview"></a>
 ## Office preview
@@ -89,7 +109,7 @@ The shared `documentFileBytes()` helper decodes ordinary file and converted PDF 
 <a id="navigation"></a>
 ## Navigation
 
-`ctx.sidebarRight.openResource(address, { params: { line } })` carries a 1-based source line through the `file` parameters. In `text-pages` mode, the owner loads sequential pages until that line or EOF. Plain-text and code renderers expose source-line anchors; Markdown does not. A navigation remains pending while its selected renderer has no anchor and runs if the user switches to plain text or code. Code navigation scrolls the inner source viewport directly. Byte-mode renderers do not consume source-line navigation. Each completed navigation revision is answered once. Opening the same file without `revealIfOpened: false` focuses its existing tab and delivers a new revision.
+`ctx.sidebarRight.openResource(address, { params: { line } })` carries a 1-based source line through the `file` parameters. In `text-pages` mode, the owner loads sequential pages until that line or EOF. Plain-text and code renderers expose source-line anchors; Markdown does not. A navigation remains pending while its selected renderer has no anchor and runs if the user switches to plain text or code. Code navigation scrolls the inner source viewport directly. Byte-mode renderers do not consume source-line navigation, and the [editor](#editor) answers a revision without scrolling. Each completed navigation revision is answered once. Opening the same file without `revealIfOpened: false` focuses its existing tab and delivers a new revision.
 
 <a id="model-experience"></a>
 ## Model Experience
@@ -103,7 +123,9 @@ No direct effect; what the user reads here never enters a model request.
 ## Known Limitations and Deferred Work
 
 <a id="known-limitations-and-deferred-work"></a>
-- **Preview, not editing.** The viewers provide no file editing or shared search interface; a directory address fails with `not-regular-file`. Unknown extensions use the plain-text reader and remain subject to its UTF-8/NUL checks.
+- **Read-only viewers outside the editor.** Every renderer except the editor provides no file editing; a directory address fails with `not-regular-file`. Unknown extensions use the plain-text reader and remain subject to its UTF-8/NUL checks.
+- **The editor holds whole files.** The read walks every page before the document appears and the save writes the complete text, so a source file far larger than the Host's page cap costs memory a paged viewer does not. The editor provides no autocomplete, diagnostics, or cross-file search, and it does not consume source-line navigation; `.mdx`, `.cs`, `.kt`, and `.kts` open without a grammar.
+- **The editor's save races.** The version guard refuses a save made over a change made elsewhere and offers discarding the edits; two editors on one file resolve through that guard rather than a merge, and a rejected save leaves its failure line until the next attempt.
 - **Office conversion limits.** The preview does not launch native Office editors or download an engine. Binary `.doc`, `.xls`, and `.ppt` files return no missing-font diagnostics. Conversion fidelity and resource limits belong to the [LibreOffice provider](../../document/office-to-pdf/README.md).
 - **Sequential text and bounded complete files.** Deep source lines require the preceding pages; PDF, HTML, and images require a complete result within the Host's `maxFileBytes` cap.
 - **Byte-view scroll state is not restored.** PDF, HTML, and images can return to the top when their renderer remounts or reloads; images fit the pane's width and never scroll horizontally, and HTML iframe scrolling belongs to its opaque browsing context.
