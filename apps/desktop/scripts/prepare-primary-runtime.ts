@@ -35,10 +35,35 @@ export async function downloadPrimaryRuntimeAsset(url: string, sha256: string, c
   return destination
 }
 
+/**
+ * Unpack a locked Node distribution, whose compression differs per platform archive.
+ * @param archive - Hash-verified Node archive.
+ * @param destination - Empty staging directory receiving the distribution root.
+ * @param target - Desktop target whose archive format is unpacked.
+ * @returns Resolves after extraction; node-tar cannot decompress xz, so the platform tar owns those archives.
+ */
+async function extractNodeArchive(archive: string, destination: string, target: keyof typeof lock.targets): Promise<void> {
+  if (target === 'win-x64') {
+    await extractZip(archive, { dir: destination })
+    return
+  }
+  if (archive.endsWith('.tar.xz')) {
+    execFileSync('tar', ['-xJf', archive, '-C', destination], { stdio: 'inherit' })
+    return
+  }
+  await extractTar({ file: archive, cwd: destination })
+}
+
 async function pythonArchive(target: keyof typeof lock.targets, cache: string): Promise<string> {
   const artifact = lock.targets[target]
   const filename = `cpython-${lock.pythonVersion}+${lock.pythonRelease}-${artifact.pythonTarget}-install_only_stripped.tar.gz`
   return downloadPrimaryRuntimeAsset(`https://github.com/astral-sh/python-build-standalone/releases/download/${lock.pythonRelease}/${encodeURIComponent(filename)}`, artifact.pythonSha256, cache)
+}
+
+/** Platform identifier recorded by one target's runtime manifest. */
+function manifestPlatform(target: keyof typeof lock.targets): string {
+  if (target === 'win-x64') return 'win32'
+  return target.startsWith('mac-') ? 'darwin' : 'linux'
 }
 
 /**
@@ -107,9 +132,8 @@ export async function preparePrimaryRuntime(options: { deferSmoke?: boolean } = 
     const nodeArchive = await downloadPrimaryRuntimeAsset(`https://nodejs.org/dist/v${lock.nodeVersion}/${nodeFilename}`, artifact.nodeSha256, paths.downloads)
     const unpackedNode = join(staging, 'node')
     mkdirSync(unpackedNode)
-    if (target === 'win-x64') await extractZip(nodeArchive, { dir: unpackedNode })
-    else await extractTar({ file: nodeArchive, cwd: unpackedNode })
-    const nodeSource = join(unpackedNode, nodeFilename.replace(/\.(?:zip|tar\.gz)$/u, ''))
+    await extractNodeArchive(nodeArchive, unpackedNode, target)
+    const nodeSource = join(unpackedNode, nodeFilename.replace(/\.(?:zip|tar\.gz|tar\.xz)$/u, ''))
     mkdirSync(join(dependencies, 'node', 'bin'), { recursive: true })
     mkdirSync(join(dependencies, 'node', 'node_modules'))
     writeFileSync(join(dependencies, 'node', 'node_modules', 'README.txt'), 'Reserved for bundled Node packages. pnpm uses its default installation directories.\n')
@@ -124,8 +148,8 @@ export async function preparePrimaryRuntime(options: { deferSmoke?: boolean } = 
     const desktop = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8')) as { version: string }
     const manifest: PrimaryRuntimeManifest = {
       desktopVersion: desktop.version,
-      platform: target === 'win-x64' ? 'win32' : 'darwin',
-      arch: target === 'mac-arm64' ? 'arm64' : 'x64',
+      platform: manifestPlatform(target),
+      arch: target.endsWith('arm64') ? 'arm64' : 'x64',
       payloadDigest: primaryRuntimePayloadDigest(target, lock, pnpm.version),
       pythonPackages: lock.pythonPackages,
       components: {

@@ -105,14 +105,14 @@ Record the current dsh version as the base before changing any manifests. A prod
 
 | dsh base | Production Desktop | Test Desktop example |
 |---|---|---|
-| `0.1.6-alpha.1` | `0.1.6-alpha.1` | `0.1.6-alpha.1.20260916.1` |
-| `0.1.6-beta.2` | `0.1.6-beta.2` | `0.1.6-beta.2.20260916.1` |
-| `0.1.6-rc.3` | `0.1.6-rc.3` | `0.1.6-rc.3.20260916.1` |
-| `0.1.6` | `0.1.6` | `0.1.6-test.20260916.1` |
+| `1.0.20260921-alpha.1` | `1.0.20260921-alpha.1` | `1.0.20260921-alpha.1.20260921.1` |
+| `1.0.20260921-beta.2` | `1.0.20260921-beta.2` | `1.0.20260921-beta.2.20260921.1` |
+| `1.0.20260921-rc.3` | `1.0.20260921-rc.3` | `1.0.20260921-rc.3.20260921.1` |
+| `1.0.20260921` | `1.0.20260921` | `1.0.20260921-test.20260921.1` |
 
 Use the actual creation date in Asia/Shanghai. For each base and date, start the index at 1 and increment after checking retained release records and published objects; never reuse a published version. Derive once from the recorded base, not from a manifest already carrying a test suffix. The final root, Desktop, bundled dsh, private Desktop Host, and other release-family manifests must all carry the same derived version. Test distribution does not publish the corresponding unsuffixed base.
 
-Version derivation does not change the fixed update channel or `nightly.yml` / `nightly-mac.yml` filenames. SemVer orders `0.1.6-alpha.1 < 0.1.6-alpha.1.20260916.1 < 0.1.6-alpha.2`, and a stable base's test version precedes that stable release. Clients only accept a greater version: replacing a feed cannot move an installed higher version to a lower corrected version. Such clients need manual installation; keep automatic downgrade disabled. The [version decision](../../.agents/notes/implemented/process/2026-09-16-desktop-release-version-derivation.md) explains why the channel does not supply the prerelease identifier.
+Version derivation does not change the fixed update channel or `nightly.yml` / `nightly-mac.yml` filenames. SemVer orders `1.0.20260921-test.20260921.1 < 1.0.20260921`, so a stable base's test version precedes that stable release. Clients only accept a greater version: replacing a feed cannot move an installed higher version to a lower corrected version. Such clients need manual installation; keep automatic downgrade disabled. The [version decision](../../.agents/notes/implemented/process/2026-09-16-desktop-release-version-derivation.md) explains why the channel does not supply the prerelease identifier.
 
 Packaging, upload, and manual macOS signature verification read `apps/desktop/.env.windows` or `.env.macos`, selected by target platform. Copy the [Windows template](.env.windows.example) or [macOS template](.env.macos.example) and fill in the local settings; Git ignores both local files, and packaged artifacts exclude them. Release fields come only from the target file, without fallback to system or shell variables; `PATH`, proxies, and build-tool settings remain inherited. Files use UTF-8 with optional BOM; relative certificate, SignTool, Apple API key, and keychain paths resolve from `apps/desktop`, values are not shell-expanded, and passwords containing `#` or spaces need quotes. CI also creates the target file before invoking packaging.
 
@@ -136,9 +136,27 @@ pnpm run package:desktop:mac:x64
 pnpm run package:desktop:win:x64
 ```
 
-The macOS arm64 command requires Apple Silicon. The macOS x64 command runs on Intel macOS or Apple Silicon with Rosetta. The Windows x64 command requires Windows x64. Linux is not a supported Desktop release target.
+The macOS arm64 command requires Apple Silicon. The macOS x64 command runs on Intel macOS or Apple Silicon with Rosetta. The Windows x64 command requires Windows x64. The official release targets stay `mac-arm64`, `mac-x64`, and `win-x64`; Linux reaches users only through the credential-free release artifacts below.
 
 Each target owns its packed package inputs, prepared runtime, package set, dsh tree, pnpm preparation state, unpacked application, update metadata, and final artifacts under `apps/desktop/.desktop-build/targets/<target>/`. The Electron archive cache remains shared under `.desktop-build/downloads` because every archive name includes its version, platform, and architecture and is verified before extraction. A target build never consumes another target's mutable preparation state.
+
+### Credential-free release artifacts
+
+`.github/workflows/release-app.yml` attaches installers to a published GitHub release. Publishing a release starts one job per target, and `workflow_dispatch` names the receiving tag explicitly. Each job uploads its `Alpha-<version>-<os>-<arch>` asset with `gh release upload --clobber`, so a re-run replaces the assets it already attached instead of failing on the duplicate name.
+
+| Target | Runner | Artifact |
+|---|---|---|
+| `win-x64` | `windows-latest` | NSIS `.exe` installer |
+| `mac-arm64` | `macos-14` | ad-hoc signed `.dmg` |
+| `mac-x64` | `macos-15-intel` | ad-hoc signed `.dmg` |
+| `linux-x64` | `ubuntu-24.04` | `.AppImage` |
+| `linux-arm64` | `ubuntu-24.04-arm` | `.AppImage` |
+
+Each job runs `package:ci:<target>` ([ci-package.ts](scripts/ci-package.ts)), which repeats the official build, packs both package families, prepares the target runtime, and invokes electron-builder with [ci-builder-config.mjs](scripts/ci-builder-config.mjs). That configuration carries the application ID `org.mutantcat.alpha`, sets `publish: null`, disables update-channel detection, and omits the mandatory-update policy, so the release assets are the only distribution channel. The packaging script refuses a target whose platform differs from the build host, because Electron and the bundled dsh runtime both execute there.
+
+Hosted runners carry no signing identity. macOS passes the ad-hoc qualifier `-` to codesign over the whole bundle with `hardenedRuntime: false`; electron-builder performs no disk-image signing for an identity without a keychain entry, so `artifactBuildCompleted` signs the finished `.dmg` itself. Windows and Linux artifacts stay unsigned. Gatekeeper still asks the user to confirm the first launch of an ad-hoc signed application, through the context menu's Open item or by removing the quarantine attribute with `xattr -dr com.apple.quarantine <path>`. The workflow runs `codesign --verify` on every disk image before upload.
+
+The Linux targets are a CI-only addition. They reuse the same runtime tree, runtime file policy, and integrity verification as the official targets, and they are absent from the fixed Nightly feed and from `resolveDesktopAutoUpdateConfig`.
 
 ### Runtime file selection
 

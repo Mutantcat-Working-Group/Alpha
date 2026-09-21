@@ -1,4 +1,5 @@
-import type { DesktopAutoUpdateTarget } from './desktop-auto-update-environment.mjs'
+/** Build target whose preparation directories and artifacts this module owns. */
+export type DesktopBuildTarget = 'mac-arm64' | 'mac-x64' | 'win-x64' | 'linux-x64' | 'linux-arm64'
 
 /** Mutable target directories plus the shared immutable download cache. */
 export interface DesktopTargetBuildPaths {
@@ -26,14 +27,14 @@ export function resolveDesktopBuildTarget(
   env?: NodeJS.ProcessEnv,
   hostPlatform?: NodeJS.Platform,
   hostArch?: string,
-): DesktopAutoUpdateTarget
+): DesktopBuildTarget
 
 /**
  * Return the mutable preparation and artifact directories owned by one release target.
  * @param target - Supported Desktop target name.
  * @returns Target paths plus the shared immutable download cache.
  */
-export function desktopTargetBuildPaths(target: DesktopAutoUpdateTarget): DesktopTargetBuildPaths
+export function desktopTargetBuildPaths(target: DesktopBuildTarget): DesktopTargetBuildPaths
 
 /**
  * Resolve the paths owned by the target selected in a packaging environment.

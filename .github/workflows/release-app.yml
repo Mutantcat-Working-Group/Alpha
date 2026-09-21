@@ -1,0 +1,152 @@
+name: Release app
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag that receives the artifacts. Defaults to the ref name.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  # Attaching artifacts to a release is one publication transaction, so a re-run
+  # must replace a half-uploaded set instead of racing a superseded attempt.
+  group: release-app-${{ github.event.release.tag_name || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  PRIMARY_NODE_VERSION: '24'
+  DSH_TELEMETRY_DISABLED: '1'
+
+jobs:
+  package:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    # One target builds the whole monorepo, packages three interpreter
+    # distributions, and runs Electron. The budget bounds a hung build instead
+    # of holding the release open for the runner's default allowance.
+    timeout-minutes: 90
+    env:
+      # Hosted macOS runners carry no signing identity. Auto-discovery would
+      # fail the build before the ad-hoc identity is ever passed to codesign.
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64 / NSIS installer
+            runner: windows-latest
+            target: win-x64
+            script: package:ci:win:x64
+            extension: exe
+          - name: macOS arm64 / DMG
+            runner: macos-14
+            target: mac-arm64
+            script: package:ci:mac:arm64
+            extension: dmg
+          # Intel macOS needs its own image: Electron and the bundled dsh runtime
+          # both execute on the build host, so x64 cannot be produced by an
+          # arm64 runner.
+          - name: macOS x64 / DMG
+            runner: macos-15-intel
+            target: mac-x64
+            script: package:ci:mac:x64
+            extension: dmg
+          - name: Linux x64 / AppImage
+            runner: ubuntu-24.04
+            target: linux-x64
+            script: package:ci:linux:x64
+            extension: AppImage
+          - name: Linux arm64 / AppImage
+            runner: ubuntu-24.04-arm
+            target: linux-arm64
+            script: package:ci:linux:arm64
+            extension: AppImage
+    steps:
+      - name: Resolve the release tag
+        id: release
+        shell: bash
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          if [ -z "$tag" ]; then tag="${{ inputs.tag }}"; fi
+          if [ -z "$tag" ]; then tag="${{ github.ref_name }}"; fi
+          if [ -z "$tag" ]; then
+            echo "::error::no release tag was published or supplied"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      # Credentials stay out of the checkout: the upload step uses the injected
+      # token rather than a persisted git credential.
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          clean: true
+
+      - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.PRIMARY_NODE_VERSION }}
+          package-manager-cache: false
+
+      - name: Configure pnpm store path
+        id: pnpm-store
+        shell: bash
+        run: |
+          store_root="$HOME/.local/share/pnpm/store"
+          echo "PNPM_CONFIG_STORE_DIR=$store_root" >> "$GITHUB_ENV"
+          store_path=$(PNPM_CONFIG_STORE_DIR="$store_root" pnpm store path --silent)
+          echo "path=$store_path" >> "$GITHUB_OUTPUT"
+
+      # Each target downloads its own Electron archive, interpreter wheels, and
+      # platform packages, so a restored store keeps that off the critical path.
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: ${{ runner.os }}-${{ matrix.target }}-node-${{ env.PRIMARY_NODE_VERSION }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-node-${{ env.PRIMARY_NODE_VERSION }}-pnpm-
+
+      - name: Install (immutable)
+        run: pnpm install --frozen-lockfile
+
+      - name: Package ${{ matrix.target }}
+        run: pnpm --dir apps/desktop run ${{ matrix.script }}
+
+      - name: Verify the ad-hoc macOS signature
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          images=(apps/desktop/.desktop-build/targets/${{ matrix.target }}/artifacts/*.${{ matrix.extension }})
+          if [ "${#images[@]}" -eq 0 ]; then
+            echo "::error::no disk image to verify"
+            exit 1
+          fi
+          codesign --verify --verbose=2 "${images[0]}"
+
+      # Upload directly from each target's own artifact directory. The builder
+      # also writes builder-debug.yml and builder-effective-config.yaml there,
+      # so the extension filter keeps them out of the release.
+      - name: Upload to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+          ARTIFACTS: apps/desktop/.desktop-build/targets/${{ matrix.target }}/artifacts/*.${{ matrix.extension }}
+        run: |
+          shopt -s nullglob
+          files=($ARTIFACTS)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::${{ matrix.target }} produced no .${{ matrix.extension }} artifact"
+            exit 1
+          fi
+          gh release upload "$TAG" "${files[@]}" --clobber

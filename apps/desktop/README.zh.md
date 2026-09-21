@@ -106,14 +106,14 @@ Workspace 开发使用 Electron RunAsNode 运行当前 CLI 与私有 Desktop Hos
 
 | dsh 基础版本 | production Desktop | test Desktop 示例 |
 |---|---|---|
-| `0.1.6-alpha.1` | `0.1.6-alpha.1` | `0.1.6-alpha.1.20260916.1` |
-| `0.1.6-beta.2` | `0.1.6-beta.2` | `0.1.6-beta.2.20260916.1` |
-| `0.1.6-rc.3` | `0.1.6-rc.3` | `0.1.6-rc.3.20260916.1` |
-| `0.1.6` | `0.1.6` | `0.1.6-test.20260916.1` |
+| `1.0.20260921-alpha.1` | `1.0.20260921-alpha.1` | `1.0.20260921-alpha.1.20260921.1` |
+| `1.0.20260921-beta.2` | `1.0.20260921-beta.2` | `1.0.20260921-beta.2.20260921.1` |
+| `1.0.20260921-rc.3` | `1.0.20260921-rc.3` | `1.0.20260921-rc.3.20260921.1` |
+| `1.0.20260921` | `1.0.20260921` | `1.0.20260921-test.20260921.1` |
 
 日期使用实际创建时的 Asia/Shanghai 日期。每个基础版本、每天的序号从 1 开始，检查保留的发布记录与已发布对象后递增；绝不复用已发布版本。只从记录的基础版本派生一次，不从已有测试后缀的清单继续追加。最终根包、Desktop、内置 dsh、私有 Desktop Host 和其他发布家族清单必须全部使用同一个派生版本。test 分发不发布对应的无后缀基础版本。
 
-版本派生不改变固定更新通道，也不改变 `nightly.yml` / `nightly-mac.yml` 文件名。SemVer 排序为 `0.1.6-alpha.1 < 0.1.6-alpha.1.20260916.1 < 0.1.6-alpha.2`，稳定基础版本的测试版低于该稳定版。客户端只接受更高版本：替换 feed 无法让已安装的较高版本更新到较低的纠正版。这类客户端需要手动安装；保持自动降级关闭。[版本决策](../../.agents/notes/implemented/process/2026-09-16-desktop-release-version-derivation.zh.md)解释为什么不能用通道名替换预发布标识。
+版本派生不改变固定更新通道，也不改变 `nightly.yml` / `nightly-mac.yml` 文件名。SemVer 排序为 `1.0.20260921-test.20260921.1 < 1.0.20260921`，稳定基础版本的测试版低于该稳定版。客户端只接受更高版本：替换 feed 无法让已安装的较高版本更新到较低的纠正版。这类客户端需要手动安装；保持自动降级关闭。[版本决策](../../.agents/notes/implemented/process/2026-09-16-desktop-release-version-derivation.zh.md)解释为什么不能用通道名替换预发布标识。
 
 打包、上传以及手动 macOS 签名检查使用 `apps/desktop/.env.windows` 或 `.env.macos`，由目标平台选择。复制对应的 [Windows 模板](.env.windows.example) 或 [macOS 模板](.env.macos.example)，填写本机配置；Git 忽略这两个本地文件，安装产物也不包含它们。发布字段只从目标文件读取，不回退到系统或 shell 中的同名变量；`PATH`、代理和构建工具环境仍保留。文件使用 UTF-8，支持 BOM；相对证书、SignTool、Apple API Key 和钥匙串路径以 `apps/desktop` 为基准，变量值不做 shell 展开，包含 `#` 或空格的密码需要引号。CI 同样在运行前生成目标文件。
 
@@ -137,9 +137,27 @@ pnpm run package:desktop:mac:x64
 pnpm run package:desktop:win:x64
 ```
 
-macOS arm64 命令要求 Apple Silicon。macOS x64 命令可以在 Intel macOS 或带 Rosetta 的 Apple Silicon 上运行。Windows x64 命令要求 Windows x64。Linux 不是受支持的 Desktop 发布目标。
+macOS arm64 命令要求 Apple Silicon。macOS x64 命令可以在 Intel macOS 或带 Rosetta 的 Apple Silicon 上运行。Windows x64 命令要求 Windows x64。正式发布目标保持 `mac-arm64`、`mac-x64` 和 `win-x64`；Linux 只通过下面的免凭据发布产物交付用户。
 
 每个目标都在 `apps/desktop/.desktop-build/targets/<target>/` 下持有自己的打包输入、已准备运行时、包集合、dsh 依赖树、pnpm 准备状态、未打包应用、更新元数据和最终产物。Electron 归档缓存继续由 `.desktop-build/downloads` 共享，因为每个归档文件名都包含版本、平台和架构，并且在解包前经过验证。目标构建绝不读取其他目标的可变准备状态。
+
+### 免凭据发布产物
+
+`.github/workflows/release-app.yml` 把安装包附加到已发布的 GitHub release。发布 release 会为每个目标启动一个 job，`workflow_dispatch` 则显式指定接收产物的 tag。每个 job 用 `gh release upload --clobber` 上传自己的 `Alpha-<version>-<os>-<arch>` 产物，因此重跑会替换已附加的产物，而不是因重名失败。
+
+| 目标 | Runner | 产物 |
+|---|---|---|
+| `win-x64` | `windows-latest` | NSIS `.exe` 安装包 |
+| `mac-arm64` | `macos-14` | ad-hoc 签名的 `.dmg` |
+| `mac-x64` | `macos-15-intel` | ad-hoc 签名的 `.dmg` |
+| `linux-x64` | `ubuntu-24.04` | `.AppImage` |
+| `linux-arm64` | `ubuntu-24.04-arm` | `.AppImage` |
+
+每个 job 运行 `package:ci:<target>`（[ci-package.ts](scripts/ci-package.ts)），它重复官方构建、打包两个包家族、准备目标运行时，然后用 [ci-builder-config.mjs](scripts/ci-builder-config.mjs) 调用 electron-builder。该配置带上应用 ID `org.mutantcat.alpha`，设置 `publish: null`，关闭更新通道探测，并去掉强制更新策略，因此 release 产物是唯一的分发渠道。打包脚本拒绝平台与构建主机不一致的目标，因为 Electron 和内置 dsh 运行时都在主机上执行。
+
+托管 runner 不携带签名身份。macOS 用 ad-hoc 限定符 `-` 对整个 bundle 执行 codesign，并设置 `hardenedRuntime: false`；对于没有钥匙串条目的身份，electron-builder 不对磁盘映像签名，因此由 `artifactBuildCompleted` 自己对完成的 `.dmg` 签名。Windows 和 Linux 产物保持未签名。Gatekeeper 仍会要求用户确认首次启动 ad-hoc 签名的应用，可以在上下文菜单选择“打开”，或用 `xattr -dr com.apple.quarantine <path>` 移除隔离属性。工作流在上传前对每个磁盘映像运行 `codesign --verify`。
+
+Linux 目标是仅 CI 的新增。它们复用与正式目标相同的运行时树、运行时文件策略和完整性验证，但不进入固定 Nightly feed，也不出现在 `resolveDesktopAutoUpdateConfig` 中。
 
 ### 运行时文件筛选
 

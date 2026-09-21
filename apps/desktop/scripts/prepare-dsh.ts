@@ -3,6 +3,7 @@
 import { spawn, execFile } from 'node:child_process'
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { parseArgs } from 'node:util'
 import { delimiter, join, relative, resolve } from 'node:path'
 import { desktopNodeEnvironment } from '../src/node-environment.ts'
 import { createRuntimeProjectMetadata } from '../src/project-manager.ts'
@@ -38,7 +39,9 @@ const STORE_ROOT = join(BUILD_ROOT, 'store')
 const RUNTIME_ROOT = BUILD_PATHS.runtime
 const PNPM_BUILD_STATE = BUILD_PATHS.dshPnpm
 const PACKAGE_SET_ROOT = BUILD_PATHS.packageSet
-const NODE = join(BUILD_PATHS.electron, process.platform === 'win32' ? 'electron.exe' : 'Electron.app/Contents/MacOS/Electron')
+const NODE = join(BUILD_PATHS.electron, process.platform === 'win32'
+  ? 'electron.exe'
+  : process.platform === 'darwin' ? 'Electron.app/Contents/MacOS/Electron' : 'electron')
 const PNPM = join(RUNTIME_ROOT, 'pnpm', 'bin', 'pnpm.mjs')
 
 function manifestVersion(path: string, subject: string): string {
@@ -105,7 +108,22 @@ function runPnpm(args: readonly string[]): Promise<void> {
   })
 }
 
+/**
+ * Parse the runtime materialization command line.
+ * @param argv - Arguments after the script entry point.
+ * @returns Whether ad-hoc signing leaves the runtime unsigned for the packager.
+ */
+function parseAdHoc(argv: readonly string[]): boolean {
+  const { values } = parseArgs({
+    args: [...argv],
+    options: { 'ad-hoc': { type: 'boolean', default: false } },
+    allowPositionals: false,
+  })
+  return values['ad-hoc']
+}
+
 async function main(): Promise<void> {
+  const adHoc = parseAdHoc(process.argv.slice(2))
   rmSync(DSH_OUTPUT_ROOT, { recursive: true, force: true })
   rmSync(PNPM_BUILD_STATE, { recursive: true, force: true })
   mkdirSync(STORE_ROOT, { recursive: true })
@@ -143,7 +161,9 @@ async function main(): Promise<void> {
     if (!existsSync(join(DSH_OUTPUT_ROOT, 'node_modules', '@deepseek-ai', `libreoffice-kit-${officeEngine}`, 'prebuilds.json'))) {
       throw new Error(`desktop runtime: missing required LibreOffice engine ${officeEngine}`)
     }
-    if (process.platform === 'darwin') {
+    // Ad-hoc release builds sign the copied runtime inside the app bundle instead, where
+    // the packager's ad-hoc identity covers every nested file.
+    if (process.platform === 'darwin' && !adHoc) {
       await signMacOSRuntime(DSH_OUTPUT_ROOT, resolveDesktopAppId(process.env), resolveMacOSSigningEnvironment(process.env))
       await signMacOSRuntime(join(RUNTIME_ROOT, 'primary-runtime'), resolveDesktopAppId(process.env), resolveMacOSSigningEnvironment(process.env))
     }

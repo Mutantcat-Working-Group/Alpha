@@ -29,6 +29,11 @@
     "package:win:x64": "tsx scripts/package-target.ts win-x64",
     "package:win:x64:unsigned": "tsx scripts/package-target.ts win-x64 --unsigned",
     "package:win:x64:dir": "tsx scripts/package-target.ts win-x64 --dir",
+    "package:ci:mac:arm64": "tsx scripts/ci-package.ts mac-arm64",
+    "package:ci:mac:x64": "tsx scripts/ci-package.ts mac-x64",
+    "package:ci:win:x64": "tsx scripts/ci-package.ts win-x64",
+    "package:ci:linux:x64": "tsx scripts/ci-package.ts linux-x64",
+    "package:ci:linux:arm64": "tsx scripts/ci-package.ts linux-arm64",
     "upload:mac:arm64": "tsx scripts/upload-target.ts mac-arm64",
     "upload:mac:x64": "tsx scripts/upload-target.ts mac-x64",
     "upload:win:x64": "tsx scripts/upload-target.ts win-x64"
