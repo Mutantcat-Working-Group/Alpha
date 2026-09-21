@@ -2,9 +2,12 @@
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
+import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { apply, inject } from '../src/client/index.ts'
 import { OfficialBrandMark, OfficialBrandName } from '../src/client/Brand.tsx'
+import { OfficialHeroBrandMark } from '../src/client/HeroMark.tsx'
+import { en, zh } from '../src/client/locales.ts'
 import { apply as hostApply } from '../src/index.ts'
 
 afterEach(() => {
@@ -17,18 +20,32 @@ const HOLES = [
   'sidebar.brand.name',
 ] as const
 
+const MARK_HOLES = [
+  'sidebar.brand.mark',
+  'conversation.hero.brand.mark',
+] as const
+
 const HERO_HOLE = 'conversation.hero.brand.mark'
+
+const ALL_HOLES = [...HOLES, HERO_HOLE] as const
 
 async function bench(declare = true) {
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
+  const registered: { ns: string; dicts: Record<string, Record<string, string>> }[] = []
+  ctx.provide('locale', {
+    register: (ns: string, dicts: Record<string, Record<string, string>>) => {
+      registered.push({ ns, dicts })
+      return () => { registered.length = 0 }
+    },
+  } as never)
   const slots = ctx.get('slots') as SlotRegistry
   const declareHoles = () => slots.register({
     name: 'root',
     children: Object.fromEntries([...HOLES, HERO_HOLE].map(name => [name, { kind: 'single', scope: 'root' }])),
   } as never, () => null)
   const disposeHoles = declare ? declareHoles() : undefined
-  return { ctx, slots, declareHoles, disposeHoles }
+  return { ctx, slots, declareHoles, disposeHoles, registered }
 }
 
 describe('official browser-brand plugin', () => {
@@ -36,15 +53,22 @@ describe('official browser-brand plugin', () => {
     expect(hostApply).not.toThrow()
   })
 
-  it('declares only the slot service it uses', () => {
-    expect(inject).toEqual(['slots'])
+  it('declares only the services it uses', () => {
+    expect(inject).toEqual(['slots', 'locale'])
   })
 
-  it('leaves every slot empty outside the official build profile', async () => {
+  it('registers the brand copy dictionary under the namespace the slots declare', async () => {
+    const subject = await bench()
+    await subject.ctx.plugin({ inject: [...inject], apply }).await()
+    expect(subject.registered).toEqual([{ ns: 'sidebarBrand', dicts: { zh, en } }])
+  })
+
+  it('fills the marks but not the name outside the official build profile', async () => {
     vi.stubEnv('DSH_CLIENT_BUILD_PROFILE', 'local')
     const subject = await bench()
     await subject.ctx.plugin({ inject: [...inject], apply }).await()
-    for (const hole of HOLES) expect(subject.slots.entries(hole)).toHaveLength(0)
+    for (const hole of MARK_HOLES) expect(subject.slots.entries(hole)).toHaveLength(1)
+    expect(subject.slots.entries('sidebar.brand.name')).toHaveLength(0)
   })
 
   it('fills declarations before or after apply and removes every occupant on teardown', async () => {
@@ -52,40 +76,46 @@ describe('official browser-brand plugin', () => {
     const before = await bench()
     const fiber = before.ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
-    for (const hole of HOLES) expect(before.slots.entries(hole)).toHaveLength(1)
+    for (const hole of ALL_HOLES) expect(before.slots.entries(hole)).toHaveLength(1)
 
     before.disposeHoles?.()
-    for (const hole of HOLES) expect(before.slots.entries(hole)).toHaveLength(0)
+    for (const hole of ALL_HOLES) expect(before.slots.entries(hole)).toHaveLength(0)
     before.declareHoles()
     await Promise.resolve()
-    for (const hole of HOLES) expect(before.slots.entries(hole)).toHaveLength(1)
+    for (const hole of ALL_HOLES) expect(before.slots.entries(hole)).toHaveLength(1)
 
     await fiber.dispose()
-    for (const hole of HOLES) expect(before.slots.entries(hole)).toHaveLength(0)
+    for (const hole of ALL_HOLES) expect(before.slots.entries(hole)).toHaveLength(0)
 
     const after = await bench(false)
     await after.ctx.plugin({ inject: [...inject], apply }).await()
-    for (const hole of HOLES) expect(after.slots.entries(hole)).toHaveLength(0)
+    for (const hole of ALL_HOLES) expect(after.slots.entries(hole)).toHaveLength(0)
     after.declareHoles()
     await Promise.resolve()
-    for (const hole of HOLES) expect(after.slots.entries(hole)).toHaveLength(1)
-  })
-
-  it('leaves the conversation hero on its declaring fallback even in official builds', async () => {
-    vi.stubEnv('DSH_CLIENT_BUILD_PROFILE', 'official')
-    const subject = await bench()
-    await subject.ctx.plugin({ inject: [...inject], apply }).await()
-    expect(subject.slots.entries(HERO_HOLE)).toHaveLength(0)
+    for (const hole of ALL_HOLES) expect(after.slots.entries(hole)).toHaveLength(1)
   })
 
   it('renders the official name independently from both requested mark sizes', () => {
-    const name = render(<OfficialBrandName />)
-    expect(name.container.querySelector('svg')?.getAttribute('viewBox')).toBe('26 0 156 24')
+    const t = makeTranslate(en)
+    const name = render(<OfficialBrandName t={t} />)
+    expect(name.container.textContent).toBe('Alpha')
     name.unmount()
 
     const mark = render(<OfficialBrandMark size={34} />)
     expect(mark.container.querySelector('svg')?.getAttribute('width')).toBe('34')
     mark.rerender(<OfficialBrandMark size={24} />)
     expect(mark.container.querySelector('svg')?.getAttribute('width')).toBe('24')
+  })
+
+  it('renders the hero mark at the requested size with the host class', () => {
+    const hero = render(<OfficialHeroBrandMark size={34} className="fish" />)
+    const svg = hero.container.querySelector('svg')
+    expect(svg?.getAttribute('width')).toBe('34')
+    expect(svg?.getAttribute('class')).toBe('fish')
+    hero.unmount()
+
+    const bare = render(<OfficialHeroBrandMark size={20} />)
+    expect(bare.container.querySelector('svg')?.getAttribute('width')).toBe('20')
+    expect(bare.container.querySelector('svg')?.getAttribute('class')).toBeNull()
   })
 })

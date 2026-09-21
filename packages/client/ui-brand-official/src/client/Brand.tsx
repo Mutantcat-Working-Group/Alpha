@@ -1,19 +1,22 @@
-import { BrandWordmark, FishLogo } from '@deepseek-ai/dsh-client-ui-primitives'
+import { AlphaMark } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SidebarBrandMarkOwnerProps } from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from './locales.ts'
 
 /**
- * Render the official mark with the presentation requested by its host surface.
+ * Render the Alpha mark with the presentation requested by its host surface.
  * @param props - Host-supplied mark presentation.
- * @returns the official whale mark.
+ * @returns the Alpha mark.
  */
 export function OfficialBrandMark({ size }: SidebarBrandMarkOwnerProps) {
-  return <FishLogo size={size} />
+  return <AlphaMark size={size} />
 }
 
 /**
- * Render the official name artwork without its independently slotted mark.
- * @returns the official name wordmark.
+ * Render the Alpha name without its independently slotted mark.
+ * @param props - Localized copy seat for the brand namespace.
+ * @returns the Alpha name.
  */
-export function OfficialBrandName() {
-  return <BrandWordmark includeMark={false} />
+export function OfficialBrandName({ t }: PropsLocale<'sidebarBrand'>) {
+  return <span>{t('name')}</span>
 }

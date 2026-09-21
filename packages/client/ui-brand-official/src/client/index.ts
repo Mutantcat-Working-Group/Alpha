@@ -1,23 +1,36 @@
-/** Official DeepSeek Harness occupants for the generic browser-brand slots. */
+/** Official Alpha occupants for the generic browser-brand slots. */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@deepseek-ai/dsh-client-ui-slots'
 import { OfficialBrandMark, OfficialBrandName } from './Brand.tsx'
+import { OfficialHeroBrandMark } from './HeroMark.tsx'
+import type {} from './locales.ts'
+import { en, zh } from './locales.ts'
 
-/** Required service: the UI slot registry. */
-export const inject = ['slots']
+/** Required services: the UI slot registry and the locale dictionary seat. */
+export const inject = ['slots', 'locale']
 
 /**
- * Fill the sidebar brand slots as one declaration-aware registration set. The
- * conversation hero stays on its declaring package's animated fish fallback,
- * so the official build registers nothing there.
+ * Fill the brand mark slots in every profile and the product name in official
+ * builds, as one declaration-aware registration set. Local builds keep the
+ * shell's local-build name label, which carries the version.
  * @param ctx - Client root context.
  */
 export function apply(ctx: ClientContext): void {
-  if (process.env.DSH_CLIENT_BUILD_PROFILE !== 'official') return
+  ctx.effect(() => ctx.locale.register('sidebarBrand', { zh, en }))
   ctx.slots.inject('sidebar.brand.mark', () =>
     ctx.slots.inject('sidebar.brand.name', function* () {
-      yield ctx.slots.register({ name: 'sidebar.brand.mark' }, OfficialBrandMark)
-      yield ctx.slots.register({ name: 'sidebar.brand.name' }, OfficialBrandName)
+      yield ctx.slots.register({ name: 'sidebar.brand.mark', locale: 'sidebarBrand' }, OfficialBrandMark)
+      if (process.env.DSH_CLIENT_BUILD_PROFILE === 'official') {
+        yield ctx.slots.register({ name: 'sidebar.brand.name', locale: 'sidebarBrand' }, OfficialBrandName)
+      }
     }))
+  // The hero slot is declared by ui-conversation's factory, whose plugin
+  // activates after the sidebar brand slots because it waits on more
+  // services, so the hero occupant carries its own declaration wait.
+  ctx.slots.inject('conversation.hero.brand.mark', () =>
+    ctx.slots.register({ name: 'conversation.hero.brand.mark', locale: 'sidebarBrand' }, OfficialHeroBrandMark))
 }
