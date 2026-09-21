@@ -23,6 +23,8 @@ function fixture(): string {
   roots.push(root)
   mkdirSync(join(root, 'docs/section'), { recursive: true })
   mkdirSync(join(root, 'packages'), { recursive: true })
+  writeFileSync(join(root, 'README.md'), '# Alpha\n')
+  writeFileSync(join(root, 'README.en.md'), '# Alpha\n')
   writeFileSync(join(root, 'docs/guide.md'), '# Guide\n')
   writeFileSync(join(root, 'docs/guide.zh.md'), '# 指南\n')
   writeFileSync(join(root, 'docs/reference.md'), '# Overview\n')
@@ -249,5 +251,64 @@ describe('translation link rewriting and normalization', () => {
       literal,
       linkContext(root, 'docs/guide.zh.md'),
     ))
+  })
+})
+
+describe('root README locale-inverted pair', () => {
+  it('accepts each language linking its own root README side', () => {
+    const root = fixture()
+    expect(translationLinkLocaleViolations(
+      '[Alpha](../README.en.md#run)\n',
+      linkContext(root, 'docs/guide.md'),
+    )).toEqual([])
+    expect(translationLinkLocaleViolations(
+      '[Alpha](../README.md#run)\n',
+      linkContext(root, 'docs/guide.zh.md'),
+    )).toEqual([])
+  })
+
+  it('names the other language side when a link crosses over', () => {
+    const root = fixture()
+    expect(translationLinkLocaleViolations(
+      '[Alpha](../README.md#run)\n',
+      linkContext(root, 'docs/guide.md'),
+    )).toEqual([{
+      sourcePath: 'docs/guide.md',
+      line: 1,
+      url: '../README.md#run',
+      expectedUrl: '../README.en.md#run',
+    }])
+    expect(translationLinkLocaleViolations(
+      '[Alpha](../README.en.md#run)\n',
+      linkContext(root, 'docs/guide.zh.md'),
+    )).toEqual([{
+      sourcePath: 'docs/guide.zh.md',
+      line: 1,
+      url: '../README.en.md#run',
+      expectedUrl: '../README.md#run',
+    }])
+  })
+
+  it('normalizes both root README sides to one structural target', () => {
+    const root = fixture()
+    expect(normalizeTranslationMarkdownLinks(
+      '[Alpha](../README.en.md#run)\n',
+      linkContext(root, 'docs/guide.md'),
+    )).toBe(normalizeTranslationMarkdownLinks(
+      '[Alpha](../README.md#run)\n',
+      linkContext(root, 'docs/guide.zh.md'),
+    ))
+  })
+
+  it('rewrites a crossing link to the matching root README side', () => {
+    const root = fixture()
+    expect(rewriteTranslationLinkLocales(
+      '[Alpha](../README.md#run)\n',
+      linkContext(root, 'docs/guide.md'),
+    )).toEqual({ content: '[Alpha](../README.en.md#run)\n', rewritten: 1 })
+    expect(rewriteTranslationLinkLocales(
+      '[Alpha](../README.en.md#run)\n',
+      linkContext(root, 'docs/guide.zh.md'),
+    )).toEqual({ content: '[Alpha](../README.md#run)\n', rewritten: 1 })
   })
 })

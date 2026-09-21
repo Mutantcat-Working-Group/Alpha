@@ -41,7 +41,23 @@ export interface TranslationLinkRewriteResult {
 interface TranslationPairTarget {
   source: string
   zh: string
+  /**
+   * Set when the English side is not the `.md` path. The root README is the
+   * only such pair: GitHub renders `README.md` first, so this project keeps
+   * its default language there and publishes English as `README.en.md`.
+   */
+  localeInverted?: true
 }
+
+/** The root README pair, whose Chinese side is the default-language `README.md`. */
+const ROOT_README_PAIR: TranslationPairTarget = {
+  source: 'README.en.md',
+  zh: 'README.md',
+  localeInverted: true,
+}
+
+/** Both paths of the root README pair resolve to the same bilingual pair. */
+const ROOT_README_PATHS = new Set(['README.md', 'README.en.md'])
 
 interface ResolvedTranslationLink {
   pair: TranslationPairTarget
@@ -135,6 +151,7 @@ function resolveRepositoryTarget(
 }
 
 function translationPairTarget(targetPath: string, context: TranslationLinkContext): TranslationPairTarget | undefined {
+  if (ROOT_README_PATHS.has(targetPath)) return ROOT_README_PAIR
   const source = targetPath.endsWith('.zh.md')
     ? targetPath.replace(/\.zh\.md$/, '.md')
     : targetPath.endsWith('.md') ? targetPath : undefined
@@ -164,11 +181,16 @@ function expectedLocalePath(
   locale: 'en' | 'zh',
   context: TranslationLinkContext,
   expectedPath: string,
+  pair: TranslationPairTarget,
 ): string {
-  if (locale === 'zh' && rawPath.endsWith('.md') && !rawPath.endsWith('.zh.md')) {
-    return rawPath.replace(/\.md$/, '.zh.md')
+  // A locale-inverted pair has no `.zh.md` sibling to rewrite into, so the
+  // expected path is derived from the pair's own locale sides.
+  if (pair.localeInverted === undefined) {
+    if (locale === 'zh' && rawPath.endsWith('.md') && !rawPath.endsWith('.zh.md')) {
+      return rawPath.replace(/\.md$/, '.zh.md')
+    }
+    if (locale === 'en' && rawPath.endsWith('.zh.md')) return rawPath.replace(/\.zh\.md$/, '.md')
   }
-  if (locale === 'en' && rawPath.endsWith('.zh.md')) return rawPath.replace(/\.zh\.md$/, '.md')
   return relativeExpectedPath(context, expectedPath, rawPath)
 }
 
@@ -192,7 +214,7 @@ function resolveTranslationLink(
     targetPath,
     suffix: authored.suffix,
     expectedPath,
-    expectedUrl: `${expectedLocalePath(authored.path, locale, context, expectedPath)}${authored.suffix}`,
+    expectedUrl: `${expectedLocalePath(authored.path, locale, context, expectedPath, pair)}${authored.suffix}`,
     locale,
   }
 }
