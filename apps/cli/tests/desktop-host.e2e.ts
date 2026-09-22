@@ -29,7 +29,15 @@ it.each([false, true])('settles startup after parent IPC disconnect (boot failur
   }
   writeFileSync(join(root, 'package.json'), '{"type":"module"}')
   writeFileSync(join(modules, 'dsh-app-boot', 'package.json'), '{"type":"module","exports":"./index.js"}')
-  writeFileSync(join(modules, 'dsh-app-boot', 'index.js'), 'export const loadProfileDirectory = () => ({}); export const loadLayeredEnv = () => ({})')
+  writeFileSync(join(modules, 'dsh-app-boot', 'index.js'), [
+    'import { writeFileSync } from "node:fs"',
+    'import { join } from "node:path"',
+    'export const loadProfileDirectory = () => ({})',
+    'export const loadLayeredEnv = () => ({})',
+    'export const PROFILE_TEMPLATES = { web: { bundles: ["@mutantcat/dsh-base", "@mutantcat/dsh-web-app"] } }',
+    'export const sanitizeProfile = () => undefined',
+    'export const initProfile = (dir, bundles) => writeFileSync(join(dir, "initialized.json"), JSON.stringify(bundles))',
+  ].join('; '))
   writeFileSync(join(modules, 'dsh', 'package.json'), '{"type":"module","exports":{"./profile-boot":"./profile-boot.js"}}')
   writeFileSync(join(modules, 'dsh', 'profile-boot.js'), `
     import { writeFileSync } from 'node:fs';
@@ -69,6 +77,9 @@ it.each([false, true])('settles startup after parent IPC disconnect (boot failur
     expect(boot.packageManager.args).toEqual(['--expose-internals', pnpm])
     expect(boot.packageManager.env.ELECTRON_RUN_AS_NODE).toBe('1')
     expect(boot.packageManager.env.PATH).toBe(`${nodeBin}${delimiter}${process.env.PATH ?? ''}`)
+    // The shell runs no package manager, so the host initializes the profile manifest
+    // before loading the profile directory.
+    expect(JSON.parse(readFileSync(join(root, 'initialized.json'), 'utf8'))).toEqual(['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'])
     child.disconnect()
     expect(await exited).toBe(fail ? 1 : 0)
     await drained
