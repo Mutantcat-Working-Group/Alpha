@@ -169,6 +169,40 @@ jobs:
           fi
           gh release upload "$TAG" "${files[@]}" --clobber
 
+  checksums:
+    name: Generate and upload checksums
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve the release tag
+        id: release
+        shell: bash
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          if [ -z "$tag" ]; then tag="${{ inputs.tag }}"; fi
+          if [ -z "$tag" ]; then tag="${{ github.ref_name }}"; fi
+          if [ -z "$tag" ]; then
+            echo "::error::no release tag was published or supplied"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Download and upload checksums
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p checksums
+          gh release download "$TAG" --pattern '*' --dir checksums --clobber
+          cd checksums
+          files=(*)
+          sha256sum "${files[@]}" > checksums.txt
+          md5sum "${files[@]}" > checksums-md5.txt
+          sha1sum "${files[@]}" > checksums-sha1.txt
+          gh release upload "$TAG" checksums.txt checksums-md5.txt checksums-sha1.txt --clobber
+
   install-notes:
     name: Install notes
     runs-on: ubuntu-latest
