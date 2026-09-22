@@ -124,20 +124,16 @@ exports[`sidebar shell snapshots > renders Windows caption controls in expanded 
               style="display: contents;"
             >
               <span
-                class="localBuildBrand"
+                class="fallbackBrandName"
               >
-                <span
-                  class="localBuildTitle"
-                >
-                  Alpha Local Build
-                </span>
-                <span
-                  class="buildVersion"
-                >
-                  1.2.3-rc.4-abc1234-dirty
-                </span>
+                Alpha Local Build
               </span>
             </div>
+          </span>
+          <span
+            class="buildVersion"
+          >
+            1.2.3-rc.4
           </span>
         </span>
       </button>
@@ -350,20 +346,16 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
               style="display: contents;"
             >
               <span
-                class="localBuildBrand"
+                class="fallbackBrandName"
               >
-                <span
-                  class="localBuildTitle"
-                >
-                  Alpha Local Build
-                </span>
-                <span
-                  class="buildVersion"
-                >
-                  1.2.3-rc.4-abc1234-dirty
-                </span>
+                Alpha Local Build
               </span>
             </div>
+          </span>
+          <span
+            class="buildVersion"
+          >
+            1.2.3-rc.4
           </span>
         </span>
       </button>
@@ -480,20 +472,16 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
               style="display: contents;"
             >
               <span
-                class="localBuildBrand"
+                class="fallbackBrandName"
               >
-                <span
-                  class="localBuildTitle"
-                >
-                  Alpha 本地构建
-                </span>
-                <span
-                  class="buildVersion"
-                >
-                  1.2.3-rc.4-abc1234-dirty
-                </span>
+                Alpha 本地构建
               </span>
             </div>
+          </span>
+          <span
+            class="buildVersion"
+          >
+            1.2.3-rc.4
           </span>
         </span>
       </button>

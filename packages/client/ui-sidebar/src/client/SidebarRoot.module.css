@@ -275,23 +275,6 @@
   white-space: nowrap;
 }
 
-.localBuildBrand {
-  flex: none;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 1px;
-  height: 24px;
-  white-space: nowrap;
-}
-
-.localBuildTitle {
-  font-size: 12px;
-  line-height: 13px;
-  letter-spacing: 0;
-}
-
 .iconButton {
   position: relative;
   flex: none;
@@ -351,15 +334,15 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  height: 10px;
-  padding: 0 3px;
-  border-radius: 2px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 4px;
   color: var(--dsw-alias-label-primary-inverted);
   background: var(--dsw-alias-label-primary);
   font-family: var(--ds-font-family-code);
-  font-size: 6px;
+  font-size: 10px;
   font-weight: 500;
-  line-height: 10px;
+  line-height: 16px;
   white-space: nowrap;
 }
 

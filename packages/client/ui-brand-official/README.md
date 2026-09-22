@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-This package gives every build profile the Alpha mark in the sidebar and the blank-session hero, and gives `official` builds the Alpha name in the sidebar; other profiles keep the shell's local-build name label with its version chip. Choose it for deployments branded as Alpha; deployments with another identity should provide a replacement brand package. It has no runtime state and does not affect model requests.
+This package gives every build profile the Alpha mark in the sidebar and the blank-session hero, and gives `official` builds the Alpha name in the sidebar; other profiles keep the shell's local-build name label. The version badge in the brand row is the shell's own and appears beside either name. Choose it for deployments branded as Alpha; deployments with another identity should provide a replacement brand package. It has no runtime state and does not affect model requests.
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ Mount this plugin in the browser roster of a deployment whose identity is Alpha'
 
 ### Choosing the profile
 
-`DSH_CLIENT_BUILD_PROFILE` selects the sidebar name. An `official` build shows the Alpha name; any other value leaves the shell's local-build label and version chip in place. The Alpha marks render in every profile. The plugin still loads and validates in both cases; only the name registration is profile-gated.
+`DSH_CLIENT_BUILD_PROFILE` selects the sidebar name. An `official` build shows the Alpha name; any other value leaves the shell's local-build label in place, and the shell's version badge renders beside either name. The Alpha marks render in every profile. The plugin still loads and validates in both cases; only the name registration is profile-gated.
 
 ### Replacing the brand
 

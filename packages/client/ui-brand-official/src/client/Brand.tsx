@@ -1,15 +1,15 @@
-import { AlphaMark } from '@mutantcat/dsh-client-ui-primitives'
+import { AlphaAppIcon } from '@mutantcat/dsh-client-ui-primitives'
 import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
 import type { SidebarBrandMarkOwnerProps } from '@mutantcat/dsh-client-ui-sidebar/client'
 import type {} from './locales.ts'
 
 /**
- * Render the Alpha mark with the presentation requested by its host surface.
+ * Render the Alpha application icon with the presentation requested by its host surface.
  * @param props - Host-supplied mark presentation.
- * @returns the Alpha mark.
+ * @returns the Alpha app icon.
  */
 export function OfficialBrandMark({ size }: SidebarBrandMarkOwnerProps) {
-  return <AlphaMark size={size} />
+  return <AlphaAppIcon size={size} />
 }
 
 /**
