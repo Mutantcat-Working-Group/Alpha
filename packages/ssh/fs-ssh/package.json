@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-fs-ssh",
   "description": "Filesystem provider over the shared POSIX SSH helper",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },

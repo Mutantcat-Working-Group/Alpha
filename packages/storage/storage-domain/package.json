@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-storage-domain",
   "description": "Domain data form (ctx.storage.domain): schema-validated, event-emitting KV domains over storage backends for the DeepSeek Harness",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },

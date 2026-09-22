@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-primitives",
   "description": "Pure React atoms for the dsh web UI: controls, icons, markdown, and JSON inspectors (zero cordis)",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },

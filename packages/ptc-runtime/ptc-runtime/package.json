@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-ptc-runtime",
   "description": "Abstract PTC execution seam (ctx.ptcRuntime) for the DeepSeek Harness",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },

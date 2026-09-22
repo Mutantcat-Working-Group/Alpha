@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-storage",
   "description": "Storage hub (ctx.storage): named backend registry plus mounted data-form facilities for the DeepSeek Harness",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },

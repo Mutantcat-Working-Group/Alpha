@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-schedule",
   "description": "Read-only active Schedule catalog in the Web Session header",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-desktop",
   "description": "Tauri desktop shell for a bundled dsh runtime and external plugins",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "private": true,
   "license": "MIT",
   "type": "module",

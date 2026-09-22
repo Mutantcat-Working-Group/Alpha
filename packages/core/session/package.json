@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session",
   "description": "Event-sourced session store for the DeepSeek Harness",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },

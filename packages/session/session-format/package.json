@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-format",
   "description": "Streaming adjacent Session format migration machinery",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },

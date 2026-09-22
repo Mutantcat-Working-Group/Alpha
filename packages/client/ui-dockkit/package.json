@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-dockkit",
   "description": "Docking layout kit: split-tree engine with invertible operations, and the React components that render and drive it (zero cordis)",
-  "version": "1.0.20260922",
+  "version": "1.0.20260923",
   "publishConfig": {
     "access": "public"
   },
