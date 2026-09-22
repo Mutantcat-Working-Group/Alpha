@@ -36,18 +36,36 @@ export async function downloadPrimaryRuntimeAsset(url: string, sha256: string, c
 }
 
 /**
+ * Compression a locked Node distribution is published in.
+ */
+export type NodeArchiveFormat = 'zip' | 'gzip-tar' | 'xz-tar'
+
+/**
+ * Classify a locked Node distribution by its published archive filename.
+ * @param nodeArchive - Locked archive filename, such as `linux-x64.tar.xz`.
+ * @returns The compression deciding which extractor owns the archive.
+ */
+export function nodeArchiveFormat(nodeArchive: string): NodeArchiveFormat {
+  if (nodeArchive.endsWith('.zip')) return 'zip'
+  if (nodeArchive.endsWith('.tar.xz')) return 'xz-tar'
+  if (nodeArchive.endsWith('.tar.gz')) return 'gzip-tar'
+  throw new Error(`primary runtime: unsupported Node archive: ${nodeArchive}`)
+}
+
+/**
  * Unpack a locked Node distribution, whose compression differs per platform archive.
- * @param archive - Hash-verified Node archive.
+ * @param archive - Hash-verified Node archive, cached under its digest and so without a filename.
  * @param destination - Empty staging directory receiving the distribution root.
- * @param target - Desktop target whose archive format is unpacked.
+ * @param target - Desktop target whose locked archive names the compression.
  * @returns Resolves after extraction; node-tar cannot decompress xz, so the platform tar owns those archives.
  */
-async function extractNodeArchive(archive: string, destination: string, target: keyof typeof lock.targets): Promise<void> {
-  if (target === 'win-x64') {
+export async function extractNodeArchive(archive: string, destination: string, target: keyof typeof lock.targets): Promise<void> {
+  const format = nodeArchiveFormat(lock.targets[target].nodeArchive)
+  if (format === 'zip') {
     await extractZip(archive, { dir: destination })
     return
   }
-  if (archive.endsWith('.tar.xz')) {
+  if (format === 'xz-tar') {
     execFileSync('tar', ['-xJf', archive, '-C', destination], { stdio: 'inherit' })
     return
   }

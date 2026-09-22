@@ -1,10 +1,11 @@
+import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { zipSync } from 'fflate'
 import { expect, it } from 'vitest'
-import { downloadPrimaryRuntimeAsset, prepareOfficeSkillAssets, primaryRuntimePayloadDigest, smokePrimaryRuntime, unpackPrimaryRuntimeWheel } from '../scripts/prepare-primary-runtime.ts'
+import { downloadPrimaryRuntimeAsset, extractNodeArchive, nodeArchiveFormat, prepareOfficeSkillAssets, primaryRuntimePayloadDigest, smokePrimaryRuntime, unpackPrimaryRuntimeWheel } from '../scripts/prepare-primary-runtime.ts'
 import lock from '../scripts/primary-runtime-lock.json' with { type: 'json' }
 
 const libraryWheel = Buffer.from('UEsDBAoAAAAAAASeLl0sYMPjDAAAAAwAAAAJAAAAc2FtcGxlLnB5c2FtcGxlID0gNDIKUEsBAh4DCgAAAAAABJ4uXSxgw+MMAAAADAAAAAkAAAAAAAAAAQAAAKSBAAAAAHNhbXBsZS5weVBLBQYAAAAAAQABADcAAAAzAAAAAAA=', 'base64')
@@ -59,6 +60,41 @@ it('extracts a hash-verified cached library without a Python installer or networ
     expect(await readFile(join(root, 'site-packages/sample.py'), 'utf8')).toBe('sample = 42\n')
     await writeFile(archive, 'corrupt archive')
     await expect(downloadPrimaryRuntimeAsset('https://unused.invalid/library.whl', hash, root)).rejects.toThrow('checksum mismatch')
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+it('routes every locked Node archive through an extractor that reads its compression', () => {
+  const formats = Object.fromEntries(
+    Object.entries(lock.targets).map(([target, artifact]) => [target, nodeArchiveFormat(artifact.nodeArchive)]),
+  )
+  expect(formats).toEqual({
+    'win-x64': 'zip',
+    'mac-arm64': 'gzip-tar',
+    'mac-x64': 'gzip-tar',
+    'linux-x64': 'xz-tar',
+    'linux-arm64': 'xz-tar',
+  })
+})
+
+it('refuses a Node archive published in an unknown compression', () => {
+  expect(() => nodeArchiveFormat('linux-x64.tar.bz2')).toThrow('unsupported Node archive')
+})
+
+it('unpacks the xz-compressed Linux Node distribution with the platform tar', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'desktop-node-archive-'))
+  try {
+    const distribution = 'node-v24.21.0-linux-x64'
+    await mkdir(join(root, distribution, 'bin'), { recursive: true })
+    await writeFile(join(root, distribution, 'bin', 'node'), '#!/bin/sh\nexit 0\n')
+    // The download cache names archives by digest, so the extractor cannot consult a filename.
+    const archive = join(root, createHash('sha256').update(distribution).digest('hex'))
+    execFileSync('tar', ['-cJf', archive, '-C', root, distribution])
+    const unpacked = join(root, 'unpacked')
+    await mkdir(unpacked, { recursive: true })
+    await extractNodeArchive(archive, unpacked, 'linux-x64')
+    expect(await readFile(join(root, 'unpacked', distribution, 'bin', 'node'), 'utf8')).toBe('#!/bin/sh\nexit 0\n')
   } finally {
     await rm(root, { recursive: true, force: true })
   }
