@@ -183,15 +183,45 @@ pub fn run() {
 /// Resolve the Node sidecar and the bundled runtime directories inside the installed app.
 fn resolve_launch(handle: &AppHandle) -> Result<(PathBuf, PathBuf, PathBuf), String> {
     let node = node_sidecar()?;
-    let runtime = handle
-        .path()
-        .resolve("runtime", BaseDirectory::Resource)
-        .map_err(|error| format!("Alpha could not locate its bundled runtime: {error}"))?;
+    let runtime = bundled_runtime(handle)?;
     let project = application_data_dir(handle)?;
     if !runtime.join("node_modules").exists() {
         return Err("Alpha could not locate its bundled runtime packages.".to_string());
     }
     Ok((node, runtime, project))
+}
+
+/// Locate the prepared engine payload inside the installed application.
+///
+/// macOS and Windows map the staged payload to `runtime` in the application's resource
+/// directory. The Linux AppImage receives it beside the desktop entry instead, because the
+/// linuxdeploy run the bundle performs resolves the dependencies of every ELF file under
+/// `usr/lib` and aborts when a payload library needs one the build host does not carry.
+/// `usr/share` is never inspected, so the payload stays out of that resolution.
+/// @param handle - Application handle that resolves platform resource paths.
+/// @returns The directory the bundle layout places the payload in.
+fn bundled_runtime(handle: &AppHandle) -> Result<PathBuf, String> {
+    if cfg!(target_os = "linux") {
+        let executable = std::env::current_exe()
+            .map_err(|error| format!("Alpha could not locate its executable: {error}"))?;
+        let directory = executable
+            .parent()
+            .ok_or_else(|| "Alpha could not resolve its install directory.".to_string())?;
+        let product = handle
+            .config()
+            .product_name
+            .clone()
+            .ok_or_else(|| "Alpha's bundle configuration declares no product name.".to_string())?;
+        // The executable sits in `usr/bin`, so the payload hangs off its parent.
+        let usr = directory
+            .parent()
+            .ok_or_else(|| "Alpha could not resolve its install directory.".to_string())?;
+        return Ok(usr.join("share").join(product).join("runtime"));
+    }
+    handle
+        .path()
+        .resolve("runtime", BaseDirectory::Resource)
+        .map_err(|error| format!("Alpha could not locate its bundled runtime: {error}"))
 }
 
 /// Locate the per-target Node sidecar placed next to the application executable.

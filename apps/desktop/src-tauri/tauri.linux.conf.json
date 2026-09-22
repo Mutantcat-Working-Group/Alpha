@@ -1,0 +1,12 @@
+{
+  "bundle": {
+    "resources": [],
+    "linux": {
+      "appimage": {
+        "files": {
+          "usr/share/Alpha/runtime": "staging/runtime"
+        }
+      }
+    }
+  }
+}
