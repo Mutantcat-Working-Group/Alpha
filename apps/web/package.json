@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-web-frontend",
   "description": "Web application entry: vite build over the @mutantcat/dsh-client-web shell library; dist/ served by apps/cli's dsh web",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

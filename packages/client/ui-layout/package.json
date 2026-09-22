@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-layout",
   "description": "Shell plugin: three-column AppFrame with drag handles, ctx.layout viewing-state service (navigation + panels)",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

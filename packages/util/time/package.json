@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-util-time",
   "description": "Zero-dependency time vocabulary shared by wire boundaries: canonicalClientTimeZone (IANA zone validation and canonicalization only, no formatting)",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

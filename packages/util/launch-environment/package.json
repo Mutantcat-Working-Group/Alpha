@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-launch-environment",
   "description": "Immutable DeepSeek Harness launch environment that records which layer supplied each value",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

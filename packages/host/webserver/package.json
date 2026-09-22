@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-host-webserver",
   "description": "Web route-registration plugin: HTTP and upgrade routes, index transform taps, and static dist fallback; knows no harness concepts",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

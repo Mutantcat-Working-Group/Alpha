@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-cordis-client-runner",
   "description": "Browser half of dynamic dual-half plugin packages: event subscription, closure evaluation, guard facade, and loader entries",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-computer-use",
   "description": "Exclusive named computer-use provider registration",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

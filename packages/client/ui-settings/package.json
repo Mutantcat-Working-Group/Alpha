@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-settings",
   "description": "Settings domain base plugin: the settings-namespace scope service and the canonical settings slot-type contract",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },

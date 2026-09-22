@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-web",
   "description": "Web boot kernel: static module table, Cordis loader, framework-free boot page, and UI-renderer handoff",
-  "version": "1.0.20260923",
+  "version": "1.0.20260924",
   "publishConfig": {
     "access": "public"
   },
