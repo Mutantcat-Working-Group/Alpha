@@ -24,8 +24,7 @@ Alpha is an open-source AI code editor derived from [DeepSeek Harness](https://g
 
 <a id="run-from-source"></a>
 
-3. Running from source needs Node.js `^22.19` or `>=24` plus pnpm: `pnpm install`, `pnpm run build`, then `pnpm dsh web`.
-4. To package one platform yourself, run `pnpm run package:ci:tauri:<target>` inside `apps/desktop`, where `<target>` is one of `mac:arm64`, `mac:x64`, `win:x64`, `linux:x64`, or `linux:arm64`. Artifacts land in `.desktop-build/targets/<target>/artifacts/`.
+3. Developers who want to run from source or package installers can skip to "Build from source and packaging" at the end of this document.
 
 ### 3. First steps
 
@@ -57,6 +56,11 @@ Alpha is an open-source AI code editor derived from [DeepSeek Harness](https://g
 - [X] Three-platform CI installers (Windows NSIS, macOS DMG, Linux AppImage)
 - [ ] Automatic update channel (current release artifacts are credential-free builds and do not use the Nightly feed)
 - [ ] Plugin marketplace and one-click install
+
+## Build from source and packaging
+
+1. Running from source needs Node.js `^22.19` or `>=24` plus pnpm: `pnpm install`, `pnpm run build`, then `pnpm dsh web`.
+2. To package one platform yourself, run `pnpm run package:ci:tauri:<target>` inside `apps/desktop`, where `<target>` is one of `mac:arm64`, `mac:x64`, `win:x64`, `linux:x64`, or `linux:arm64`. Artifacts land in `.desktop-build/targets/<target>/artifacts/`.
 
 ## Community and support
 

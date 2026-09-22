@@ -22,10 +22,7 @@ Alpha 是一个开源 AI 代码编辑器，由 [DeepSeek Harness](https://github
 1. 从 [Releases](https://github.com/Mutantcat-Working-Group/Alpha/releases) 下载对应平台的安装包，双击即可安装运行，无需额外配置。
 2. 只想试用 Web 版时，安装 Node.js 后执行 `npx @mutantcat/dsh web`，默认在 `http://127.0.0.1:3080` 打开；`--no-open` 只起服务不打开浏览器。
 
-<a id="run-from-source"></a>
-
-3. 从源码运行需要 Node.js `^22.19` 或 `>=24` 与 pnpm，依次执行 `pnpm install`、`pnpm run build`、`pnpm dsh web`。
-4. 自行打包某个平台的安装包，在 `apps/desktop` 下执行 `pnpm run package:ci:tauri:<target>`，`<target>` 取 `mac:arm64`、`mac:x64`、`win:x64`、`linux:x64`、`linux:arm64` 之一。产物落在 `.desktop-build/targets/<target>/artifacts/`。
+3. 想自己跑源码或打包安装包的开发者，请直接看文末「从源码构建与打包」。
 
 ### 三、快速上手
 
@@ -57,6 +54,11 @@ Alpha 是一个开源 AI 代码编辑器，由 [DeepSeek Harness](https://github
 - [X] 三平台 CI 安装包（Windows NSIS、macOS DMG、Linux AppImage）
 - [ ] 自动更新通道（当前 release 产物为免凭据构建，不走 Nightly feed）
 - [ ] 插件市场与一键安装
+
+## 从源码构建与打包
+
+1. 从源码运行需要 Node.js `^22.19` 或 `>=24` 与 pnpm，依次执行 `pnpm install`、`pnpm run build`、`pnpm dsh web`。
+2. 自行打包某个平台的安装包，在 `apps/desktop` 下执行 `pnpm run package:ci:tauri:<target>`，`<target>` 取 `mac:arm64`、`mac:x64`、`win:x64`、`linux:x64`、`linux:arm64` 之一。产物落在 `.desktop-build/targets/<target>/artifacts/`。
 
 ## 社区与支持
 
