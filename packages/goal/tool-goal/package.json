@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-goal",
   "description": "Model-facing same-session goal tools with execution-time authority checks",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

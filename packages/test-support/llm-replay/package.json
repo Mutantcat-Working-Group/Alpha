@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-llm-replay",
   "description": "Replay LLM plugin: short-circuits llm/stream with model chunks reconstructed from a recorded session JSONL (keyless snapshot tests)",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

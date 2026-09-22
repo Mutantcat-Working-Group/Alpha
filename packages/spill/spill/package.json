@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-spill",
   "description": "Abstract spill storage seam (ctx.spillStore) for the DeepSeek Harness — save oversized tool text and return a retrieval locator",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-fs-search",
   "description": "Model-facing filesystem discovery tools (glob, grep) backed by the packaged ripgrep binary (@vscode/ripgrep)",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

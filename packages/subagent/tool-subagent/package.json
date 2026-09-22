@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-subagent",
   "description": "Model-facing subagent delegation tool over the ctx.subagents seam",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

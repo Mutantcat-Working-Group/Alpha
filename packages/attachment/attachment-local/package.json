@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-attachment-local",
   "description": "Private content-addressed DSH_HOME attachment storage",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

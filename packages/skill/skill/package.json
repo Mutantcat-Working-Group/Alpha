@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-skill",
   "description": "Agent skill provider registry for the DeepSeek Harness",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

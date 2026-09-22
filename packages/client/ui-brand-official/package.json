@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-brand-official",
   "description": "Official Alpha brand occupants for the Web client's sidebar slots",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

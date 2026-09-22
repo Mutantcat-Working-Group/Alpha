@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-workflow-run",
   "description": "Durable workflow-run Conversation Node and nested member disclosure for dsh web",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

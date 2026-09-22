@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-skill",
   "description": "Web skill references and the dedicated skill tool row",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

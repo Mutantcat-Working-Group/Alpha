@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-desktop",
-  "description": "Electron desktop shell for a bundled dsh runtime and external plugins",
-  "version": "1.0.20260921",
+  "description": "Tauri desktop shell for a bundled dsh runtime and external plugins",
+  "version": "1.0.20260922",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -16,6 +16,7 @@
     "prepare:primary-runtime": "tsx scripts/prepare-primary-runtime.ts",
     "sign:primary-runtime": "tsx scripts/sign-primary-runtime.ts",
     "prepare:packages": "tsx scripts/prepare-package-set.ts",
+    "prepare:tauri-runtime": "tsx scripts/prepare-tauri-runtime.ts",
     "prepare:dsh": "tsx scripts/prepare-dsh.ts",
     "prepare:package": "tsx scripts/package-target.ts --prepare-only",
     "verify:mac-signature": "node scripts/verify-macos-signature.mjs",
@@ -34,6 +35,11 @@
     "package:ci:win:x64": "tsx scripts/ci-package.ts win-x64",
     "package:ci:linux:x64": "tsx scripts/ci-package.ts linux-x64",
     "package:ci:linux:arm64": "tsx scripts/ci-package.ts linux-arm64",
+    "package:ci:tauri:mac-arm64": "tsx scripts/ci-tauri-package.ts mac-arm64",
+    "package:ci:tauri:mac:x64": "tsx scripts/ci-tauri-package.ts mac-x64",
+    "package:ci:tauri:win:x64": "tsx scripts/ci-tauri-package.ts win-x64",
+    "package:ci:tauri:linux:x64": "tsx scripts/ci-tauri-package.ts linux-x64",
+    "package:ci:tauri:linux:arm64": "tsx scripts/ci-tauri-package.ts linux-arm64",
     "upload:mac:arm64": "tsx scripts/upload-target.ts mac-arm64",
     "upload:mac:x64": "tsx scripts/upload-target.ts mac-x64",
     "upload:win:x64": "tsx scripts/upload-target.ts win-x64"
@@ -43,10 +49,11 @@
     "semver": "^7.8.5"
   },
   "devDependencies": {
-    "@mutantcat/dsh-app-boot": "workspace:^",
-    "@mutantcat/dsh-home-paths": "workspace:^",
     "@electron/get": "^5.1.0",
     "@electron/notarize": "2.5.0",
+    "@mutantcat/dsh-app-boot": "workspace:^",
+    "@mutantcat/dsh-home-paths": "workspace:^",
+    "@tauri-apps/cli": "^2.11.5",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.20.0",
     "@types/semver": "^7.8.0",

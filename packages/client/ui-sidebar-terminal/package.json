@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-sidebar-terminal",
   "description": "Interactive shell tabs for the right Sidebar",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

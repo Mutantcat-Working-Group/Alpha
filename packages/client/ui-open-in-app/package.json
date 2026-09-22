@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-open-in-app",
   "description": "Web Session-header \"Open In...\" split button opening the session workspace directory in a locally installed application",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

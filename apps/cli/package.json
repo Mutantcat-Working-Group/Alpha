@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh",
   "description": "dsh CLI: profile launch, plugin management, and configuration inspection",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

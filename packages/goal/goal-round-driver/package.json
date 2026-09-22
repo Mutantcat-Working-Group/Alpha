@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-goal-round-driver",
   "description": "Race-fenced same-session goal-round driver",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },

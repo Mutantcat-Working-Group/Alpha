@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-command-compact",
   "description": "Human-facing slash command for explicit session compaction",
-  "version": "1.0.20260921",
+  "version": "1.0.20260922",
   "publishConfig": {
     "access": "public"
   },
