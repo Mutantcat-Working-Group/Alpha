@@ -89,7 +89,9 @@ export function tauriArtifactExtension(bundle: 'dmg' | 'nsis' | 'appimage'): str
 export function tauriBundleDirectory(bundle: 'dmg' | 'nsis' | 'appimage'): string {
   switch (bundle) {
     case 'dmg':
-      return 'macos'
+      // tauri-bundler writes the disk image into `bundle/dmg`; `bundle/macos` holds the
+      // application bundle the image is created from.
+      return 'dmg'
     case 'nsis':
       return 'nsis'
     case 'appimage':
