@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-http-proxy",
   "description": "Process-wide outbound HTTP proxy policy for DeepSeek Harness: resolve it from the launch environment and install it as undici's global dispatcher",
-  "version": "1.0.20260925",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-util-values",
   "description": "Duplicate-install-safe value primitives for the DeepSeek Harness",
-  "version": "1.0.20260925",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

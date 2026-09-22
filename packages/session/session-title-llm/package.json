@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-title-llm",
   "description": "Shared LLM generation policy for DeepSeek Harness session-title providers",
-  "version": "1.0.20260925",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-user-questions",
   "description": "Web ask_user_question composer takeover and plan-review presentation UI",
-  "version": "1.0.20260925",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-host-directory-picker-native",
   "description": "Native-OS-chooser backend of the directory-picker seam for the DeepSeek Harness web GUI host",
-  "version": "1.0.20260925",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-agent-instructions",
   "description": "Workspace context loader for AGENTS.md/CLAUDE.md instruction files",
-  "version": "1.0.20260925",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },
