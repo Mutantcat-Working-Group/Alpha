@@ -28,12 +28,12 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
     # One target builds the whole monorepo, packages three interpreter
-    # distributions, and runs Electron. The budget bounds a hung build instead
-    # of holding the release open for the runner's default allowance.
+    # distributions, and compiles the Rust shell. The budget bounds a hung
+    # build instead of holding the release open for the runner's allowance.
     timeout-minutes: 90
     env:
-      # Hosted macOS runners carry no signing identity. Auto-discovery would
-      # fail the build before the ad-hoc identity is ever passed to codesign.
+      # Hosted runners carry no signing identity. Auto-discovery would fail the
+      # build before the ad-hoc identity is ever passed to codesign.
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     strategy:
       fail-fast: false
@@ -42,30 +42,35 @@ jobs:
           - name: Windows x64 / NSIS installer
             runner: windows-latest
             target: win-x64
-            script: package:ci:win:x64
+            script: package:ci:tauri:win:x64
+            triple: x86_64-pc-windows-msvc
             extension: exe
           - name: macOS arm64 / DMG
             runner: macos-14
             target: mac-arm64
-            script: package:ci:mac:arm64
+            script: package:ci:tauri:mac:arm64
+            triple: aarch64-apple-darwin
             extension: dmg
-          # Intel macOS needs its own image: Electron and the bundled dsh runtime
-          # both execute on the build host, so x64 cannot be produced by an
-          # arm64 runner.
+          # Intel macOS needs its own image: the Tauri shell, the bundled Node
+          # sidecar, and the prepared dsh runtime all execute on the build
+          # host, so x64 cannot be produced by an arm64 runner.
           - name: macOS x64 / DMG
             runner: macos-15-intel
             target: mac-x64
-            script: package:ci:mac:x64
+            script: package:ci:tauri:mac:x64
+            triple: x86_64-apple-darwin
             extension: dmg
           - name: Linux x64 / AppImage
             runner: ubuntu-24.04
             target: linux-x64
-            script: package:ci:linux:x64
+            script: package:ci:tauri:linux:x64
+            triple: x86_64-unknown-linux-gnu
             extension: AppImage
           - name: Linux arm64 / AppImage
             runner: ubuntu-24.04-arm
             target: linux-arm64
-            script: package:ci:linux:arm64
+            script: package:ci:tauri:linux:arm64
+            triple: aarch64-unknown-linux-gnu
             extension: AppImage
     steps:
       - name: Resolve the release tag
@@ -106,8 +111,8 @@ jobs:
           store_path=$(PNPM_CONFIG_STORE_DIR="$store_root" pnpm store path --silent)
           echo "path=$store_path" >> "$GITHUB_OUTPUT"
 
-      # Each target downloads its own Electron archive, interpreter wheels, and
-      # platform packages, so a restored store keeps that off the critical path.
+      # Each target downloads its own interpreter wheels and platform packages,
+      # so a restored store keeps that off the critical path.
       - uses: actions/cache/restore@v4
         with:
           path: ${{ steps.pnpm-store.outputs.path }}
@@ -117,6 +122,20 @@ jobs:
 
       - name: Install (immutable)
         run: pnpm install --frozen-lockfile
+
+      - name: Install the Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # The shell and its Node sidecar are built for one target triple, so the
+      # crates and the standard library are compiled for that exact target.
+      - name: Add the ${{ matrix.triple }} target
+        run: rustup target add ${{ matrix.triple }}
+
+      - name: Install the Linux bundle libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
       - name: Package ${{ matrix.target }}
         run: pnpm --dir apps/desktop run ${{ matrix.script }}
@@ -133,20 +152,65 @@ jobs:
           fi
           codesign --verify --verbose=2 "${images[0]}"
 
-      # Upload directly from each target's own artifact directory. The builder
-      # also writes builder-debug.yml and builder-effective-config.yaml there,
-      # so the extension filter keeps them out of the release.
+      # Upload the artifact and its .sha256 sidecar from the target's own
+      # artifact directory; the packaging script keeps that directory clean.
       - name: Upload to the release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
-          ARTIFACTS: apps/desktop/.desktop-build/targets/${{ matrix.target }}/artifacts/*.${{ matrix.extension }}
+          ARTIFACTS: apps/desktop/.desktop-build/targets/${{ matrix.target }}/artifacts/*
         run: |
           shopt -s nullglob
           files=($ARTIFACTS)
           if [ "${#files[@]}" -eq 0 ]; then
-            echo "::error::${{ matrix.target }} produced no .${{ matrix.extension }} artifact"
+            echo "::error::${{ matrix.target }} produced no artifacts"
             exit 1
           fi
           gh release upload "$TAG" "${files[@]}" --clobber
+
+  install-notes:
+    name: Install notes
+    runs-on: ubuntu-latest
+    needs: package
+    steps:
+      - name: Resolve the release tag
+        id: release
+        shell: bash
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          if [ -z "$tag" ]; then tag="${{ inputs.tag }}"; fi
+          if [ -z "$tag" ]; then tag="${{ github.ref_name }}"; fi
+          if [ -z "$tag" ]; then
+            echo "::error::no release tag was published or supplied"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      # The release body is authored by the publisher, so the notes are appended
+      # once behind a marker instead of replacing what the release already says.
+      - name: Append the install notes once
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          body=$(mktemp)
+          if ! gh release view "$TAG" --json body --jq '.body // ""' > "$body"; then
+            echo "::error::release $TAG was not found"
+            exit 1
+          fi
+          if grep -qF '<!-- alpha-install-notes -->' "$body"; then
+            echo "install notes are already part of the release body"
+            exit 0
+          fi
+          version="${TAG#v}"
+          {
+            echo ""
+            sed "s/__VERSION__/$version/g" apps/desktop/install-notes.md
+          } >> "$body"
+          gh release edit "$TAG" --notes-file "$body"

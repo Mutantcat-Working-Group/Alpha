@@ -1,0 +1,9 @@
+{
+  "identifier": "default",
+  "description": "Core permissions for the Alpha shell window. The window navigates to the local engine, which supplies no plugin APIs; the loopback remote entry lets that document report its boot failures back to the shell.",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["http://127.0.0.1:*"]
+  },
+  "permissions": ["core:default"]
+}

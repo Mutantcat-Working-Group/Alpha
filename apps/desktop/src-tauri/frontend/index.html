@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Alpha</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        height: 100vh;
+        background: #0f1115;
+        color: #f2f4f8;
+      }
+      .mark {
+        font-size: 28px;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+      }
+      .status {
+        font-size: 13px;
+        opacity: 0.72;
+      }
+      .spinner {
+        width: 22px;
+        height: 22px;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-top-color: #f2f4f8;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mark">Alpha</div>
+    <div class="spinner" id="spinner"></div>
+    <div class="status" id="status">Starting the engine…</div>
+    <script>
+      // The shell navigates this window to the engine URL once the host reports ready;
+      // any fatal startup error replaces the status text through the alpha-fatal event.
+      const status = document.getElementById("status");
+      const spinner = document.getElementById("spinner");
+      if (window.__TAURI__ && window.__TAURI__.event) {
+        window.__TAURI__.event.listen("alpha-fatal", (event) => {
+          spinner.style.display = "none";
+          status.textContent = String((event && event.payload) || "Alpha could not start.");
+        });
+      }
+    </script>
+  </body>
+</html>

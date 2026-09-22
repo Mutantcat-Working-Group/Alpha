@@ -1,17 +1,15 @@
-/** Build one ad-hoc release artifact for a GitHub release, without certificates or an update feed. */
+/** Build one ad-hoc Electron release artifact for a GitHub release, without certificates or an update feed. */
 
-import { spawn } from 'node:child_process'
-import { mkdirSync, readdirSync, rmSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 import { join, resolve } from 'node:path'
 import { desktopTargetBuildPaths, type DesktopBuildTarget } from './desktop-build-paths.mjs'
-import { pnpmInvocation } from '../../../scripts/pnpm-invocation.ts'
+import { prepareReleaseInputs, releaseTargetEnv, runPnpm } from './ci-release-inputs.ts'
 
 const APP_ROOT = resolve(import.meta.dirname, '..')
-const REPOSITORY_ROOT = resolve(APP_ROOT, '..', '..')
 
 /** One release artifact and the electron-builder selectors that produce it. */
-interface CiPackageTarget {
+export interface CiPackageTarget {
   readonly name: DesktopBuildTarget
   readonly platform: 'darwin' | 'win32' | 'linux'
   readonly arch: 'arm64' | 'x64'
@@ -98,55 +96,17 @@ export function parseCiPackageInvocation(
 }
 
 /**
- * Run one pnpm command and inherit its output.
- * @param args - Arguments passed to the pnpm CLI.
- * @param cwd - Working directory for the command.
- * @param env - Environment for the command.
- * @returns Resolves when the command exits successfully.
- */
-function runPnpm(args: readonly string[], cwd: string, env: NodeJS.ProcessEnv): Promise<void> {
-  const invocation = pnpmInvocation(args, env)
-  return new Promise((resolvePromise, reject) => {
-    const child = spawn(invocation.command, invocation.args, { cwd, env, stdio: 'inherit' })
-    child.once('error', reject)
-    child.once('close', (code, signal) => {
-      if (code === 0) resolvePromise()
-      else reject(new Error(`ci package: pnpm ${args.join(' ')} exited with ${String(code ?? signal)}`))
-    })
-  })
-}
-
-/**
  * Build one release artifact from source and report the files the upload step collects.
  * @param target - Validated release target.
  * @returns Resolves after the artifact directory is populated.
  */
 export async function packageCiTarget(target: CiPackageTarget): Promise<void> {
   const buildPaths = desktopTargetBuildPaths(target.name)
-  const buildEnv: NodeJS.ProcessEnv = { ...process.env }
-  const targetEnv: NodeJS.ProcessEnv = {
-    ...buildEnv,
-    DSH_DESKTOP_TARGET_PLATFORM: target.platform,
-    DSH_DESKTOP_TARGET_ARCH: target.arch,
-  }
+  await prepareReleaseInputs(target)
   // The bundled NSIS decoder cannot extract 7-Zip's automatic ARM64-filtered entries.
   const builderEnv: NodeJS.ProcessEnv = target.platform === 'win32'
-    ? { ...targetEnv, ELECTRON_BUILDER_7Z_FILTER: 'BCJ', CSC_IDENTITY_AUTO_DISCOVERY: 'false' }
-    : targetEnv
-  await runPnpm(['run', 'build:official'], REPOSITORY_ROOT, buildEnv)
-  await runPnpm(['run', 'release:pack', '--family', 'dsh', '--out', buildPaths.packedDsh], REPOSITORY_ROOT, buildEnv)
-  await runPnpm(['--dir', 'apps/desktop-host', 'pack', '--pack-destination', buildPaths.packedDsh], REPOSITORY_ROOT, buildEnv)
-  await runPnpm(['run', 'release:pack', '--family', 'vendor', '--out', buildPaths.packedVendor], REPOSITORY_ROOT, buildEnv)
-  rmSync(buildPaths.packedLandlock, { recursive: true, force: true })
-  mkdirSync(buildPaths.packedLandlock, { recursive: true })
-  await runPnpm(['--dir', 'native/system', 'run', 'build:ts'], REPOSITORY_ROOT, buildEnv)
-  await runPnpm([
-    '--dir', 'native/system/packages/entry', 'pack', '--pack-destination', buildPaths.packedLandlock,
-  ], REPOSITORY_ROOT, buildEnv)
-  await runPnpm(['run', 'prepare:runtime'], APP_ROOT, targetEnv)
-  await runPnpm(['run', 'prepare:packages'], APP_ROOT, targetEnv)
-  // Ad-hoc signing happens inside the bundle, so the runtime tree stays unsigned here.
-  await runPnpm(['run', 'prepare:dsh', '--ad-hoc'], APP_ROOT, targetEnv)
+    ? { ...releaseTargetEnv(target), ELECTRON_BUILDER_7Z_FILTER: 'BCJ', CSC_IDENTITY_AUTO_DISCOVERY: 'false' }
+    : releaseTargetEnv(target)
   await runPnpm([
     'exec', 'electron-builder', '--config', join('scripts', 'ci-builder-config.mjs'),
     target.builderPlatform, target.builderArch, '--publish', 'never',

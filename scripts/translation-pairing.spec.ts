@@ -336,6 +336,9 @@ describe('translation scope discovery', () => {
     'coverage/report/README.md',
     'python/sdk-runtime/src/deepseek_harness_runtime/runtime/deepseek-harness-sdk-runtime-macos-arm64/README.md',
     'python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/README.md',
+    'apps/desktop/src-tauri/target/release/runtime/pnpm/README.md',
+    'apps/desktop/src-tauri/staging/runtime/pnpm/README.md',
+    'apps/desktop/.desktop-build/targets/mac-arm64/artifacts/README.md',
   ])('excludes non-source or non-README path %s', (file) => {
     expect(isTranslationScopeFile(file)).toBe(false)
   })

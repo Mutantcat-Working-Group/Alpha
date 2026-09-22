@@ -20,8 +20,8 @@ describe('Release app workflow', () => {
 
   it('packages every supported platform on its own architecture', () => {
     const matrix = matrixEntries(packageJob())
-    // Electron and the bundled dsh runtime execute on the build host, so each
-    // target needs a runner of its own platform and architecture.
+    // The Tauri shell, its Node sidecar, and the dsh runtime all execute on the
+    // build host, so each target needs a runner of its own platform and architecture.
     expect(matrixColumn(matrix, 'target')).toEqual([
       'win-x64', 'mac-arm64', 'mac-x64', 'linux-x64', 'linux-arm64',
     ])
@@ -29,10 +29,15 @@ describe('Release app workflow', () => {
       'windows-latest', 'macos-14', 'macos-15-intel', 'ubuntu-24.04', 'ubuntu-24.04-arm',
     ])
     expect(matrixColumn(matrix, 'script')).toEqual([
-      'package:ci:win:x64', 'package:ci:mac:arm64', 'package:ci:mac:x64',
-      'package:ci:linux:x64', 'package:ci:linux:arm64',
+      'package:ci:tauri:win:x64', 'package:ci:tauri:mac:arm64', 'package:ci:tauri:mac:x64',
+      'package:ci:tauri:linux:x64', 'package:ci:tauri:linux:arm64',
     ])
     expect(matrixColumn(matrix, 'extension')).toEqual(['exe', 'dmg', 'dmg', 'AppImage', 'AppImage'])
+    // One Rust target triple per matrix entry: the shell and its sidecar are compiled for it.
+    expect(matrixColumn(matrix, 'triple')).toEqual([
+      'x86_64-pc-windows-msvc', 'aarch64-apple-darwin', 'x86_64-apple-darwin',
+      'x86_64-unknown-linux-gnu', 'aarch64-unknown-linux-gnu',
+    ])
   })
 
   it('disables macOS signing auto-discovery so the ad-hoc identity is used', () => {

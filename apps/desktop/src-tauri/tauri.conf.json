@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Alpha",
+  "version": "1.0.20260922",
+  "identifier": "org.mutantcat.alpha",
+  "build": {
+    "frontendDist": "frontend",
+    "devUrl": "http://localhost:1420"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "security": {
+      "csp": null,
+      "capabilities": ["default"]
+    },
+    "windows": []
+  },
+  "bundle": {
+    "externalBin": ["bin/node"],
+    "resources": {
+      "staging/runtime": "runtime/"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "DeveloperTool",
+    "publisher": "Mutantcat Working Group",
+    "shortDescription": "Alpha code editor",
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "entitlements": "entitlements/alpha.plist"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    },
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    }
+  }
+}
