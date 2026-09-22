@@ -1,6 +1,6 @@
 [package]
 name = "alpha-desktop"
-version = "1.0.20260922"
+version = "1.0.20260923"
 description = "Tauri shell for the Alpha desktop editor"
 authors = ["Mutantcat Working Group"]
 license = "MIT"
