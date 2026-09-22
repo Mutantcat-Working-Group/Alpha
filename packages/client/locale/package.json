@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-locale",
   "description": "Locale plugin: Host-backed preference, extensible language catalog, browser fallback, and typed built-in dictionaries",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

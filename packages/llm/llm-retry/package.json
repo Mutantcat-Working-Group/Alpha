@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-llm-retry",
   "description": "Provider-routed LLM request retry policy for the DeepSeek Harness",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

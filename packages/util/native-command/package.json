@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-native-command",
   "description": "Host-native command and path-opening utilities with shell-free execution, cancellation, desktop detection, and WSL handoff",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

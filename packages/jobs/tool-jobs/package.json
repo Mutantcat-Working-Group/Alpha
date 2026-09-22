@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-jobs",
   "description": "Model-facing background job control tools (job_output, job_list, job_kill) over the ctx.jobs registry",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

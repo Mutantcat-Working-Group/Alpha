@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-settings-file",
   "description": "File-backed settings provider (settings.yaml) for the DeepSeek Harness",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

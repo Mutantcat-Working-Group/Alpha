@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-sidebar-documentpreview",
   "description": "Extensible document previews for Sidebar files: Office, Markdown, highlighted code, images, PDF, HTML, and plain text",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

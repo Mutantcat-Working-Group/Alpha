@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-sdk-app",
   "description": "The dsh SDK profile bundle: stdio JSON-RPC serving and process lifecycle over dsh-base",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

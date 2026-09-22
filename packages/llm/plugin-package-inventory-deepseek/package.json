@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-plugin-package-inventory-deepseek",
   "description": "Active Loader-backed plugin package inventory for official DeepSeek LLM API requests",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

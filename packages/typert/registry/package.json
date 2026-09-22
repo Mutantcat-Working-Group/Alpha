@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-typert-registry",
   "description": "Runtime registry for generated package reflection and Zod schemas",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

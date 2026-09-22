@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-terminal",
   "description": "Six model-facing persistent PTY tools with owner isolation and generic background-job integration",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

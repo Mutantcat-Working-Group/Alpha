@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-compaction",
   "description": "Abstract compaction service seam (ctx.compaction) for the DeepSeek Harness",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

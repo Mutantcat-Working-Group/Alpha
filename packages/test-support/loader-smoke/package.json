@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-loader-smoke",
   "description": "Shared subprocess and direct-agent harness for keyless real-Loader example smoke tests",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

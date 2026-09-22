@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-host-plugin-inventory",
   "description": "Read-only Remote projection of current Cordis Loader plugin state",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

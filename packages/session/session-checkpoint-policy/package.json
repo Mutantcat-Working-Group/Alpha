@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-checkpoint-policy",
   "description": "Semantic session durability checkpoints before model requests and tool side effects",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

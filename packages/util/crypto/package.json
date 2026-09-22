@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-util-crypto",
   "description": "Zero-dependency browser-safe UUID and byte-encoding helpers",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

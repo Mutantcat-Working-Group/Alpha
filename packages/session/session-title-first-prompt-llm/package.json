@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-title-first-prompt-llm",
   "description": "First-message LLM provider plugin for DeepSeek Harness session titles",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

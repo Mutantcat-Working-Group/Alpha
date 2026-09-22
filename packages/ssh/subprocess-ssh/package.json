@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-subprocess-ssh",
   "description": "Subprocess and terminal provider over the shared POSIX SSH helper",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

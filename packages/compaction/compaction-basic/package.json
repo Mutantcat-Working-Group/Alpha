@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-compaction-basic",
   "description": "Token-meter-driven compaction policy and LLM summarization backend for the DeepSeek Harness",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-web-search-deepseek",
   "description": "DeepSeek-backed search provider (native web_search via the Anthropic-compatible API) for the DeepSeek Harness web capability seam (ctx.web)",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

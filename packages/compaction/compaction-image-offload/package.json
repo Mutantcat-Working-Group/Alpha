@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-compaction-image-offload",
   "description": "Durable image offload for image-capable routes: replace over-budget request images with placeholders and retry",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

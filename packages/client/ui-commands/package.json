@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-commands",
   "description": "Client command surface: global directory cache, '/' source, three command UI kinds, popupSelect registry",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

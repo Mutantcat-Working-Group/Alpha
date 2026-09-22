@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-permission-presets",
   "description": "Permission surfaces: a new-session default in General settings and a current-session /permission popup over the permissions projection",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

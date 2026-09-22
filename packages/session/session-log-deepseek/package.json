@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-log-deepseek",
   "description": "Incremental lossless session-log request extension for the official DeepSeek LLM API",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

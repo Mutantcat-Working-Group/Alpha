@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-api-workspace-controller",
   "description": "Workspace Remote commands and reconnect-safe state transport",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

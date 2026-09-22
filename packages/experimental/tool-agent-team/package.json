@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-tool-agent-team",
   "description": "Scoped model-facing Agent Teams tools over ctx.agentTeams",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

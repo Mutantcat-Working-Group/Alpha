@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-bash-persistent",
   "description": "Model-facing owner-scoped persistent Bash tool backed by the Harness PTY service",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

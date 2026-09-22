@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-llm-mock-server",
   "description": "Scriptable OpenAI-compatible HTTP/SSE fault server for LLM recovery tests",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },

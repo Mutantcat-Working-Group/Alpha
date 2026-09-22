@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-webhook-github",
   "description": "Signed GitHub HTTP webhook adapter for the DeepSeek Harness webhook runtime",
-  "version": "1.0.20260924",
+  "version": "1.0.20260925",
   "publishConfig": {
     "access": "public"
   },
