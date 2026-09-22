@@ -56,8 +56,11 @@ const ENGINE_PROBE_INTERVAL_MS: u64 = 150;
 const WATCHDOG_INTERVAL_MS: u64 = 5_000;
 /// How long one engine health probe may spend connecting and reading.
 const ENGINE_HEALTH_TIMEOUT_MS: u64 = 3_000;
-/// Wall-clock lead over elapsed monotonic time that reports a suspended machine.
+/// Margin that separates a normal slow cycle from a suspended machine, added to the
+/// watchdog interval for a cycle that ran long and to the monotonic gap of the clocks.
 const WAKE_GAP_MS: u64 = 20_000;
+/// How many probe cycles a waking engine gets to answer before the host is replaced.
+const MAX_WAKE_PROBES: u32 = 3;
 /// Restarts the watchdog allows before it concedes and surfaces the failure.
 const MAX_HOST_RESTARTS: u32 = 4;
 /// Window event through which the Web client reports a failed boot to the shell.
@@ -543,8 +546,9 @@ fn await_ready(reports: &Receiver<HostReport>) -> Result<(Url, Option<Value>), S
 /// The host is the only process that owns the engine, so its exit, or a request loop that
 /// stops answering, leaves the window on a document that talks to nothing. Both are
 /// repaired by replacing the host and navigating again. A suspended machine is reported by
-/// the two clocks running apart, and the window is navigated back to the engine once it
-/// answers, because the document the Web client holds froze with the machine.
+/// the clocks running apart or by a watchdog cycle that froze with the machine, and the
+/// window is navigated back to the engine once it answers, because the document the Web
+/// client holds froze with the machine.
 /// @param supervision - Stop flag the shell sets once it is exiting.
 /// @param handle - Shell owning the host state and the window.
 /// @param window - Window the engine document is shown in.
@@ -561,28 +565,44 @@ fn supervise(
 ) {
     let mut url = url;
     let mut failures: u32 = 0;
+    let mut woke = false;
+    let mut wake_probes: u32 = 0;
     let mut mono = Instant::now();
     let mut wall = SystemTime::now();
     // The flag records that the shell is exiting, so supervision runs until it is set.
     while !supervision.0.load(Ordering::Relaxed) {
+        let cycle = Instant::now();
         std::thread::sleep(Duration::from_millis(WATCHDOG_INTERVAL_MS));
         if supervision.0.load(Ordering::Relaxed) {
             break;
         }
-        let slept = slept_since(&mut mono, &mut wall);
+        // Windows advances the monotonic clock through a suspension, so the clock
+        // divergence read below never appears there; a watchdog cycle that ran long
+        // does, because the thread froze with the rest of the machine. The same read
+        // catches a shell the system throttled hard, such as an occluded window held
+        // back by App Nap, which returns from a long cycle rather than a clock skew.
+        let slept = slept_since(&mut mono, &mut wall)
+            || cycle.elapsed() > Duration::from_millis(WATCHDOG_INTERVAL_MS + WAKE_GAP_MS);
+        if slept {
+            woke = true;
+            wake_probes = 0;
+        }
         if host_running(&handle) && engine_healthy(&url) {
             failures = 0;
-            if slept {
+            if woke {
                 revive(&handle, &window, &url);
+                woke = false;
             }
             continue;
         }
         // A host that outlived a suspension may answer only once the machine finished
-        // waking, so one failed probe after a wake is tolerated before the engine is
-        // replaced and a running session is interrupted for nothing.
-        if slept && host_running(&handle) {
+        // waking, so a few failed probes after a wake are tolerated before the engine
+        // is replaced and a running session is interrupted for nothing.
+        if woke && host_running(&handle) && wake_probes < MAX_WAKE_PROBES {
+            wake_probes += 1;
             continue;
         }
+        woke = false;
         // Either the process is gone or the request loop stopped answering: replace it.
         match restart_host(&handle, &window, &launch, &payload) {
             Ok(fresh) => {
