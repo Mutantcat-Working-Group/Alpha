@@ -9,7 +9,7 @@ Alpha 是一个开源 AI 代码编辑器，由 [DeepSeek Harness](https://github
 
 ### 一、功能简述
 
-- 桌面端（Electron）、Web 端与 CLI 三个入口共用同一个 agent 内核、会话格式和插件图，一个插件写一次即可在三端装载。
+- 桌面端（Tauri）、Web 端与 CLI 三个入口共用同一个 agent 内核、会话格式和插件图，一个插件写一次即可在三端装载。
 - 安装包内置 Python、Node.js 和 pnpm 三套独立运行时，首次使用即可执行 Python 数据处理、Office 文档读写和 Node 脚本，不依赖用户机器上的系统环境。
 - 终端、SSH、子进程、沙箱、LSP、浏览器操作和计算机操作等能力都以插件形式提供，按需启停。
 - 会话全程落盘且可回放：任何进入模型请求的输入都能从会话日志中重建，便于审计和复现。
@@ -25,7 +25,7 @@ Alpha 是一个开源 AI 代码编辑器，由 [DeepSeek Harness](https://github
 <a id="run-from-source"></a>
 
 3. 从源码运行需要 Node.js `^22.19` 或 `>=24` 与 pnpm，依次执行 `pnpm install`、`pnpm run build`、`pnpm dsh web`。
-4. 自行打包某个平台的安装包，在 `apps/desktop` 下执行 `pnpm run package:ci:<target>`，`<target>` 取 `mac:arm64`、`mac:x64`、`win:x64`、`linux:x64`、`linux:arm64` 之一。产物落在 `.desktop-build/targets/<target>/artifacts/`。
+4. 自行打包某个平台的安装包，在 `apps/desktop` 下执行 `pnpm run package:ci:tauri:<target>`，`<target>` 取 `mac:arm64`、`mac:x64`、`win:x64`、`linux:x64`、`linux:arm64` 之一。产物落在 `.desktop-build/targets/<target>/artifacts/`。
 
 ### 三、快速上手
 
@@ -65,7 +65,7 @@ Alpha 是一个开源 AI 代码编辑器，由 [DeepSeek Harness](https://github
 
 ## 贡献
 
-见 [CONTRIBUTING.md](CONTRIBUTING.md)。agent 参与者遵循 [AGENTS.md](AGENTS.md)。
+agent 参与者遵循 [AGENTS.md](AGENTS.md)。
 
 ## 安全提示
 
