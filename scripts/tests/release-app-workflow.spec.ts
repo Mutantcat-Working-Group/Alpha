@@ -40,6 +40,14 @@ describe('Release app workflow', () => {
     ])
   })
 
+  it('invokes a packaging script that apps/desktop actually declares', () => {
+    const manifest = desktopPackageManifest()
+    const scripts = isRecord(manifest.scripts) ? manifest.scripts : {}
+    const missing = matrixColumn(matrixEntries(packageJob()), 'script')
+      .filter(script => !(script in scripts))
+    expect(missing).toEqual([])
+  })
+
   it('disables macOS signing auto-discovery so the ad-hoc identity is used', () => {
     expect(packageJob().env).toMatchObject({ CSC_IDENTITY_AUTO_DISCOVERY: 'false' })
   })
@@ -112,6 +120,13 @@ function releaseAppWorkflow(): Record<string, unknown> {
   const workflow: unknown = load(readFileSync(resolve(root, '.github/workflows/release-app.yml'), 'utf8'))
   if (!isRecord(workflow)) throw new TypeError('release-app.yml must define a workflow')
   return workflow
+}
+
+/** Parsed apps/desktop package manifest that owns the packaging scripts. */
+function desktopPackageManifest(): Record<string, unknown> {
+  const manifest: unknown = JSON.parse(readFileSync(resolve(root, 'apps/desktop/package.json'), 'utf8'))
+  if (!isRecord(manifest)) throw new TypeError('apps/desktop/package.json must define a package manifest')
+  return manifest
 }
 
 /**

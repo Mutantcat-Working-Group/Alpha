@@ -35,7 +35,7 @@
     "package:ci:win:x64": "tsx scripts/ci-package.ts win-x64",
     "package:ci:linux:x64": "tsx scripts/ci-package.ts linux-x64",
     "package:ci:linux:arm64": "tsx scripts/ci-package.ts linux-arm64",
-    "package:ci:tauri:mac-arm64": "tsx scripts/ci-tauri-package.ts mac-arm64",
+    "package:ci:tauri:mac:arm64": "tsx scripts/ci-tauri-package.ts mac-arm64",
     "package:ci:tauri:mac:x64": "tsx scripts/ci-tauri-package.ts mac-x64",
     "package:ci:tauri:win:x64": "tsx scripts/ci-tauri-package.ts win-x64",
     "package:ci:tauri:linux:x64": "tsx scripts/ci-tauri-package.ts linux-x64",
