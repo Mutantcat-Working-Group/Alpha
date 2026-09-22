@@ -59,3 +59,9 @@
 - 运行本项目前请阅读 [SAFETY.md](SAFETY.md)。
 - 本项目以 [MIT](LICENSE) 许可证开源。
 - 第三方依赖及其许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+---
+
+## 致谢
+
+本项目是 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) 的 Fork，感谢原仓库及其作者的优秀开源工作，本仓库在其基础上继续维护与改进。
