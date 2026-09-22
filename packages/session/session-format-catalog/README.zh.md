@@ -70,7 +70,7 @@ Production 历史读取使用 `{ recovery: 'recoverable', validation: 'transform
 - [已发布 v0 到 v1 迁移边](../session-format-v0-to-v1/README.zh.md)——编解码器与校验器所有权。
 - [已发布 v1 到 v2 迁移边](../session-format-v1-to-v2/README.zh.md)——Assistant 流嵌入与基数变化引用重映射。
 - [已发布 V2 到 V3 规范](../session-format-v2-to-v3/README.zh.md#v2-to-v3-specification)——转换、保留与拒绝。
-- [V3 到 V4 规范](../session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)——恒等转换与 delivery generation 校验。
+- [V3 到 V4 规范](../session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)——转换、引用重映射与 delivery generation 校验。
 - [JSONL 持久化](../session-persistence-jsonl/README.zh.md)——不可变 generation 命名与排他发布。
 
 -----

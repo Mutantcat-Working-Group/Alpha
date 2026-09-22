@@ -795,6 +795,24 @@ async function verifyHeaders(
 }
 
 describe('TypeScript SDK snapshots over the jsonrpc runtime', () => {
+  it('restores the retained V3 max-tokens recording after an interrupted next-turn restart', async () => {
+    const path = join(corpusRoot, 'sdk/max-tokens-continue/session.v3.jsonl')
+    const fixture = await readFile(path, 'utf8')
+    const rows = records(fixture)
+    const turnEnd = rows.findIndex(row => row.type === 'turn/end')
+    expect(rows[turnEnd + 1]).toMatchObject({ type: 'agent/inbox/spliced', data: { target: 'next-turn', inserted: [expect.anything()] } })
+    expect(rows[turnEnd + 2]).toMatchObject({ type: 'turn/start', data: { turn: 2 } })
+    const interrupted = rows.filter((_, index) => index !== turnEnd)
+    const expected = [...interrupted.slice(0, turnEnd + 1),
+      { type: 'turn/end', data: { turn: 1, reason: { kind: 'interrupted' } } },
+      ...interrupted.slice(turnEnd + 1)]
+    const serialize = (values: JsonObject[]) => values.map(row => JSON.stringify(row)).join('\n') + '\n'
+    const context = contextOfContents([fixture])
+    expect(normalizeSessionSnapshots([serialize(interrupted)], context))
+      .toEqual(normalizeSessionSnapshots([serialize(expected)], context))
+    expect(await readFile(path, 'utf8')).toBe(fixture)
+  })
+
   for (const scenario of sdkScenarios) {
     const scenarioTest = recording
       && (scenario.manifest.recording === 'authored' || scenario.manifest.sessionFormat !== undefined)
