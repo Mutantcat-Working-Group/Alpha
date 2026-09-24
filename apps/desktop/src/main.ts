@@ -1,3 +1,5 @@
+// Alpha（DeepSeek Harness）— 由异猫工作群（mutantcat.org）发行
+// GitHub: https://github.com/Mutantcat-Working-Group
 import { WINDOWS_TITLEBAR_HEIGHT } from './windows-layout.ts'
 /** Electron shell: desktop project ownership, custom protocol, windows, and lifecycle. */
 
@@ -580,7 +582,8 @@ async function main(): Promise<void> {
     applicationVersion: app.getVersion(),
     // The release has no separate build number; omit Electron's bundle version.
     version: '',
-    copyright: '',
+    // Publisher attribution, shown verbatim in the macOS About panel.
+    copyright: '由异猫工作群（mutantcat.org）发行 · https://github.com/Mutantcat-Working-Group',
     iconPath: development ? join(app.getAppPath(), 'resources', 'icon-windows.png')
       : join(process.resourcesPath, 'icon.png'),
   })
