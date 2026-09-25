@@ -6,12 +6,13 @@
 [中文](README.md) | English
 
 ### 1. Overview
-- Alpha is an open-source AI code editor derived from [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), built on an **everything-is-a-plugin** architecture powered by [Cordis](https://github.com/cordiverse/cordis).
+- Alpha is an open-source AI code editor built on an **everything-is-a-plugin** architecture powered by [Cordis](https://github.com/cordiverse/cordis).
 - The desktop (Tauri), Web, and CLI entry points share one agent core, one session format, and one plugin graph, so a plugin is written once and loads on all three.
 - The installers bundle independent Python, Node.js, and pnpm runtimes. Python data processing, Office document read/write, and Node scripts work on first use without anything from the user's system environment.
 - Terminal, SSH, subprocess, sandbox, LSP, browser, and computer interaction ship as plugins that start and stop on demand.
 - Sessions are written to disk end to end and replayable: every input that reaches a model request can be reconstructed from the session log, which keeps audits and reproductions possible.
 - The application ID is `org.mutantcat.alpha`, and data stays under `$DSH_HOME`, so upgrading keeps existing profiles.
+- **Publisher** Mutantcat Working Group (mutantcat.org) · GitHub: https://github.com/Mutantcat-Working-Group
 
 Core value:
 
@@ -78,9 +79,3 @@ Core value:
 - Read [SAFETY.md](SAFETY.md) before running the project.
 - The project is open source under the [MIT](LICENSE) license.
 - Third-party dependencies and their licenses are disclosed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
----
-
-## Acknowledgments
-
-This repository is a fork of [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness). Thanks to the original authors for their open-source work; this repository continues to build upon it.
