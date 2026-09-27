@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-format-v3-to-v4",
   "description": "Streaming tool-role migration and delivery validation from Session V3 to V4",
-  "version": "1.0.20260926",
+  "version": "1.0.20260927",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-open-in-app",
   "description": "Web \"Open In...\" controls: the Session-header split button opening the workspace directory in an installed application, and the document preview's default-application controls for one file",
-  "version": "1.0.20260926",
+  "version": "1.0.20260927",
   "publishConfig": {
     "access": "public"
   },

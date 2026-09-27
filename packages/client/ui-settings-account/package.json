@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-settings-account",
   "description": "Manage DeepSeek login and open Platform billing pages",
-  "version": "1.0.20260926",
+  "version": "1.0.20260927",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-workspace-dependencies",
   "description": "The load_workspace_dependencies tool: absolute paths into a bundled Python, Node.js, and pnpm payload",
-  "version": "1.0.20260926",
+  "version": "1.0.20260927",
   "publishConfig": {
     "access": "public"
   },

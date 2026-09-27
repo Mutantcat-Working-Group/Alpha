@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-agent-preset",
   "description": "Declare an Agent capability composition in Cordis YAML",
-  "version": "1.0.20260926",
+  "version": "1.0.20260927",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-shortcuts",
   "description": "Application keyboard command registry and physical-key routing",
-  "version": "1.0.20260926",
+  "version": "1.0.20260927",
   "publishConfig": {
     "access": "public"
   },
