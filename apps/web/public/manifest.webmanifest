@@ -1,8 +1,9 @@
 {
-  "name": "DeepSeek Harness",
-  "short_name": "DSH",
-  "start_url": "./",
-  "scope": "./",
+  "id": "/",
+  "name": "Alpha",
+  "short_name": "Alpha",
+  "start_url": "/",
+  "scope": "/",
   "display": "fullscreen",
   "icons": [
     {

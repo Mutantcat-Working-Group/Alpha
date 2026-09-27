@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-brand-official",
-  "description": "Official DeepSeek Harness brand occupants for the Web client's sidebar slots",
-  "version": "0.1.7-rc.2",
+  "description": "Official Alpha brand occupants for the Web client's sidebar slots",
+  "version": "1.0.20260921",
   "publishConfig": {
     "access": "public"
   },
@@ -29,7 +29,8 @@
     "client": {
       "inject": [
         "@mutantcat/dsh-client-ui-renderer",
-        "@mutantcat/dsh-client-ui-sidebar"
+        "@mutantcat/dsh-client-ui-sidebar",
+        "@mutantcat/dsh-client-ui-conversation"
       ],
       "platform": "web"
     }
@@ -43,9 +44,13 @@
     "@mutantcat/cordis": "workspace:~"
   },
   "devDependencies": {
+    "@mutantcat/dsh-client-locale": "workspace:*",
+    "@mutantcat/dsh-client-ui-conversation": "workspace:*",
     "@mutantcat/dsh-client-ui-primitives": "workspace:*",
     "@mutantcat/dsh-client-ui-renderer": "workspace:*",
     "@mutantcat/dsh-client-ui-sidebar": "workspace:*",
+    "@mutantcat/dsh-client-ui-slots": "workspace:*",
+    "@mutantcat/dsh-client-test-runtime": "workspace:*",
     "@mutantcat/cordis": "workspace:~",
     "@testing-library/react": "^16.1.0",
     "@types/react": "~18.3.1",

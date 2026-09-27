@@ -3,29 +3,29 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-brand-official/README.md
 /:
-  en: a031cd88e552dc89
-  zh: 76c1af2393cb6983
+  en: 50771858b1e7468d
+  zh: 19135a7f17ad411a
 /mutantcat-dsh-client-ui-brand-official:
   en: dd11e3a407695a0e
   zh: 236f229c79f64f8e
 /mutantcat-dsh-client-ui-brand-official/summary:
-  en: cb6bf0a4eabd271b
-  zh: 181cf091ff44c194
+  en: 4237fbfcab771642
+  zh: 6dddeb5943da938a
 /mutantcat-dsh-client-ui-brand-official/table-of-contents:
   en: d152484eb41ac6b4
   zh: 09388d293f9be9cb
 /mutantcat-dsh-client-ui-brand-official/use-this-package:
-  en: 716dc268f98996db
-  zh: 7372a67ef81a0d5e
+  en: 44bfa0613f600d7d
+  zh: 307d3f91d4b0f9cf
 /mutantcat-dsh-client-ui-brand-official/use-this-package/choosing-the-profile:
-  en: 3f3f96d6adf98193
-  zh: 0b8691656a8532a0
+  en: d1fb71bbf195ce43
+  zh: de607400ef640617
 /mutantcat-dsh-client-ui-brand-official/use-this-package/replacing-the-brand:
-  en: 6a923aa630d01d65
-  zh: 5df0c24eebd9d0d0
+  en: 56c3f83c74f59433
+  zh: 4f5ca17e41747efb
 /mutantcat-dsh-client-ui-brand-official/understand-the-implementation:
-  en: 4e4aa617edd7f4ad
-  zh: ea4e2d6d4a39535e
+  en: 2faf8b11fd6acb73
+  zh: 8b80c30f3ffdbc0b
 /mutantcat-dsh-client-ui-brand-official/further-exploration:
   en: be80cff9a5507319
   zh: bbf10393d289e692

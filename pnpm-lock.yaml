@@ -3098,6 +3098,15 @@ importers:
       '@mutantcat/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@mutantcat/dsh-client-locale':
+        specifier: workspace:*
+        version: link:../locale
+      '@mutantcat/dsh-client-test-runtime':
+        specifier: workspace:*
+        version: link:../../test-support/client-runtime
+      '@mutantcat/dsh-client-ui-conversation':
+        specifier: workspace:*
+        version: link:../ui-conversation
       '@mutantcat/dsh-client-ui-primitives':
         specifier: workspace:*
         version: link:../ui-primitives
@@ -3107,6 +3116,9 @@ importers:
       '@mutantcat/dsh-client-ui-sidebar':
         specifier: workspace:*
         version: link:../ui-sidebar
+      '@mutantcat/dsh-client-ui-slots':
+        specifier: workspace:*
+        version: link:../ui-slots
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.2(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
