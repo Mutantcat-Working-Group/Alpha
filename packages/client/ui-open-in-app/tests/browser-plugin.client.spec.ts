@@ -1,21 +1,21 @@
 // @vitest-environment jsdom
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
 /**
  * Browser-half lifecycle over the real SlotRegistry: the dictionary,
  * header-slot, and document-preview path registrations with fiber teardown
  * proving removal (HMR safety) and the injected controller faces.
  */
 
-import type { ShortcutCommand } from '@deepseek-ai/dsh-client-shortcuts/client'
-import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { Context } from '@deepseek-ai/cordis'
+import type { ShortcutCommand } from '@mutantcat/dsh-client-shortcuts/client'
+import type { SessionListState } from '@mutantcat/dsh-api-session-controller/client'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import { Context } from '@mutantcat/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { LayoutController, type MainPanelId } from '@deepseek-ai/dsh-client-ui-layout/client'
-import { createLayoutStore } from '@deepseek-ai/dsh-client-ui-layout/src/client/stores.ts'
-import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import { LayoutController, type MainPanelId } from '@mutantcat/dsh-client-ui-layout/client'
+import { createLayoutStore } from '@mutantcat/dsh-client-ui-layout/src/client/stores.ts'
+import type {} from '@mutantcat/dsh-client-ui-conversation/client'
 import { apply, inject, type OpenInAppActionInjected, type OpenPathInjected } from '../src/client/index.ts'
 import { apply as nodeApply } from '../src/index.ts'
 import { OpenInAppAction } from '../src/client/OpenInAppAction.tsx'

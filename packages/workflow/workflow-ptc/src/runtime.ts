@@ -2,22 +2,22 @@
  * Workflow VM hooks, child callbacks, ordinary concurrency limits and result serialization.
  * PTC owns process confinement and cancellation. Fatal hook and provider failures propagate
  * through combinators; ordinary child failures and stage errors become per-item nulls.
- * @module @deepseek-ai/dsh-workflow-ptc/runtime
+ * @module @mutantcat/dsh-workflow-ptc/runtime
  */
 
 import * as vm from 'node:vm'
-import { brandString } from '@deepseek-ai/dsh-brand'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import type { SessionId } from '@deepseek-ai/dsh-session'
-import { assertObjectJsonSchema, JsonSchemaError } from '@deepseek-ai/dsh-tools'
-import type { ObjectJsonSchema } from '@deepseek-ai/dsh-tools'
-import { isFatalWorkflowError, WorkflowError } from '@deepseek-ai/dsh-workflow'
+import { brandString } from '@mutantcat/dsh-brand'
+import type { ContentBlock } from '@mutantcat/dsh-llm'
+import type { SessionId } from '@mutantcat/dsh-session'
+import { assertObjectJsonSchema, JsonSchemaError } from '@mutantcat/dsh-tools'
+import type { ObjectJsonSchema } from '@mutantcat/dsh-tools'
+import { isFatalWorkflowError, WorkflowError } from '@mutantcat/dsh-workflow'
 import type {
   WorkflowAgentEndInfo,
   WorkflowAgentInfo,
   WorkflowMeta,
   WorkflowResult,
-} from '@deepseek-ai/dsh-workflow'
+} from '@mutantcat/dsh-workflow'
 import { materializeFromRealm, MaterializeError, renderThrown } from './realm.ts'
 import type { ChildHandle, ChildPort, WorkerLimits } from './types.ts'
 

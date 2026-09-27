@@ -1,15 +1,15 @@
 /** Static Browser tab type and guide declaration. */
-import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client'
-import type { TranslateNS } from '@deepseek-ai/dsh-client-locale/client'
-import { GuideArtworkBrowser } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { SidebarRightTabDefinition } from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
+import type { ShortcutCommandId } from '@mutantcat/dsh-client-shortcuts/client'
+import type { TranslateNS } from '@mutantcat/dsh-client-locale/client'
+import { GuideArtworkBrowser } from '@mutantcat/dsh-client-ui-primitives'
+import type { SidebarRightTabDefinition } from '@mutantcat/dsh-client-ui-sidebar-right/client'
 import type {} from './locales.ts'
 
 /** Browser tab kind. */
 export const BROWSER_KIND = 'browser'
 
 /** Browser implementation identity and keyed Slot dispatch key. */
-export const BROWSER_ID = '@deepseek-ai/dsh-client-ui-sidebar-browser'
+export const BROWSER_ID = '@mutantcat/dsh-client-ui-sidebar-browser'
 
 /** Build the Browser type with locale-live copy. */
 export function browserDefinition(t: TranslateNS<'sidebarBrowser'>): SidebarRightTabDefinition {

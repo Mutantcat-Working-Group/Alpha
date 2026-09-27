@@ -3,7 +3,7 @@ description: "Host-wide durable reminders and shared Session-bound task manageme
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-schedule
+# @mutantcat/dsh-schedule
 
 English | [中文](README.zh.md)
 

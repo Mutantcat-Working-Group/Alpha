@@ -3,7 +3,7 @@ description: "宿主级持久提醒与按会话绑定的共享任务管理。"
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-schedule
+# @mutantcat/dsh-schedule
 
 [English](README.md) | 中文
 

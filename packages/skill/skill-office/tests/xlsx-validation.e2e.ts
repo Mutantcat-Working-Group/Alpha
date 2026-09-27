@@ -4,10 +4,10 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
-import { runLoaderSmoke } from '@deepseek-ai/dsh-loader-smoke'
-import { readImageFile } from '@deepseek-ai/dsh-attachment-local'
-import { parseSessionLog } from '@deepseek-ai/dsh-llm-replay'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import { runLoaderSmoke } from '@mutantcat/dsh-loader-smoke'
+import { readImageFile } from '@mutantcat/dsh-attachment-local'
+import { parseSessionLog } from '@mutantcat/dsh-llm-replay'
+import type { SessionEvent } from '@mutantcat/dsh-session'
 
 const repo = fileURLToPath(new URL('../../../../', import.meta.url))
 // DSH_PRIMARY_RUNTIME names the same runtime.json + dependencies/ payload used by shipped deployments.
@@ -115,8 +115,8 @@ process.exitCode = result.status ?? 1;
         }
         await writeFile(join(cwd, 'office.patch.json'), JSON.stringify([
           { insert: [
-            { id: 'office-validation', name: '@deepseek-ai/dsh-skill-office', ...kind === 'blank' ? { config: { cli: fixtureCli } } : {} },
-            { id: 'office-dependencies', name: '@deepseek-ai/dsh-tool-workspace-dependencies', config: { source: runtime } },
+            { id: 'office-validation', name: '@mutantcat/dsh-skill-office', ...kind === 'blank' ? { config: { cli: fixtureCli } } : {} },
+            { id: 'office-dependencies', name: '@mutantcat/dsh-tool-workspace-dependencies', config: { source: runtime } },
           ] },
           ...completions ? [
             { id: 'llm-deepseek', disabled: true },

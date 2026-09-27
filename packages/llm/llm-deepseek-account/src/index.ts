@@ -1,11 +1,11 @@
 /** Account-token authentication and discovery for the DeepSeek account route. */
-import type {} from '@deepseek-ai/cordis-plugin-loader'
-import type { Context } from '@deepseek-ai/cordis'
-import { ACCOUNT_QUOTA_EXCEEDED_CODE, LlmError, QUOTA_EXCEEDED_CODE } from '@deepseek-ai/dsh-llm'
-import type {} from '@deepseek-ai/dsh-deepseek-account'
-import { launchEnvironmentOf } from '@deepseek-ai/dsh-launch-environment'
-import { plainOptions, resolveAdapterOptions, registerDeepSeekProvider, catalogModelInfo } from '@deepseek-ai/dsh-llm-deepseek'
-import type { DeepSeekRequestAuth, ResolvedDeepSeekOptions } from '@deepseek-ai/dsh-llm-deepseek'
+import type {} from '@mutantcat/cordis-plugin-loader'
+import type { Context } from '@mutantcat/cordis'
+import { ACCOUNT_QUOTA_EXCEEDED_CODE, LlmError, QUOTA_EXCEEDED_CODE } from '@mutantcat/dsh-llm'
+import type {} from '@mutantcat/dsh-deepseek-account'
+import { launchEnvironmentOf } from '@mutantcat/dsh-launch-environment'
+import { plainOptions, resolveAdapterOptions, registerDeepSeekProvider, catalogModelInfo } from '@mutantcat/dsh-llm-deepseek'
+import type { DeepSeekRequestAuth, ResolvedDeepSeekOptions } from '@mutantcat/dsh-llm-deepseek'
 
 import { Config } from './config.ts'
 export { Config } from './config.ts'

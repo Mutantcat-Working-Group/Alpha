@@ -1,6 +1,6 @@
-import type { Context } from '@deepseek-ai/cordis'
-import { SessionId } from '@deepseek-ai/dsh-session'
-import type { SubagentPromptRequestId } from '@deepseek-ai/dsh-subagent'
+import type { Context } from '@mutantcat/cordis'
+import { SessionId } from '@mutantcat/dsh-session'
+import type { SubagentPromptRequestId } from '@mutantcat/dsh-subagent'
 
 export const name = 'subagent-durability-failure'
 export const inject = ['agents', 'sessionPersistence', 'subagents']

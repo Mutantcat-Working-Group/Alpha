@@ -21,14 +21,14 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import picomatch from 'picomatch'
-import { FiberState } from '@deepseek-ai/cordis'
-import { createNodeBuiltins, REPLACED_PREFIXES } from '@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtins.ts'
+import { FiberState } from '@mutantcat/cordis'
+import { createNodeBuiltins, REPLACED_PREFIXES } from '@mutantcat/dsh-experimental-webworker-runtime/src/node/builtins.ts'
 import {
   setActiveModuleLoader, WorkerModuleLoader,
-} from '@deepseek-ai/dsh-experimental-webworker-runtime/src/module-system/module-loader.ts'
-import { inflateImage } from '@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/image-gzip.ts'
-import { loadVfsImage } from '@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/memory.ts'
-import { setActiveVfs } from '@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/active.ts'
+} from '@mutantcat/dsh-experimental-webworker-runtime/src/module-system/module-loader.ts'
+import { inflateImage } from '@mutantcat/dsh-experimental-webworker-runtime/src/storage/image-gzip.ts'
+import { loadVfsImage } from '@mutantcat/dsh-experimental-webworker-runtime/src/storage/memory.ts'
+import { setActiveVfs } from '@mutantcat/dsh-experimental-webworker-runtime/src/storage/active.ts'
 import { indexWorkspacePackages, previewFixtures } from '../src/repository.ts'
 import { DEFAULT_ROOT, MANIFEST_PATH, packVfsImage, packVfsOverlay } from '../src/pack.ts'
 import { PAGE_ASSETS } from '../src/rules.ts'
@@ -36,11 +36,11 @@ import { PAGE_ASSETS } from '../src/rules.ts'
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url))
 
 /** A leaf workspace package: real build output, no dependencies to drag in. */
-const SUBJECT = '@deepseek-ai/dsh-timeout'
-const LANDLOCK = '@deepseek-ai/node-addon-system'
+const SUBJECT = '@mutantcat/dsh-timeout'
+const LANDLOCK = '@mutantcat/node-addon-system'
 const LANDLOCK_ENTRY = `${LANDLOCK}/landlock-run`
-const PLUGIN_INVENTORY = '@deepseek-ai/dsh-plugin-package-inventory-deepseek'
-const WEB_SERVER = '@deepseek-ai/dsh-host-webserver'
+const PLUGIN_INVENTORY = '@mutantcat/dsh-plugin-package-inventory-deepseek'
+const WEB_SERVER = '@mutantcat/dsh-host-webserver'
 
 const workspaces = indexWorkspacePackages(repoRoot)
 

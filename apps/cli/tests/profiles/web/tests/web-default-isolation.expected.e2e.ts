@@ -1,12 +1,12 @@
 /** Real Web startup, mounted plugin package identities, and delivered Client graph isolation. */
 
-import { FiberState } from '@deepseek-ai/cordis'
-import type { WebBootGraph } from '@deepseek-ai/dsh-client-modules/client'
+import { FiberState } from '@mutantcat/cordis'
+import type { WebBootGraph } from '@mutantcat/dsh-client-modules/client'
 import { expect, it } from 'vitest'
 import { experimentalRuntimeReferences, modulePackage } from './runtime-roster.ts'
 import { withDefaultWeb, webGet } from './default-web-process.ts'
 
-const experimentalName = '@deepseek-ai/dsh-experimental-client-ui-agent-team'
+const experimentalName = '@mutantcat/dsh-experimental-client-ui-agent-team'
 
 it('boots default Web without experimental modules, scheduling, time context, or an active built-in Browser', async (test) => {
   await withDefaultWeb(test, async ({ url, request }) => {
@@ -22,18 +22,18 @@ it('boots default Web without experimental modules, scheduling, time context, or
     const roster = await request('roster')
     expect(roster.client).toEqual(delivered)
     expect(roster.entries).toEqual(expect.arrayContaining([
-      expect.objectContaining({ name: '@deepseek-ai/dsh-host-webserver', state: FiberState.ACTIVE }),
-      expect.objectContaining({ name: '@deepseek-ai/dsh-client-modules', state: FiberState.ACTIVE }),
+      expect.objectContaining({ name: '@mutantcat/dsh-host-webserver', state: FiberState.ACTIVE }),
+      expect.objectContaining({ name: '@mutantcat/dsh-client-modules', state: FiberState.ACTIVE }),
     ]))
     expect(roster.entries.some(entry => entry.name.endsWith('/runtime-roster-observer.js') && entry.state === FiberState.ACTIVE)).toBe(true)
     expect(roster.plugins.length).toBeGreaterThan(roster.entries.length)
-    expect(roster.modules.some(url => modulePackage(url) === '@deepseek-ai/dsh')).toBe(true)
+    expect(roster.modules.some(url => modulePackage(url) === '@mutantcat/dsh')).toBe(true)
     expect(roster.client.entries.length).toBeGreaterThan(0)
     for (const name of [
-      '@deepseek-ai/dsh-client-ui-sidebar-browser',
-      '@deepseek-ai/dsh-time-context',
-      '@deepseek-ai/dsh-schedule',
-      '@deepseek-ai/dsh-client-ui-schedule',
+      '@mutantcat/dsh-client-ui-sidebar-browser',
+      '@mutantcat/dsh-time-context',
+      '@mutantcat/dsh-schedule',
+      '@mutantcat/dsh-client-ui-schedule',
     ]) {
       const entry = roster.entries.find(entry => entry.name === name)
       expect(entry, name).toBeDefined()

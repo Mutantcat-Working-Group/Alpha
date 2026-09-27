@@ -18,7 +18,7 @@ export interface ProcessGroupData {
   readonly summary: ProcessActivitySummary
 }
 
-declare module '@deepseek-ai/dsh-client-ui-conversation/client' {
+declare module '@mutantcat/dsh-client-ui-conversation/client' {
   interface ConversationGroupDataMap {
     chat: ProcessGroupData
   }

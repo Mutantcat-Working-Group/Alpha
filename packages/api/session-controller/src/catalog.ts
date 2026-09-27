@@ -1,10 +1,10 @@
 /** Shared projection of the live LLM registry into the browser model catalog. */
 
-import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
-import { credentialRef } from '@deepseek-ai/dsh-credentials'
-import type {} from '@deepseek-ai/dsh-settings'
-import type { LlmModelInfo } from '@deepseek-ai/dsh-llm'
-import type { Context } from '@deepseek-ai/cordis'
+import { RemoteError } from '@mutantcat/dsh-typert-protocol'
+import { credentialRef } from '@mutantcat/dsh-credentials'
+import type {} from '@mutantcat/dsh-settings'
+import type { LlmModelInfo } from '@mutantcat/dsh-llm'
+import type { Context } from '@mutantcat/cordis'
 import type {
   ModelCatalog,
   ModelReasoning,

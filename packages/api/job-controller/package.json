@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-api-job-controller",
+  "name": "@mutantcat/dsh-api-job-controller",
   "description": "Job Remote observation stream and the reference-counted client job-output service",
   "version": "0.1.7-rc.2",
   "publishConfig": {
@@ -40,11 +40,11 @@
   "dsh": {
     "client": {
       "external": [
-        "@deepseek-ai/dsh-api-gateway/client"
+        "@mutantcat/dsh-api-gateway/client"
       ],
       "inject": [
-        "@deepseek-ai/dsh-api-gateway",
-        "@deepseek-ai/dsh-client-connection"
+        "@mutantcat/dsh-api-gateway",
+        "@mutantcat/dsh-client-connection"
       ],
       "platform": "web"
     }
@@ -65,22 +65,22 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-typert-protocol": "workspace:*",
-    "@deepseek-ai/schemastery": "workspace:~",
+    "@mutantcat/dsh-typert-protocol": "workspace:*",
+    "@mutantcat/schemastery": "workspace:~",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:~"
+    "@mutantcat/cordis": "workspace:~"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/dsh-agent": "workspace:*",
-    "@deepseek-ai/dsh-api-gateway": "workspace:*",
-    "@deepseek-ai/dsh-client-connection": "workspace:*",
-    "@deepseek-ai/dsh-client-store": "workspace:*",
-    "@deepseek-ai/dsh-jobs": "workspace:*",
-    "@deepseek-ai/dsh-jobs-local": "workspace:*",
-    "@deepseek-ai/dsh-session": "workspace:*",
-    "@deepseek-ai/dsh-typert-registry": "workspace:*"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-agent": "workspace:*",
+    "@mutantcat/dsh-api-gateway": "workspace:*",
+    "@mutantcat/dsh-client-connection": "workspace:*",
+    "@mutantcat/dsh-client-store": "workspace:*",
+    "@mutantcat/dsh-jobs": "workspace:*",
+    "@mutantcat/dsh-jobs-local": "workspace:*",
+    "@mutantcat/dsh-session": "workspace:*",
+    "@mutantcat/dsh-typert-registry": "workspace:*"
   }
 }

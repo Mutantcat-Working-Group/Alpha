@@ -7,9 +7,9 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as yaml from 'js-yaml'
-import { entryListSchema } from '@deepseek-ai/cordis-plugin-include'
-import { codePointLength } from '@deepseek-ai/dsh-compaction-tool-result-pruner'
-import { renderSkillContent } from '@deepseek-ai/dsh-skill'
+import { entryListSchema } from '@mutantcat/cordis-plugin-include'
+import { codePointLength } from '@mutantcat/dsh-compaction-tool-result-pruner'
+import { renderSkillContent } from '@mutantcat/dsh-skill'
 import { describe, expect, it } from 'vitest'
 
 const skills = fileURLToPath(new URL('../skills/', import.meta.url))

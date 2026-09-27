@@ -3,19 +3,19 @@
  * that outlives the Chat panel, and history scrollback never does.
  */
 // @vitest-environment jsdom
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
 import { afterEach, describe, expect, it } from 'vitest'
 import { act, screen } from '@testing-library/react'
-import { SlotTestRuntime, stubConfigForm, usePinnedBrowserLanguages } from '@deepseek-ai/dsh-client-test-runtime'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import type { SessionLiveEventEntry, SessionReference } from '@deepseek-ai/dsh-api-session-controller/client'
-import type { SessionId, SessionSeq } from '@deepseek-ai/dsh-session/types'
-import type { WorkspaceId } from '@deepseek-ai/dsh-workspace/types'
+import { SlotTestRuntime, stubConfigForm, usePinnedBrowserLanguages } from '@mutantcat/dsh-client-test-runtime'
+import { LocaleRuntime } from '@mutantcat/dsh-client-locale/client'
+import type { SessionLiveEventEntry, SessionReference } from '@mutantcat/dsh-api-session-controller/client'
+import type { SessionId, SessionSeq } from '@mutantcat/dsh-session/types'
+import type { WorkspaceId } from '@mutantcat/dsh-workspace/types'
 import {
   apply as applyConversation, inject as injectConversation,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import { apply as applyChat, inject as injectChat } from '@deepseek-ai/dsh-client-ui-chat/client'
-import type { QuotaNoticeInjected } from '@deepseek-ai/dsh-client-ui-chat/client'
+} from '@mutantcat/dsh-client-ui-conversation/client'
+import { apply as applyChat, inject as injectChat } from '@mutantcat/dsh-client-ui-chat/client'
+import type { QuotaNoticeInjected } from '@mutantcat/dsh-client-ui-chat/client'
 import { CHAT_SETTINGS_NAMESPACE, type ChatSettings } from '../src/chat-settings.ts'
 
 usePinnedBrowserLanguages('en')

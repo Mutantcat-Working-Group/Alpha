@@ -1,10 +1,10 @@
 /** API-key configuration resolved together with one Messages endpoint generation. */
-import type { Volatile } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { credentialRef, type CredentialRef } from '@deepseek-ai/dsh-credentials'
-import type { LaunchEnvironmentSnapshot } from '@deepseek-ai/dsh-launch-environment'
-import { deepSeekConfigFields, type Config as ProtocolConfig, plainOptions as protocolOptions, resolveAdapterOptions as resolveProtocolOptions } from '@deepseek-ai/dsh-llm-deepseek'
-import type { Options as ProtocolOptions, DeepSeekConnectionOptions } from '@deepseek-ai/dsh-llm-deepseek'
+import type { Volatile } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import { credentialRef, type CredentialRef } from '@mutantcat/dsh-credentials'
+import type { LaunchEnvironmentSnapshot } from '@mutantcat/dsh-launch-environment'
+import { deepSeekConfigFields, type Config as ProtocolConfig, plainOptions as protocolOptions, resolveAdapterOptions as resolveProtocolOptions } from '@mutantcat/dsh-llm-deepseek'
+import type { Options as ProtocolOptions, DeepSeekConnectionOptions } from '@mutantcat/dsh-llm-deepseek'
 
 /** Messages configuration with a per-request API-key reference. */
 export interface Config extends ProtocolConfig {

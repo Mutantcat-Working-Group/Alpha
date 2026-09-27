@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-workflow",
+  "name": "@mutantcat/dsh-tool-workflow",
   "description": "Model-facing workflow tool: run a JavaScript orchestration script over ctx.workflowEngine",
   "version": "0.1.7-rc.2",
   "publishConfig": {
@@ -37,34 +37,34 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/dsh-agent": "workspace:*",
-    "@deepseek-ai/dsh-invariants": "workspace:*",
-    "@deepseek-ai/dsh-jobs": "workspace:*",
-    "@deepseek-ai/dsh-llm": "workspace:*",
-    "@deepseek-ai/dsh-session": "workspace:*",
-    "@deepseek-ai/dsh-system-prompt": "workspace:*",
-    "@deepseek-ai/dsh-tools": "workspace:*",
-    "@deepseek-ai/dsh-workflow": "workspace:*"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-agent": "workspace:*",
+    "@mutantcat/dsh-invariants": "workspace:*",
+    "@mutantcat/dsh-jobs": "workspace:*",
+    "@mutantcat/dsh-llm": "workspace:*",
+    "@mutantcat/dsh-session": "workspace:*",
+    "@mutantcat/dsh-system-prompt": "workspace:*",
+    "@mutantcat/dsh-tools": "workspace:*",
+    "@mutantcat/dsh-workflow": "workspace:*"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:~"
+    "@mutantcat/schemastery": "workspace:~"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/dsh-agent": "workspace:*",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:*",
-    "@deepseek-ai/dsh-invariants": "workspace:*",
-    "@deepseek-ai/dsh-jobs": "workspace:*",
-    "@deepseek-ai/dsh-jobs-local": "workspace:*",
-    "@deepseek-ai/dsh-llm": "workspace:*",
-    "@deepseek-ai/dsh-session": "workspace:*",
-    "@deepseek-ai/dsh-session-projection": "workspace:*",
-    "@deepseek-ai/dsh-subagent": "workspace:*",
-    "@deepseek-ai/dsh-system-prompt": "workspace:*",
-    "@deepseek-ai/dsh-tool-jobs": "workspace:*",
-    "@deepseek-ai/dsh-tools": "workspace:*",
-    "@deepseek-ai/dsh-workflow": "workspace:*",
-    "@deepseek-ai/dsh-workflow-ptc": "workspace:*"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-agent": "workspace:*",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:*",
+    "@mutantcat/dsh-invariants": "workspace:*",
+    "@mutantcat/dsh-jobs": "workspace:*",
+    "@mutantcat/dsh-jobs-local": "workspace:*",
+    "@mutantcat/dsh-llm": "workspace:*",
+    "@mutantcat/dsh-session": "workspace:*",
+    "@mutantcat/dsh-session-projection": "workspace:*",
+    "@mutantcat/dsh-subagent": "workspace:*",
+    "@mutantcat/dsh-system-prompt": "workspace:*",
+    "@mutantcat/dsh-tool-jobs": "workspace:*",
+    "@mutantcat/dsh-tools": "workspace:*",
+    "@mutantcat/dsh-workflow": "workspace:*",
+    "@mutantcat/dsh-workflow-ptc": "workspace:*"
   }
 }

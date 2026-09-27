@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+  "name": "@mutantcat/dsh-session-persistence-jsonl",
   "description": "JSONL durable session persistence backend for the DeepSeek Harness",
   "version": "0.1.7-rc.2",
   "publishConfig": {
@@ -28,23 +28,23 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-session": "workspace:*",
-    "@deepseek-ai/dsh-session-persistence": "workspace:*",
-    "@deepseek-ai/cordis": "workspace:~"
+    "@mutantcat/dsh-session": "workspace:*",
+    "@mutantcat/dsh-session-persistence": "workspace:*",
+    "@mutantcat/cordis": "workspace:~"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-llm": "workspace:*",
-    "@deepseek-ai/dsh-session-format": "workspace:*",
-    "@deepseek-ai/dsh-session-format-catalog": "workspace:*",
-    "@deepseek-ai/dsh-session-format-v3-to-v4": "workspace:*",
-    "@deepseek-ai/node-addon-system": "workspace:~",
-    "@deepseek-ai/schemastery": "workspace:~",
+    "@mutantcat/dsh-llm": "workspace:*",
+    "@mutantcat/dsh-session-format": "workspace:*",
+    "@mutantcat/dsh-session-format-catalog": "workspace:*",
+    "@mutantcat/dsh-session-format-v3-to-v4": "workspace:*",
+    "@mutantcat/node-addon-system": "workspace:~",
+    "@mutantcat/schemastery": "workspace:~",
     "koffi": "^3.1.0"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-session": "workspace:*",
-    "@deepseek-ai/dsh-session-format-v0-to-v1": "workspace:*",
-    "@deepseek-ai/dsh-session-persistence": "workspace:*",
-    "@deepseek-ai/cordis": "workspace:~"
+    "@mutantcat/dsh-session": "workspace:*",
+    "@mutantcat/dsh-session-format-v0-to-v1": "workspace:*",
+    "@mutantcat/dsh-session-persistence": "workspace:*",
+    "@mutantcat/cordis": "workspace:~"
   }
 }

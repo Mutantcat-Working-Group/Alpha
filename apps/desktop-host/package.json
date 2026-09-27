@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-desktop-host",
+  "name": "@mutantcat/dsh-desktop-host",
   "description": "Private Node-mode host process for the Electron desktop application",
   "version": "0.1.7-rc.2",
   "private": true,
@@ -11,18 +11,18 @@
   ],
   "dependencies": {
     "@deepseek-ai/libreoffice-kit": "^0.1.1",
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/dsh": "workspace:*",
-    "@deepseek-ai/dsh-agent": "workspace:*",
-    "@deepseek-ai/dsh-app-boot": "workspace:*",
-    "@deepseek-ai/dsh-client-connection": "workspace:*",
-    "@deepseek-ai/dsh-host-webserver": "workspace:*",
-    "@deepseek-ai/dsh-home-paths": "workspace:*",
-    "@deepseek-ai/dsh-jobs": "workspace:*",
-    "@deepseek-ai/dsh-schedule": "workspace:*",
-    "@deepseek-ai/dsh-tool-workspace-dependencies": "workspace:*",
-    "@deepseek-ai/dsh-skill-office": "workspace:*",
-    "@deepseek-ai/dsh-deepseek-account": "workspace:*",
-    "@deepseek-ai/dsh-workspace": "workspace:*"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh": "workspace:*",
+    "@mutantcat/dsh-agent": "workspace:*",
+    "@mutantcat/dsh-app-boot": "workspace:*",
+    "@mutantcat/dsh-client-connection": "workspace:*",
+    "@mutantcat/dsh-host-webserver": "workspace:*",
+    "@mutantcat/dsh-home-paths": "workspace:*",
+    "@mutantcat/dsh-jobs": "workspace:*",
+    "@mutantcat/dsh-schedule": "workspace:*",
+    "@mutantcat/dsh-tool-workspace-dependencies": "workspace:*",
+    "@mutantcat/dsh-skill-office": "workspace:*",
+    "@mutantcat/dsh-deepseek-account": "workspace:*",
+    "@mutantcat/dsh-workspace": "workspace:*"
   }
 }

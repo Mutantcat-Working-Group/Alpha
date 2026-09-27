@@ -7,8 +7,8 @@
  * replay of arbitrary logged arguments, so every step narrows wire JSON and
  * returns empty rather than throwing.
  */
-import type { ScheduleId, ScheduleRecord } from '@deepseek-ai/dsh-schedule/client'
-import type { ToolCallViewProps } from '@deepseek-ai/dsh-client-ui-tool/client'
+import type { ScheduleId, ScheduleRecord } from '@mutantcat/dsh-schedule/client'
+import type { ToolCallViewProps } from '@mutantcat/dsh-client-ui-tool/client'
 import { taskName } from './schedule-format.ts'
 
 /** One Tool call block as the card receives it: a running call or a settled result. */

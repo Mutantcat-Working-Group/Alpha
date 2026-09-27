@@ -1,8 +1,8 @@
 /** Host Workspace Remote owner: explicit commands and reconnect-safe state. */
 
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
+import { Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import { Remote, TypertRemoteService } from '@mutantcat/dsh-typert-protocol'
 import { WorkspaceCommands } from './commands.ts'
 import { DirectoryPickerController } from './directory-picker.ts'
 import { WorkspaceFeed, workspaceView } from './feed.ts'
@@ -40,7 +40,7 @@ export interface Config {
 /** Directory policy after schema defaults have been applied. */
 type ResolvedConfig = Config & { documentsLookupTimeoutMs: number }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     /** Host Workspace business API and Remote namespace owner. */
     workspaceController: WorkspaceController

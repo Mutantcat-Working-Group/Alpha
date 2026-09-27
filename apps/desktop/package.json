@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-desktop",
+  "name": "@mutantcat/dsh-desktop",
   "description": "Electron desktop shell for a bundled dsh runtime and external plugins",
   "version": "0.1.7-rc.2",
   "private": true,
@@ -41,15 +41,15 @@
     "electron-updater": "^6.8.9",
     "semver": "^7.8.5",
     "ws": "^8.21.0",
-    "@deepseek-ai/dsh-api-gateway": "workspace:*",
-    "@deepseek-ai/cordis": "workspace:~"
+    "@mutantcat/dsh-api-gateway": "workspace:*",
+    "@mutantcat/cordis": "workspace:~"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-app-boot": "workspace:*",
-    "@deepseek-ai/dsh-client-ui-settings-general": "workspace:*",
-    "@deepseek-ai/dsh-client-ui-sidebar-browser": "workspace:*",
-    "@deepseek-ai/dsh-home-paths": "workspace:*",
-    "@deepseek-ai/node-addon-system": "workspace:~",
+    "@mutantcat/dsh-app-boot": "workspace:*",
+    "@mutantcat/dsh-client-ui-settings-general": "workspace:*",
+    "@mutantcat/dsh-client-ui-sidebar-browser": "workspace:*",
+    "@mutantcat/dsh-home-paths": "workspace:*",
+    "@mutantcat/node-addon-system": "workspace:~",
     "@electron/get": "^5.1.0",
     "@electron/notarize": "2.5.0",
     "@types/js-yaml": "^4.0.9",
@@ -65,16 +65,16 @@
     "pnpm": "11.7.0",
     "sharp": "^0.35.3",
     "typescript": "^6.0.3",
-    "@deepseek-ai/dsh-deepseek-account": "workspace:*",
+    "@mutantcat/dsh-deepseek-account": "workspace:*",
     "@types/ws": "^8.18.1",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:*",
+    "@mutantcat/dsh-client-ui-primitives": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
     "vite": "^6.0.0",
-    "@deepseek-ai/dsh-client-ui-theme": "workspace:*",
-    "@deepseek-ai/dsh-client-shortcuts": "workspace:*",
-    "@deepseek-ai/dsh-atomic-write": "workspace:*"
+    "@mutantcat/dsh-client-ui-theme": "workspace:*",
+    "@mutantcat/dsh-client-shortcuts": "workspace:*",
+    "@mutantcat/dsh-atomic-write": "workspace:*"
   }
 }

@@ -3,7 +3,7 @@ description: "Per-step clock context with the current time, browser zone, and el
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-time-context
+# @mutantcat/dsh-time-context
 
 English | [中文](README.zh.md)
 
@@ -36,7 +36,7 @@ Each injected reading has three lines: an ISO-shaped timestamp with numeric offs
 The minimal mount needs no configuration. A positive `refreshIntervalMs` suppresses injections that fall within that many milliseconds of the latest one; omission uses 600000 ms (10 minutes), while `0` injects at every eligible entering pre-step whose signal is not already aborted.
 
 ```yaml
-- name: '@deepseek-ai/dsh-time-context'
+- name: '@mutantcat/dsh-time-context'
   config:
     timeZone: Asia/Shanghai
 ```

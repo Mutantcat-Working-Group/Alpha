@@ -3,7 +3,7 @@ description: "从插件管理页启用实验性语音输入。"
 kind: "package-bundle"
 ---
 
-# @deepseek-ai/dsh-experimental-voice-input-bundle
+# @mutantcat/dsh-experimental-voice-input-bundle
 
 [English](README.md) | 中文
 

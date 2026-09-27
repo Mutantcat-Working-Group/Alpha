@@ -1,5 +1,5 @@
 /** Public contact and bonus notice options shared by Host and Client. */
-import z from '@deepseek-ai/schemastery'
+import z from '@mutantcat/schemastery'
 
 /** Questionnaire destination and bonus notice timings shared by Host and Client. */
 export interface ContactConfig {

@@ -1,5 +1,5 @@
 /** Host-plane registration of the first-party Cordis inspect providers. */
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context } from '@mutantcat/cordis'
 import { hostInspectProviders } from './providers.ts'
 
 export const name = 'cordis-inspect-providers'

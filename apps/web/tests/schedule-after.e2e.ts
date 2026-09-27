@@ -7,19 +7,19 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { Agent, AgentHandle } from '@deepseek-ai/dsh-agent'
-import { bundlePatchPaths, composeEntries, loadOverlayPatches } from '@deepseek-ai/dsh-app-boot'
-import { MessageId, ToolCallId, createUserMessage, LlmAdapter } from '@deepseek-ai/dsh-llm'
+import type { Agent, AgentHandle } from '@mutantcat/dsh-agent'
+import { bundlePatchPaths, composeEntries, loadOverlayPatches } from '@mutantcat/dsh-app-boot'
+import { MessageId, ToolCallId, createUserMessage, LlmAdapter } from '@mutantcat/dsh-llm'
 import { appendDelivery } from '../../../packages/schedule/schedule/src/delivery-history.ts'
-import type { ScheduleTask } from '@deepseek-ai/dsh-schedule'
-import type { ContextFormed, GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
+import type { ScheduleTask } from '@mutantcat/dsh-schedule'
+import type { ContextFormed, GenerateOptions, StreamChunk } from '@mutantcat/dsh-llm'
+import { SessionId, type SessionEvent } from '@mutantcat/dsh-session'
 import {
   ScheduleId,
   createEveryScheduleRecord,
   foldScheduleEvents,
   type EveryScheduleRecord,
-} from '@deepseek-ai/dsh-schedule'
+} from '@mutantcat/dsh-schedule'
 import {
   assertFixtureInventory,
   captureStableAria,
@@ -37,7 +37,7 @@ import {
   saveFailureShot,
 } from './support.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'schedule-web-e2e': { kind: 'schedule-web-e2e' } & ContextFormed
   }
@@ -841,12 +841,12 @@ describe.skipIf(MODE === 'record')('web e2e: active Schedule catalog', () => {
       ...WEB_PATCHES.map(file => loadOverlayPatches('Schedule catalog shipped roster', file)),
     ])
     expect(shipped.find(entry => entry.id === 'ui-schedule')).toMatchObject({
-      name: '@deepseek-ai/dsh-client-ui-schedule',
+      name: '@mutantcat/dsh-client-ui-schedule',
     })
     expect(shipped.find(entry => entry.id === 'ui-schedule')?.disabled).toBe(true)
     for (const row of [
-      { id: 'time-context', name: '@deepseek-ai/dsh-time-context' },
-      { id: 'schedule', name: '@deepseek-ai/dsh-schedule' },
+      { id: 'time-context', name: '@mutantcat/dsh-time-context' },
+      { id: 'schedule', name: '@mutantcat/dsh-schedule' },
     ]) {
       expect(shipped.filter(entry => entry.id === row.id && entry.name === row.name)).toHaveLength(1)
     }

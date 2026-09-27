@@ -3,7 +3,7 @@ description: "按步骤提供时钟上下文，包含当前时间、浏览器时
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-time-context
+# @mutantcat/dsh-time-context
 
 [English](README.md) | 中文
 
@@ -36,7 +36,7 @@ kind: "package-reference"
 最小挂载无需任何配置。正的 `refreshIntervalMs` 会抑制距最近一次注入不足该毫秒数的注入；省略时采用 600000 毫秒（10 分钟），设为 `0` 时，每个信号尚未中止且将进入步骤的合格 pre-step 都会注入。
 
 ```yaml
-- name: '@deepseek-ai/dsh-time-context'
+- name: '@mutantcat/dsh-time-context'
   config:
     timeZone: Asia/Shanghai
 ```

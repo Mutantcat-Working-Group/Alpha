@@ -10,7 +10,7 @@ import { generatedRegions } from './translation-pairing.ts'
 
 const roots: string[] = []
 const sharedSchema = `
-import Schema from '@deepseek-ai/schemastery'
+import Schema from '@mutantcat/schemastery'
 export interface LaunchConfig {
   /** Browser ownership mode. */
   mode: 'launch'
@@ -143,14 +143,14 @@ export const Shared = Schema.union([MissingSchema])
 describe('config catalog rendering', () => {
   const entries = (inject: string[]): CatalogEntry[] => [
     {
-      pkg: '@deepseek-ai/dsh-demo',
+      pkg: '@mutantcat/dsh-demo',
       dir: 'packages/demo/demo',
       entry: 'packages/demo/demo/src/index.ts',
       kind: 'config',
       inject,
       pastes: [{ text: 'export interface DemoConfig {}', source: 'packages/demo/demo/src/index.ts:3' }],
     },
-    { pkg: '@deepseek-ai/dsh-plain', dir: 'packages/demo/plain', entry: 'packages/demo/plain/src/index.ts', kind: 'no-config', inject },
+    { pkg: '@mutantcat/dsh-plain', dir: 'packages/demo/plain', entry: 'packages/demo/plain/src/index.ts', kind: 'no-config', inject },
   ]
   const paths = translationPairPaths('docs/config-catalog.md')
   const record = (inject: string[]) => computeTranslationPairingRecord(
@@ -163,7 +163,7 @@ describe('config catalog rendering', () => {
   it('keeps package data in generated regions shared by both languages', () => {
     const en = generatedRegions(render(entries(['jobs']), 'en')).map(region => region.text)
     expect(en.map(region => region.split('\n')[0])).toEqual([
-      '<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-demo -->',
+      '<!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-demo -->',
       '<!-- BEGIN GENERATED config-catalog:no-config -->',
       '<!-- BEGIN GENERATED config-catalog:seam -->',
       '<!-- BEGIN GENERATED config-catalog:library -->',

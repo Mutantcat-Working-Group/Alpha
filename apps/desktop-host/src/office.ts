@@ -4,9 +4,9 @@ import { realpathSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { runtimeArchivePath } from './office-engine.ts'
-import type { Context } from '@deepseek-ai/cordis'
-import * as officeSkills from '@deepseek-ai/dsh-skill-office'
-import * as workspaceDependencies from '@deepseek-ai/dsh-tool-workspace-dependencies'
+import type { Context } from '@mutantcat/cordis'
+import * as officeSkills from '@mutantcat/dsh-skill-office'
+import * as workspaceDependencies from '@mutantcat/dsh-tool-workspace-dependencies'
 
 /** Loader identity for the application-owned Office composition. */
 export const name = 'desktop-office'

@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import WebRuntime from '@deepseek-ai/dsh-web'
+import { Context } from '@mutantcat/cordis'
+import WebRuntime from '@mutantcat/dsh-web'
 import {
   PerplexitySearchProvider,
   PERPLEXITY_PROVIDER_ID,
-} from '@deepseek-ai/dsh-web-search-perplexity'
-import * as perplexityPlugin from '@deepseek-ai/dsh-web-search-perplexity'
+} from '@mutantcat/dsh-web-search-perplexity'
+import * as perplexityPlugin from '@mutantcat/dsh-web-search-perplexity'
 import { mapPerplexityResponse } from '../src/provider.ts'
 
 const options = { apiKey: 'pplx-key', baseURL: 'https://api.perplexity.test', model: 'sonar', maxTokens: 1024 }

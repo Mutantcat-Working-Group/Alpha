@@ -1,12 +1,12 @@
 import { once } from 'node:events'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import WebSocket, { type RawData } from 'ws'
-import { Context } from '@deepseek-ai/cordis'
-import { apply as applyConnection, inject as connectionInject } from '@deepseek-ai/dsh-client-connection'
-import WebServer from '@deepseek-ai/dsh-host-webserver'
-import { Remote, TypertRemoteService, type RemoteStream } from '@deepseek-ai/dsh-typert-protocol'
-import TypertRegistry from '@deepseek-ai/dsh-typert-registry'
-import TypertGatewayService from '@deepseek-ai/dsh-api-gateway'
+import { Context } from '@mutantcat/cordis'
+import { apply as applyConnection, inject as connectionInject } from '@mutantcat/dsh-client-connection'
+import WebServer from '@mutantcat/dsh-host-webserver'
+import { Remote, TypertRemoteService, type RemoteStream } from '@mutantcat/dsh-typert-protocol'
+import TypertRegistry from '@mutantcat/dsh-typert-registry'
+import TypertGatewayService from '@mutantcat/dsh-api-gateway'
 import { browserCookie, provideBrowserCredentials } from './browser-credentials.ts'
 
 /** The smallest Remote stream that reads its uplink: every carrier has to serve it alike. */

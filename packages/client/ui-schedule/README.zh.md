@@ -3,7 +3,7 @@ description: "跨会话的 Web 任务管理页面及当前会话的提醒列表�
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-client-ui-schedule
+# @mutantcat/dsh-client-ui-schedule
 
 [English](README.md) | 中文
 
@@ -61,7 +61,7 @@ kind: "package-reference"
 <details>
 <summary>实现内部细节 — 点击展开</summary>
 
-浏览器入口注册 `schedules` 主面板及对应的侧栏入口、Session 页头右侧功能位中位于 `order: -5` 且紧邻更多操作菜单左侧的 `schedule-catalog` 入口、经由 `ctx.uiConversation.events` 与 ui-chat 的 list seat `conversation.chat.turnTail` 在轮次层级注册的 `schedule_create` transcript 卡片（因此它渲染在该轮收尾的 assistant 文本之后，并在工具调用组折叠时仍然可见）、root 作用域的两个 Session 行 seat `sidebar.session.row.leading` 与 `sidebar.session.row.hover`，以及 kind 为 `scheduleTask` 的右侧栏页类型 `@deepseek-ai/dsh-client-ui-schedule/task`。该类型分两阶段注册：先把其定义注册进 `ctx.sidebarRightTabs`，再按该定义的 id 把正文与 chip 注册进带键 seat `sidebar.right.pane.tab` 与 `sidebar.right.pane.tab.title`。从 Session 入口打开任务时调用 `ctx.sidebarRight.openTab`，传入该入口的 Session id 与所选任务 id，详情因此出现在该入口所属 Session 的右侧栏中；自动化任务页面保留自己的列表并共用同一个详情组件。全局页面、任务页签、行标记与行悬停区段都从同一个 `schedule.catalog` 源读取活动与未运行任务；页头入口保留自己的按 Session `schedule.list` 读取，只返回该 Session 的活动任务。每个面都使用同一套可观察的查询生命周期，并在 `schedule/changed` 或连接重置后刷新。transcript 卡片从该调用持久化的结果 JSON 收窄出创建的任务，而不是依赖 Host 追加字段；该调用自身的工具调用组单元格由 ui-tool 的通用键控视图渲染，且卡片只对产生完整任务的调用出现。该对齐是因果判定而非时钟比较：目录快照带有 `readRequest`（最新被请求的读取序号）与 `readSettled`（产出当前记录的读取序号）；Turn 尾部挂载时锚定 `readRequest` 并请求一次读取，仅在 `readSettled` 大于该锚点后才用其保留记录判定，且源把一次提交内的请求合并为单次 `list()`，只把该读取共享给尚未观察到它的调用者。比较浏览器时钟与 Host 时钟无法确立这一顺序。共用的删除回调与注入的 `onUpdateTiming` 保留所选记录的原 Session 绑定，而不使用当前打开的对话。详情保留当前任务的本地草稿、用于比较的权威值以及等待中或失败的保存；保存等待中或失败期间以及删除确认后，属主保留所显示的任务，使目录刷新在丢弃该行时既不能关闭已呈现的失败，也不能关闭陈述删除的详情。保存发出一次携带完整预期 `ScheduleRecord` 和分阶段变更的 `schedule.update` 请求；`onUpdateTiming` 刷新目录，而不把回读失败变成修改失败。
+浏览器入口注册 `schedules` 主面板及对应的侧栏入口、Session 页头右侧功能位中位于 `order: -5` 且紧邻更多操作菜单左侧的 `schedule-catalog` 入口、经由 `ctx.uiConversation.events` 与 ui-chat 的 list seat `conversation.chat.turnTail` 在轮次层级注册的 `schedule_create` transcript 卡片（因此它渲染在该轮收尾的 assistant 文本之后，并在工具调用组折叠时仍然可见）、root 作用域的两个 Session 行 seat `sidebar.session.row.leading` 与 `sidebar.session.row.hover`，以及 kind 为 `scheduleTask` 的右侧栏页类型 `@mutantcat/dsh-client-ui-schedule/task`。该类型分两阶段注册：先把其定义注册进 `ctx.sidebarRightTabs`，再按该定义的 id 把正文与 chip 注册进带键 seat `sidebar.right.pane.tab` 与 `sidebar.right.pane.tab.title`。从 Session 入口打开任务时调用 `ctx.sidebarRight.openTab`，传入该入口的 Session id 与所选任务 id，详情因此出现在该入口所属 Session 的右侧栏中；自动化任务页面保留自己的列表并共用同一个详情组件。全局页面、任务页签、行标记与行悬停区段都从同一个 `schedule.catalog` 源读取活动与未运行任务；页头入口保留自己的按 Session `schedule.list` 读取，只返回该 Session 的活动任务。每个面都使用同一套可观察的查询生命周期，并在 `schedule/changed` 或连接重置后刷新。transcript 卡片从该调用持久化的结果 JSON 收窄出创建的任务，而不是依赖 Host 追加字段；该调用自身的工具调用组单元格由 ui-tool 的通用键控视图渲染，且卡片只对产生完整任务的调用出现。该对齐是因果判定而非时钟比较：目录快照带有 `readRequest`（最新被请求的读取序号）与 `readSettled`（产出当前记录的读取序号）；Turn 尾部挂载时锚定 `readRequest` 并请求一次读取，仅在 `readSettled` 大于该锚点后才用其保留记录判定，且源把一次提交内的请求合并为单次 `list()`，只把该读取共享给尚未观察到它的调用者。比较浏览器时钟与 Host 时钟无法确立这一顺序。共用的删除回调与注入的 `onUpdateTiming` 保留所选记录的原 Session 绑定，而不使用当前打开的对话。详情保留当前任务的本地草稿、用于比较的权威值以及等待中或失败的保存；保存等待中或失败期间以及删除确认后，属主保留所显示的任务，使目录刷新在丢弃该行时既不能关闭已呈现的失败，也不能关闭陈述删除的详情。保存发出一次携带完整预期 `ScheduleRecord` 和分阶段变更的 `schedule.update` 请求；`onUpdateTiming` 刷新目录，而不把回读失败变成修改失败。
 
 刷新恢复出的任务标签没有导航参数，因为 Sidebar 只持久化标签的布局记录，不持久化打开方传入的内容。因此该页面类型自行保存从 Session 加布局记录 id 到该记录最后显示任务的 Session 和 id 的关联：每个 Session 一个 `dsh.schedule.task-tab.v1.<sessionId>` localStorage 键，按 tab id 一条记录，且从不保存任务内容。正文和 chip 只对没有导航参数的记录读取该条目，在标签出现之后成功的一次读取无法解析时将其删除，且不代替关联声称任务缺失。这样的一次读取无法为该标签给出任务标识时，正文陈述该状态，而不呈现永不结束的加载。
 

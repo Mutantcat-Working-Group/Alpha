@@ -2,17 +2,17 @@
 
 import { hostname } from 'node:os'
 import { resolve } from 'node:path'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type {} from '@deepseek-ai/dsh-fs'
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { errorChain, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
-import type {} from '@deepseek-ai/dsh-client-file-upload'
-import { canOpenNativePath, nativeFileManager, nativeFileApplications, openNativeFileApplication, openNativeAssociatedPath, revealNativePath } from '@deepseek-ai/dsh-native-command'
-import type { SessionId } from '@deepseek-ai/dsh-session'
-import type { SessionInspection } from '@deepseek-ai/dsh-session-persistence'
-import { SessionQueryError, type SessionObservation } from '@deepseek-ai/dsh-session-query'
-import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
+import type { Agent } from '@mutantcat/dsh-agent'
+import type {} from '@mutantcat/dsh-fs'
+import { Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import { errorChain, ReasoningEffortId } from '@mutantcat/dsh-llm'
+import type {} from '@mutantcat/dsh-client-file-upload'
+import { canOpenNativePath, nativeFileManager, nativeFileApplications, openNativeFileApplication, openNativeAssociatedPath, revealNativePath } from '@mutantcat/dsh-native-command'
+import type { SessionId } from '@mutantcat/dsh-session'
+import type { SessionInspection } from '@mutantcat/dsh-session-persistence'
+import { SessionQueryError, type SessionObservation } from '@mutantcat/dsh-session-query'
+import { Remote, RemoteError, TypertRemoteService } from '@mutantcat/dsh-typert-protocol'
 import {
   ApiSessionAgentController,
   inspectApiSession,
@@ -68,7 +68,7 @@ export { ApiSessionNotFound } from './agent.ts'
 export { SessionFileReferences } from './file-references.ts'
 export { SessionSkillCatalog } from './skill-catalog.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@mutantcat/cordis' {
   interface Context {
     /** Host Session business API and Remote namespace owner. */
     sessionController: SessionController

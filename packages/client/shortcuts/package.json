@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-shortcuts",
+  "name": "@mutantcat/dsh-client-shortcuts",
   "description": "Application keyboard command registry and physical-key routing",
   "version": "0.1.7-rc.2",
   "publishConfig": {
@@ -32,7 +32,7 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-locale"
+        "@mutantcat/dsh-client-locale"
       ],
       "platform": "web"
     }
@@ -43,16 +43,16 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:~"
+    "@mutantcat/cordis": "workspace:~"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/dsh-client-locale": "workspace:*",
-    "@deepseek-ai/dsh-client-store": "workspace:*",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:*",
-    "@deepseek-ai/dsh-brand": "workspace:*",
-    "@deepseek-ai/dsh-client-test-runtime": "workspace:*",
-    "@deepseek-ai/dsh-host-webserver": "workspace:*"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-client-locale": "workspace:*",
+    "@mutantcat/dsh-client-store": "workspace:*",
+    "@mutantcat/dsh-client-ui-primitives": "workspace:*",
+    "@mutantcat/dsh-brand": "workspace:*",
+    "@mutantcat/dsh-client-test-runtime": "workspace:*",
+    "@mutantcat/dsh-host-webserver": "workspace:*"
   },
   "files": [
     "lib/index.js",
@@ -61,8 +61,8 @@
     "lib/types/**/*.d.ts"
   ],
   "dependencies": {
-    "@deepseek-ai/dsh-util-crypto": "workspace:*",
-    "@deepseek-ai/dsh-util-values": "workspace:*",
-    "@deepseek-ai/schemastery": "workspace:~"
+    "@mutantcat/dsh-util-crypto": "workspace:*",
+    "@mutantcat/dsh-util-values": "workspace:*",
+    "@mutantcat/schemastery": "workspace:~"
   }
 }

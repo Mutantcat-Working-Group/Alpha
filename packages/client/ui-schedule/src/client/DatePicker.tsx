@@ -11,8 +11,8 @@ import type { KeyboardEvent, ReactNode, RefObject } from 'react'
 import clsx from 'clsx'
 import {
   IconChevronLeftOutlineRegular, IconChevronRightOutlineRegular,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+} from '@mutantcat/dsh-client-ui-primitives'
+import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
 import { PickerPopover } from './PickerPopover.tsx'
 import type { TaskManagerKey } from './task-manager-locales.ts'
 import css from './DatePicker.module.css'

@@ -1,9 +1,9 @@
 /** Optional local SenseVoice provider; activation performs no downloads or model loading. */
 import { isAbsolute } from 'node:path'
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-experimental-speech-to-text'
-import type {} from '@deepseek-ai/dsh-subprocess'
-import type { SpeechProviderId } from '@deepseek-ai/dsh-experimental-speech-to-text/types'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-experimental-speech-to-text'
+import type {} from '@mutantcat/dsh-subprocess'
+import type { SpeechProviderId } from '@mutantcat/dsh-experimental-speech-to-text/types'
 import { Config } from './config.ts'
 import { SenseVoiceWorker } from './recognizer.ts'
 import { languages } from './input.ts'

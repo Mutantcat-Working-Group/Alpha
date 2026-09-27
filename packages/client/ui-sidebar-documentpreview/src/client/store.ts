@@ -12,10 +12,10 @@
  * one listener on the owner's `signal` that forgets the bucket when the record
  * ends, and a tab that never read has no bucket to forget.
  */
-import type { RemoteFailure } from '@deepseek-ai/dsh-api-remotes/client'
-import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-store'
-import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
-import type { WorkspaceFileText } from '@deepseek-ai/dsh-api-workspace-files/types'
+import type { RemoteFailure } from '@mutantcat/dsh-api-remotes/client'
+import { defineStore, type EngineStoreHandle } from '@mutantcat/dsh-client-store'
+import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
+import type { WorkspaceFileText } from '@mutantcat/dsh-api-workspace-files/types'
 import type { DocumentFileBytes } from './rpc.ts'
 import type { DocumentLoadMode } from './document/registry.ts'
 

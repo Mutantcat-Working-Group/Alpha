@@ -4,17 +4,17 @@
  * file defaults and application lists come from the serving Host desktop.
  */
 
-import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client'
-import type { Context as ClientContext } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
-import type {} from '@deepseek-ai/dsh-client-ui-session/client'
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/client'
-import type {} from '@deepseek-ai/dsh-api-gateway/client'
-import type {} from '@deepseek-ai/dsh-api-remotes/client'
-import type {} from '@deepseek-ai/dsh-api-session-controller/remote'
-import { OPEN_IN_APP_ICON_PREFIX_ROUTE } from '@deepseek-ai/dsh-host-open-in-app/shared'
+import type { ShortcutCommandId } from '@mutantcat/dsh-client-shortcuts/client'
+import type { Context as ClientContext } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-client-locale/client'
+import type {} from '@mutantcat/dsh-client-ui-renderer/client'
+import type {} from '@mutantcat/dsh-client-ui-layout/client'
+import type {} from '@mutantcat/dsh-client-ui-session/client'
+import type {} from '@mutantcat/dsh-client-ui-sidebar-documentpreview/client'
+import type {} from '@mutantcat/dsh-api-gateway/client'
+import type {} from '@mutantcat/dsh-api-remotes/client'
+import type {} from '@mutantcat/dsh-api-session-controller/remote'
+import { OPEN_IN_APP_ICON_PREFIX_ROUTE } from '@mutantcat/dsh-host-open-in-app/shared'
 import { OpenInAppController } from './controller.ts'
 import { OpenInAppAction, type OpenInAppActionInjected } from './OpenInAppAction.tsx'
 import { OpenInAppPathController } from './open-path.ts'
@@ -23,7 +23,7 @@ import { FileRouteAction } from './FileRouteAction.tsx'
 import { OpenPathEmptyAction } from './OpenPathEmptyAction.tsx'
 import { en, NS, zh, type OpenInAppKey } from './locales.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Session-header "open workspace in application" copy. */
     'open-in-app': OpenInAppKey

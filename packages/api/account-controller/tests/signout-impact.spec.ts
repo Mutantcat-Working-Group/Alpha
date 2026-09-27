@@ -1,7 +1,7 @@
 /** Sign-out impact follows the latest logged provider of running tasks. */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@mutantcat/cordis'
 import { expect, it } from 'vitest'
-import type { Agent } from '@deepseek-ai/dsh-agent'
+import type { Agent } from '@mutantcat/dsh-agent'
 import { AccountController } from '../src/index.ts'
 
 it('reports running account requests and excludes idle or unbound tasks', async () => {

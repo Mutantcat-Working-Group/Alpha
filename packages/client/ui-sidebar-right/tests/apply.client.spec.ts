@@ -9,11 +9,11 @@
  * is what makes a reload safe. The seats' components have their own specs.
  */
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { Shortcuts, ShortcutCommand } from '@deepseek-ai/dsh-client-shortcuts/client'
+import { Context } from '@mutantcat/cordis'
+import { createSnapshotStore } from '@mutantcat/dsh-client-store'
+import type { SlotRegistry } from '@mutantcat/dsh-client-ui-renderer/client'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import type { Shortcuts, ShortcutCommand } from '@mutantcat/dsh-client-shortcuts/client'
 import { apply, inject } from '../src/client/index.ts'
 import type { GuideInjected, SidebarRightInjected } from '../src/client/index.ts'
 import { apply as hostApply } from '../src/index.ts'

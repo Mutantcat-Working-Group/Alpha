@@ -4,11 +4,11 @@
  * own context is current, because stream (re)opens run on caller stacks — a
  * React event, a carrier retry — whose dynamic context has not declared
  * `remote.job`.
- * @module @deepseek-ai/dsh-api-job-controller/client
+ * @module @mutantcat/dsh-api-job-controller/client
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-api-job-controller/remote'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-api-job-controller/remote'
 import { ClientJobsModel } from './model.ts'
 import { ClientJobs } from './service.ts'
 

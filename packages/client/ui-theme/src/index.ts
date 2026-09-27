@@ -1,12 +1,12 @@
 /** Host registration for the browser theme preference and pre-plugin palette. */
-import type {} from '@deepseek-ai/dsh-settings'
+import type {} from '@mutantcat/dsh-settings'
 
-import type { Volatile } from '@deepseek-ai/cordis'
+import type { Volatile } from '@mutantcat/cordis'
 import type { ThemePreference } from './theme-settings.ts'
-import z from '@deepseek-ai/schemastery'
+import z from '@mutantcat/schemastery'
 
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-host-webserver'
+import type { Context } from '@mutantcat/cordis'
+import type {} from '@mutantcat/dsh-host-webserver'
 import { bootThemeInjections } from './boot-theme.ts'
 import {
   DEFAULT_FONT_SIZE, DEFAULT_PREFERENCE, FONT_SIZE_MIN, FONT_SIZE_MAX, THEME_PREFERENCES,

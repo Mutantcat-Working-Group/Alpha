@@ -1,16 +1,16 @@
 /** Tool UI slot declarations and their composed component props. */
 import type {
   HostObservable, InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime, SlotHookFactory,
-} from '@deepseek-ai/dsh-client-ui-slots'
-import type { RemoteHostFacts } from '@deepseek-ai/dsh-api-remotes/client'
+} from '@mutantcat/dsh-client-ui-slots'
+import type { RemoteHostFacts } from '@mutantcat/dsh-api-remotes/client'
 import type {
   AssistantChatData, OpenFileOptions, PreparingToolCall, StartedToolCall,
   ToolResultNode, UseDisclosure,
-} from '@deepseek-ai/dsh-client-ui-chat/client'
-import type { MessageImageLoader, MessageImageSource } from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type {} from '@deepseek-ai/dsh-client-locale/client'
+} from '@mutantcat/dsh-client-ui-chat/client'
+import type { MessageImageLoader, MessageImageSource } from '@mutantcat/dsh-client-ui-conversation/client'
+import type {} from '@mutantcat/dsh-client-locale/client'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@mutantcat/dsh-client-ui-slots' {
   interface SlotMap {
     /**
      * Keyed Tool call view dispatched by wire Tool name. Any name is allowed,

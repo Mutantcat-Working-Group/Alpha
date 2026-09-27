@@ -52,7 +52,7 @@ it('grants JIT only to the standalone Node interpreter and native Office helpers
   mkdirSync(join(path, 'dependencies/node/bin'), { recursive: true })
   const node = join(path, 'dependencies/node/bin/node')
   const addon = join(path, 'addon.node')
-  const helpers = ['arm64', 'x64'].map(arch => join(path, 'node_modules/@deepseek-ai', `libreoffice-kit-darwin-${arch}`, 'bin/libreoffice-kit'))
+  const helpers = ['arm64', 'x64'].map(arch => join(path, 'node_modules/@mutantcat', `libreoffice-kit-darwin-${arch}`, 'bin/libreoffice-kit'))
   for (const helper of helpers) mkdirSync(join(helper, '..'), { recursive: true })
   for (const file of [node, addon, ...helpers]) writeFileSync(file, Buffer.from('cffaedfe00000000', 'hex'))
   await signMacOSRuntime(path, 'com.example.app', identity)

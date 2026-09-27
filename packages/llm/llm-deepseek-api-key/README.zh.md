@@ -3,7 +3,7 @@ description: "DeepSeek API key authentication and model discovery."
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-llm-deepseek-api-key
+# @mutantcat/dsh-llm-deepseek-api-key
 
 [English](README.md) | 中文
 
@@ -29,7 +29,7 @@ kind: "package-reference"
 
 ```yaml
 - id: llm-deepseek
-  name: '@deepseek-ai/dsh-llm-deepseek-api-key'
+  name: '@mutantcat/dsh-llm-deepseek-api-key'
   config:
     reasoningEffort: high
     apiKeyEnv: DEEPSEEK_API_KEY

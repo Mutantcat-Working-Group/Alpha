@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-agent-preset",
+  "name": "@mutantcat/dsh-agent-preset",
   "description": "Declare an Agent capability composition in Cordis YAML",
   "version": "0.1.7-rc.2",
   "publishConfig": {
@@ -28,21 +28,21 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:~",
-    "@deepseek-ai/dsh-agent-preset-registry": "workspace:*"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/cordis-plugin-loader": "workspace:~",
+    "@mutantcat/dsh-agent-preset-registry": "workspace:*"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:~"
+    "@mutantcat/schemastery": "workspace:~"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/cordis-plugin-include": "workspace:~",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:~",
-    "@deepseek-ai/dsh-agent-preset-registry": "workspace:*",
-    "@deepseek-ai/dsh-compaction-tool-result-pruner": "workspace:*",
-    "@deepseek-ai/dsh-skill": "workspace:*",
-    "@deepseek-ai/schemastery": "workspace:~",
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/cordis-plugin-include": "workspace:~",
+    "@mutantcat/cordis-plugin-loader": "workspace:~",
+    "@mutantcat/dsh-agent-preset-registry": "workspace:*",
+    "@mutantcat/dsh-compaction-tool-result-pruner": "workspace:*",
+    "@mutantcat/dsh-skill": "workspace:*",
+    "@mutantcat/schemastery": "workspace:~",
     "@types/js-yaml": "^4.0.9",
     "js-yaml": "^4.2.0"
   }

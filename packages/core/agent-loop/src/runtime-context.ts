@@ -2,15 +2,15 @@
  * Durable projection state for the two loop-owned surface messages the system
  * prompt plugin forms: the system prompt (surface node 0 and any in-history
  * replacement) and the dynamic runtime-context snapshot.
- * @module @deepseek-ai/dsh-agent-loop/runtime-context
+ * @module @mutantcat/dsh-agent-loop/runtime-context
  */
 
-import { createSystemMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed, ContextSnapshotSection, Message } from '@deepseek-ai/dsh-llm'
-import type { Session, SessionEvent, SessionSeq, SurfaceIntent, SystemMessage, UserMessage } from '@deepseek-ai/dsh-session'
-import { isReplacementSurfaceEvent } from '@deepseek-ai/dsh-session'
-import type { Context } from '@deepseek-ai/cordis'
-declare module '@deepseek-ai/dsh-llm' {
+import { createSystemMessage, createUserMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed, ContextSnapshotSection, Message } from '@mutantcat/dsh-llm'
+import type { Session, SessionEvent, SessionSeq, SurfaceIntent, SystemMessage, UserMessage } from '@mutantcat/dsh-session'
+import { isReplacementSurfaceEvent } from '@mutantcat/dsh-session'
+import type { Context } from '@mutantcat/cordis'
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'runtime-context': { kind: 'runtime-context' } & ContextFormed
   }

@@ -1,14 +1,14 @@
 /**
  * Event routing for the local registry: subscriptions file by filter, and
  * every commit dispatches once to each matching listener with containment.
- * @module @deepseek-ai/dsh-jobs-local/events
+ * @module @mutantcat/dsh-jobs-local/events
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { AnonymousEntries, ScopedLayers, scopeOf } from '@deepseek-ai/dsh-scope'
-import type { ScopeLayer } from '@deepseek-ai/dsh-scope'
-import type { JobEvent, JobEventFilter, JobEventListener } from '@deepseek-ai/dsh-jobs'
+import type { Context } from '@mutantcat/cordis'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { AnonymousEntries, ScopedLayers, scopeOf } from '@mutantcat/dsh-scope'
+import type { ScopeLayer } from '@mutantcat/dsh-scope'
+import type { JobEvent, JobEventFilter, JobEventListener } from '@mutantcat/dsh-jobs'
 
 /** One registered listener and the filter it declared. */
 interface Subscription {

@@ -1,5 +1,5 @@
 /** Device-local onboarding progress stored in the Host settings document. */
-import z from '@deepseek-ai/schemastery'
+import z from '@mutantcat/schemastery'
 
 /** Account feature's durable onboarding namespace. */
 export const DESKTOP_ONBOARDING_NAMESPACE = 'ui-settings-account'

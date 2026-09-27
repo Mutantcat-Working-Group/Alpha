@@ -1,6 +1,6 @@
 /** Plugin inventory from declared configuration or an activated revision. */
-import type { FiberState } from '@deepseek-ai/cordis'
-import { isJsExpr, type EntryTree } from '@deepseek-ai/cordis-plugin-loader'
+import type { FiberState } from '@mutantcat/cordis'
+import { isJsExpr, type EntryTree } from '@mutantcat/cordis-plugin-loader'
 import { entryListProblem } from './definition.ts'
 
 /**

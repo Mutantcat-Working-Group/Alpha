@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-llm-deepseek-account",
+  "name": "@mutantcat/dsh-llm-deepseek-account",
   "description": "DeepSeek account provider authentication and discovery",
   "version": "0.1.7-rc.2",
   "publishConfig": {
@@ -27,27 +27,27 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/dsh-llm": "workspace:*",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:*",
-    "@deepseek-ai/dsh-launch-environment": "workspace:*",
-    "@deepseek-ai/dsh-deepseek-account": "workspace:*",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:~"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-llm": "workspace:*",
+    "@mutantcat/dsh-llm-deepseek": "workspace:*",
+    "@mutantcat/dsh-launch-environment": "workspace:*",
+    "@mutantcat/dsh-deepseek-account": "workspace:*",
+    "@mutantcat/cordis-plugin-loader": "workspace:~"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:~",
-    "@deepseek-ai/dsh-llm": "workspace:*",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:*",
-    "@deepseek-ai/dsh-launch-environment": "workspace:*",
-    "@deepseek-ai/dsh-deepseek-account": "workspace:*",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:~",
-    "@deepseek-ai/dsh-llm-deepseek-api-key": "workspace:*"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-llm": "workspace:*",
+    "@mutantcat/dsh-llm-deepseek": "workspace:*",
+    "@mutantcat/dsh-launch-environment": "workspace:*",
+    "@mutantcat/dsh-deepseek-account": "workspace:*",
+    "@mutantcat/cordis-plugin-loader": "workspace:~",
+    "@mutantcat/dsh-llm-deepseek-api-key": "workspace:*"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/dsh-deepseek-account": {
+    "@mutantcat/dsh-deepseek-account": {
       "optional": true
     },
-    "@deepseek-ai/cordis-plugin-loader": {
+    "@mutantcat/cordis-plugin-loader": {
       "optional": true
     }
   }

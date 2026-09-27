@@ -1,7 +1,7 @@
-import { Context } from '@deepseek-ai/cordis'
-import { CordisInspectRegistryService } from '@deepseek-ai/dsh-cordis-host-runner'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRegistry from '@deepseek-ai/dsh-tools'
+import { Context } from '@mutantcat/cordis'
+import { CordisInspectRegistryService } from '@mutantcat/dsh-cordis-host-runner'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import ToolRegistry from '@mutantcat/dsh-tools'
 import { describe, expect, it } from 'vitest'
 import * as CordisInspectProviders from '../src/host.ts'
 
