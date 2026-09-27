@@ -24,12 +24,13 @@ export function installOfficeEngineResolution(runtimeDir: string): ModuleHooks |
   if (runtimeArchivePath(runtimeDir) === undefined) return undefined
   const root = realpathSync(runtimeDir)
   const archive = dirname(root)
-  const source = pathToFileURL(join(root, 'node_modules', '@mutantcat', 'libreoffice-kit-')).href
-  const destination = pathToFileURL(join(`${archive}.unpacked`, relative(archive, root), 'node_modules', '@mutantcat', 'libreoffice-kit-')).href
+  const source = pathToFileURL(join(root, 'node_modules', '@deepseek-ai', 'libreoffice-kit-')).href
+  const destination = pathToFileURL(join(`${archive}.unpacked`, relative(archive, root), 'node_modules', '@deepseek-ai', 'libreoffice-kit-')).href
   return registerHooks({
     resolve(specifier, context, nextResolve) {
       const resolved = nextResolve(specifier, context)
-      if (!/^@mutantcat\/libreoffice-kit-(?:darwin|win32|linux)-/u.test(specifier)) return resolved
+      // The engine family keeps its npm registry scope; the harness rescope never claimed it.
+      if (!/^@deepseek-ai\/libreoffice-kit-(?:darwin|win32|linux)-/u.test(specifier)) return resolved
       const canonical = pathToFileURL(realpathSync(fileURLToPath(resolved.url))).href
       if (!canonical.startsWith(source)) {
         if (canonical.startsWith(pathToFileURL(archive + '/').href)) {

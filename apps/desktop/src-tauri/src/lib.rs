@@ -145,6 +145,7 @@ struct HostEvent {
     kind: String,
     url: Option<String>,
     message: Option<String>,
+    diagnostic: Option<String>,
     injections: Option<Value>,
 }
 
@@ -460,13 +461,15 @@ fn spawn_host(handle: &AppHandle, launch: &EngineLaunch) -> Result<Receiver<Host
     let package_manager = launch.runtime.join("pnpm").join("bin").join("pnpm.mjs");
     let node_bin = launch.runtime.join("bin");
     let mut command = Command::new(&launch.node);
+    // Host argv: entry, runtime directory, project directory, the primary runtime the
+    // Office engine resolves from, the package manager the profile installs through,
+    // and the Node executable directory that command prepends to PATH.
     command
         .arg("--expose-internals")
         .arg(&entry)
         .arg(&launch.runtime)
         .arg(&launch.project)
         .arg(primary_runtime)
-        .arg("runtime")
         .arg(package_manager)
         .arg(node_bin)
         .stdin(Stdio::piped())
@@ -512,6 +515,11 @@ fn spawn_host(handle: &AppHandle, launch: &EngineLaunch) -> Result<Receiver<Host
                     });
                 }
                 "fatal" => {
+                    // The message reaches the user through the dialog; the inspected
+                    // diagnostic behind it only reaches the log.
+                    if let Some(diagnostic) = event.diagnostic.as_deref() {
+                        eprintln!("alpha: engine failed: {diagnostic}");
+                    }
                     let _ = sender.send(HostReport::Fatal(event.message.unwrap_or_else(|| {
                         "Alpha engine failed to start.".to_string()
                     })));
