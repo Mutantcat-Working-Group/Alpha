@@ -12,7 +12,7 @@
 每个包的条目用三个标识符标注：`inject` 列出插件注入的服务键，其 `cordis.yml` 树还必须加载这些服务的提供者；`refs` 列出声明引用、但未粘贴在此处的类型；`source` 链接到声明配置的源文件。范围限定为 harness 层级（`packages/`）；配置树还可能加载的 vendored cordis 插件（控制台日志记录器等）固定为上游源代码（参见 [vendoring policy](../vendor/README.md)），未收录于此目录。
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-acp -->
-<a id="deepseek-aidsh-acp"></a>
+<a id="mutantcatdsh-acp"></a>
 
 ## `@mutantcat/dsh-acp`
 
@@ -36,7 +36,7 @@ export interface AcpConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-acp -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-agent-default-model -->
-<a id="deepseek-aidsh-agent-default-model"></a>
+<a id="mutantcatdsh-agent-default-model"></a>
 
 ## `@mutantcat/dsh-agent-default-model`
 
@@ -57,7 +57,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-agent-default-model -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-agent-instructions -->
-<a id="deepseek-aidsh-agent-instructions"></a>
+<a id="mutantcatdsh-agent-instructions"></a>
 
 ## `@mutantcat/dsh-agent-instructions`
 
@@ -90,7 +90,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-agent-instructions -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-agent-loop -->
-<a id="deepseek-aidsh-agent-loop"></a>
+<a id="mutantcatdsh-agent-loop"></a>
 
 ## `@mutantcat/dsh-agent-loop`
 
@@ -122,7 +122,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-agent-loop -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-agent-preset -->
-<a id="deepseek-aidsh-agent-preset"></a>
+<a id="mutantcatdsh-agent-preset"></a>
 
 ## `@mutantcat/dsh-agent-preset`
 
@@ -137,7 +137,7 @@ export type Config = PresetDefinition
 <!-- END GENERATED config-catalog:@mutantcat/dsh-agent-preset -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-agent-preset-registry -->
-<a id="deepseek-aidsh-agent-preset-registry"></a>
+<a id="mutantcatdsh-agent-preset-registry"></a>
 
 ## `@mutantcat/dsh-agent-preset-registry`
 
@@ -157,7 +157,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-agent-preset-registry -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-agent-tool-presentation -->
-<a id="deepseek-aidsh-agent-tool-presentation"></a>
+<a id="mutantcatdsh-agent-tool-presentation"></a>
 
 ## `@mutantcat/dsh-agent-tool-presentation`
 
@@ -181,7 +181,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-agent-tool-presentation -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-api-gateway -->
-<a id="deepseek-aidsh-api-gateway"></a>
+<a id="mutantcatdsh-api-gateway"></a>
 
 ## `@mutantcat/dsh-api-gateway`
 
@@ -200,7 +200,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-api-gateway -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-api-job-controller -->
-<a id="deepseek-aidsh-api-job-controller"></a>
+<a id="mutantcatdsh-api-job-controller"></a>
 
 ## `@mutantcat/dsh-api-job-controller`
 
@@ -219,7 +219,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-api-job-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-api-session-controller -->
-<a id="deepseek-aidsh-api-session-controller"></a>
+<a id="mutantcatdsh-api-session-controller"></a>
 
 ## `@mutantcat/dsh-api-session-controller`
 
@@ -236,7 +236,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-api-session-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-api-settings-controller -->
-<a id="deepseek-aidsh-api-settings-controller"></a>
+<a id="mutantcatdsh-api-settings-controller"></a>
 
 ## `@mutantcat/dsh-api-settings-controller`
 
@@ -252,7 +252,7 @@ export interface SettingsControllerInternals {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-api-settings-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-api-terminal-controller -->
-<a id="deepseek-aidsh-api-terminal-controller"></a>
+<a id="mutantcatdsh-api-terminal-controller"></a>
 
 ## `@mutantcat/dsh-api-terminal-controller`
 
@@ -298,7 +298,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-api-terminal-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-api-workspace-controller -->
-<a id="deepseek-aidsh-api-workspace-controller"></a>
+<a id="mutantcatdsh-api-workspace-controller"></a>
 
 ## `@mutantcat/dsh-api-workspace-controller`
 
@@ -317,12 +317,12 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-api-workspace-controller -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-api-workspace-files -->
-<a id="deepseek-aidsh-api-workspace-files"></a>
+<a id="mutantcatdsh-api-workspace-files"></a>
 
 ## `@mutantcat/dsh-api-workspace-files`
 
 - `inject`: `fs` · `sandboxPolicy` · `sessions` · `typert`
-- `source`: [`packages/api/workspace-files/src/index.ts:70`](../packages/api/workspace-files/src/index.ts)
+- `source`: [`packages/api/workspace-files/src/index.ts:83`](../packages/api/workspace-files/src/index.ts)
 
 ```ts config-catalog
 /** Deployment caps on one page or one listing. */
@@ -346,7 +346,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-api-workspace-files -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-attachment-local -->
-<a id="deepseek-aidsh-attachment-local"></a>
+<a id="mutantcatdsh-attachment-local"></a>
 
 ## `@mutantcat/dsh-attachment-local`
 
@@ -383,7 +383,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-attachment-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-bash-local -->
-<a id="deepseek-aidsh-bash-local"></a>
+<a id="mutantcatdsh-bash-local"></a>
 
 ## `@mutantcat/dsh-bash-local`
 
@@ -411,12 +411,12 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-bash-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-bash-sandbox -->
-<a id="deepseek-aidsh-bash-sandbox"></a>
+<a id="mutantcatdsh-bash-sandbox"></a>
 
 ## `@mutantcat/dsh-bash-sandbox`
 
 - `inject`: `subprocess` · `sandbox` · `sandboxPolicy`
-- `refs`: [`LocalConfig`](#deepseek-aidsh-bash-local)
+- `refs`: [`LocalConfig`](#mutantcatdsh-bash-local)
 - `source`: [`packages/shell/bash-sandbox/src/index.ts:36`](../packages/shell/bash-sandbox/src/index.ts)
 
 ```ts config-catalog
@@ -432,7 +432,7 @@ export type Config = LocalConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-bash-sandbox -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-connection -->
-<a id="deepseek-aidsh-client-connection"></a>
+<a id="mutantcatdsh-client-connection"></a>
 
 ## `@mutantcat/dsh-client-connection`
 
@@ -479,7 +479,7 @@ export interface ConnectionRecoveryConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-connection -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-hmr -->
-<a id="deepseek-aidsh-client-hmr"></a>
+<a id="mutantcatdsh-client-hmr"></a>
 
 ## `@mutantcat/dsh-client-hmr`
 
@@ -496,7 +496,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-hmr -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-shortcuts -->
-<a id="deepseek-aidsh-client-shortcuts"></a>
+<a id="mutantcatdsh-client-shortcuts"></a>
 
 ## `@mutantcat/dsh-client-shortcuts`
 
@@ -512,7 +512,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-shortcuts -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-ui-plugin-manager -->
-<a id="deepseek-aidsh-client-ui-plugin-manager"></a>
+<a id="mutantcatdsh-client-ui-plugin-manager"></a>
 
 ## `@mutantcat/dsh-client-ui-plugin-manager`
 
@@ -532,7 +532,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-ui-plugin-manager -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-ui-settings-account -->
-<a id="deepseek-aidsh-client-ui-settings-account"></a>
+<a id="mutantcatdsh-client-ui-settings-account"></a>
 
 ## `@mutantcat/dsh-client-ui-settings-account`
 
@@ -582,7 +582,7 @@ export type OnboardingProcess = 'compact' | 'standard' | 'detailed'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-ui-settings-account -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-ui-settings-models -->
-<a id="deepseek-aidsh-client-ui-settings-models"></a>
+<a id="mutantcatdsh-client-ui-settings-models"></a>
 
 ## `@mutantcat/dsh-client-ui-settings-models`
 
@@ -598,7 +598,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-ui-settings-models -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-ui-sidebar-documentpreview -->
-<a id="deepseek-aidsh-client-ui-sidebar-documentpreview"></a>
+<a id="mutantcatdsh-client-ui-sidebar-documentpreview"></a>
 
 ## `@mutantcat/dsh-client-ui-sidebar-documentpreview`
 
@@ -632,7 +632,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-ui-sidebar-documentpreview -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-client-ui-theme -->
-<a id="deepseek-aidsh-client-ui-theme"></a>
+<a id="mutantcatdsh-client-ui-theme"></a>
 
 ## `@mutantcat/dsh-client-ui-theme`
 
@@ -654,7 +654,7 @@ export type ThemePreference = typeof THEME_PREFERENCES[number]
 <!-- END GENERATED config-catalog:@mutantcat/dsh-client-ui-theme -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-compaction-basic -->
-<a id="deepseek-aidsh-compaction-basic"></a>
+<a id="mutantcatdsh-compaction-basic"></a>
 
 ## `@mutantcat/dsh-compaction-basic`
 
@@ -703,7 +703,7 @@ export interface ModelCompactPolicyConfig extends CompactionPolicyConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-compaction-basic -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-compaction-tool-result-pruner -->
-<a id="deepseek-aidsh-compaction-tool-result-pruner"></a>
+<a id="mutantcatdsh-compaction-tool-result-pruner"></a>
 
 ## `@mutantcat/dsh-compaction-tool-result-pruner`
 
@@ -724,7 +724,7 @@ export interface ToolResultPruneConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-compaction-tool-result-pruner -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-cordis-host-runner -->
-<a id="deepseek-aidsh-cordis-host-runner"></a>
+<a id="mutantcatdsh-cordis-host-runner"></a>
 
 ## `@mutantcat/dsh-cordis-host-runner`
 
@@ -741,7 +741,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-cordis-host-runner -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-credentials-local -->
-<a id="deepseek-aidsh-credentials-local"></a>
+<a id="mutantcatdsh-credentials-local"></a>
 
 ## `@mutantcat/dsh-credentials-local`
 
@@ -763,7 +763,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-credentials-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-deepseek-account-platform -->
-<a id="deepseek-aidsh-deepseek-account-platform"></a>
+<a id="mutantcatdsh-deepseek-account-platform"></a>
 
 ## `@mutantcat/dsh-deepseek-account-platform`
 
@@ -804,7 +804,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-deepseek-account-platform -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-agent-team -->
-<a id="deepseek-aidsh-experimental-agent-team"></a>
+<a id="mutantcatdsh-experimental-agent-team"></a>
 
 ## `@mutantcat/dsh-experimental-agent-team`
 
@@ -829,7 +829,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-agent-team -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-api-speech-to-text -->
-<a id="deepseek-aidsh-experimental-api-speech-to-text"></a>
+<a id="mutantcatdsh-experimental-api-speech-to-text"></a>
 
 ## `@mutantcat/dsh-experimental-api-speech-to-text`
 
@@ -848,7 +848,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-api-speech-to-text -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-browser-use-chrome-devtools-mcp -->
-<a id="deepseek-aidsh-experimental-browser-use-chrome-devtools-mcp"></a>
+<a id="mutantcatdsh-experimental-browser-use-chrome-devtools-mcp"></a>
 
 ## `@mutantcat/dsh-experimental-browser-use-chrome-devtools-mcp`
 
@@ -863,7 +863,7 @@ export type Config = BrowserMcpConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-browser-use-chrome-devtools-mcp -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-browser-use-playwright-mcp -->
-<a id="deepseek-aidsh-experimental-browser-use-playwright-mcp"></a>
+<a id="mutantcatdsh-experimental-browser-use-playwright-mcp"></a>
 
 ## `@mutantcat/dsh-experimental-browser-use-playwright-mcp`
 
@@ -878,7 +878,7 @@ export type Config = BrowserMcpConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-browser-use-playwright-mcp -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-browser-use-stagehand-native -->
-<a id="deepseek-aidsh-experimental-browser-use-stagehand-native"></a>
+<a id="mutantcatdsh-experimental-browser-use-stagehand-native"></a>
 
 ## `@mutantcat/dsh-experimental-browser-use-stagehand-native`
 
@@ -920,7 +920,7 @@ export interface StagehandModelConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-browser-use-stagehand-native -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-computer-use-cua-driver-mcp -->
-<a id="deepseek-aidsh-experimental-computer-use-cua-driver-mcp"></a>
+<a id="mutantcatdsh-experimental-computer-use-cua-driver-mcp"></a>
 
 ## `@mutantcat/dsh-experimental-computer-use-cua-driver-mcp`
 
@@ -944,7 +944,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-computer-use-cua-driver-mcp -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-inspector -->
-<a id="deepseek-aidsh-experimental-inspector"></a>
+<a id="mutantcatdsh-experimental-inspector"></a>
 
 ## `@mutantcat/dsh-experimental-inspector`
 
@@ -1013,7 +1013,7 @@ export interface InspectorOptions {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-inspector -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-ptc-runtime-python -->
-<a id="deepseek-aidsh-experimental-ptc-runtime-python"></a>
+<a id="mutantcatdsh-experimental-ptc-runtime-python"></a>
 
 ## `@mutantcat/dsh-experimental-ptc-runtime-python`
 
@@ -1081,7 +1081,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-ptc-runtime-python -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-speech-to-text -->
-<a id="deepseek-aidsh-experimental-speech-to-text"></a>
+<a id="mutantcatdsh-experimental-speech-to-text"></a>
 
 ## `@mutantcat/dsh-experimental-speech-to-text`
 
@@ -1100,7 +1100,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-speech-to-text -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-speech-to-text-sensevoice -->
-<a id="deepseek-aidsh-experimental-speech-to-text-sensevoice"></a>
+<a id="mutantcatdsh-experimental-speech-to-text-sensevoice"></a>
 
 ## `@mutantcat/dsh-experimental-speech-to-text-sensevoice`
 
@@ -1159,7 +1159,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-speech-to-text-sensevoice -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-experimental-tool-agent-team -->
-<a id="deepseek-aidsh-experimental-tool-agent-team"></a>
+<a id="mutantcatdsh-experimental-tool-agent-team"></a>
 
 ## `@mutantcat/dsh-experimental-tool-agent-team`
 
@@ -1178,7 +1178,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-experimental-tool-agent-team -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-file-reference-local -->
-<a id="deepseek-aidsh-file-reference-local"></a>
+<a id="mutantcatdsh-file-reference-local"></a>
 
 ## `@mutantcat/dsh-file-reference-local`
 
@@ -1199,7 +1199,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-file-reference-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-fs-local -->
-<a id="deepseek-aidsh-fs-local"></a>
+<a id="mutantcatdsh-fs-local"></a>
 
 ## `@mutantcat/dsh-fs-local`
 
@@ -1220,12 +1220,12 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-fs-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-fs-sandbox -->
-<a id="deepseek-aidsh-fs-sandbox"></a>
+<a id="mutantcatdsh-fs-sandbox"></a>
 
 ## `@mutantcat/dsh-fs-sandbox`
 
 - `inject`: `sandboxPolicy`
-- `refs`: [`LocalConfig`](#deepseek-aidsh-fs-local)
+- `refs`: [`LocalConfig`](#mutantcatdsh-fs-local)
 - `source`: [`packages/fs/fs-sandbox/src/index.ts:45`](../packages/fs/fs-sandbox/src/index.ts)
 
 ```ts config-catalog
@@ -1240,7 +1240,7 @@ export type Config = LocalConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-fs-sandbox -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-goal -->
-<a id="deepseek-aidsh-goal"></a>
+<a id="mutantcatdsh-goal"></a>
 
 ## `@mutantcat/dsh-goal`
 
@@ -1257,7 +1257,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-goal -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-headless -->
-<a id="deepseek-aidsh-headless"></a>
+<a id="mutantcatdsh-headless"></a>
 
 ## `@mutantcat/dsh-headless`
 
@@ -1278,7 +1278,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-headless -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-hmr -->
-<a id="deepseek-aidsh-hmr"></a>
+<a id="mutantcatdsh-hmr"></a>
 
 ## `@mutantcat/dsh-hmr`
 
@@ -1301,7 +1301,7 @@ export interface HmrConfig extends ChokidarOptions {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-hmr -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-hooks-claude-code -->
-<a id="deepseek-aidsh-hooks-claude-code"></a>
+<a id="mutantcatdsh-hooks-claude-code"></a>
 
 ## `@mutantcat/dsh-hooks-claude-code`
 
@@ -1340,7 +1340,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-hooks-claude-code -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-hooks-codex -->
-<a id="deepseek-aidsh-hooks-codex"></a>
+<a id="mutantcatdsh-hooks-codex"></a>
 
 ## `@mutantcat/dsh-hooks-codex`
 
@@ -1368,7 +1368,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-hooks-codex -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-host-directory-picker-browse -->
-<a id="deepseek-aidsh-host-directory-picker-browse"></a>
+<a id="mutantcatdsh-host-directory-picker-browse"></a>
 
 ## `@mutantcat/dsh-host-directory-picker-browse`
 
@@ -1384,7 +1384,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-host-directory-picker-browse -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-host-frontend-static -->
-<a id="deepseek-aidsh-host-frontend-static"></a>
+<a id="mutantcatdsh-host-frontend-static"></a>
 
 ## `@mutantcat/dsh-host-frontend-static`
 
@@ -1401,7 +1401,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-host-frontend-static -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-host-open-in-app -->
-<a id="deepseek-aidsh-host-open-in-app"></a>
+<a id="mutantcatdsh-host-open-in-app"></a>
 
 ## `@mutantcat/dsh-host-open-in-app`
 
@@ -1433,7 +1433,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-host-open-in-app -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-host-product-telemetry-otel -->
-<a id="deepseek-aidsh-host-product-telemetry-otel"></a>
+<a id="mutantcatdsh-host-product-telemetry-otel"></a>
 
 ## `@mutantcat/dsh-host-product-telemetry-otel`
 
@@ -1469,7 +1469,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-host-product-telemetry-otel -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-host-webserver -->
-<a id="deepseek-aidsh-host-webserver"></a>
+<a id="mutantcatdsh-host-webserver"></a>
 
 ## `@mutantcat/dsh-host-webserver`
 
@@ -1493,7 +1493,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-host-webserver -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-invariants -->
-<a id="deepseek-aidsh-invariants"></a>
+<a id="mutantcatdsh-invariants"></a>
 
 ## `@mutantcat/dsh-invariants`
 
@@ -1513,7 +1513,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-invariants -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-jobs-local -->
-<a id="deepseek-aidsh-jobs-local"></a>
+<a id="mutantcatdsh-jobs-local"></a>
 
 ## `@mutantcat/dsh-jobs-local`
 
@@ -1542,7 +1542,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-jobs-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-llm-deepseek-account -->
-<a id="deepseek-aidsh-llm-deepseek-account"></a>
+<a id="mutantcatdsh-llm-deepseek-account"></a>
 
 ## `@mutantcat/dsh-llm-deepseek-account`
 
@@ -1557,7 +1557,7 @@ export type Config = ProtocolConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-llm-deepseek-account -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-llm-deepseek-api-key -->
-<a id="deepseek-aidsh-llm-deepseek-api-key"></a>
+<a id="mutantcatdsh-llm-deepseek-api-key"></a>
 
 ## `@mutantcat/dsh-llm-deepseek-api-key`
 
@@ -1575,7 +1575,7 @@ export interface Config extends ProtocolConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-llm-deepseek-api-key -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-llm-pi-ai -->
-<a id="deepseek-aidsh-llm-pi-ai"></a>
+<a id="mutantcatdsh-llm-pi-ai"></a>
 
 ## `@mutantcat/dsh-llm-pi-ai`
 
@@ -1850,7 +1850,7 @@ export type PiAiThinkingTokenBudgetField = NonNullable<OpenAICompletionsCompat['
 <!-- END GENERATED config-catalog:@mutantcat/dsh-llm-pi-ai -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-llm-replay -->
-<a id="deepseek-aidsh-llm-replay"></a>
+<a id="mutantcatdsh-llm-replay"></a>
 
 ## `@mutantcat/dsh-llm-replay`
 
@@ -1931,7 +1931,7 @@ export interface ReplayModelConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-llm-replay -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-llm-retry -->
-<a id="deepseek-aidsh-llm-retry"></a>
+<a id="mutantcatdsh-llm-retry"></a>
 
 ## `@mutantcat/dsh-llm-retry`
 
@@ -1945,7 +1945,7 @@ export type Config = Readonly<Record<string, never>>
 <!-- END GENERATED config-catalog:@mutantcat/dsh-llm-retry -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-lsp-stdio -->
-<a id="deepseek-aidsh-lsp-stdio"></a>
+<a id="mutantcatdsh-lsp-stdio"></a>
 
 ## `@mutantcat/dsh-lsp-stdio`
 
@@ -1988,7 +1988,7 @@ export interface LspLocalServerConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-lsp-stdio -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-mcp-client -->
-<a id="deepseek-aidsh-mcp-client"></a>
+<a id="mutantcatdsh-mcp-client"></a>
 
 ## `@mutantcat/dsh-mcp-client`
 
@@ -2066,7 +2066,7 @@ export interface ReconnectConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-mcp-client -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-message-feedback -->
-<a id="deepseek-aidsh-message-feedback"></a>
+<a id="mutantcatdsh-message-feedback"></a>
 
 ## `@mutantcat/dsh-message-feedback`
 
@@ -2083,7 +2083,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-message-feedback -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-office-to-pdf -->
-<a id="deepseek-aidsh-office-to-pdf"></a>
+<a id="mutantcatdsh-office-to-pdf"></a>
 
 ## `@mutantcat/dsh-office-to-pdf`
 
@@ -2135,7 +2135,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-office-to-pdf -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-permission-presets -->
-<a id="deepseek-aidsh-permission-presets"></a>
+<a id="mutantcatdsh-permission-presets"></a>
 
 ## `@mutantcat/dsh-permission-presets`
 
@@ -2175,7 +2175,7 @@ export interface PresetSpec {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-permission-presets -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-persona -->
-<a id="deepseek-aidsh-persona"></a>
+<a id="mutantcatdsh-persona"></a>
 
 ## `@mutantcat/dsh-persona`
 
@@ -2205,7 +2205,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-persona -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-plan-mode -->
-<a id="deepseek-aidsh-plan-mode"></a>
+<a id="mutantcatdsh-plan-mode"></a>
 
 ## `@mutantcat/dsh-plan-mode`
 
@@ -2222,7 +2222,7 @@ export interface PlanModeConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-plan-mode -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-plugin-manager -->
-<a id="deepseek-aidsh-plugin-manager"></a>
+<a id="mutantcatdsh-plugin-manager"></a>
 
 ## `@mutantcat/dsh-plugin-manager`
 
@@ -2257,7 +2257,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-plugin-manager -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-plugin-package-inventory-deepseek -->
-<a id="deepseek-aidsh-plugin-package-inventory-deepseek"></a>
+<a id="mutantcatdsh-plugin-package-inventory-deepseek"></a>
 
 ## `@mutantcat/dsh-plugin-package-inventory-deepseek`
 
@@ -2274,7 +2274,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-plugin-package-inventory-deepseek -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-ptc-runtime-node -->
-<a id="deepseek-aidsh-ptc-runtime-node"></a>
+<a id="mutantcatdsh-ptc-runtime-node"></a>
 
 ## `@mutantcat/dsh-ptc-runtime-node`
 
@@ -2311,7 +2311,7 @@ export interface LaunchConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-ptc-runtime-node -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-pwsh-local -->
-<a id="deepseek-aidsh-pwsh-local"></a>
+<a id="mutantcatdsh-pwsh-local"></a>
 
 ## `@mutantcat/dsh-pwsh-local`
 
@@ -2346,12 +2346,12 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-pwsh-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-pwsh-sandbox -->
-<a id="deepseek-aidsh-pwsh-sandbox"></a>
+<a id="mutantcatdsh-pwsh-sandbox"></a>
 
 ## `@mutantcat/dsh-pwsh-sandbox`
 
 - `inject`: `subprocess` · `sandbox` · `sandboxPolicy`
-- `refs`: [`LocalConfig`](#deepseek-aidsh-pwsh-local)
+- `refs`: [`LocalConfig`](#mutantcatdsh-pwsh-local)
 - `source`: [`packages/shell/pwsh-sandbox/src/index.ts:40`](../packages/shell/pwsh-sandbox/src/index.ts)
 
 ```ts config-catalog
@@ -2368,7 +2368,7 @@ export type Config = LocalConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-pwsh-sandbox -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-repeat-tool-reminder -->
-<a id="deepseek-aidsh-repeat-tool-reminder"></a>
+<a id="mutantcatdsh-repeat-tool-reminder"></a>
 
 ## `@mutantcat/dsh-repeat-tool-reminder`
 
@@ -2404,7 +2404,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-repeat-tool-reminder -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-sandbox-local -->
-<a id="deepseek-aidsh-sandbox-local"></a>
+<a id="mutantcatdsh-sandbox-local"></a>
 
 ## `@mutantcat/dsh-sandbox-local`
 
@@ -2438,7 +2438,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-sandbox-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-sandbox-policy -->
-<a id="deepseek-aidsh-sandbox-policy"></a>
+<a id="mutantcatdsh-sandbox-policy"></a>
 
 ## `@mutantcat/dsh-sandbox-policy`
 
@@ -2467,7 +2467,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-sandbox-policy -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-schedule -->
-<a id="deepseek-aidsh-schedule"></a>
+<a id="mutantcatdsh-schedule"></a>
 
 ## `@mutantcat/dsh-schedule`
 
@@ -2492,7 +2492,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-schedule -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-sdk-app -->
-<a id="deepseek-aidsh-sdk-app"></a>
+<a id="mutantcatdsh-sdk-app"></a>
 
 ## `@mutantcat/dsh-sdk-app`
 
@@ -2509,7 +2509,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-sdk-app -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-sdk-jsonrpc-server -->
-<a id="deepseek-aidsh-sdk-jsonrpc-server"></a>
+<a id="mutantcatdsh-sdk-jsonrpc-server"></a>
 
 ## `@mutantcat/dsh-sdk-jsonrpc-server`
 
@@ -2533,7 +2533,7 @@ export interface JsonRpcConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-sdk-jsonrpc-server -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-log-deepseek -->
-<a id="deepseek-aidsh-session-log-deepseek"></a>
+<a id="mutantcatdsh-session-log-deepseek"></a>
 
 ## `@mutantcat/dsh-session-log-deepseek`
 
@@ -2556,7 +2556,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-log-deepseek -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-log-export -->
-<a id="deepseek-aidsh-session-log-export"></a>
+<a id="mutantcatdsh-session-log-export"></a>
 
 ## `@mutantcat/dsh-session-log-export`
 
@@ -2576,7 +2576,7 @@ export type SessionLogCompressionLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-log-export -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-persistence-jsonl -->
-<a id="deepseek-aidsh-session-persistence-jsonl"></a>
+<a id="mutantcatdsh-session-persistence-jsonl"></a>
 
 ## `@mutantcat/dsh-session-persistence-jsonl`
 
@@ -2603,7 +2603,7 @@ export type JsonlCompression = 'zstd' | 'none'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-persistence-jsonl -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-projection-cache -->
-<a id="deepseek-aidsh-session-projection-cache"></a>
+<a id="mutantcatdsh-session-projection-cache"></a>
 
 ## `@mutantcat/dsh-session-projection-cache`
 
@@ -2628,7 +2628,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-projection-cache -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-query-sqlite -->
-<a id="deepseek-aidsh-session-query-sqlite"></a>
+<a id="mutantcatdsh-session-query-sqlite"></a>
 
 ## `@mutantcat/dsh-session-query-sqlite`
 
@@ -2676,7 +2676,7 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-query-sqlite -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-reference -->
-<a id="deepseek-aidsh-session-reference"></a>
+<a id="mutantcatdsh-session-reference"></a>
 
 ## `@mutantcat/dsh-session-reference`
 
@@ -2699,7 +2699,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-reference -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-telemetry-otel -->
-<a id="deepseek-aidsh-session-telemetry-otel"></a>
+<a id="mutantcatdsh-session-telemetry-otel"></a>
 
 ## `@mutantcat/dsh-session-telemetry-otel`
 
@@ -2744,7 +2744,7 @@ export enum SessionTelemetryMode {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-telemetry-otel -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-title -->
-<a id="deepseek-aidsh-session-title"></a>
+<a id="mutantcatdsh-session-title"></a>
 
 ## `@mutantcat/dsh-session-title`
 
@@ -2765,7 +2765,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-title -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-title-all-prompts-llm -->
-<a id="deepseek-aidsh-session-title-all-prompts-llm"></a>
+<a id="mutantcatdsh-session-title-all-prompts-llm"></a>
 
 ## `@mutantcat/dsh-session-title-all-prompts-llm`
 
@@ -2780,7 +2780,7 @@ export type Config = SessionTitleLlmConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-title-all-prompts-llm -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-session-title-first-prompt-llm -->
-<a id="deepseek-aidsh-session-title-first-prompt-llm"></a>
+<a id="mutantcatdsh-session-title-first-prompt-llm"></a>
 
 ## `@mutantcat/dsh-session-title-first-prompt-llm`
 
@@ -2795,7 +2795,7 @@ export type Config = SessionTitleLlmConfig
 <!-- END GENERATED config-catalog:@mutantcat/dsh-session-title-first-prompt-llm -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-shell-env -->
-<a id="deepseek-aidsh-shell-env"></a>
+<a id="mutantcatdsh-shell-env"></a>
 
 ## `@mutantcat/dsh-shell-env`
 
@@ -2811,7 +2811,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-shell-env -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-skill -->
-<a id="deepseek-aidsh-skill"></a>
+<a id="mutantcatdsh-skill"></a>
 
 ## `@mutantcat/dsh-skill`
 
@@ -2827,7 +2827,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-skill -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-skill-filesystem -->
-<a id="deepseek-aidsh-skill-filesystem"></a>
+<a id="mutantcatdsh-skill-filesystem"></a>
 
 ## `@mutantcat/dsh-skill-filesystem`
 
@@ -2866,7 +2866,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-skill-filesystem -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-skill-office -->
-<a id="deepseek-aidsh-skill-office"></a>
+<a id="mutantcatdsh-skill-office"></a>
 
 ## `@mutantcat/dsh-skill-office`
 
@@ -2887,7 +2887,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-skill-office -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-spill-local -->
-<a id="deepseek-aidsh-spill-local"></a>
+<a id="mutantcatdsh-spill-local"></a>
 
 ## `@mutantcat/dsh-spill-local`
 
@@ -2918,7 +2918,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-spill-local -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-spill-policy -->
-<a id="deepseek-aidsh-spill-policy"></a>
+<a id="mutantcatdsh-spill-policy"></a>
 
 ## `@mutantcat/dsh-spill-policy`
 
@@ -2935,7 +2935,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-spill-policy -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-ssh -->
-<a id="deepseek-aidsh-ssh"></a>
+<a id="mutantcatdsh-ssh"></a>
 
 ## `@mutantcat/dsh-ssh`
 
@@ -2971,7 +2971,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-ssh -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-storage-domain -->
-<a id="deepseek-aidsh-storage-domain"></a>
+<a id="mutantcatdsh-storage-domain"></a>
 
 ## `@mutantcat/dsh-storage-domain`
 
@@ -2995,7 +2995,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-storage-domain -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-storage-json -->
-<a id="deepseek-aidsh-storage-json"></a>
+<a id="mutantcatdsh-storage-json"></a>
 
 ## `@mutantcat/dsh-storage-json`
 
@@ -3017,7 +3017,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-storage-json -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-storage-sqlite -->
-<a id="deepseek-aidsh-storage-sqlite"></a>
+<a id="mutantcatdsh-storage-sqlite"></a>
 
 ## `@mutantcat/dsh-storage-sqlite`
 
@@ -3058,7 +3058,7 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-storage-sqlite -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-subagent -->
-<a id="deepseek-aidsh-subagent"></a>
+<a id="mutantcatdsh-subagent"></a>
 
 ## `@mutantcat/dsh-subagent`
 
@@ -3077,7 +3077,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-subagent -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-subagent-acp -->
-<a id="deepseek-aidsh-subagent-acp"></a>
+<a id="mutantcatdsh-subagent-acp"></a>
 
 ## `@mutantcat/dsh-subagent-acp`
 
@@ -3131,7 +3131,7 @@ export type PermissionPolicy = 'allow' | 'reject'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-subagent-acp -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-subagent-claude-code -->
-<a id="deepseek-aidsh-subagent-claude-code"></a>
+<a id="mutantcatdsh-subagent-claude-code"></a>
 
 ## `@mutantcat/dsh-subagent-claude-code`
 
@@ -3167,7 +3167,7 @@ export type ClaudeCodePermissionMode = typeof CLAUDE_CODE_PERMISSION_MODES[numbe
 <!-- END GENERATED config-catalog:@mutantcat/dsh-subagent-claude-code -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-subagent-codex -->
-<a id="deepseek-aidsh-subagent-codex"></a>
+<a id="mutantcatdsh-subagent-codex"></a>
 
 ## `@mutantcat/dsh-subagent-codex`
 
@@ -3201,7 +3201,7 @@ export type CodexPermissionMode =
 <!-- END GENERATED config-catalog:@mutantcat/dsh-subagent-codex -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-subagent-dsh-sdk -->
-<a id="deepseek-aidsh-subagent-dsh-sdk"></a>
+<a id="mutantcatdsh-subagent-dsh-sdk"></a>
 
 ## `@mutantcat/dsh-subagent-dsh-sdk`
 
@@ -3258,7 +3258,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-subagent-dsh-sdk -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-subagent-fork-in-process -->
-<a id="deepseek-aidsh-subagent-fork-in-process"></a>
+<a id="mutantcatdsh-subagent-fork-in-process"></a>
 
 ## `@mutantcat/dsh-subagent-fork-in-process`
 
@@ -3275,7 +3275,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-subagent-fork-in-process -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-subagent-spawn-in-process -->
-<a id="deepseek-aidsh-subagent-spawn-in-process"></a>
+<a id="mutantcatdsh-subagent-spawn-in-process"></a>
 
 ## `@mutantcat/dsh-subagent-spawn-in-process`
 
@@ -3292,7 +3292,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-subagent-spawn-in-process -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-system-prompt -->
-<a id="deepseek-aidsh-system-prompt"></a>
+<a id="mutantcatdsh-system-prompt"></a>
 
 ## `@mutantcat/dsh-system-prompt`
 
@@ -3326,7 +3326,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-system-prompt -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-terminal-bash -->
-<a id="deepseek-aidsh-terminal-bash"></a>
+<a id="mutantcatdsh-terminal-bash"></a>
 
 ## `@mutantcat/dsh-terminal-bash`
 
@@ -3377,7 +3377,7 @@ export type ShellDialect = 'bash' | 'pwsh'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-terminal-bash -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-time-context -->
-<a id="deepseek-aidsh-time-context"></a>
+<a id="mutantcatdsh-time-context"></a>
 
 ## `@mutantcat/dsh-time-context`
 
@@ -3396,7 +3396,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-time-context -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tmux-context -->
-<a id="deepseek-aidsh-tmux-context"></a>
+<a id="mutantcatdsh-tmux-context"></a>
 
 ## `@mutantcat/dsh-tmux-context`
 
@@ -3413,7 +3413,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tmux-context -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-token-meter -->
-<a id="deepseek-aidsh-token-meter"></a>
+<a id="mutantcatdsh-token-meter"></a>
 
 ## `@mutantcat/dsh-token-meter`
 
@@ -3427,7 +3427,7 @@ export type TokenMeterConfig = Record<string, never>
 <!-- END GENERATED config-catalog:@mutantcat/dsh-token-meter -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-bash -->
-<a id="deepseek-aidsh-tool-bash"></a>
+<a id="mutantcatdsh-tool-bash"></a>
 
 ## `@mutantcat/dsh-tool-bash`
 
@@ -3457,7 +3457,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-bash -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-bash-persistent -->
-<a id="deepseek-aidsh-tool-bash-persistent"></a>
+<a id="mutantcatdsh-tool-bash-persistent"></a>
 
 ## `@mutantcat/dsh-tool-bash-persistent`
 
@@ -3480,7 +3480,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-bash-persistent -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-fs -->
-<a id="deepseek-aidsh-tool-fs"></a>
+<a id="mutantcatdsh-tool-fs"></a>
 
 ## `@mutantcat/dsh-tool-fs`
 
@@ -3503,7 +3503,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-fs -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-fs-search -->
-<a id="deepseek-aidsh-tool-fs-search"></a>
+<a id="mutantcatdsh-tool-fs-search"></a>
 
 ## `@mutantcat/dsh-tool-fs-search`
 
@@ -3539,7 +3539,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-fs-search -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-goal -->
-<a id="deepseek-aidsh-tool-goal"></a>
+<a id="mutantcatdsh-tool-goal"></a>
 
 ## `@mutantcat/dsh-tool-goal`
 
@@ -3556,7 +3556,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-goal -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-jobs -->
-<a id="deepseek-aidsh-tool-jobs"></a>
+<a id="mutantcatdsh-tool-jobs"></a>
 
 ## `@mutantcat/dsh-tool-jobs`
 
@@ -3593,7 +3593,7 @@ export type CompletionDelivery = 'quiet' | 'wakeup'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-jobs -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-lsp -->
-<a id="deepseek-aidsh-tool-lsp"></a>
+<a id="mutantcatdsh-tool-lsp"></a>
 
 ## `@mutantcat/dsh-tool-lsp`
 
@@ -3614,7 +3614,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-lsp -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-present -->
-<a id="deepseek-aidsh-tool-present"></a>
+<a id="mutantcatdsh-tool-present"></a>
 
 ## `@mutantcat/dsh-tool-present`
 
@@ -3631,7 +3631,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-present -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-pwsh -->
-<a id="deepseek-aidsh-tool-pwsh"></a>
+<a id="mutantcatdsh-tool-pwsh"></a>
 
 ## `@mutantcat/dsh-tool-pwsh`
 
@@ -3661,7 +3661,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-pwsh -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-pwsh-persistent -->
-<a id="deepseek-aidsh-tool-pwsh-persistent"></a>
+<a id="mutantcatdsh-tool-pwsh-persistent"></a>
 
 ## `@mutantcat/dsh-tool-pwsh-persistent`
 
@@ -3684,7 +3684,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-pwsh-persistent -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-ralph -->
-<a id="deepseek-aidsh-tool-ralph"></a>
+<a id="mutantcatdsh-tool-ralph"></a>
 
 ## `@mutantcat/dsh-tool-ralph`
 
@@ -3707,7 +3707,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-ralph -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-session-query -->
-<a id="deepseek-aidsh-tool-session-query"></a>
+<a id="mutantcatdsh-tool-session-query"></a>
 
 ## `@mutantcat/dsh-tool-session-query`
 
@@ -3726,7 +3726,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-session-query -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-skill -->
-<a id="deepseek-aidsh-tool-skill"></a>
+<a id="mutantcatdsh-tool-skill"></a>
 
 ## `@mutantcat/dsh-tool-skill`
 
@@ -3743,7 +3743,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-skill -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-str-replace-editor -->
-<a id="deepseek-aidsh-tool-str-replace-editor"></a>
+<a id="mutantcatdsh-tool-str-replace-editor"></a>
 
 ## `@mutantcat/dsh-tool-str-replace-editor`
 
@@ -3762,7 +3762,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-str-replace-editor -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-subagent -->
-<a id="deepseek-aidsh-tool-subagent"></a>
+<a id="mutantcatdsh-tool-subagent"></a>
 
 ## `@mutantcat/dsh-tool-subagent`
 
@@ -3833,7 +3833,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-subagent -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-terminal -->
-<a id="deepseek-aidsh-tool-terminal"></a>
+<a id="mutantcatdsh-tool-terminal"></a>
 
 ## `@mutantcat/dsh-tool-terminal`
 
@@ -3852,7 +3852,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-terminal -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-todo -->
-<a id="deepseek-aidsh-tool-todo"></a>
+<a id="mutantcatdsh-tool-todo"></a>
 
 ## `@mutantcat/dsh-tool-todo`
 
@@ -3875,7 +3875,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-todo -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-web -->
-<a id="deepseek-aidsh-tool-web"></a>
+<a id="mutantcatdsh-tool-web"></a>
 
 ## `@mutantcat/dsh-tool-web`
 
@@ -3904,7 +3904,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-web -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-workflow -->
-<a id="deepseek-aidsh-tool-workflow"></a>
+<a id="mutantcatdsh-tool-workflow"></a>
 
 ## `@mutantcat/dsh-tool-workflow`
 
@@ -3931,7 +3931,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-workflow -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tool-workspace-dependencies -->
-<a id="deepseek-aidsh-tool-workspace-dependencies"></a>
+<a id="mutantcatdsh-tool-workspace-dependencies"></a>
 
 ## `@mutantcat/dsh-tool-workspace-dependencies`
 
@@ -3954,7 +3954,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tool-workspace-dependencies -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-tools -->
-<a id="deepseek-aidsh-tools"></a>
+<a id="mutantcatdsh-tools"></a>
 
 ## `@mutantcat/dsh-tools`
 
@@ -3991,7 +3991,7 @@ export type ToolPresentationMode = 'native' | 'ptc' | 'both'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-tools -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-typert-loader -->
-<a id="deepseek-aidsh-typert-loader"></a>
+<a id="mutantcatdsh-typert-loader"></a>
 
 ## `@mutantcat/dsh-typert-loader`
 
@@ -4008,7 +4008,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-typert-loader -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-user-approval -->
-<a id="deepseek-aidsh-user-approval"></a>
+<a id="mutantcatdsh-user-approval"></a>
 
 ## `@mutantcat/dsh-user-approval`
 
@@ -4041,7 +4041,7 @@ export type ApprovalPolicy = 'ask' | 'never'
 <!-- END GENERATED config-catalog:@mutantcat/dsh-user-approval -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-web -->
-<a id="deepseek-aidsh-web"></a>
+<a id="mutantcatdsh-web"></a>
 
 ## `@mutantcat/dsh-web`
 
@@ -4064,7 +4064,7 @@ export interface WebRuntimeConfig {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-web -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-web-app -->
-<a id="deepseek-aidsh-web-app"></a>
+<a id="mutantcatdsh-web-app"></a>
 
 ## `@mutantcat/dsh-web-app`
 
@@ -4092,7 +4092,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-web-app -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-web-fetch-http -->
-<a id="deepseek-aidsh-web-fetch-http"></a>
+<a id="mutantcatdsh-web-fetch-http"></a>
 
 ## `@mutantcat/dsh-web-fetch-http`
 
@@ -4117,7 +4117,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-web-fetch-http -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-web-search-deepseek -->
-<a id="deepseek-aidsh-web-search-deepseek"></a>
+<a id="mutantcatdsh-web-search-deepseek"></a>
 
 ## `@mutantcat/dsh-web-search-deepseek`
 
@@ -4147,7 +4147,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-web-search-deepseek -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-web-search-exa -->
-<a id="deepseek-aidsh-web-search-exa"></a>
+<a id="mutantcatdsh-web-search-exa"></a>
 
 ## `@mutantcat/dsh-web-search-exa`
 
@@ -4172,7 +4172,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-web-search-exa -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-web-search-perplexity -->
-<a id="deepseek-aidsh-web-search-perplexity"></a>
+<a id="mutantcatdsh-web-search-perplexity"></a>
 
 ## `@mutantcat/dsh-web-search-perplexity`
 
@@ -4197,7 +4197,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-web-search-perplexity -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-webhook-github -->
-<a id="deepseek-aidsh-webhook-github"></a>
+<a id="mutantcatdsh-webhook-github"></a>
 
 ## `@mutantcat/dsh-webhook-github`
 
@@ -4220,7 +4220,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-webhook-github -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-workflow-ptc -->
-<a id="deepseek-aidsh-workflow-ptc"></a>
+<a id="mutantcatdsh-workflow-ptc"></a>
 
 ## `@mutantcat/dsh-workflow-ptc`
 
@@ -4245,7 +4245,7 @@ export interface Config {
 <!-- END GENERATED config-catalog:@mutantcat/dsh-workflow-ptc -->
 
 <!-- BEGIN GENERATED config-catalog:@mutantcat/dsh-workspace-changes -->
-<a id="deepseek-aidsh-workspace-changes"></a>
+<a id="mutantcatdsh-workspace-changes"></a>
 
 ## `@mutantcat/dsh-workspace-changes`
 

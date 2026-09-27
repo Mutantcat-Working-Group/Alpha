@@ -3,20 +3,20 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-sidebar-documentpreview/README.md
 /:
-  en: ef50065f5ff17aa1
-  zh: ee5d2b7986739fca
+  en: 94b8f655e9b9cde1
+  zh: 056fc70a241a0e14
 /mutantcat-dsh-client-ui-sidebar-documentpreview:
   en: 7f1d3cd6b03d92f5
   zh: 56417195cff9a1ee
 /mutantcat-dsh-client-ui-sidebar-documentpreview/summary:
-  en: a74c16667d0baada
-  zh: 4fd709ff9f98b84f
+  en: 60197b56bab777b8
+  zh: c3ca5baca86a8556
 /mutantcat-dsh-client-ui-sidebar-documentpreview/table-of-contents:
-  en: 0dd8c3a22e28aacf
-  zh: c27c11bf4b5cceba
+  en: 115e7b2f8e190eef
+  zh: da5645639e10536a
 /mutantcat-dsh-client-ui-sidebar-documentpreview/what-it-registers:
-  en: 2a87c40fa83ecfa3
-  zh: 900fbc47567398cf
+  en: a5561a11d4d6056a
+  zh: bb302085a60457e6
 /mutantcat-dsh-client-ui-sidebar-documentpreview/addresses:
   en: 949156aa02ec8b07
   zh: d3675754e2a37b5d
@@ -24,14 +24,17 @@
   en: 5d8bf2e43d9b6dd0
   zh: b0d2d1d5a6f520db
 /mutantcat-dsh-client-ui-sidebar-documentpreview/excel-preview:
-  en: b99b0e0b8efc2853
-  zh: 4327352d1334fc6b
+  en: 89e75afe164b6a2e
+  zh: 34de54bd4850c42d
+/mutantcat-dsh-client-ui-sidebar-documentpreview/editor:
+  en: 880e9901a060b503
+  zh: 5d6006b9b0841ff4
 /mutantcat-dsh-client-ui-sidebar-documentpreview/office-preview:
   en: 372d8ce6492e6896
   zh: 912f613bc9221aa3
 /mutantcat-dsh-client-ui-sidebar-documentpreview/navigation:
-  en: 5cd81a7b3cdc83bd
-  zh: 4cdd1b7ede497925
+  en: c354dd996090864a
+  zh: 53e807d8ddbb8e05
 /mutantcat-dsh-client-ui-sidebar-documentpreview/model-experience:
   en: ca1deb99d0e44755
   zh: f285fc56cee669ec
@@ -39,8 +42,8 @@
   en: 7edb4c0bb5f13847
   zh: ae5d0bbebe4aa563
 /mutantcat-dsh-client-ui-sidebar-documentpreview/known-limitations-and-deferred-work:
-  en: 7be2ad2e198131f8
-  zh: 21b35eae72a49ad2
+  en: 263f11c3f4efd08b
+  zh: 37e542d32c886fb8
 /mutantcat-dsh-client-ui-sidebar-documentpreview/known-limitations-and-deferred-work/dev-note:
   en: 3d8904cb970145a3
   zh: a0c0cddcfedf9e42

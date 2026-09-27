@@ -43,8 +43,6 @@
     "packages/client/*/tests/**/*.host.spec.ts"
   ],
   "references": [
-    { "path": "./tsconfig.desktop-keyboard-tests.json" },
-    { "path": "./apps/desktop/tsconfig.client.json" },
     { "path": "./packages/experimental/client-ui-voice-input" },
 
     { "path": "./packages/client/ui-sidebar-terminal" },

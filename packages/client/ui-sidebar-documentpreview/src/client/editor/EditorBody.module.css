@@ -1,0 +1,74 @@
+/* The editor fills the body the document owner gives it: the strip announces
+   the unsaved state, the CodeMirror host takes the rest. */
+.editor {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* The same row as the text preview's change bar: the reason on the left, the
+   controls at the right end. */
+.strip {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 6px 10px;
+  background: var(--dsw-alias-bg-layer-2);
+  border-bottom: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+/* The save failure takes the free space so the controls keep their place; a
+   long line wraps inside the row. */
+.failure {
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.controls {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* One capsule, bordered like the text preview's page button so the strip and
+   the body below read as one sheet. */
+.control {
+  display: inline-flex;
+  flex: none;
+  gap: 6px;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  color: var(--dsw-alias-label-primary);
+  font-size: var(--dsh-content-font-size-secondary, 13px);
+  font-family: var(--dsw-font, inherit);
+  white-space: nowrap;
+  background: var(--dsw-alias-bg-layer-2);
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.control:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-active);
+}
+
+.control:disabled {
+  color: var(--dsw-alias-label-tertiary);
+  cursor: default;
+}
+
+/* CodeMirror sizes itself against this box; the theme gives the editor its
+   full height, so the host only has to stay definite. */
+.host {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}

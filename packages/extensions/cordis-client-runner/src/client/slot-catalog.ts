@@ -3230,6 +3230,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     occupants: [
       'client-ui-sidebar-documentpreview CodeBody',
       'client-ui-sidebar-documentpreview LazyExcelBody',
+      'client-ui-sidebar-documentpreview EditorBody',
       'client-ui-sidebar-documentpreview HtmlBody',
       'client-ui-sidebar-documentpreview ImageBody',
       'client-ui-sidebar-documentpreview MarkdownBody',

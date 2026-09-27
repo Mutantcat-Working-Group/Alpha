@@ -91,7 +91,8 @@ interface GuardedLine {
  * token. Every one is a staging or fixture path for the engine's own files.
  */
 const EXTERNAL_ENGINE_LINES: readonly GuardedLine[] = [
-  { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 153, reason: 'stages the engine prebuilds.json beside the runtime' },
+  { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 145, reason: 'reads the engine manifest from the staged node_modules' },
+  { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 161, reason: 'reads the engine platform directory from the staged node_modules' },
   { file: 'python/sdk/tests/test_release_version.py', line: 149, reason: 'reads an engine asset from the packed office tree' },
   { file: 'python/sdk/tests/test_runtime_resolution.py', line: 320, reason: 'selects a foreign engine platform directory' },
   { file: 'scripts/libreoffice-packages.mjs', line: 25, reason: 'stages the engine package into the EXE payload' },
@@ -171,6 +172,9 @@ function isRescopeExcluded(file: string): boolean {
   if (file.startsWith('.agents/notes/')) return true
   // Upstream vendored files keep their upstream text.
   if (/^vendor\/[^/]+\/(README\.md|LICENSE)$/.test(file)) return true
+  // The vendored-set log names the legacy scope on purpose where it records the
+  // compatibility rewrite the Loader performs.
+  if (file === 'vendor/README.md') return true
   return !EXTENSIONS.some(extension => file.endsWith(extension))
 }
 

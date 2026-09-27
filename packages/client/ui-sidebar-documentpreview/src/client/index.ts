@@ -38,6 +38,7 @@ import { apply as registerPdf } from './pdf/index.ts'
 import { apply as registerCode } from './code/index.ts'
 import { apply as registerOffice } from './office/index.ts'
 import { apply as registerExcel } from './excel/index.ts'
+import { apply as registerEditor } from './editor/index.ts'
 import { Config } from '../config.ts'
 
 // Values stay package-private unless another package needs them; the plugin
@@ -47,7 +48,12 @@ export type { SidebarDocumentPreviewKey } from './locales.ts'
 export type { TextPreviewProps } from './TextPreview.tsx'
 export type { TextInjected } from './face.ts'
 export type { ReadDocumentBytes, DocumentFileBytes, ReadWorkspaceFilePage, SessionFile, WorkspaceFilesReadRemote } from './rpc.ts'
+export type { WorkspaceFilesWriteRemote, WriteWorkspaceFile } from './rpc.ts'
 export type { TextPage, TextState, TextStore, TextTabState } from './store.ts'
+export type { EditorState, EditorStore, EditorTabState } from './editor/store.ts'
+export type { EditorBodyInjected, EditorBodyProps, RetainedEditorState } from './editor/EditorBody.tsx'
+export type { EditorText, ReadEditorText } from './editor/read.ts'
+export type { SidebarEditorKey } from './editor/locales.ts'
 export type { DocumentContent, DocumentPreviewProps, DocumentTextPage } from './document/contract.ts'
 export type { DocumentLoadMode, DocumentPreviewDefinition } from './document/registry.ts'
 
@@ -127,4 +133,5 @@ export function apply(ctx: ClientContext): void {
   registerOffice(ctx, config.office)
   registerExcel(ctx, config.excel)
   registerCode(ctx)
+  registerEditor(ctx)
 }
