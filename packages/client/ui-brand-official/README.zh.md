@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-本包让所有构建 profile 在侧栏与会话首屏显示 Alpha 标志，并让 `official` 构建在侧栏显示 Alpha 名称；其他 profile 保留外壳的本地构建名称标签及其版本号。品牌为 Alpha 的部署应选择本包；使用其他品牌的部署应提供替代品牌包。本包不保留运行时状态，也不影响模型请求。
+本包让所有构建 profile 在侧栏与会话首屏显示 Alpha 标志，并让 `official` 构建在侧栏显示 Alpha 名称；其他 profile 保留外壳的本地构建名称标签。品牌行里的版本徽标由外壳自己渲染，两种名称旁边都会带上它。品牌为 Alpha 的部署应选择本包；使用其他品牌的部署应提供替代品牌包。本包不保留运行时状态，也不影响模型请求。
 
 ## 目录
 
@@ -29,7 +29,7 @@ kind: "package-reference"
 
 ### 选择 profile
 
-`DSH_CLIENT_BUILD_PROFILE` 决定侧栏名称。`official` 构建显示 Alpha 名称；任何其他取值都让外壳的本地构建标签与版本号保持原样。Alpha 标志在所有 profile 下都渲染。两种情况下插件都会照常加载并通过校验；只有名称注册受 profile 门控。
+`DSH_CLIENT_BUILD_PROFILE` 决定侧栏名称。`official` 构建显示 Alpha 名称；任何其他取值都让外壳的本地构建标签保持原样，版本徽标由外壳自己渲染，在两种名称旁都会显示。Alpha 标志在所有 profile 下都渲染。两种情况下插件都会照常加载并通过校验；只有名称注册受 profile 门控。
 
 ### 替换品牌
 

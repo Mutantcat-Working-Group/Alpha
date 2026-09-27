@@ -16,6 +16,7 @@ export const ALPHA_MARK_STROKES = [
 
 /**
  * Render the Alpha mark.
+ *
  * @param props.size - width and height in px (default 24).
  * @param props.className - extra class for layout placement.
  * @returns the mark svg (aria-hidden; pair with the wordmark for accessibility).
