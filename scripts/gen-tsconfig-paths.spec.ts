@@ -34,13 +34,21 @@ describe('generated tsconfig package aliases', () => {
       { specifier: '@mutantcat/dsh-a', source: './packages/g/a/src', hasInvariant: true },
       { specifier: '@mutantcat/dsh-b', source: './packages/g/b/src', hasInvariant: false },
     ]
-    const body = renderAliases(aliases, new Set(['@mutantcat/dsh-a']))
+    const handWritten = [{ specifier: '@mutantcat/dsh-a', source: './packages/g/a/src' }]
+    const body = renderAliases(aliases, handWritten)
 
     // The hand-written bare alias is skipped; its /invariant sibling is not.
+    // A hand-written alias earns a legacy twin beside the current-scope rows.
     expect(body).toBe([
       '      "@mutantcat/dsh-a/invariant": ["./packages/g/a/src/invariant.ts"]',
       '      "@mutantcat/dsh-b": ["./packages/g/b/src"]',
-    ].join(',\n'))
+    ].join(',\n') + ',\n'
+      + '      // Pre-rescope names, kept resolvable for plugins published against them.\n'
+      + [
+        '      "@deepseek-ai/dsh-a": ["./packages/g/a/src"]',
+        '      "@deepseek-ai/dsh-a/invariant": ["./packages/g/a/src/invariant.ts"]',
+        '      "@deepseek-ai/dsh-b": ["./packages/g/b/src"]',
+      ].join(',\n'))
     expect(body.endsWith(',')).toBe(false)
   })
 
