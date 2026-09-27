@@ -1,6 +1,16 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for harness-scope.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/harness-scope.md
-harness-scope.md: aeac939a139725f37cb515628d96207c42a4e18e
-harness-scope.zh.md: 6932d33130058e8f5bd4ebe5916c4e7da3589053
+/harness-package-rescope:
+  en: 65fe75bd1b48a563
+  zh: e6c0c7c09797fde8
+/harness-package-rescope/scope-mapping:
+  en: f5b0072e69e05c3d
+  zh: 871926e53150e6f2
+/harness-package-rescope/compatibility-for-old-scope-consumers:
+  en: 41c57b9019850f53
+  zh: 1ef774c06972552e
+/harness-package-rescope/applying-and-reverting:
+  en: 8341e325613db5ee
+  zh: d2766244d79fdcf0

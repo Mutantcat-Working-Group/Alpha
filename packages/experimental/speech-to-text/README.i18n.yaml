@@ -5,33 +5,33 @@
 /:
   en: 22f9a7932dfa9329
   zh: c8cb8d78a0dba75d
-/deepseek-ai-dsh-experimental-speech-to-text:
-  en: 1a43b004088e8d7a
-  zh: 0f54697b2ebbaced
-/deepseek-ai-dsh-experimental-speech-to-text/summary:
+/mutantcat-dsh-experimental-speech-to-text:
+  en: 714cdd7af3ee2727
+  zh: b06782520182296e
+/mutantcat-dsh-experimental-speech-to-text/summary:
   en: a70b8d594ad6240b
   zh: 19f25b113876504e
-/deepseek-ai-dsh-experimental-speech-to-text/table-of-contents:
+/mutantcat-dsh-experimental-speech-to-text/table-of-contents:
   en: d152484eb41ac6b4
   zh: 364c80ee00a374ff
-/deepseek-ai-dsh-experimental-speech-to-text/use-this-package:
+/mutantcat-dsh-experimental-speech-to-text/use-this-package:
   en: faf7c49d8870eaad
   zh: 9c1c42eba9660f75
-/deepseek-ai-dsh-experimental-speech-to-text/understand-the-implementation:
+/mutantcat-dsh-experimental-speech-to-text/understand-the-implementation:
   en: ed5da4ea3ef6a0a8
   zh: 7f12a1f42cd48c36
-/deepseek-ai-dsh-experimental-speech-to-text/further-exploration:
+/mutantcat-dsh-experimental-speech-to-text/further-exploration:
   en: 5c64426add9d79d6
   zh: 4e06aa2ead8d2ccd
-/deepseek-ai-dsh-experimental-speech-to-text/model-experience:
+/mutantcat-dsh-experimental-speech-to-text/model-experience:
   en: 3c5a85f8b7129ce8
   zh: d5f491ca88d9a810
-/deepseek-ai-dsh-experimental-speech-to-text/model-experience/kv-cache-effect:
+/mutantcat-dsh-experimental-speech-to-text/model-experience/kv-cache-effect:
   en: b5ec79db2e1d0dbc
   zh: e5aff567ae5ee6fc
-/deepseek-ai-dsh-experimental-speech-to-text/known-limitations-and-deferred-work:
+/mutantcat-dsh-experimental-speech-to-text/known-limitations-and-deferred-work:
   en: 947c3e506a569f5a
   zh: 432a35dfe77f498f
-/deepseek-ai-dsh-experimental-speech-to-text/known-limitations-and-deferred-work/dev-note:
+/mutantcat-dsh-experimental-speech-to-text/known-limitations-and-deferred-work/dev-note:
   en: 0225ba087c5266f3
   zh: 4e706f1b2b984e63

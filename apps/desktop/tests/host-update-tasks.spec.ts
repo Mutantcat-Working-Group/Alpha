@@ -1,42 +1,16 @@
 import { Context } from '@mutantcat/cordis'
-import { JobId, JobRegistry } from '@mutantcat/dsh-jobs'
-import type { JobStatus, JobView } from '@mutantcat/dsh-jobs'
-import { SessionId } from '@mutantcat/dsh-session/types'
 import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { installDesktopUpdateTaskControl } from '../../desktop-host/src/update-tasks.ts'
 
-type AgentState = { id: SessionId; status: 'idle' | 'running'; inbox: { nextTurn: object[]; nextStep: object[] } }
+type AgentState = { status: 'idle' | 'running'; inbox: { nextTurn: object[]; nextStep: object[] } }
+type JobState = { status: 'running' | 'stopping' | 'finished' }
 
 let ctx: Context
 let inspect: ReturnType<typeof installDesktopUpdateTaskControl>
 const agents: AgentState[] = []
-const jobs = new Map<SessionId | undefined, JobStatus[]>()
-
-/** A registry whose only served member is the per-owner roster the inspector reads. */
-class RosterOnlyJobRegistry extends JobRegistry {
-  readonly events = { subscribe: () => () => {} }
-  start(): never { throw new Error('unsupported') }
-  list(caller?: SessionId): JobView[] {
-    return (jobs.get(caller) ?? []).map((status, index) => ({
-      id: JobId(`bash-${index + 1}`),
-      kind: 'bash',
-      label: 'sleep 60',
-      ...caller === undefined ? {} : { owner: caller },
-      status,
-      startedAt: 0,
-      output: { total: 0, earliest: 0 },
-    }))
-  }
-  get(): never { throw new Error('unsupported') }
-  read(): never { throw new Error('unsupported') }
-  readAt(): never { throw new Error('unsupported') }
-  kill(): never { throw new Error('unsupported') }
-  wait(): never { throw new Error('unsupported') }
-  remove(): never { throw new Error('unsupported') }
-  attachController(): () => void { return () => {} }
-}
+const jobs = new Map<AgentState | undefined, JobState[]>()
 
 beforeEach(() => {
   agents.length = 0
@@ -44,16 +18,16 @@ beforeEach(() => {
   ctx = new Context()
   // Narrow service doubles exercise the inspector against a real Cordis event lifecycle.
   ctx.provide('agents', { list: () => agents } as unknown as Context['agents'])
-  new RosterOnlyJobRegistry(ctx)
+  ctx.provide('jobs', { list: (agent?: AgentState) => jobs.get(agent) ?? [] } as unknown as Context['jobs'])
   inspect = installDesktopUpdateTaskControl(ctx)
 })
 
 afterEach(async () => { await ctx.fiber.dispose() })
 
-function idleAgent(): AgentState { return { id: SessionId('update-task-owner'), status: 'idle', inbox: { nextTurn: [], nextStep: [] } } }
+function idleAgent(): AgentState { return { status: 'idle', inbox: { nextTurn: [], nextStep: [] } } }
 
 function request(next: () => Promise<void>) {
-  const incoming = Readable.from([]) as IncomingMessage
+  const incoming = Readable.from([]) as unknown as IncomingMessage
   const response = { writeHead: vi.fn(), end: vi.fn() }
   return { response, done: ctx.waterfall('connection/request', incoming, response as unknown as ServerResponse, next) }
 }
@@ -74,10 +48,10 @@ describe('Desktop Host update task protection', () => {
   it.each(['running', 'stopping'] as const)('counts global and agent-owned %s jobs', async (status) => {
     const agent = idleAgent()
     agents.push(agent)
-    for (const owner of [undefined, agent.id]) {
-      jobs.set(owner, [status])
+    for (const owner of [undefined, agent]) {
+      jobs.set(owner, [{ status }])
       expect(await inspect('inspect')).toBe(true)
-      jobs.set(owner, ['completed'])
+      jobs.set(owner, [{ status: 'finished' }])
       expect(await inspect('inspect')).toBe(false)
     }
   })

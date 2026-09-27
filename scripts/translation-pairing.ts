@@ -125,6 +125,13 @@ const NON_SOURCE_DIRECTORIES = new Set([
   'vendor',
 ])
 
+/** Repository-relative prefixes of generated desktop packaging trees. */
+const DESKTOP_BUILD_PREFIXES = [
+  'apps/desktop/.desktop-build/',
+  'apps/desktop/src-tauri/staging/',
+  'apps/desktop/src-tauri/target/',
+]
+
 /** Glob traversal exclusions corresponding to the non-source path predicate. */
 export const TRANSLATION_SCOPE_GLOB_EXCLUDES = [
   '.agents/notes/archived/**',
@@ -144,6 +151,7 @@ export const TRANSLATION_SCOPE_GLOB_EXCLUDES = [
   'apps/web/dist/**',
   '.artifacts/**',
   'python/sdk-runtime/src/deepseek_harness_runtime/runtime/**',
+  ...DESKTOP_BUILD_PREFIXES.map(prefix => `${prefix}**`),
   'vendor/**',
 ]
 
@@ -155,6 +163,7 @@ function isTranslationSourceExcluded(file: string): boolean {
     || segment.startsWith('.node-next-types-'))
     || file.startsWith('apps/web/dist/')
     || file.startsWith('python/sdk-runtime/src/deepseek_harness_runtime/runtime/')
+    || DESKTOP_BUILD_PREFIXES.some(prefix => file.startsWith(prefix))
 }
 
 /** Whether one discovered Markdown or sidecar path belongs to the bilingual source corpus. */

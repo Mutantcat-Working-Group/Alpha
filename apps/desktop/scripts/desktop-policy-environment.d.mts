@@ -2,7 +2,6 @@
 export interface DesktopPolicyEnvironment {
   origin: string
   allowedPageOrigins: string[]
-  allowedAuthOrigins?: string[]
   authentication: 'anonymous' | 'feishu-test'
   [key: string]: unknown
 }

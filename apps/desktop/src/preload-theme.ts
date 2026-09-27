@@ -1,4 +1,4 @@
-/** Mirrors the Web UI's theme source into Electron's native theme so native chrome and Platform login pages follow the app palette. */
+/** Mirrors the Web UI's theme source into the macOS native theme so window vibrancy follows the app palette. */
 
 import { ipcRenderer } from 'electron'
 import { DESKTOP_IPC } from './ipc.ts'
@@ -7,15 +7,14 @@ import { DESKTOP_IPC } from './ipc.ts'
 const THEME_SOURCE_ATTRIBUTE = 'data-ds-theme-source'
 
 /**
- * Watches `html[data-ds-theme-source]` and forwards each value to the main
- * process, which sets `nativeTheme.themeSource`. Native chrome and renderer
- * `prefers-color-scheme` queries on every platform then follow the app's
- * theme preference instead of the OS appearance while `system` keeps
- * following the OS; the macOS sidebar vibrancy material is one such consumer.
- * The main process reads the same value back as `shouldUseDarkColors` when a
- * Platform login link needs the resolved palette.
+ * On macOS, watches `html[data-ds-theme-source]` and forwards each value to
+ * the main process, which sets `nativeTheme.themeSource` — the sidebar
+ * vibrancy material then follows the app's theme preference instead of the
+ * OS appearance, while `system` keeps following the OS. Other platforms
+ * never send.
  */
 export function syncNativeTheme(): void {
+  if (process.platform !== 'darwin') return
   let sent: string | undefined
   const send = (): void => {
     const value = document.documentElement.getAttribute(THEME_SOURCE_ATTRIBUTE)
@@ -29,6 +28,6 @@ export function syncNativeTheme(): void {
   }
   // The preload runs before the document root exists; the theme bootstrap
   // script writes the attribute before DOMContentLoaded.
-  if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', observe, { once: true })
+  if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', observe)
   else observe()
 }

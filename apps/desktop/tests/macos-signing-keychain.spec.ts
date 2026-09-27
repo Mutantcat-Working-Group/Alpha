@@ -4,13 +4,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { withMacOSSigningKeychain } from '../scripts/macos-signing-keychain.mjs'
 
 const environment = { CSC_LINK: '/signing.p12', CSC_KEY_PASSWORD: 'export-secret', DSH_DESKTOP_MACOS_SIGNING_IDENTITY: 'Example (TEAMID1234)' }
-const USER_KEYCHAINS = ['/Users/example/Library/Keychains/login.keychain-db', '/Library/Keychains/System.keychain']
-const keychainListOutput = `${USER_KEYCHAINS.map(path => `    "${path}"`).join('\n')}\n`
-const runKeychainList = () => keychainListOutput
 
 describe('temporary macOS signing identity', () => {
   it('scopes signing to the imported identity and removes credentials before invoking the build', async () => {
-    const run = vi.fn<(command: string, args: string[]) => string>(runKeychainList)
+    const run = vi.fn<(command: string, args: string[]) => void>()
     let keychain = ''
     await withMacOSSigningKeychain(environment, async (env) => {
       keychain = env.CSC_KEYCHAIN!
@@ -27,21 +24,11 @@ describe('temporary macOS signing identity', () => {
     const partition = run.mock.calls.find(([, args]) => args[0] === 'set-key-partition-list')![1]
     expect(partition[partition.indexOf('-k') + 1]).toBe(create[2])
     expect(create[2]).not.toBe(environment.CSC_KEY_PASSWORD)
-    const searchListCalls = run.mock.calls.map(([, args]) => args).filter(args => args[0] === 'list-keychains')
-    expect(searchListCalls).toEqual([
-      ['list-keychains', '-d', 'user'],
-      ['list-keychains', '-d', 'user', '-s', keychain, ...USER_KEYCHAINS],
-      ['list-keychains', '-d', 'user', '-s', ...USER_KEYCHAINS],
-    ])
-    expect(run.mock.calls.findIndex(([, args]) => args[0] === 'list-keychains')).toBeLessThan(run.mock.calls.findIndex(([, args]) => args[0] === '--force'))
   })
 
   it.each(['import', '--force', 'build'])('cleans up and prevents subsequent work after %s fails', async (stage) => {
     const action = vi.fn(async () => { if (stage === 'build') throw Error('build failure') })
-    const run = vi.fn<(command: string, args: string[]) => string>((_command, args) => {
-      if (args[0] === stage) throw Error('tool failure')
-      return keychainListOutput
-    })
+    const run = vi.fn((_command: string, args: string[]) => { if (args[0] === stage) throw Error('tool failure') })
     await expect(withMacOSSigningKeychain(environment, action, run)).rejects.toThrow(/failure/u)
     const keychain = run.mock.calls[0]![1].at(-1)!
     expect(run.mock.calls.at(-1)?.[1]).toEqual(['delete-keychain', keychain])
@@ -59,10 +46,7 @@ describe('temporary macOS signing identity', () => {
       await bothReady
       expect(paths.every(path => existsSync(dirname(path)))).toBe(true)
     }
-    await Promise.all([
-      withMacOSSigningKeychain(environment, action, runKeychainList),
-      withMacOSSigningKeychain(environment, action, runKeychainList),
-    ])
+    await Promise.all([withMacOSSigningKeychain(environment, action, () => {}), withMacOSSigningKeychain(environment, action, () => {})])
     expect(new Set(paths).size).toBe(2)
     expect(paths.every(path => !existsSync(dirname(path)))).toBe(true)
   })

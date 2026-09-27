@@ -7,14 +7,13 @@ export type DesktopAutoUpdateEnvironment = 'test' | 'production'
 /** Directory name of one supported Desktop release target. */
 export type DesktopAutoUpdateTarget = 'mac-arm64' | 'mac-x64' | 'win-x64'
 
-/** Public updater URL and object prefixes for one release target. */
+/** Public updater URL for one release target. */
 export interface DesktopAutoUpdateConfig {
   readonly environment: DesktopAutoUpdateEnvironment
   readonly target: DesktopAutoUpdateTarget
   readonly origin: string
   readonly publicUrl: string
   readonly keyPrefix: string
-  readonly binaryKeyPrefix: string
 }
 
 /** Public updater URL and private COS destination for one upload target. */
@@ -63,12 +62,12 @@ export function desktopUpdateMetadataFilename(
 ): string
 
 /**
- * Resolve the public updater URL and object prefixes for one release target.
+ * Resolve the public updater URL for one release target.
  * @param env - Packaging or upload environment.
  * @param platform - Target Node.js platform.
  * @param arch - Target Node.js architecture.
  * @returns Resolved updater configuration.
- * @throws When the test deployment lacks a valid HTTPS origin or a 32-character lowercase hexadecimal release ID.
+ * @throws When the test deployment lacks a valid HTTPS origin.
  */
 export function resolveDesktopAutoUpdateConfig(
   env: NodeJS.ProcessEnv,
@@ -82,7 +81,7 @@ export function resolveDesktopAutoUpdateConfig(
  * @param platform - Target Node.js platform.
  * @param arch - Target Node.js architecture.
  * @returns Resolved upload configuration.
- * @throws When the selected deployment lacks a bucket or valid updater configuration.
+ * @throws When the selected deployment lacks a required origin or bucket, or the test origin is not HTTPS.
  */
 export function resolveDesktopUploadConfig(
   env: NodeJS.ProcessEnv,

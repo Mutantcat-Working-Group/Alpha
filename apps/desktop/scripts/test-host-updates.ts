@@ -28,7 +28,7 @@ try {
     { id: 'session-title-llm', disabled: true },
     { id: 'session-telemetry-otel', disabled: true },
     { id: 'agent-instructions', disabled: true },
-    { id: 'agent-preset-registry', config: { default: 'standard' } },
+    { id: 'agent-presets', config: { default: 'standard', includeUserRoot: false } },
     { insert: [{ id: 'update-qualification', name: new URL('../tests/fixtures/host-update-control.mjs', import.meta.url).href }] },
   ]))
   const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) =>

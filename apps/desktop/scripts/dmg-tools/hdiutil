@@ -1,0 +1,26 @@
+#!/bin/bash
+# Retry a failed `hdiutil detach` with -force for the local DMG build.
+#
+# tauri's create-dmg script detaches the image it mounted, and in an
+# interactive Finder session that detach can fail with "Resource busy" because
+# Finder holds the mounted volume; the script gives up after three retries and
+# the build fails with exit code 16. Hosted CI runners have no such holder, so
+# the first detach succeeds there and this shim passes every command through.
+set -u
+
+if [ "${1:-}" = "detach" ]; then
+  forced=false
+  for arg in "$@"; do
+    if [ "$arg" = "-force" ]; then
+      forced=true
+    fi
+  done
+  if [ "$forced" = "false" ]; then
+    if /usr/bin/hdiutil "$@"; then
+      exit 0
+    fi
+    exec /usr/bin/hdiutil "$@" -force
+  fi
+fi
+
+exec /usr/bin/hdiutil "$@"

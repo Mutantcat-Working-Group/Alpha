@@ -29,10 +29,9 @@ interface CosRequestOptions {
  * caller names none; that header is removed here so uploading leaves cache policy to deployment
  * infrastructure.
  * @param credentials SecretId and SecretKey for the selected deployment.
- * @param timeoutMs Request-level inactivity deadline; a caller that must not wait out a transfer passes its own.
  * @returns A COS client that sends HTTPS requests to the region named by each call.
  */
-export function createDesktopCos(credentials: DesktopCosCredentials, timeoutMs: number = TRANSFER_TIMEOUT_MS): COS {
+export function createDesktopCos(credentials: DesktopCosCredentials): COS {
   const cos = new COS({
     SecretId: credentials.secretId,
     SecretKey: credentials.secretKey,
@@ -42,7 +41,7 @@ export function createDesktopCos(credentials: DesktopCosCredentials, timeoutMs: 
     AutoSwitchHost: false,
     CorrectClockSkew: false,
     ChunkRetryTimes: 0,
-    Timeout: timeoutMs,
+    Timeout: TRANSFER_TIMEOUT_MS,
     UploadCheckContentMd5: false,
   })
   cos.on('before-send', (options: CosRequestOptions) => {

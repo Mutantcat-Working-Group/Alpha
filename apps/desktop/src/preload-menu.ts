@@ -22,8 +22,7 @@ export function installWindowsMenu(): { update(): void; dispose(): void } {
       font: inherit; font-size: 14px; cursor: default; }
     button:hover, button[aria-expanded=true] { background: var(--dsw-alias-interactive-bg-hover);
       color: var(--dsw-alias-label-primary); }
-    button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: -2px; }
-    :host-context(html[data-input-modality='pointer']) button:focus-visible { outline-color: transparent; }
+    button:focus-visible { outline: 2px solid var(--dsw-alias-label-primary); outline-offset: -2px; }
   `
   const bar = document.createElement('div')
   bar.setAttribute('role', 'menubar')

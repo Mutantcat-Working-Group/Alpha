@@ -23,8 +23,10 @@ import type { DesktopPaths } from './paths.ts'
 import type { DesktopRelease } from './release.ts'
 import { readDesktopRuntime } from './runtime-tree.ts'
 import {
-  initProfile, PROFILE_TEMPLATES, removeLinkProjections, sanitizeProfile, type ProfileTemplate,
+  initProfile, PROFILE_TEMPLATES, sanitizeProfile, type ProfileTemplate,
 } from '@mutantcat/dsh-app-boot'
+import { migrateDesktopProfileLinks } from './profile-packages.ts'
+import { cleanProfileCorePackages } from './profile-core-cleanup.ts'
 
 const PROJECT_NAME = '@mutantcat/dsh-desktop-runtime'
 const DSH_PACKAGE = '@mutantcat/dsh'
@@ -79,14 +81,15 @@ export class DesktopProjectManager {
 
   /**
    * Load application metadata and prepare the external plugin profile without installing packages.
+   * @param production - Remove application-owned profile packages before packaged Host startup.
    */
-  async applyRelease(): Promise<void> {
+  async applyRelease(production = false): Promise<void> {
     await this.withLock(() => {
-      // Validation only: an unreadable or mismatched runtime descriptor stops preparation before the Host starts.
-      readDesktopRuntime(this.runtime.dsh)
+      const descriptor = readDesktopRuntime(this.runtime.dsh)
+      cleanProfileCorePackages(this.paths.profile, descriptor.sharedPackages.map(entry => entry.name), production)
       migrateProfileSettings(this.paths.profile)
+      migrateDesktopProfileLinks(this.paths.profile)
       createPluginProfile(this.paths.profile)
-      removeLinkProjections(this.paths.profile)
     })
   }
 

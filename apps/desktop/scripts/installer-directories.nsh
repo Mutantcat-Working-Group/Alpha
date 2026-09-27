@@ -17,11 +17,7 @@ Var dshNewMoved
   ${If} $R0 != 0
     DetailPrint $R1
     Call dshRollbackDirectories
-    !ifmacrodef customInstallerExtractFailed
-      !insertmacro customInstallerExtractFailed "${FILE}"
-    !else
-      MessageBox MB_OK|MB_ICONEXCLAMATION "$(decompressionFailed)" /SD IDOK
-    !endif
+    MessageBox MB_OK|MB_ICONEXCLAMATION "$(decompressionFailed)" /SD IDOK
     SetErrorLevel 2
     Quit
   ${EndIf}

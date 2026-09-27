@@ -1,5 +1,5 @@
 {
-  "darwin:en-US": {
+  "en-US": {
     "menu": [
       { "label": "About DeepSeek Harness", "role": "about" },
       { "type": "separator" }
@@ -12,35 +12,9 @@
       "iconPath": "<app icon>"
     }
   },
-  "darwin:zh-CN": {
+  "zh-CN": {
     "menu": [
       { "label": "关于 DeepSeek Harness", "role": "about" },
-      { "type": "separator" }
-    ],
-    "options": {
-      "applicationName": "DeepSeek Harness",
-      "applicationVersion": "1.0.0",
-      "version": "",
-      "copyright": "",
-      "iconPath": "<app icon>"
-    }
-  },
-  "win32:zh-CN": {
-    "menu": [
-      { "label": "关于 DeepSeek Harness" },
-      { "type": "separator" }
-    ],
-    "options": {
-      "applicationName": "DeepSeek Harness",
-      "applicationVersion": "1.0.0",
-      "version": "",
-      "copyright": "",
-      "iconPath": "<app icon>"
-    }
-  },
-  "win32:en-US": {
-    "menu": [
-      { "label": "About DeepSeek Harness" },
       { "type": "separator" }
     ],
     "options": {

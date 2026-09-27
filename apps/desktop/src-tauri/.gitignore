@@ -1,0 +1,6 @@
+/target
+/gen
+/staging/runtime/*
+/bin/*
+!/bin/.gitkeep
+!staging/runtime/.gitkeep

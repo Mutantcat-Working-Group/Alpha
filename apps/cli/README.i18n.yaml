@@ -2,21 +2,21 @@
 # section, a hash of its English and Chinese blocks outside code blocks and generated regions.
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write apps/cli/README.md
-/deepseek-ai-dsh:
-  en: ebdc75fa0da18801
-  zh: 5c6cd2554b8f8a98
-/deepseek-ai-dsh/entry-modes:
+/mutantcat-dsh:
+  en: 07d68d9e3f4c941d
+  zh: 7cf18ef96e135a18
+/mutantcat-dsh/entry-modes:
   en: 093936b9e1a59bea
   zh: 12be7d2d931d9671
-/deepseek-ai-dsh/app-arguments:
+/mutantcat-dsh/app-arguments:
   en: cc03e6b75206661b
   zh: 99e41f4143198352
-/deepseek-ai-dsh/profiles:
-  en: 79cad979b0f7895c
-  zh: b0f922a4b43accf8
-/deepseek-ai-dsh/optional-overlays:
+/mutantcat-dsh/profiles:
+  en: 1f3fafc3081ceb47
+  zh: 367ddfae22310f1b
+/mutantcat-dsh/optional-overlays:
   en: 3a40ddc44e55f79c
   zh: 8d3949132e1ef93c
-/deepseek-ai-dsh/development:
-  en: 99a36e4f7ea3f9c7
-  zh: 07ca2934de700caa
+/mutantcat-dsh/development:
+  en: 6dd04a70799c5802
+  zh: 45afcba14c7be394
