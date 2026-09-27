@@ -433,6 +433,9 @@ const VENDORED_LIBRARY = /^@mutantcat\\/(cosmokit|schemastery)(\\/|$)/
  */
 export function isRescopeExcluded(file: string): boolean {
   if (file === 'scripts/rescope-vendor.ts') return true // the mapping itself
+  // The harness-scope codemod asserts this mapping's post-state line by line,
+  // so rewriting those assertions would break it and rewrite them again.
+  if (file === 'scripts/rescope-harness.ts') return true
   if (file.startsWith('.agents/notes/')) return true // notes record what was true when written
   // Recorded model payloads quote documentation verbatim, so they must mirror the
   // sources on disk — including the notes this rescope leaves alone.

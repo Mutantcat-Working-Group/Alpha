@@ -106,11 +106,13 @@ const EXTERNAL_ENGINE_LINES: readonly GuardedLine[] = [
  * otherwise rename the very thing that performs the rename.
  */
 const LEGACY_COMPAT_LINES: readonly GuardedLine[] = [
+  { file: 'vendor/loader/src/config/tree.ts', line: 7, reason: 'declares the scope the Loader rewrites to the current one' },
+  { file: 'vendor/loader/src/config/tree.ts', line: 19, reason: 'documents the specifier spelling the Loader rewrites' },
   { file: 'scripts/gen-tsconfig-paths.ts', line: 40, reason: 'declares the scope the alias generator emits a twin for' },
   { file: 'scripts/gen-tsconfig-paths.ts', line: 21, reason: 'documents the imports a legacy-scope plugin still uses' },
-  // The Loader's legacy constants and the alias-generator assertions arrive with
-  // the repository's own rename commit; they are restored once it replays onto
-  // this base, and the postconditions below keep asserting them.
+  { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 48, reason: 'asserts the alias generator emits the legacy twin' },
+  { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 49, reason: 'asserts the invariant alias twin beside the package twin' },
+  { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 50, reason: 'asserts the twin is emitted for every generated alias' },
 ]
 
 /** Every line the substitution skips. */
