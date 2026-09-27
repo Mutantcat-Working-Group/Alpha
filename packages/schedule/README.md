@@ -34,7 +34,7 @@ Choose this package for persistent reminder management.
 ## Related documentation
 
 - [Schedule subsystem](../../docs/subsystems/schedule.md) — task records, latest receipts, timing, and delivery contracts.
-- [Generated tool catalog](../../docs/tool-catalog.md#deepseek-aidsh-schedule) — the `schedule_create`/`schedule_list`/`schedule_update`/`schedule_delete` schemas the model receives.
+- [Generated tool catalog](../../docs/tool-catalog.md#mutantcatdsh-schedule) — the `schedule_create`/`schedule_list`/`schedule_update`/`schedule_delete` schemas the model receives.
 - [Schedule user guide](../../docs/user/guide/schedule.md) — enable reminders and inspect active or inactive tasks.
 - [Web task page and reminder catalog](../client/ui-schedule/README.md) — browser inspection of tasks and confirmed deletion.
 

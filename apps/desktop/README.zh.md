@@ -62,6 +62,8 @@ Alpha 拥有它的应用数据目录，它同时是 profile 根目录：macOS �
 
 启动失败只弹出一个说明原因的原生对话框；没有自动插件恢复事务，也没有启动超时启发式。对话框点名旧 Host 进程时，表示残留的 Host 拒绝了停止请求；退出 Alpha 并结束残留 sidecar 即可清除。
 
+<a id="develop"></a>
+
 ## 开发
 
 完整发布链先准备整个 monorepo，再 stage 运行时，最后调用 Tauri 打包器：

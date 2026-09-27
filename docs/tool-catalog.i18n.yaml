@@ -9,14 +9,14 @@
   en: 6cc2cd9ced70bb09
   zh: 1c0e6cb4ba2ed637
 /tool-schema-catalog/tool-package-map:
-  en: f3495254642e0657
-  zh: 90722a26b9f5d206
+  en: 369c4fde06eaf709
+  zh: ad4d68583b69b281
 /tool-schema-catalog/mutantcat-dsh-plugin-manager:
   en: 8d7bda3c6f5ad2a2
   zh: 8d7bda3c6f5ad2a2
 /tool-schema-catalog/mutantcat-dsh-plugin-manager/plugin-manager:
-  en: ab4d1e7f7aa435b5
-  zh: 70af9245b9b98039
+  en: 1dae6c26af15511d
+  zh: 8584e34de471449b
 /tool-schema-catalog/mutantcat-dsh-mcp-resources:
   en: cfed04c40d674699
   zh: cfed04c40d674699
@@ -27,8 +27,8 @@
   en: bf4236607199d61e
   zh: 82f4f749dcabc89f
 /tool-schema-catalog/mutantcat-dsh-mcp-resources/read-mcp-resource:
-  en: 5d92c07fa062734f
-  zh: 2d6f0cb8116cf567
+  en: 952b803de7937362
+  zh: b884a45767663de3
 /tool-schema-catalog/mutantcat-dsh-experimental-browser-use-stagehand-native:
   en: add48d902f06782f
   zh: add48d902f06782f
@@ -48,44 +48,44 @@
   en: 4910ab327694ee97
   zh: 17e79e4366cb636d
 /tool-schema-catalog/mutantcat-dsh-experimental-browser-use-stagehand-native/stagehand-tabs:
-  en: 095b18f9376e073d
-  zh: abd8785f8acaa555
+  en: 3c8e1523518a8715
+  zh: c924dde6a3993354
 /tool-schema-catalog/mutantcat-dsh-tool-ask-user:
   en: 3a1925a5d816ca5a
   zh: 3a1925a5d816ca5a
 /tool-schema-catalog/mutantcat-dsh-tool-ask-user/ask-user-question:
-  en: f42b7f17ad59577a
-  zh: 7e1eee22ff35d4b1
+  en: 450ea66cb6c1cce8
+  zh: e0debe15df15f254
 /tool-schema-catalog/mutantcat-dsh-tools:
   en: 9e26c57791de3f85
   zh: 9e26c57791de3f85
 /tool-schema-catalog/mutantcat-dsh-tools/run-code:
-  en: 8358b1f3dd09e202
-  zh: 0dbce569ba4b4c76
+  en: b1a090edb3669f59
+  zh: ef8ddce1e12d1bca
 /tool-schema-catalog/mutantcat-dsh-plan-mode:
   en: b9824aebe50b2eb3
   zh: b9824aebe50b2eb3
 /tool-schema-catalog/mutantcat-dsh-plan-mode/exit-plan-mode:
-  en: b410483c2bd0c1a1
-  zh: a07ceea6abf1dda3
+  en: 4c278c0cbb23c879
+  zh: e1b90feeb2c2dc3d
 /tool-schema-catalog/mutantcat-dsh-tool-bash:
   en: e47686dedc8cfafd
   zh: e47686dedc8cfafd
 /tool-schema-catalog/mutantcat-dsh-tool-bash/bash:
-  en: 7c711afb514acf50
-  zh: fdb57a71f3d88daf
+  en: 27c5acbe8ef5cc1d
+  zh: 3e5d5d6528690612
 /tool-schema-catalog/mutantcat-dsh-tool-present:
   en: 66e878ab3a06e4a0
   zh: 66e878ab3a06e4a0
 /tool-schema-catalog/mutantcat-dsh-tool-present/present:
-  en: 24ef5efe4c0edf50
-  zh: a2914d345bd8eefa
+  en: b2f7fa4079191daa
+  zh: f33ae166328c1565
 /tool-schema-catalog/mutantcat-dsh-tool-pwsh:
   en: 3d15231135d386f0
   zh: 3d15231135d386f0
 /tool-schema-catalog/mutantcat-dsh-tool-pwsh/pwsh:
-  en: 11e2e3a470862bb7
-  zh: 8af74692fbacfe64
+  en: a45f8f5941afc549
+  zh: fc42298a2b88d4f3
 /tool-schema-catalog/mutantcat-dsh-tool-cordis:
   en: 02cd81ce0eff71d2
   zh: 02cd81ce0eff71d2
@@ -93,26 +93,26 @@
   en: 594e5b42047969cc
   zh: 72189ca21345c210
 /tool-schema-catalog/mutantcat-dsh-tool-cordis/cordis-inspect-query:
-  en: 8321129f661db9f7
-  zh: 6d9c220c84d47b06
+  en: 2145e3269ee178c8
+  zh: c056e8276c7e8eb5
 /tool-schema-catalog/mutantcat-dsh-tool-bash-persistent:
   en: 55f4dd1396c24712
   zh: 55f4dd1396c24712
 /tool-schema-catalog/mutantcat-dsh-tool-bash-persistent/bash:
-  en: 86421501a9d65ccc
-  zh: d1dc400507952331
+  en: 80af9ec1c1d4df6d
+  zh: 72909cd1b2fbf097
 /tool-schema-catalog/mutantcat-dsh-tool-pwsh-persistent:
   en: d9f2b29125d17234
   zh: d9f2b29125d17234
 /tool-schema-catalog/mutantcat-dsh-tool-pwsh-persistent/pwsh:
-  en: 214866b3419c8e12
-  zh: c23368fc61772d52
+  en: b52b38b4ec5f0257
+  zh: 17913dfc6a372853
 /tool-schema-catalog/mutantcat-dsh-tool-str-replace-editor:
   en: 848d8bcf7836a6c1
   zh: 848d8bcf7836a6c1
 /tool-schema-catalog/mutantcat-dsh-tool-str-replace-editor/str-replace-editor:
-  en: 3d11196a13e69228
-  zh: 56019c74cf0633cd
+  en: 01e4043db70e0e52
+  zh: 9b8b1229cc9a7fcf
 /tool-schema-catalog/mutantcat-dsh-tool-fs:
   en: 6bf4a8c3fdce7064
   zh: 6bf4a8c3fdce7064
@@ -126,8 +126,8 @@
   en: f6f7a1140066ce04
   zh: d528e01a0939795a
 /tool-schema-catalog/mutantcat-dsh-tool-fs/write:
-  en: 07b3da48d4e9caa6
-  zh: 2fd9d1f775402e7f
+  en: ec2b83496e626dc2
+  zh: 6f17abaedcbf61bb
 /tool-schema-catalog/mutantcat-dsh-tool-fs-search:
   en: d62a50ea07902cb8
   zh: d62a50ea07902cb8
@@ -135,8 +135,8 @@
   en: 3ba734ba7852cdd5
   zh: c6ce31ff2c195520
 /tool-schema-catalog/mutantcat-dsh-tool-fs-search/grep:
-  en: 6e1f7da62cc9a35b
-  zh: ee7f3081887f8067
+  en: e4e475155b886e79
+  zh: 9a69c04a46b18035
 /tool-schema-catalog/mutantcat-dsh-tool-terminal:
   en: 82e7bbf8c05c3431
   zh: 82e7bbf8c05c3431
@@ -156,8 +156,8 @@
   en: e24ca8735dd59adb
   zh: 24f7140a0aed0968
 /tool-schema-catalog/mutantcat-dsh-tool-terminal/terminal-signal:
-  en: 36a7f502acf00049
-  zh: 00b4567b534eb7b2
+  en: 660adaae82fcbc7b
+  zh: edcdef18eb9feb71
 /tool-schema-catalog/mutantcat-dsh-tool-goal:
   en: 9ce8dc1f35aee2b7
   zh: 9ce8dc1f35aee2b7
@@ -168,8 +168,8 @@
   en: 0b517f13dfde11fe
   zh: b7ee7482e8ecde56
 /tool-schema-catalog/mutantcat-dsh-tool-goal/update-goal:
-  en: e6b92fac5aad585c
-  zh: 6b3cdd87b059a98f
+  en: dfb2b3c2caaee088
+  zh: 4b28dd17c8c3eca5
 /tool-schema-catalog/mutantcat-dsh-schedule:
   en: 57fb9fb9545909fa
   zh: 57fb9fb9545909fa
@@ -181,28 +181,28 @@
   zh: 3d0063a1e529377f
 /tool-schema-catalog/mutantcat-dsh-schedule/schedule-list:
   en: d8543c8503d0947e
-  zh: 205e6c813ad2b37c
+  zh: b51b3f36dedd0983
 /tool-schema-catalog/mutantcat-dsh-schedule/schedule-update:
-  en: 3d5e2517b510238b
-  zh: d6e5c4c4465c9645
+  en: 0d2e2fd8b84042d9
+  zh: b76b93f12b6d0852
 /tool-schema-catalog/mutantcat-dsh-tool-lsp:
   en: 5eda144c6a88ab1b
   zh: 5eda144c6a88ab1b
 /tool-schema-catalog/mutantcat-dsh-tool-lsp/lsp:
-  en: bbb80b129f92f5fa
-  zh: a0a29759ac1122a9
+  en: 5041e6d9352d116b
+  zh: d5ec8d86394e1296
 /tool-schema-catalog/mutantcat-dsh-tool-ralph:
   en: e47cb8d3d50ebd7a
   zh: e47cb8d3d50ebd7a
 /tool-schema-catalog/mutantcat-dsh-tool-ralph/ralph:
-  en: a14c562ee26ddfd8
-  zh: caa6d1acf95a8199
+  en: 32cb1154f9a336af
+  zh: 0a347a0c766049d5
 /tool-schema-catalog/mutantcat-dsh-tool-skill:
   en: e4e25ac5e68d45bf
   zh: e4e25ac5e68d45bf
 /tool-schema-catalog/mutantcat-dsh-tool-skill/skill:
-  en: 9b159d5831855afb
-  zh: 275ee82af0e0f59a
+  en: 7b68709d3eae4fa4
+  zh: ac9c4896b91a73c9
 /tool-schema-catalog/mutantcat-dsh-tool-session-query:
   en: 56a7251c301712c6
   zh: 56a7251c301712c6
@@ -219,8 +219,8 @@
   en: 8263202c97568fc3
   zh: 92067337294c7a00
 /tool-schema-catalog/mutantcat-dsh-tool-session-query/session-trace:
-  en: 22866623e207d94e
-  zh: 59f4f8eadcdba85c
+  en: e5b1a1dfb88d6e15
+  zh: 2c5fced9a47ee167
 /tool-schema-catalog/mutantcat-dsh-tool-subagent:
   en: 0af60d7710d8edd3
   zh: 0af60d7710d8edd3
@@ -228,8 +228,8 @@
   en: c89084b31ffccbce
   zh: d7b3b7000f2d2be9
 /tool-schema-catalog/mutantcat-dsh-tool-subagent/subagent:
-  en: 55cbd29d70bcf3d7
-  zh: 886a1b57446bd5e1
+  en: 2db65d93cd399ade
+  zh: 8ed04aad2ee49e6e
 /tool-schema-catalog/mutantcat-dsh-tool-subagent-control:
   en: 775b5e404750241e
   zh: 775b5e404750241e
@@ -240,8 +240,8 @@
   en: ae22e8543d123c39
   zh: 4943a5c5980fc2d3
 /tool-schema-catalog/mutantcat-dsh-tool-subagent-control/send-message:
-  en: 2ebdc450faef6446
-  zh: 7e3cff35fedc6a32
+  en: 2f75e599dd438a6c
+  zh: 6f0ab877f0fb2d93
 /tool-schema-catalog/mutantcat-dsh-tool-jobs:
   en: d70699a9f2b45789
   zh: d70699a9f2b45789
@@ -252,8 +252,8 @@
   en: 0c37fb1fed979d72
   zh: 5ea9d07f5a4a8a6c
 /tool-schema-catalog/mutantcat-dsh-tool-jobs/job-output:
-  en: f927cca09b283e21
-  zh: 2acd9b36737f17c2
+  en: 9eb33a5f28d5eef1
+  zh: b153e385a974af08
 /tool-schema-catalog/mutantcat-dsh-experimental-tool-agent-team:
   en: df166f7adf3dc7a2
   zh: df166f7adf3dc7a2
@@ -282,26 +282,26 @@
   en: 2eac7360ba68b1bd
   zh: b5d676bf288c245e
 /tool-schema-catalog/mutantcat-dsh-experimental-tool-agent-team/wait-agent:
-  en: fbc4d75a9bcf6816
-  zh: 672131ac2705f411
+  en: 7ee73498b344e82b
+  zh: 17c8c91b1464f61d
 /tool-schema-catalog/mutantcat-dsh-tool-todo:
   en: db53859326f64b71
   zh: db53859326f64b71
 /tool-schema-catalog/mutantcat-dsh-tool-todo/todo-write:
-  en: 8c64fe5f2e58a890
-  zh: e3c780fc842aeb43
+  en: d74ae75abe30118a
+  zh: 6ce75253a6e65925
 /tool-schema-catalog/mutantcat-dsh-tool-workflow:
   en: 8d20591b9ad22f09
   zh: 8d20591b9ad22f09
 /tool-schema-catalog/mutantcat-dsh-tool-workflow/workflow:
-  en: fdd667cfe21481e8
-  zh: 88864d3b958398a4
+  en: 12ae7fe5414648e1
+  zh: 8f760f6bfba6cd16
 /tool-schema-catalog/mutantcat-dsh-tool-workspace-dependencies:
   en: 95a05233fd73ec3f
   zh: 95a05233fd73ec3f
 /tool-schema-catalog/mutantcat-dsh-tool-workspace-dependencies/load-workspace-dependencies:
-  en: 77b88764ff3464e9
-  zh: a9ca7eeb15ada747
+  en: 3f877d8f6eafa40a
+  zh: 41682c421fd6b5bd
 /tool-schema-catalog/mutantcat-dsh-tool-web:
   en: 76971eb2f4098185
   zh: 76971eb2f4098185

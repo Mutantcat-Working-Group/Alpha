@@ -113,7 +113,7 @@ The editor provides no autocomplete, diagnostics, or cross-file search, and it d
 
 Open `.doc`, `.docx`, `.ppt`, and `.pptx` as PDF previews with the same loading state, zoom controls, cancellation, and selectable text as PDF files. The [Host provider](../../document/office-to-pdf/README.md) performs local conversion and retains its spreadsheet conversion API for other consumers. Invalid supported files, conversion failures, and timeouts receive localized messages. Missing Host services show configuration guidance.
 
-The [Web bundle](../../bundle/web-app/README.md) mounts this package as `ui-sidebar-documentpreview`. Configure its transient Office cache through that entry's `office` settings; the [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-client-ui-sidebar-documentpreview) defines accepted values. Settings are embedded in each served page; reload the browser page after changing YAML.
+The [Web bundle](../../bundle/web-app/README.md) mounts this package as `ui-sidebar-documentpreview`. Configure its transient Office cache through that entry's `office` settings; the [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-client-ui-sidebar-documentpreview) defines accepted values. Settings are embedded in each served page; reload the browser page after changing YAML.
 
 | Field | Default | Meaning |
 |---|---|---|

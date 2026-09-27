@@ -262,6 +262,7 @@
     { "path": "./packages/attachment/attachment" },
     { "path": "./packages/attachment/attachment-local" },
     { "path": "./packages/client/file-upload/tsconfig.host.json" },
+    { "path": "./packages/client/shortcuts/tsconfig.host.json" },
     { "path": "./packages/llm/llm" },
     { "path": "./packages/llm/deepseek-llm-api-extensions" },
     { "path": "./packages/llm/token-meter" },

@@ -42,7 +42,7 @@ Load a spill backend and set `maxInlineTokens` in estimated tokens:
 |---|---|---|
 | `maxInlineTokens` | omitted | Estimated token cap for retained text, images, image descriptions, and notices; omission disables retention |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-spill-policy) is the exhaustive source for every accepted field. A negative or fractional cap fails plugin load rather than corrupting per-call behavior.
+The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-spill-policy) is the exhaustive source for every accepted field. A negative or fractional cap fails plugin load rather than corrupting per-call behavior.
 
 ### What the model sees
 

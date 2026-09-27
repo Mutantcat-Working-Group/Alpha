@@ -109,7 +109,7 @@ function setup(path = 'source.ts') {
   const dropState = vi.fn((tab: TabId) => { states.delete(tab) })
   const controller = new AbortController()
   onTestFinished(() => { controller.abort() })
-  const faces: { revision: number; loaded: Mock; reload: Mock }[] = []
+  const faces: { revision: number; loaded: Mock; failed: Mock; reload: Mock }[] = []
   // Injected callbacks keep one identity across renders, the way the plugin's
   // inject provides them, so a rerender never re-runs the mount effect.
   const useStore = hookOf(instance)
@@ -123,9 +123,10 @@ function setup(path = 'source.ts') {
     let owned: DocumentContent
     if (content === undefined) {
       const loaded = vi.fn<(version: string) => void>()
+      const failed = vi.fn<() => void>()
       const reload = vi.fn<() => void>()
-      faces.push({ revision, loaded, reload })
-      owned = { kind: 'renderer', revision, loaded, reload }
+      faces.push({ revision, loaded, failed, reload })
+      owned = { kind: 'renderer', revision, loaded, failed, reload }
     } else {
       owned = content
     }

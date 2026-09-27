@@ -192,7 +192,7 @@ describe('workspaceFiles.write — the change feed', () => {
   it('reports the write to open changes generations as a present observation', async () => {
     const service = harness.endpoint()
     const controller = new AbortController()
-    const iterator = service.changes(harness.scope, controller.signal)[Symbol.asyncIterator]()
+    const iterator = service.changes(harness.scope, 'fresh.txt', controller.signal)[Symbol.asyncIterator]()
     try {
       await expect(iterator.next()).resolves.toEqual({ done: false, value: { kind: 'ready' } })
       const pending = iterator.next()

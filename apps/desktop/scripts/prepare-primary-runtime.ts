@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import extractZip from 'extract-zip'
 import { x as extractTar } from 'tar'
-import { workspaceDependencyPaths, type PrimaryRuntimeManifest } from '../../desktop-host/src/primary-runtime.ts'
+import { parsePrimaryRuntime, workspaceDependencyPaths, type PrimaryRuntimeManifest } from '../../../packages/skill/tool-workspace-dependencies/src/index.ts'
 import { resolveDesktopBuildTarget, resolveDesktopTargetBuildPaths } from './desktop-build-paths.mjs'
 import { scrubWindowsSigningEnvironment } from './windows-sign.mjs'
 import lock from './primary-runtime-lock.json' with { type: 'json' }
@@ -170,10 +170,9 @@ export async function preparePrimaryRuntime(options: { deferSmoke?: boolean } = 
       arch: target.endsWith('arm64') ? 'arm64' : 'x64',
       payloadDigest: primaryRuntimePayloadDigest(target, lock, pnpm.version),
       pythonPackages: lock.pythonPackages,
-      components: {
-        python: lock.pythonVersion, node: lock.nodeVersion, pnpm: pnpm.version,
-        numpy: lock.pythonPackages.numpy, pandas: lock.pythonPackages.pandas,
-      },
+      python: lock.pythonVersion,
+      node: lock.nodeVersion,
+      pnpm: pnpm.version,
     }
     const entries = workspaceDependencyPaths(output, manifest)
     for (const wheel of [...artifact.wheels, ...lock.wheels]) {
@@ -197,16 +196,18 @@ export async function preparePrimaryRuntime(options: { deferSmoke?: boolean } = 
  * @param root - Final payload directory, including any platform signatures.
  */
 export function smokePrimaryRuntime(root: string): void {
-  const manifest = JSON.parse(readFileSync(join(root, 'runtime.json'), 'utf8')) as PrimaryRuntimeManifest
-  if (manifest.platform !== process.platform || manifest.arch !== process.arch) return
-  if (manifest.pythonPackages === undefined) throw new Error('primary runtime: missing Python distribution versions; prepare the payload before running its smoke checks.')
+  const payload = JSON.parse(readFileSync(join(root, 'runtime.json'), 'utf8')) as Partial<PrimaryRuntimeManifest>
+  if (payload.platform !== process.platform || payload.arch !== process.arch) return
+  if (payload.pythonPackages === undefined) throw new Error('primary runtime: missing Python distribution versions; prepare the payload before running its smoke checks.')
+  const manifest = parsePrimaryRuntime(payload)
   const entries = workspaceDependencyPaths(root, manifest)
+  if (entries.node === undefined || entries.pnpm === undefined) throw new Error('primary runtime: the Desktop payload must declare node and pnpm components.')
   const options = { stdio: 'inherit', timeout: 120_000, env: scrubWindowsSigningEnvironment(process.env) } as const
   execFileSync(entries.python, ['-I', '-c', 'import decimal, xml.parsers.expat, lzma, uuid, numpy, pandas; assert numpy.arange(4).sum() == 6; assert pandas.DataFrame({"n": [1, 2]}).n.sum() == 3'], options)
   execFileSync(entries.python, ['-I', '-B', join(import.meta.dirname, 'smoke-primary-runtime.py'), JSON.stringify(manifest.pythonPackages),
-    manifest.components.python, join(dirname(root), 'office-skills', 'scripts', 'check_office.py')], options)
+    manifest.python, join(dirname(root), 'office-skills', 'scripts', 'check_office.py')], options)
   execFileSync(entries.python, ['-I', '-B', '-m', 'pip', 'check'], options)
-  execFileSync(entries.node, ['-e', `if (process.versions.node !== ${JSON.stringify(manifest.components.node)}) process.exit(1)`], options)
+  execFileSync(entries.node, ['-e', `if (process.versions.node !== ${JSON.stringify(manifest.node)}) process.exit(1)`], options)
   execFileSync(entries.node, [entries.pnpm, '--version'], options)
 }
 

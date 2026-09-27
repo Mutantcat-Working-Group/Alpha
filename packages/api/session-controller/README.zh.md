@@ -91,7 +91,7 @@ GUI 模型选择要求确切提供方／模型对出现在可用目录中；不�
 |---|---:|---|
 | `nativeOpen` | 平台探测 | 是否能把 Session 工作区路径交给原生桌面打开器 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-api-session-controller)是所有受支持字段及其 JSDoc 的完整来源。
+生成的[配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-api-session-controller)是所有受支持字段及其 JSDoc 的完整来源。
 
 -----
 

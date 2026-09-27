@@ -2,7 +2,7 @@
 
 import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { readPrimaryRuntime, workspaceDependencyPaths } from '../../desktop-host/src/primary-runtime.ts'
+import { readPrimaryRuntime, workspaceDependencyPaths } from '../../../packages/skill/tool-workspace-dependencies/src/index.ts'
 import { desktopTargetBuildPaths, resolveDesktopBuildTarget, type DesktopBuildTarget } from './desktop-build-paths.mjs'
 import { tauriTargetTriple } from './tauri-targets.ts'
 
@@ -73,9 +73,10 @@ export async function prepareTauriRuntime(target: DesktopBuildTarget = resolveDe
   requirePrepared(primaryRuntime, 'prepare:primary-runtime')
   requirePrepared(join(paths.runtime, 'office-skills'), 'prepare:primary-runtime')
   const manifest = await readPrimaryRuntime(primaryRuntime)
+  if (manifest.node === undefined) throw new Error('tauri runtime: the payload declares no bundled Node.js; run prepare:primary-runtime first')
   const node = workspaceDependencyPaths(primaryRuntime, manifest).node
-  if (!existsSync(node)) throw new Error(`tauri runtime: missing sidecar source ${node}; run prepare:primary-runtime first`)
-  assertNodeAbi(target, paths.runtime, manifest.components.node)
+  if (node === undefined || !existsSync(node)) throw new Error(`tauri runtime: missing sidecar source ${node}; run prepare:primary-runtime first`)
+  assertNodeAbi(target, paths.runtime, manifest.node)
 
   mkdirSync(STAGING_RUNTIME, { recursive: true })
   const staged = new Set(readdirSync(STAGING_RUNTIME))

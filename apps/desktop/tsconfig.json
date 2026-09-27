@@ -7,6 +7,9 @@
   "include": ["src"],
   "references": [
     { "path": "../../packages/boot/app-boot" },
-    { "path": "../../packages/util/home-paths" }
+    { "path": "../../packages/util/home-paths" },
+    { "path": "../../packages/api/gateway/tsconfig.host.json" },
+    { "path": "../../packages/client/shortcuts/tsconfig.host.json" },
+    { "path": "../../packages/credentials/deepseek-account" }
   ]
 }

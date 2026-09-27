@@ -80,7 +80,7 @@ The backend writes atomically, and a successful write emits one `fs/observed` ob
 | `maxLines` | `5000` | Default and largest page size in lines; a larger `limit` is refused |
 | `maxEntries` | `2000` | Cap on returned directory entries; the rest is dropped and reported cut |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-api-workspace-files) is the exhaustive source for every accepted field and its JSDoc.
+The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-api-workspace-files) is the exhaustive source for every accepted field and its JSDoc.
 
 ### Failures
 

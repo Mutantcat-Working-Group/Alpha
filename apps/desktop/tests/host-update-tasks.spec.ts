@@ -1,16 +1,17 @@
 import { Context } from '@mutantcat/cordis'
+import { SessionId } from '@mutantcat/dsh-session/types'
 import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { installDesktopUpdateTaskControl } from '../../desktop-host/src/update-tasks.ts'
 
-type AgentState = { status: 'idle' | 'running'; inbox: { nextTurn: object[]; nextStep: object[] } }
+type AgentState = { id: SessionId; status: 'idle' | 'running'; inbox: { nextTurn: object[]; nextStep: object[] } }
 type JobState = { status: 'running' | 'stopping' | 'finished' }
 
 let ctx: Context
 let inspect: ReturnType<typeof installDesktopUpdateTaskControl>
 const agents: AgentState[] = []
-const jobs = new Map<AgentState | undefined, JobState[]>()
+const jobs = new Map<SessionId | undefined, JobState[]>()
 
 beforeEach(() => {
   agents.length = 0
@@ -18,13 +19,13 @@ beforeEach(() => {
   ctx = new Context()
   // Narrow service doubles exercise the inspector against a real Cordis event lifecycle.
   ctx.provide('agents', { list: () => agents } as unknown as Context['agents'])
-  ctx.provide('jobs', { list: (agent?: AgentState) => jobs.get(agent) ?? [] } as unknown as Context['jobs'])
+  ctx.provide('jobs', { list: (caller?: SessionId) => jobs.get(caller) ?? [] } as unknown as Context['jobs'])
   inspect = installDesktopUpdateTaskControl(ctx)
 })
 
 afterEach(async () => { await ctx.fiber.dispose() })
 
-function idleAgent(): AgentState { return { status: 'idle', inbox: { nextTurn: [], nextStep: [] } } }
+function idleAgent(): AgentState { return { id: SessionId('update-task-owner'), status: 'idle', inbox: { nextTurn: [], nextStep: [] } } }
 
 function request(next: () => Promise<void>) {
   const incoming = Readable.from([]) as unknown as IncomingMessage
@@ -48,7 +49,7 @@ describe('Desktop Host update task protection', () => {
   it.each(['running', 'stopping'] as const)('counts global and agent-owned %s jobs', async (status) => {
     const agent = idleAgent()
     agents.push(agent)
-    for (const owner of [undefined, agent]) {
+    for (const owner of [undefined, agent.id]) {
       jobs.set(owner, [{ status }])
       expect(await inspect('inspect')).toBe(true)
       jobs.set(owner, [{ status: 'finished' }])
