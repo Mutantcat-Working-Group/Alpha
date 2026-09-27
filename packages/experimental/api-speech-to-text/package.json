@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-api-speech-to-text",
   "description": "Authenticated experimental speech transcription for browser clients",
-  "version": "0.1.7-rc.2",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

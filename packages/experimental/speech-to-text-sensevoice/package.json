@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-speech-to-text-sensevoice",
   "description": "Local SenseVoice ONNX transcription with a managed sherpa-onnx process",
-  "version": "0.1.7-rc.2",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

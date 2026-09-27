@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-settings",
   "description": "Settings domain base plugin: shared configuration forms and the canonical settings slot-type contract",
-  "version": "0.1.7-rc.2",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

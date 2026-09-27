@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-agent-preset-registry",
   "description": "Declarative Agent preset registry and profile-backed editing",
-  "version": "0.1.7-rc.2",
+  "version": "1.0.20260926",
   "publishConfig": {
     "access": "public"
   },

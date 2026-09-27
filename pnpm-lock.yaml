@@ -579,6 +579,9 @@ importers:
       semver:
         specifier: ^7.8.5
         version: 7.8.5
+      ws:
+        specifier: ^8.21.0
+        version: 8.21.0
     devDependencies:
       '@electron/get':
         specifier: ^5.1.0
@@ -604,6 +607,9 @@ importers:
       '@types/semver':
         specifier: ^7.8.0
         version: 7.8.0
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       app-builder-lib:
         specifier: 26.15.3
         version: 26.15.3(dmg-builder@26.15.3)(electron-builder-squirrel-windows@26.15.3)

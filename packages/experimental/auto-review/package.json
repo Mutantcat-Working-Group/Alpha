@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-auto-review",
   "description": "Per-tool LLM authorization review for the DeepSeek Harness Auto permission preset",
-  "version": "0.1.7-rc.2",
+  "version": "1.0.20260926",
   "icon": "./icon.svg",
   "repository": {
     "type": "git",
