@@ -182,6 +182,29 @@ jobs:
             exit 1
           fi
           codesign --verify --verbose=2 "${images[0]}"
+          # The staging folder is not what users get: they mount the DMG, so the
+          # ad-hoc seal and the /Applications link have to survive inside the image.
+          MOUNT="$(mktemp -d)"
+          hdiutil attach "${images[0]}" -nobrowse -readonly -mountpoint "${MOUNT}" >/dev/null
+          trap 'hdiutil detach "${MOUNT}" >/dev/null || true' EXIT
+          if [ ! -L "${MOUNT}/Applications" ]; then
+            echo "::error::${images[0]} has no /Applications link"
+            exit 1
+          fi
+          echo "/Applications link -> $(readlink "${MOUNT}/Applications")"
+          bundles=("${MOUNT}"/*.app)
+          if [ "${#bundles[@]}" -ne 1 ]; then
+            echo "::error::expected one .app bundle in ${images[0]}, found ${#bundles[@]}"
+            exit 1
+          fi
+          codesign --verify --deep --strict --verbose=2 "${bundles[0]}"
+          if ! codesign -dv "${bundles[0]}" 2>&1 | grep -q 'Signature=adhoc'; then
+            echo "::error::the app inside ${images[0]} is not ad-hoc signed"
+            exit 1
+          fi
+          echo "mounted app is ad-hoc signed: ${bundles[0]}"
+          hdiutil detach "${MOUNT}" >/dev/null
+          trap - EXIT
 
       # Upload the artifact and its .sha256 sidecar from the target's own
       # artifact directory; the packaging script keeps that directory clean.
