@@ -37,6 +37,8 @@ const PROJECT_DSH_RANK = 100
 const PROJECT_AGENTS_RANK = 200
 const CUSTOM_RANK = 300
 const USER_DSH_RANK = 400
+const USER_CODEX_RANK = 450
+const USER_CLAUDE_RANK = 460
 const USER_AGENTS_RANK = 500
 const DEFAULT_WATCH_STABILITY_THRESHOLD_MS = 200
 const DEFAULT_WATCH_POLL_INTERVAL_MS = 100
@@ -55,6 +57,10 @@ export interface Config {
   dshHome?: string
   /** Shared agent config root. Defaults to `$DSH_AGENTS_HOME` or `~/.agents`. */
   agentsHome?: string
+  /** Codex config root. Defaults to `$CODEX_HOME` or `~/.codex`. */
+  codexHome?: string
+  /** Claude Code config root. Defaults to `$CLAUDE_CONFIG_DIR` or `~/.claude`. */
+  claudeHome?: string
   /** Additional skill roots scanned after project roots and before user roots. */
   customSkillDirs?: string[]
   /** Whether host-local skill roots are watched for catalog changes. */
@@ -78,6 +84,8 @@ export const Config: Schema<Config> = z.object({
   includeDefaultRoots: z.boolean().default(true),
   dshHome: z.string(),
   agentsHome: z.string(),
+  codexHome: z.string(),
+  claudeHome: z.string(),
   customSkillDirs: z.array(z.string()).default([]),
   watch: z.boolean().default(true),
   watchUsePolling: z.boolean().default(false),
@@ -130,6 +138,12 @@ interface ResolvedWatchConfig {
   followSymlinks: boolean
 }
 
+/** Resolve a user config root from an explicit value, an environment override, or the OS home default. */
+function resolveDefaultHome(configValue: string | undefined, envValue: string | undefined, fallback: string): string {
+  const fromEnv = envValue !== undefined && envValue.trim().length > 0 ? envValue : undefined
+  return resolve(configValue ?? fromEnv ?? fallback)
+}
+
 /** Register the local filesystem skill provider on `ctx.skills`. */
 export function apply(ctx: Context, config: Config = {}): void {
   let provider!: FileSystemSkillProvider
@@ -152,6 +166,10 @@ export class FileSystemSkillProvider implements SkillProvider {
   private readonly includeDefaultRoots: boolean
   private readonly dshHome: string
   private readonly agentsHome: string
+  private readonly codexHome: string | undefined
+  private readonly claudeHome: string | undefined
+  private readonly defaultCodexHome: string
+  private readonly defaultClaudeHome: string
   private readonly customSkillDirs: string[]
   private readonly watchManager: SkillWatchManager
   private readonly bundledSkillDir: string | undefined
@@ -166,6 +184,10 @@ export class FileSystemSkillProvider implements SkillProvider {
     this.includeDefaultRoots = config.includeDefaultRoots ?? true
     this.dshHome = resolveDshHome(config.dshHome)
     this.agentsHome = resolve(config.agentsHome ?? process.env.DSH_AGENTS_HOME ?? join(homedir(), '.agents'))
+    this.codexHome = config.codexHome === undefined ? undefined : resolve(config.codexHome)
+    this.claudeHome = config.claudeHome === undefined ? undefined : resolve(config.claudeHome)
+    this.defaultCodexHome = resolveDefaultHome(undefined, process.env.CODEX_HOME, join(homedir(), '.codex'))
+    this.defaultClaudeHome = resolveDefaultHome(undefined, process.env.CLAUDE_CONFIG_DIR, join(homedir(), '.claude'))
     this.customSkillDirs = (config.customSkillDirs ?? []).map(root => resolve(root))
     this.watchManager = new SkillWatchManager(ctx, control.invalidate, resolveWatchConfig(config))
     control.signal.addEventListener('abort', () => { void this.dispose() }, { once: true })
@@ -255,8 +277,17 @@ export class FileSystemSkillProvider implements SkillProvider {
     if (this.includeDefaultRoots) {
       roots.push(
         { path: join(this.dshHome, 'skills'), source: 'user-dsh', rank: USER_DSH_RANK, skipSystem: true },
+        { path: join(this.codexHome ?? this.defaultCodexHome, 'skills'), source: 'user-codex', rank: USER_CODEX_RANK, skipSystem: true },
+        { path: join(this.claudeHome ?? this.defaultClaudeHome, 'skills'), source: 'user-claude', rank: USER_CLAUDE_RANK },
         { path: join(this.agentsHome, 'skills'), source: 'user-agents', rank: USER_AGENTS_RANK },
       )
+    } else {
+      if (this.codexHome !== undefined) {
+        roots.push({ path: join(this.codexHome, 'skills'), source: 'user-codex', rank: USER_CODEX_RANK, skipSystem: true })
+      }
+      if (this.claudeHome !== undefined) {
+        roots.push({ path: join(this.claudeHome, 'skills'), source: 'user-claude', rank: USER_CLAUDE_RANK })
+      }
     }
     if (this.bundledSkillDir !== undefined) {
       roots.push({ path: this.bundledSkillDir, source: 'bundled', rank: BUNDLED_SKILL_RANK, trustedHost: true })
