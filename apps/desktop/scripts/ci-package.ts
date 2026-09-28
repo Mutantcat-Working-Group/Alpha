@@ -1,8 +1,7 @@
 /** Resolve one mobile-OS-free release target shared by the Tauri packaging pipeline. */
 
 import { parseArgs } from 'node:util'
-import { resolve } from 'node:path'
-import { desktopTargetBuildPaths, type DesktopBuildTarget } from './desktop-build-paths.mjs'
+import type { DesktopBuildTarget } from './desktop-build-paths.mjs'
 
 /** One supported release artifact target. */
 export interface CiPackageTarget {
