@@ -10,7 +10,7 @@ export class DesktopUpdateSource {
   private received = false
   private readonly unsubscribe: (() => void) | undefined
 
-  /** @param bridge - Optional isolated Electron API, absent in ordinary browsers. */
+  /** @param bridge - Optional isolated Desktop API, absent in ordinary browsers. */
   constructor(private readonly bridge: DesktopUpdateBridge | undefined) {
     this.unsubscribe = bridge?.subscribe((presentation) => {
       if (!this.live) return

@@ -70,9 +70,9 @@ function selectProfile(value: string, previous?: string): string {
   return value
 }
 
-function rejectElectronProfile(program: Command, profile: string): void {
+function rejectDesktopProfile(program: Command, profile: string): void {
   if (profile.toLowerCase() === 'desktop') {
-    program.error('error: profile "desktop" is managed exclusively by the Electron application')
+    program.error('error: profile "desktop" is managed exclusively by the Alpha Desktop application')
   }
 }
 
@@ -164,7 +164,7 @@ export function parseDshArgs(argv: readonly string[], version: string): DshInvoc
       }
       const profile = options.profile
       if (profile === '') program.error('error: --profile needs a name')
-      rejectElectronProfile(program, profile)
+      rejectDesktopProfile(program, profile)
       resolved = resolveBoot(program, profile, options, args)
     })
 
@@ -176,7 +176,7 @@ export function parseDshArgs(argv: readonly string[], version: string): DshInvoc
       .argument('[args...]', 'pnpm arguments, forwarded verbatim (add <pkg>, remove <pkg>, why <pkg>, ...)')
       .action((args: string[], options: { profile: string }) => {
         if (options.profile === '') program.error('error: --profile needs a name')
-        rejectElectronProfile(plugin, options.profile)
+        rejectDesktopProfile(plugin, options.profile)
         if (args.length === 0) program.error('error: plugin needs pnpm arguments to forward (e.g. add <package>)')
         resolved = { mode: 'plugin', profile: options.profile, args }
       })

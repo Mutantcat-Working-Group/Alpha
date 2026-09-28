@@ -15,7 +15,6 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import {
-  DESKTOP_HOST_PACKAGE,
   desktopCorePackageOverrides,
   verifyDesktopCorePackageSet,
 } from './core-package-set.ts'
@@ -29,7 +28,6 @@ import { migrateDesktopProfileLinks } from './profile-packages.ts'
 import { cleanProfileCorePackages } from './profile-core-cleanup.ts'
 
 const PROJECT_NAME = '@mutantcat/dsh-desktop-runtime'
-const DSH_PACKAGE = '@mutantcat/dsh'
 const CORE_BUILD_PACKAGE = '@mutantcat/dsh-subprocess-local'
 const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
 const WORKSPACE_SETTINGS = 'nodeLinker: hoisted\nautoInstallPeers: false\n'
@@ -62,7 +60,7 @@ function migrateProfileSettings(projectDir: string): void {
 /** Initializes the Desktop profile and disables third-party bundles during recovery. */
 export class DesktopProjectManager {
   /**
-   * @param paths - Electron-owned package state and reserved desktop profile paths.
+   * @param paths - Desktop-owned package state and reserved desktop profile paths.
    * @param runtime - location of the bundled application runtime.
    */
   constructor(
@@ -150,27 +148,6 @@ export function createRuntimeProjectMetadata(projectDir: string, release: Deskto
     workspaceFile(desktopCorePackageOverrides(packageSet)),
     { mode: 0o600 },
   )
-}
-
-/**
- * Create metadata for the unpackaged development project that links the current workspace.
- * @param projectDir - Disposable development profile directory.
- * @param release - Release identity shared by the linked CLI package and Electron shell.
- */
-export function createDevelopmentProjectMetadata(projectDir: string, release: DesktopRelease): void {
-  mkdirSync(projectDir, { recursive: true, mode: 0o700 })
-  const manifest = {
-    name: PROJECT_NAME,
-    private: true,
-    version: '0.0.0',
-    dependencies: {
-      [DSH_PACKAGE]: release.version,
-      [DESKTOP_HOST_PACKAGE]: release.version,
-    },
-    dsh: { profile: { bundles: [...WEB_PROFILE.bundles] } },
-  }
-  writeJson(join(projectDir, 'package.json'), manifest)
-  writeFileSync(join(projectDir, 'pnpm-workspace.yaml'), workspaceFile(), { mode: 0o600 })
 }
 
 /** Create the first external plugin profile without running a package manager. */

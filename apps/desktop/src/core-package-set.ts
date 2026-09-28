@@ -124,7 +124,7 @@ export function desktopDshPackageSpec(packageSet: DesktopCorePackageSet): string
 /**
  * Verify every local tarball and reject extra package files before pnpm executes them.
  * @param projectDir - Build directory containing the package set.
- * @param expectedReleaseVersion - Exact dsh and Desktop Host version bound to Electron.
+ * @param expectedReleaseVersion - Exact dsh and Desktop Host version bound to the desktop shell.
  * @returns The verified package set.
  */
 export function verifyDesktopCorePackageSet(

@@ -51,7 +51,7 @@
   inset: 0;
   z-index: 40;
   border: none;
-  /* Electron drag regions are window geometry, not stacking: the conversation
+  /* Desktop drag regions are window geometry, not stacking: the conversation
      title row's and the sidebar top strip's drag bands underneath keep taking
      the pointer through this overlay, making the first strip's tabs unclickable.
      The panel appears after both in DOM order, so this subtracts its whole box;

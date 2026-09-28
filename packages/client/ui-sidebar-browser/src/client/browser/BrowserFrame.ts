@@ -18,7 +18,7 @@ export interface BrowserFrameState {
   readonly loadFailed: boolean
 }
 
-/** Browser rendering operations shared by Web and future Electron implementations. */
+/** Browser rendering operations shared by Web and future native implementations. */
 export interface BrowserFrame extends HostObservable<BrowserFrameState> {
   /** Toggle sandbox enforcement for this tab occurrence. */
   toggleSandbox(): void

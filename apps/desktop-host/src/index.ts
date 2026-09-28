@@ -26,7 +26,7 @@ async function main(): Promise<void> {
   // A host an earlier launch left running owns the engine port; stop it before booting.
   await claimHostLock(projectDir, ENGINE_PORT)
   // The desktop shell runs no package manager, so the host writes the profile manifest
-  // the Electron main process used to create; existing manifests are left untouched.
+  // the desktop shell used to create; existing manifests are left untouched.
   initProfile(projectDir, WEB_PROFILE_BUNDLES)
   const installAnchor = join(runtimeDir, 'node_modules', '@mutantcat', 'dsh', 'package.json')
   const profile = loadProfileDirectory('dsh', projectDir, installAnchor)

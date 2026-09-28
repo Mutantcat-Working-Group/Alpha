@@ -16,8 +16,8 @@ export const DARK_ATTRIBUTE = 'data-ds-dark-theme'
 
 /**
  * Root attribute publishing the theme source (`light`, `dark`, or `system`)
- * for host shells that mirror it into native window chrome (the Electron
- * preload forwards it to `nativeTheme.themeSource` so macOS vibrancy follows
+ * for host shells that mirror it into native window chrome (the Desktop
+ * preload forwards it to the native theme source so macOS vibrancy follows
  * the app theme). `system` only when the preference is `system`; a fixed
  * preference (including registered theme ids) publishes its resolved scheme.
  */

@@ -1,15 +1,19 @@
-/** Built workspace chrome with a controlled Desktop carrier; no Electron or installer is exercised. */
+/** Built workspace chrome with a controlled Desktop carrier; no installer is exercised. */
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
 import { describe, expect, it } from 'vitest'
-import { presentDesktopUpdate } from '../../desktop/src/update-presentation.ts'
-import { en } from '../../desktop/src/locale.ts'
 import { launchWebScaffold, watchConsole } from './scaffold.ts'
 
-// Mirrors the preload's presentation-only API; importing Client projects would mix compiler faces.
-type Presentation = ReturnType<typeof presentDesktopUpdate>
+// Mirrors the carrier's presentation-only API; importing Client projects would mix compiler faces.
+type Presentation = {
+  readonly phase: 'idle' | 'checking' | 'available' | 'downloading' | 'verifying' | 'installing' | 'ready' | 'error'
+  readonly version?: string
+  readonly percent?: number
+  readonly failure?: 'check' | 'check-network' | 'download' | 'download-network' | 'install' | 'install-network'
+    | 'stop-failed' | 'tasks-changed' | 'tasks-unavailable'
+}
 interface CarrierFixture {
   publish(state: Presentation): void
   opens: number
@@ -53,8 +57,7 @@ describe('web e2e: Desktop update workspace chrome', () => {
           const errorDetail = locale === 'zh-CN' ? '下载更新失败，请重试。' : 'Could not download the update. Please try again.'
           const readyLabel = locale === 'zh-CN' ? '安装并重启' : 'Install and Restart'
           const version = '0.1.5-nightly.20260911'
-          // The carrier classification deliberately uses English shell copy; Web copy follows its own locale.
-          const available = presentDesktopUpdate({ phase: 'available', version }, en)
+          const available: Presentation = { phase: 'available', version }
           const publish = async (state: Presentation) => page.evaluate((value) => {
             (window as FixtureWindow).updateFixture.publish(value)
           }, state)
@@ -71,7 +74,7 @@ describe('web e2e: Desktop update workspace chrome', () => {
           await update.click()
           await expect.poll(opens).toBe(1)
 
-          const progress = presentDesktopUpdate({ phase: 'downloading', version, percent: 58 }, en)
+          const progress: Presentation = { phase: 'downloading', version, percent: 58 }
           await publish(progress)
           const downloading = page.getByRole('button', { name: '58%…', exact: true })
           await downloading.waitFor()
@@ -93,7 +96,7 @@ describe('web e2e: Desktop update workspace chrome', () => {
           const blue = await badge.evaluate(element => getComputedStyle(element).backgroundColor)
           await page.screenshot({ path: join(evidence, 'collapsed.png') })
 
-          const error = presentDesktopUpdate({ phase: 'error', version, failedOperation: 'download', message: 'HTTP 503' }, en)
+          const error: Presentation = { phase: 'error', version, failure: 'download' }
           await publish(error)
           const errorBadge = toggle.getByRole('img', { name: retryLabel, exact: true })
           await errorBadge.waitFor()
@@ -121,7 +124,7 @@ describe('web e2e: Desktop update workspace chrome', () => {
           await retry.click()
           await expect.poll(opens).toBe(2)
 
-          await publish(presentDesktopUpdate({ phase: 'ready', version }, en))
+          await publish({ phase: 'ready', version })
           const ready = page.getByRole('button', { name: readyLabel, exact: true })
           await ready.waitFor()
           expect(await ready.getAttribute('aria-disabled')).toBe('false')
@@ -134,7 +137,7 @@ describe('web e2e: Desktop update workspace chrome', () => {
           expect(await page.evaluate(() => (window as FixtureWindow).updateFixture.listeners.size)).toBe(1)
           await writeFile(join(evidence, 'result.json'), JSON.stringify({ locale, geometry, blue, red,
             passed: true, explicitActions: 3, carrier: 'substituted', host: 'real Web composition',
-            electron: false, installerExecuted: false }, null, 2) + '\n')
+            installerExecuted: false }, null, 2) + '\n')
           console.log(`Desktop workspace chrome evidence: ${evidence}`)
         } catch (error) {
           await page.screenshot({ path: join(evidence, 'failure.png') }).catch(() => undefined)

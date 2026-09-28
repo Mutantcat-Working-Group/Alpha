@@ -1,9 +1,9 @@
 /** Resolve public release identifiers supplied by the packaging environment. */
 
-/** Environment variable that supplies the Electron application identifier. */
+/** Environment variable that supplies the desktop application identifier. */
 export const DESKTOP_APP_ID_ENV = 'DSH_DESKTOP_APP_ID'
 
-/** Environment variable that supplies electron-builder's macOS certificate qualifier. */
+/** Environment variable that supplies the macOS certificate qualifier. */
 export const MACOS_SIGNING_IDENTITY_ENV = 'DSH_DESKTOP_MACOS_SIGNING_IDENTITY'
 
 /** Environment variable that supplies the expected Apple Developer Team ID. */

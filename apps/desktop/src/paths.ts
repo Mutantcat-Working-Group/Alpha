@@ -1,4 +1,4 @@
-/** Filesystem ownership for the Electron-managed desktop installation. */
+/** Filesystem ownership for the desktop-managed installation. */
 
 import { join } from 'node:path'
 import { resolveDshHome } from '@mutantcat/dsh-home-paths'
@@ -10,7 +10,7 @@ export interface DesktopPaths {
 }
 
 /**
- * Resolve every Electron-owned path without changing the shared data roots.
+ * Resolve every desktop-owned path without changing the shared data roots.
  * @param dshHome - Harness home shared with npm-installed dsh.
  * @returns immutable desktop path set.
  */

@@ -1,9 +1,8 @@
-/** Sign runtime code and verify that packaged macOS artifacts carry the company release identity. */
+/** Sign and verify native runtime executables with the macOS release identity. */
 
 import { spawn, spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { resolveMacOSSigningEnvironment } from './desktop-release-environment.mjs'
-import { loadDesktopPackageEnvironment } from './desktop-package-environment.mjs'
 
 /**
  * Reject signature metadata that does not name the company release authority and team.
@@ -139,66 +138,4 @@ export function verifyMacOSRuntimeCode(path, expected) {
   runCodeSign(['--verify', '--strict', '--verbose=2', path])
   const details = runCodeSign(['--display', '--verbose=4', path])
   assertMacOSRuntimeSignatureDetails(details, expected)
-}
-
-/**
- * Verify the full application signature and its release owner.
- * @param {string} appPath - Path to the packaged `.app` directory.
- * @param {{ signingIdentity: string, teamId: string }} expected - Public release identity.
- * @returns {void}
- */
-export function verifyMacOSSignature(appPath, expected) {
-  runCodeSign(['--verify', '--deep', '--strict', '--verbose=2', appPath])
-  const details = runCodeSign(['--display', '--verbose=4', appPath])
-  assertMacOSSignatureDetails(details, expected)
-}
-
-/**
- * Verify an independently distributed application's signature, ticket, and Gatekeeper acceptance.
- * @param {string} appPath - Path to the stapled `.app` directory.
- * @param {{ signingIdentity: string, teamId: string }} expected - Public release identity.
- * @returns {void}
- */
-export function verifyMacOSNotarizedApplication(appPath, expected) {
-  verifyMacOSSignature(appPath, expected)
-  runAppleCommand('/usr/bin/xcrun', ['stapler', 'validate', appPath], 'stapler validate')
-  runAppleCommand('/usr/sbin/spctl', ['--assess', '--type', 'execute', '--verbose=4', appPath], 'spctl')
-}
-
-/**
- * Verify the release identity, stapled ticket, and Gatekeeper acceptance of one disk image.
- * @param {string} diskImagePath - Path to the packaged `.dmg` file.
- * @param {{ signingIdentity: string, teamId: string }} expected - Public release identity.
- * @returns {void}
- */
-export function verifyMacOSDiskImage(diskImagePath, expected) {
-  runCodeSign(['--verify', '--strict', '--verbose=2', diskImagePath])
-  const details = runCodeSign(['--display', '--verbose=4', diskImagePath])
-  assertMacOSSignatureDetails(details, expected)
-  runAppleCommand('/usr/bin/xcrun', ['stapler', 'validate', diskImagePath], 'stapler validate')
-  runAppleCommand('/usr/sbin/spctl', ['--assess', '--type', 'install', '--verbose=4', diskImagePath], 'spctl')
-}
-
-/**
- * Verify the macOS application produced by electron-builder's signing phase.
- * @param {{ electronPlatformName: string, appOutDir: string, packager: { appInfo: { productFilename: string } } }} context - electron-builder hook context.
- * @param {{ signingIdentity: string, teamId: string }} expected - Public release identity.
- * @returns {void}
- */
-export function verifyMacOSSignatureAfterSign(context, expected) {
-  if (context.electronPlatformName !== 'darwin') return
-  const appPath = resolve(context.appOutDir, `${context.packager.appInfo.productFilename}.app`)
-  verifyMacOSSignature(appPath, expected)
-  process.stdout.write(`desktop macOS signing: verified Developer ID Application: ${expected.signingIdentity} (${expected.teamId})\n`)
-}
-
-if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
-  const cliArgs = process.argv[2] === '--' ? process.argv.slice(3) : process.argv.slice(2)
-  const appPath = cliArgs[0]
-  if (appPath === undefined || cliArgs.length !== 1) {
-    throw new Error('usage: node scripts/verify-macos-signature.mjs <path-to-app>')
-  }
-  const expected = resolveMacOSSigningEnvironment(loadDesktopPackageEnvironment('darwin'))
-  verifyMacOSSignature(resolve(appPath), expected)
-  process.stdout.write(`desktop macOS signing: verified Developer ID Application: ${expected.signingIdentity} (${expected.teamId})\n`)
 }

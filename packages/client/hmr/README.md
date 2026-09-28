@@ -115,7 +115,7 @@ These limits define what the reload driver does not preserve or restore. They ar
 
 - **Reload is coarse by design** — a fresh fiber and fresh components; React state inside the reloaded plugin is lost while the data layer (connection/runtime fibers, Session objects) is untouched. react-refresh-grade state preservation conflicts with re-executing the bundle and is deliberately out.
 - **No failure rollback** — after the old fiber is torn down, a failed replacement does not restore the previous bundle.
-- **Web transport only** — Electron installation and backend restart handling do not use this SSE path. Entry reconciliation itself is transport-independent.
+- **Web transport only** — Desktop installation and backend restart handling do not use this SSE path. Entry reconciliation itself is transport-independent.
 
 <a id="dev-note"></a>
 ### Dev Note

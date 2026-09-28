@@ -1,6 +1,6 @@
 {
   "name": "@mutantcat/dsh-desktop-host",
-  "description": "Private Node-mode host process for the Electron desktop application",
+  "description": "Private Node-mode host process for the Alpha desktop application",
   "version": "1.0.20260926",
   "private": true,
   "license": "MIT",

@@ -1,4 +1,4 @@
-// The built shared Web/Electron composer hides guidance as soon as a draft contains whitespace.
+// The built shared Web/Desktop composer hides guidance as soon as a draft contains whitespace.
 import { fileURLToPath } from 'node:url'
 import { chromium, type Page } from 'playwright'
 import { expect, it } from 'vitest'

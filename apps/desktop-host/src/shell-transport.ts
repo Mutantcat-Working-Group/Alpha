@@ -1,7 +1,7 @@
 /**
  * Control channel between a desktop shell and this host process. A Node IPC
  * channel carries messages when the launching shell provides one (the
- * Electron shell); otherwise stdout carries host events and stdin carries
+ * Alpha shell); otherwise stdout carries host events and stdin carries
  * shell commands, both as newline-delimited JSON (the Tauri shell).
  */
 

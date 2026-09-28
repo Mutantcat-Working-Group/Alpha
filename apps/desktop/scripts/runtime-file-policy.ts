@@ -5,7 +5,7 @@
  * Unrecognized assets and target runtime binaries are retained. Paths name the copied
  * node_modules tree, including nested package containers.
  * @param path - Path relative to the production node_modules directory.
- * @param target - Platform and architecture of the Electron Node runtime.
+ * @param target - Platform and architecture of the bundled Node runtime.
  * @param officeEngine - Engine selected from the installed kit manifest.
  * @returns Omission reason, or undefined when the entry must be copied.
  */

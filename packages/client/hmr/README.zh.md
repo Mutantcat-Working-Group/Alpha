@@ -115,7 +115,7 @@ fiber 的激活 epoch 会串联其服务提供方的 uid，因此替换提供方
 
 - **重载有意保持粗粒度**——全新 fiber 与全新组件；被重载插件内的 React 状态会丢失，而数据层（连接 fiber、运行时 fiber、Session 对象）不受影响。react-refresh 级状态保留与重新执行 bundle 冲突，因此有意排除。
 - **失败时不回滚**——旧 fiber 被卸载后，替换失败不会恢复先前的 bundle。
-- **仅负责 Web 传输**——Electron 的安装和后端重启流程不使用此 SSE 路径。条目对账本身不依赖传输。
+- **仅负责 Web 传输**——Desktop 的安装和后端重启流程不使用此 SSE 路径。条目对账本身不依赖传输。
 
 <a id="dev-note"></a>
 ### 开发备注

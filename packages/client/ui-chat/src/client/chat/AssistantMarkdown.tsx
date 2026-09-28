@@ -16,7 +16,7 @@ import css from './AssistantMarkdown.module.css'
  * @param value - The authored markdown destination, exactly as written.
  * @returns The API URL for an absolute POSIX path on an HTTP(S) page, or
  * undefined when the destination cannot be a Host-served local file
- * (non-HTTP transport such as Electron `file://`, protocol-relative or
+ * (non-HTTP transport such as Desktop `file://`, protocol-relative or
  * relative destinations).
  */
 export function localPathMediaUrl(protocol: string, origin: string, value: string): string | undefined {

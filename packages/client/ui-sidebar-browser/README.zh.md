@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-在独立的右侧 Sidebar tab 中浏览 HTTP(S) 页面，包括 loopback 服务。当前 Web 与 Desktop 都使用 iframe 和应用维护的 history。本包不会向被访问内容注入 Electron 或 Node 能力。
+在独立的右侧 Sidebar tab 中浏览 HTTP(S) 页面，包括 loopback 服务。当前 Web 与 Desktop 都使用 iframe 和应用维护的 history。本包不会向被访问内容注入桌面原生或 Node 能力。
 
 ## 目录
 
@@ -66,7 +66,7 @@ Web 记录 toolbar 提交和 typed tab 打开。导航状态机把每个受控 r
 
 每个 tab 获得一个 `BrowserController` class。它的公开命令只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；地址校验与 history 变更均由该对象封装。它的 `BrowserNavigation` class 拥有可序列化的 URL 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只保留可编辑草稿与 iframe DOM。
 
-Controller 接口不依赖 iframe API。未来的 `ElectronWebViewImpl` 可以实现 `BrowserFrame`，并持有 `<webview>` attachment 与 target identity。该延期载体记录在同一份 Sidebar Browser 决策中，当前不注册也不测试。
+Controller 接口不依赖 iframe API。未来的 `NativeWebViewImpl` 可以实现 `BrowserFrame`，并持有 `<webview>` attachment 与 target identity。该延期载体记录在同一份 Sidebar Browser 决策中，当前不注册也不测试。
 
 </details>
 
@@ -77,7 +77,7 @@ Controller 接口不依赖 iframe API。未来的 `ElectronWebViewImpl` 可以�
 
 - [右侧 Sidebar](../../../docs/subsystems/sidebar-right.zh.md)——tab composition、导航与生命周期。
 - [Document Preview](../ui-sidebar-documentpreview/README.zh.md)——本地源码、Markdown、图片、HTML 与 PDF 渲染。
-- [Sidebar Browser 决策](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.zh.md)——当前 iframe 行为、controller 所有权与延期 Electron 载体。
+- [Sidebar Browser 决策](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.zh.md)——当前 iframe 行为、controller 所有权与延期原生载体。
 
 -----
 
@@ -102,7 +102,7 @@ Controller 接口不依赖 iframe API。未来的 `ElectronWebViewImpl` 可以�
 - 出于安全原因，浏览器会隐藏很多 iframe 失败：DNS、TLS、mixed-content、CSP 与 `X-Frame-Options` 失败可能触发 `load`，也可能不提供可操作 event，而不是触发 `error`。加载失败 notice 只能作为 best-effort 提示。
 - Browser history 会跨 body 重挂载与普通页面刷新保留，但关闭 tab 或卸载 `ui-sidebar-right` 会中止其 occurrence 并删除已存储的 history bucket。
 - 本地文件会被拒绝，并继续由 Document Preview 负责。
-- 拟议的 Electron `<webview>` 载体、per-tab Cookie partition、原生 history 和 target-specific CDP 连接尚未实现。
+- 拟议的原生 `<webview>` 载体、per-tab Cookie partition、原生 history 和 target-specific CDP 连接尚未实现。
 
 <a id="dev-note"></a>
 ### 开发备注

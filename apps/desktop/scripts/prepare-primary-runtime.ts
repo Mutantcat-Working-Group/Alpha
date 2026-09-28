@@ -11,8 +11,21 @@ import extractZip from 'extract-zip'
 import { x as extractTar } from 'tar'
 import { workspaceDependencyPaths, type PrimaryRuntimeManifest } from '../../desktop-host/src/primary-runtime.ts'
 import { resolveDesktopBuildTarget, resolveDesktopTargetBuildPaths } from './desktop-build-paths.mjs'
-import { scrubWindowsSigningEnvironment } from './windows-sign.mjs'
 import lock from './primary-runtime-lock.json' with { type: 'json' }
+
+const SENSITIVE_ENVIRONMENT_NAME = /(?:KEY|SECRET|TOKEN|PASSWORD)/iu
+const WINDOWS_SIGNING_ENVIRONMENT_PREFIX = 'DSH_DESKTOP_WINDOWS_'
+
+/**
+ * Remove inherited credentials before starting the bundled runtime smoke checks.
+ * @param environment - Parent environment.
+ * @returns Environment without credential-shaped names.
+ */
+function scrubWindowsSigningEnvironment(environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(environment)
+    .filter(([name]) => !SENSITIVE_ENVIRONMENT_NAME.test(name)
+      && !name.startsWith(WINDOWS_SIGNING_ENVIRONMENT_PREFIX)))
+}
 
 /**
  * Download or reuse an archive only when its bytes match the release lock.

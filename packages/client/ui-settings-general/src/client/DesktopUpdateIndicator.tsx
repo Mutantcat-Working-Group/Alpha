@@ -1,4 +1,4 @@
-/** Optional Electron status presentation; the native shell owns actions and Web owns visible copy. */
+/** Optional Desktop update status presentation; the native shell owns actions and Web owns visible copy. */
 import { IconDownloadOutline16, IconLoadingOutline16, Tooltip } from '@mutantcat/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@mutantcat/dsh-client-ui-slots'
 import css from './DesktopUpdateIndicator.module.css'

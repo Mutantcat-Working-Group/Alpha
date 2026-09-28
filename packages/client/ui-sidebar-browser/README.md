@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Browse HTTP(S) pages, including loopback services, inside independent right-Sidebar tabs. The current carrier is an iframe with application-managed history in both Web and Desktop. The package never injects Electron or Node access into visited content.
+Browse HTTP(S) pages, including loopback services, inside independent right-Sidebar tabs. The current carrier is an iframe with application-managed history in both Web and Desktop. The package never injects Desktop-native or Node access into visited content.
 
 ## Table of Contents
 
@@ -66,7 +66,7 @@ Web records toolbar submissions and typed tab opens. A navigation state machine 
 
 Each tab receives one `BrowserController` class. Its public commands are `loadUrl`, `goBack`, `goForward`, and `reload`; address validation and history mutation stay behind that object. Its `BrowserNavigation` class owns the serializable URL state machine. The `BrowserFrame` interface owns transient sandbox and document state plus carrier operations, and `IframeImpl` implements that interface for the current iframe carrier. Slot injection exposes keyed frame state through `useBrowserFrame` and supplies plain callbacks, so the React body receives neither the controller nor an observable source; it keeps only the editable draft and iframe DOM.
 
-The controller interface does not depend on iframe APIs. A future `ElectronWebViewImpl` can implement `BrowserFrame` while owning `<webview>` attachment and target identity. That deferred carrier is documented in the same Sidebar Browser decision, but is not registered or tested today.
+The controller interface does not depend on iframe APIs. A future `NativeWebViewImpl` can implement `BrowserFrame` while owning `<webview>` attachment and target identity. That deferred carrier is documented in the same Sidebar Browser decision, but is not registered or tested today.
 
 </details>
 
@@ -77,7 +77,7 @@ The controller interface does not depend on iframe APIs. A future `ElectronWebVi
 
 - [Right Sidebar](../../../docs/subsystems/sidebar-right.md) — tab composition, navigation, and lifecycle.
 - [Document Preview](../ui-sidebar-documentpreview/README.md) — local source, Markdown, images, HTML, and PDF rendering.
-- [Sidebar Browser decision](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.md) — current iframe behavior, controller ownership, and deferred Electron carrier.
+- [Sidebar Browser decision](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.md) — current iframe behavior, controller ownership, and deferred native carrier.
 
 -----
 
@@ -102,7 +102,7 @@ The isolation policy deliberately gives up some browser compatibility:
 - Browsers conceal many iframe failures for security: DNS, TLS, mixed-content, CSP, and `X-Frame-Options` failures may emit `load` or no actionable event instead of `error`. The load-failure notice is best-effort.
 - Browser history survives body remounts and ordinary page reloads, but closing the tab or unloading `ui-sidebar-right` aborts its occurrence and removes the stored history bucket.
 - Local files are rejected and remain owned by Document Preview.
-- The proposed Electron `<webview>` carrier, per-tab cookie partitions, native history, and target-specific CDP connection are not implemented.
+- The proposed native `<webview>` carrier, per-tab cookie partitions, native history, and target-specific CDP connection are not implemented.
 
 <a id="dev-note"></a>
 ### Dev Note

@@ -10,7 +10,7 @@ import type { DesktopRuntimeDescriptor } from '../src/runtime-tree.ts'
 /**
  * Prove the final resource tree boots and serves its matching Web frontend.
  * @param root - Materialized dsh resources.
- * @param node - Prepared target Electron executable.
+ * @param node - Prepared target Node executable.
  * @param runtime - Verified resource descriptor.
  */
 export async function smokeDesktopRuntime(root: string, node: string, runtime: DesktopRuntimeDescriptor): Promise<void> {
