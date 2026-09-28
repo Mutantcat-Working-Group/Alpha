@@ -63,7 +63,7 @@ describe('Client UI i18n source check', () => {
     )).toEqual([])
   })
 
-  it('rejects Electron dialog, title, prompt, and DOM copy outside locale owners', () => {
+  it('rejects native dialog, title, prompt, and DOM copy outside locale owners', () => {
     const source = `
       dialog.showMessageBox({ title: 'Update available', message: 'Install it now?' })
       window.setTitle('Desktop plugins')

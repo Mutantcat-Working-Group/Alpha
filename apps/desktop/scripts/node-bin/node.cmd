@@ -1,3 +1,2 @@
 @echo off
-set ELECTRON_RUN_AS_NODE=1
-"%DSH_DESKTOP_NODE_EXECUTABLE%" --expose-internals %*
+"%~dp0..\primary-runtime\dependencies\node\bin\node.exe" --expose-internals %*

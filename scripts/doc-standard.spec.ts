@@ -183,8 +183,8 @@ function validateSessionFormatRelease(source: string, currentWriterVersion: numb
     throw new Error('latestReleasedVersion must not exceed the current writer version')
   }
   if (typeof evidenceTag !== 'string'
-    || !/^dsh-v\d+\.\d+\.\d+(?:-[\dA-Za-z]+(?:[.-][\dA-Za-z]+)*)?(?:\+[\dA-Za-z]+(?:[.-][\dA-Za-z]+)*)?$/u.test(evidenceTag)) {
-    throw new Error('evidenceTag must be a non-empty dsh-v version tag without URL delimiters')
+    || !/^(?:alpha|dsh)-v\d+\.\d+\.\d+(?:-[\dA-Za-z]+(?:[.-][\dA-Za-z]+)*)?(?:\+[\dA-Za-z]+(?:[.-][\dA-Za-z]+)*)?$/u.test(evidenceTag)) {
+    throw new Error('evidenceTag must be a non-empty alpha-v version tag without URL delimiters')
   }
   const hasEvidence = normalized.split('\n').some(line =>
     line.includes(`\`${evidenceTag}\``) && line.includes('`packages/core/session/src/types.ts`'))
@@ -268,12 +268,12 @@ describe('Session format release authority', () => {
   it('rejects empty, malformed, and URL-injecting evidence tags', () => {
     const { record, evidence } = sessionFormatReleaseFixture()
     for (const tag of [
-      null, true, 1, '', ' ', 'dsh-v', record.evidenceTag.replace('dsh-v', 'v'),
+      null, true, 1, '', ' ', 'alpha-v', 'dsh-v', record.evidenceTag.replace('alpha-v', 'v'),
       `${record.evidenceTag}/other`, `${record.evidenceTag}?query`, `${record.evidenceTag}#fragment`,
       `${record.evidenceTag}%2Fother`, `${record.evidenceTag})`, `${record.evidenceTag}\n`,
     ]) {
       const source = releaseDocument(`latestReleasedVersion: ${record.latestReleasedVersion}\nevidenceTag: ${JSON.stringify(tag)}`, evidence)
-      expect(() => validateSessionFormatRelease(source, record.latestReleasedVersion), String(tag)).toThrow('dsh-v version tag')
+      expect(() => validateSessionFormatRelease(source, record.latestReleasedVersion), String(tag)).toThrow('alpha-v version tag')
     }
   })
 

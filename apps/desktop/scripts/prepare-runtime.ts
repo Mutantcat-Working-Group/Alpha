@@ -1,13 +1,11 @@
-/** Prepare the target Electron distribution and pinned pnpm CLI. */
+/** Prepare the target Node runtime and pinned pnpm CLI. */
 
-import { execFileSync } from 'node:child_process'
 import { chmodSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { downloadArtifact } from '@electron/get'
-import extractZip from 'extract-zip'
-import { resolveDesktopBuildTarget, resolveDesktopTargetBuildPaths } from './desktop-build-paths.mjs'
+import { readPrimaryRuntime } from '../../desktop-host/src/primary-runtime.ts'
+import { resolveDesktopTargetBuildPaths } from './desktop-build-paths.mjs'
 import { preparePrimaryRuntime } from './prepare-primary-runtime.ts'
 
 const BUILD_PATHS = resolveDesktopTargetBuildPaths()
@@ -27,31 +25,18 @@ function preparePnpm(): string {
 
 async function main(): Promise<void> {
   const { values } = parseArgs({ options: { 'defer-primary-runtime-smoke': { type: 'boolean', default: false } } })
-  const target = resolveDesktopBuildTarget()
-  const platform = target.startsWith('mac-') ? 'darwin' : target.startsWith('win-') ? 'win32' : 'linux'
-  const arch = target.endsWith('arm64') ? 'arm64' : 'x64'
-  const require = createRequire(import.meta.url)
-  const { version } = require('electron/package.json') as { version: string }
-  const archive = await downloadArtifact({ version, platform, arch, artifactName: 'electron', cacheRoot: BUILD_PATHS.downloads })
-  rmSync(BUILD_PATHS.electron, { recursive: true, force: true })
-  await extractZip(archive, { dir: BUILD_PATHS.electron })
-  const executable = join(BUILD_PATHS.electron, platform === 'win32'
-    ? 'electron.exe'
-    : platform === 'darwin' ? 'Electron.app/Contents/MacOS/Electron' : 'electron')
-  const nodeVersion = execFileSync(executable, ['-p', 'process.versions.node'], {
-    encoding: 'utf8', env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
-  }).trim()
   rmSync(RUNTIME_ROOT, { recursive: true, force: true })
   mkdirSync(RUNTIME_ROOT, { recursive: true })
   const pnpmVersion = preparePnpm()
   cpSync(join(import.meta.dirname, 'node-bin'), join(RUNTIME_ROOT, 'bin'), { recursive: true })
   chmodSync(join(RUNTIME_ROOT, 'bin', 'node'), 0o755)
+  await preparePrimaryRuntime({ deferSmoke: values['defer-primary-runtime-smoke'] })
+  const runtime = await readPrimaryRuntime(join(RUNTIME_ROOT, 'primary-runtime'))
   writeFileSync(join(RUNTIME_ROOT, 'versions.json'), `${JSON.stringify({
     schemaVersion: 1,
-    node: nodeVersion,
+    node: runtime.components.node,
     pnpm: pnpmVersion,
   }, undefined, 2)}\n`)
-  await preparePrimaryRuntime({ deferSmoke: values['defer-primary-runtime-smoke'] })
 }
 
 await main()

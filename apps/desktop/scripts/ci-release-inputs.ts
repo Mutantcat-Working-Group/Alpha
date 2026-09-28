@@ -51,7 +51,7 @@ export async function prepareReleaseInputs(target: CiPackageTarget): Promise<voi
   const buildPaths = desktopTargetBuildPaths(target.name)
   const buildEnv: NodeJS.ProcessEnv = { ...process.env }
   await runPnpm(['run', 'build:official'], REPOSITORY_ROOT, buildEnv)
-  await runPnpm(['run', 'release:pack', '--family', 'dsh', '--out', buildPaths.packedDsh], REPOSITORY_ROOT, buildEnv)
+  await runPnpm(['run', 'release:pack', '--family', 'alpha', '--out', buildPaths.packedDsh], REPOSITORY_ROOT, buildEnv)
   await runPnpm(['--dir', 'apps/desktop-host', 'pack', '--pack-destination', buildPaths.packedDsh], REPOSITORY_ROOT, buildEnv)
   await runPnpm(['run', 'release:pack', '--family', 'vendor', '--out', buildPaths.packedVendor], REPOSITORY_ROOT, buildEnv)
   rmSync(buildPaths.packedLandlock, { recursive: true, force: true })

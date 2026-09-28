@@ -1,7 +1,7 @@
 # Publish the documentation website to GitHub Pages. This workflow is manual-only
 # (workflow_dispatch) and intentionally does not listen to pull_request or push:
 # the site presents a released snapshot, so publication is an explicit act from a
-# dsh-v* tag and must never appear as a PR check. `release:verify` rejects every
+# alpha-v* tag and must never appear as a PR check. `release:verify` rejects every
 # other ref, and the github-pages environment repeats that restriction as a
 # deployment tag policy with required reviewers.
 #
@@ -57,12 +57,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # One definition of "released" for the site and the npm sequence: this
-      # rejects every ref that is not a dsh-v* tag naming the version this tree
+      # rejects every ref that is not an alpha-v* tag naming the version this tree
       # carries.
       - name: Verify release version
         env:
           RELEASE_PUBLISH: 'true'
-        run: pnpm run release:verify --family dsh
+        run: pnpm run release:verify --family alpha
 
       - name: Configure Pages
         id: pages

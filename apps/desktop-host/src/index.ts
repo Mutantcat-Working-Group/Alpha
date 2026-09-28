@@ -42,8 +42,6 @@ async function main(): Promise<void> {
         command: process.execPath,
         args: ['--expose-internals', process.argv[6]],
         env: {
-          ELECTRON_RUN_AS_NODE: '1',
-          DSH_DESKTOP_NODE_EXECUTABLE: process.execPath,
           PATH: `${process.argv[7] ?? ''}${delimiter}${process.env.PATH ?? ''}`,
         },
       },

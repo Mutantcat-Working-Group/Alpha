@@ -70,7 +70,7 @@ describe('npm install layout verifier', () => {
     expect(dual.get('@mutantcat/cordis')).toBe(index.get('@mutantcat/cordis'))
   })
 
-  it('accepts isolated DSH releases with one shared Cordis installation', () => {
+  it('accepts isolated Alpha releases with one shared Cordis installation', () => {
     expect(assertDualDshInstallLayout(validLayout())).toEqual({
       dshPackagesPerVersion: 3,
       checkedDshEdges: 4,

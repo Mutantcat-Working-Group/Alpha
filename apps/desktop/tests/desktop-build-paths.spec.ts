@@ -19,7 +19,6 @@ describe('desktop build paths', () => {
       'packageSet',
       'dsh',
       'dshPnpm',
-      'electron',
       'packedDsh',
       'packedVendor',
       'packedLandlock',

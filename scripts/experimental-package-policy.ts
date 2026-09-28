@@ -5,7 +5,7 @@ export const PRIVATE_EXPERIMENTAL_PACKAGE_DIRECTORIES: readonly string[] = []
  * Whether an experimental package publishes under the default-public policy.
  * @param directory - repository-relative package directory.
  * @param privateDirectories - experimental directories excluded from publication.
- * @returns Whether the package publishes with the dsh family.
+ * @returns Whether the package publishes with the Alpha family.
  */
 export function isPublicExperimentalPackageDirectory(
   directory: string,

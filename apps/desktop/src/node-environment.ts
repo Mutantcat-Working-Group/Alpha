@@ -1,18 +1,16 @@
-/** Electron Node-mode startup, with private shell launchers scoped to package installation. */
+/** Node runtime environment for bundled package-manager and smoke launches. */
 
 import { delimiter } from 'node:path'
 
 /**
- * Select Electron's Node mode and the shell launcher used by package scripts.
- * @param executable - Electron executable running the application.
+ * Resolve the environment for package scripts run by the bundled Node runtime.
  * @param bin - Directory containing the node shell launcher.
  * @param environment - Caller environment preserved for plugin execution.
- * @returns Environment for a Node-mode child process.
+ * @returns Environment with the launcher directory on PATH when one is supplied.
  */
-export function desktopNodeEnvironment(executable: string, bin: string | undefined, environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+export function desktopNodeEnvironment(bin: string | undefined, environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return {
     ...environment,
-    ELECTRON_RUN_AS_NODE: '1',
-    ...(bin === undefined ? {} : { DSH_DESKTOP_NODE_EXECUTABLE: executable, PATH: `${bin}${delimiter}${environment.PATH ?? ''}` }),
+    ...(bin === undefined ? {} : { PATH: `${bin}${delimiter}${environment.PATH ?? ''}` }),
   }
 }

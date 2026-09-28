@@ -57,7 +57,7 @@ it.each(['missing', 'directory'])('checks a %s Host entry only during build veri
 it('checks the shell version only during build verification', async () => {
   const dsh = join(fixture(), 'dsh')
   expect(readDesktopRuntime(dsh).release.version).toBe('1.0.0')
-  await expect(verifyDesktopRuntime(dsh, '2.0.0')).rejects.toThrow(/does not match Electron/u)
+  await expect(verifyDesktopRuntime(dsh, '2.0.0')).rejects.toThrow(/does not match 2\.0\.0/u)
 })
 it.each([
   { schemaVersion: 2 },

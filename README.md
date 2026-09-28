@@ -13,7 +13,7 @@
 - 终端、SSH、子进程、沙箱、LSP、浏览器操作和计算机操作等能力都以插件形式提供，按需启停。
 - 会话全程落盘且可回放：任何进入模型请求的输入都能从会话日志中重建，便于审计和复现。
 - 应用 ID 为 `org.mutantcat.alpha`，数据目录沿用 `$DSH_HOME`，升级不丢失既有 profile。
-- **发行方** 由异猫工作群（mutantcat.org）发行，GitHub: https://github.com/Mutantcat-Working-Group
+- **发行方**：异猫工作群（mutantcat.org），GitHub：https://github.com/Mutantcat-Working-Group
 
 核心价值：
 
@@ -35,19 +35,18 @@
 - 安装包自带 Python、Node.js、pnpm，无需手动准备解释器或 pip 环境。
 - 桌面版左下角显示更新状态，支持自动下载和重启安装。
 
-#### 插件生态
+#### 会话可审计
 
-- 完整保留 DeepSeek Harness 的插件协议，[`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题下的插件仓库可直接装载，配置无需改写。
-- 插件通过 `ctx.effect()` 与 `ctx.on()` 注册贡献，`register()` 的返回值即注销函数。
-- 运行期自修改与 Claude Code / Codex 桥接保留，`extensions` 和 `hooks` 用法不变。
-- 插件清单使用 `cordis.yml`，裸写的插件名必须出现在解析清单的 `dependencies` 中。
-- 插件作者请遵循 [AGENTS.md](AGENTS.md) 与 `docs/`、`.agents/` 中的约定。
+- 会话全程落盘，模型可见输入都有对应日志事件，可回放、可复现。
+- 任何进入模型请求的输入都能从会话日志重建，便于审计和排查。
 
 ### 三、安装与下载
 
 1. 桌面端：从 [Releases](https://github.com/Mutantcat-Working-Group/Alpha/releases) 下载对应平台的安装包，双击即可安装运行，无需额外配置。Windows 输出 NSIS 安装程序，macOS 输出 ad-hoc 签名的 DMG（Apple Silicon 与 Intel 各一个），Linux 输出 AppImage。
 2. Web 版：安装 Node.js 后执行 `npx @mutantcat/dsh web`，默认在 `http://127.0.0.1:3080` 打开；`--no-open` 只起服务不打开浏览器。
-3. 从源码运行或自行打包见第六节。
+3. 从源码运行或自行打包见第七节。
+
+<a id="run"></a>
 
 ### 四、快速上手
 
@@ -56,7 +55,15 @@
 3. 需要脚本和数据处理时，agent 直接使用安装包内置的 Python 运行时。
 4. 更多细节见 [Web UI 指南](docs/user/guide/index.md)、[架构文档](docs/architecture.md) 和 [开发指南](docs/development.md)。
 
-### 五、开发进度
+### 五、插件生态与兼容层
+
+- 完整保留 DeepSeek Harness 的插件协议，[`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题下的插件仓库可直接装载，配置无需改写。
+- 插件通过 `ctx.effect()` 与 `ctx.on()` 注册贡献，`register()` 的返回值即注销函数。
+- 运行期自修改与 Claude Code / Codex 桥接保留，`extensions` 和 `hooks` 用法不变。
+- 插件清单使用 `cordis.yml`，裸写的插件名必须出现在解析清单的 `dependencies` 中。
+- 插件作者请遵循 [AGENTS.md](AGENTS.md) 与 `docs/`、`.agents/` 中的约定。
+
+### 六、开发进度
 
 - [X] 桌面端外壳与 Web 客户端
 - [X] 内置 Python / Node.js / pnpm 运行时
@@ -64,18 +71,20 @@
 - [ ] 自动更新通道（当前 release 产物为免凭据构建，不走 Nightly feed）
 - [ ] 插件市场与一键安装
 
-### 六、从源码构建与打包
+<a id="run-from-source"></a>
+
+### 七、从源码构建与打包
 
 1. 从源码运行需要 Node.js `^22.19` 或 `>=24` 与 pnpm，依次执行 `pnpm install`、`pnpm run build`、`pnpm dsh web`。
 2. 自行打包某个平台的安装包，在 `apps/desktop` 下执行 `pnpm run package:ci:tauri:<target>`，`<target>` 取 `mac:arm64`、`mac:x64`、`win:x64`、`linux:x64`、`linux:arm64` 之一。产物落在 `.desktop-build/targets/<target>/artifacts/`。
 
-### 七、社区与贡献
+### 八、社区与贡献
 
 - 通过 [GitHub Discussions](https://github.com/Mutantcat-Working-Group/Alpha/discussions) 提交反馈和缺陷报告。
 - 给插件仓库加上 [`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题，便于他人发现。
 - agent 参与者遵循 [AGENTS.md](AGENTS.md)。
 
-### 八、安全与许可证
+### 九、安全与许可证
 
 - 运行本项目前请阅读 [SAFETY.md](SAFETY.md)。
 - 本项目以 [MIT](LICENSE) 许可证开源。

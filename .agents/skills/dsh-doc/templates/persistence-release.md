@@ -1,6 +1,6 @@
 # Template: persistence-release
 
-Use this kind for `docs/persistence-changes/releases/dsh-v<version>.md` and its Chinese sibling. These records reconstruct tagged persistence types for human comparison and format validation. They are observations, not compatibility acknowledgements, and do not participate in the current-source history.
+Use this kind for `docs/persistence-changes/releases/alpha-v<version>.md` and its Chinese sibling; the pre-rename archive keeps its historical `dsh-v<version>` filenames. These records reconstruct tagged persistence types for human comparison and format validation. They are observations, not compatibility acknowledgements, and do not participate in the current-source history.
 
 ## Frontmatter
 

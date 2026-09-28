@@ -1,4 +1,4 @@
-/** Electron Node-mode child lifecycle for the shared Web application. */
+/** Node child lifecycle for the shared Web application. */
 
 import { spawn, type ChildProcess } from 'node:child_process'
 import { join } from 'node:path'
@@ -64,7 +64,7 @@ export interface DesktopHostReady {
 /** The child has exited, but task teardown did not finish successfully. */
 export class DesktopHostUncleanExitError extends Error {}
 
-/** One Web backend running under the Electron executable in Node mode. */
+/** One Web backend running under the bundled Node executable. */
 export class DesktopHostProcess {
   private child: ChildProcess | undefined
   private readyResolve!: (ready: DesktopHostReady) => void
@@ -82,7 +82,7 @@ export class DesktopHostProcess {
   private readonly taskQueries = new Map<number, { resolve: (active: boolean) => void; reject: (error: Error) => void }>()
 
   /**
-   * @param node - Absolute Electron executable in Node mode.
+   * @param node - Absolute Node executable.
    * @param runtimeDir - Immutable packages carried by the current application.
    * @param projectDir - Desktop plugin profile and child working directory.
    * @param inspectPort - Optional loopback inspector port for workspace development.
@@ -123,7 +123,7 @@ export class DesktopHostProcess {
       ...this.packageManager === undefined ? [] : [this.packageManager.pnpm, this.packageManager.nodeBin],
     ], {
       cwd: this.projectDir,
-      env: desktopNodeEnvironment(this.node, undefined, this.environment),
+      env: desktopNodeEnvironment(undefined, this.environment),
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     })
     this.child = child

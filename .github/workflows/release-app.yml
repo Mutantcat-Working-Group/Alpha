@@ -306,7 +306,8 @@ jobs:
             echo "install notes are already part of the release body"
             exit 0
           fi
-          version="${TAG#v}"
+          version="${TAG#alpha-v}"
+          version="${version#v}"
           {
             echo ""
             sed "s/__VERSION__/$version/g" apps/desktop/install-notes.md

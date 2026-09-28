@@ -29,10 +29,10 @@ The [format references](persistence-changes/historical-formats/README.md) docume
 
 ```yaml session-format-release
 latestReleasedVersion: 3
-evidenceTag: dsh-v0.1.5-alpha.1
+evidenceTag: alpha-v0.1.5-alpha.1
 ```
 
-Evidence: published product tag `dsh-v0.1.5-alpha.1`; tagged writer: `packages/core/session/src/types.ts`.
+Evidence: published product tag `alpha-v0.1.5-alpha.1`; tagged writer: `packages/core/session/src/types.ts`.
 
 <a id="updating-the-record"></a>
 ## Updating the record

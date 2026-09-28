@@ -107,6 +107,5 @@ The Windows NSIS installer installs for the current user. The macOS DMG carries 
 ## Known limitations
 
 - Release artifacts are unsigned outside macOS's ad-hoc DMG: Gatekeeper and SmartScreen prompt on first run, and no notarization or publisher signature is performed.
-- The release assets are the only distribution channel; the legacy Electron packaging and update-feed scripts remain in the worktree but are not part of release automation.
 - Cross-OS artifact qualification runs only in CI; local verification covers the build host's own target.
 - The desktop shell shares sessions, settings, credentials, workspaces, and storage under `$DSH_HOME` with CLI dsh, while executable packages, plugin activation, and lockfiles remain separate.

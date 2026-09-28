@@ -20,6 +20,7 @@ import {
 import { smokePrimaryRuntime } from './prepare-primary-runtime.ts'
 import { smokeDesktopRuntime } from './smoke-runtime.ts'
 import { writeDesktopRuntime, verifyDesktopRuntime } from '../src/runtime-tree.ts'
+import { workspaceDependencyPaths, type PrimaryRuntimeManifest } from '../../desktop-host/src/primary-runtime.ts'
 import {
   resolveDesktopAppId,
   resolveMacOSSigningEnvironment,
@@ -37,12 +38,21 @@ const DSH_OUTPUT_ROOT = BUILD_PATHS.dsh
 const BUILD_ROOT = mkdtempSync(join(tmpdir(), 'dsh-desktop-runtime-'))
 const STORE_ROOT = join(BUILD_ROOT, 'store')
 const RUNTIME_ROOT = BUILD_PATHS.runtime
+const PRIMARY_RUNTIME_ROOT = join(RUNTIME_ROOT, 'primary-runtime')
 const PNPM_BUILD_STATE = BUILD_PATHS.dshPnpm
 const PACKAGE_SET_ROOT = BUILD_PATHS.packageSet
-const NODE = join(BUILD_PATHS.electron, process.platform === 'win32'
-  ? 'electron.exe'
-  : process.platform === 'darwin' ? 'Electron.app/Contents/MacOS/Electron' : 'electron')
 const PNPM = join(RUNTIME_ROOT, 'pnpm', 'bin', 'pnpm.mjs')
+
+function primaryNodeExecutable(): string {
+  const manifestPath = join(PRIMARY_RUNTIME_ROOT, 'runtime.json')
+  if (!existsSync(manifestPath)) {
+    throw new Error('desktop runtime: primary runtime is not prepared; run prepare:runtime first')
+  }
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as PrimaryRuntimeManifest
+  return workspaceDependencyPaths(PRIMARY_RUNTIME_ROOT, manifest).node
+}
+
+const NODE = primaryNodeExecutable()
 
 function manifestVersion(path: string, subject: string): string {
   const manifest = JSON.parse(readFileSync(path, 'utf8')) as { version?: unknown }
@@ -54,7 +64,7 @@ function desktopRelease(): DesktopRelease {
   const version = manifestVersion(join(APP_ROOT, 'package.json'), 'desktop package')
   const dshVersion = manifestVersion(resolve(APP_ROOT, '..', '..', 'package.json'), 'root dsh package')
   if (version !== dshVersion) {
-    throw new Error(`desktop runtime: Electron ${version} must bind the same version of @mutantcat/dsh, found ${dshVersion}`)
+    throw new Error(`desktop runtime: ${version} must bind the same version of @mutantcat/dsh, found ${dshVersion}`)
   }
   const runtime = JSON.parse(readFileSync(join(RUNTIME_ROOT, 'versions.json'), 'utf8')) as Record<string, unknown>
   return parseDesktopRelease({
@@ -92,7 +102,7 @@ function runPnpm(args: readonly string[]): Promise<void> {
         NPM_CONFIG_REGISTRY: 'https://registry.npmjs.org/',
         NPM_CONFIG_STORE_DIR: STORE_ROOT,
         NPM_CONFIG_USERCONFIG: userConfig,
-        ...desktopNodeEnvironment(NODE, join(RUNTIME_ROOT, 'bin'), {}),
+        ...desktopNodeEnvironment(join(RUNTIME_ROOT, 'bin'), {}),
         PATH: `${join(RUNTIME_ROOT, 'bin')}${delimiter}${process.env.PATH ?? ''}`,
         XDG_CACHE_HOME: join(PNPM_BUILD_STATE, 'cache'),
         XDG_CONFIG_HOME: config,
@@ -172,7 +182,7 @@ async function main(): Promise<void> {
     const descriptor = await verifyDesktopRuntime(DSH_OUTPUT_ROOT, release.version, target)
     await new Promise<void>((accept, reject) => {
       execFile(NODE, ['--expose-internals', join(APP_ROOT, 'tests/fixtures/runtime-payload-smoke.mjs'), DSH_OUTPUT_ROOT],
-        { timeout: 120_000, env: desktopNodeEnvironment(NODE, join(RUNTIME_ROOT, 'bin'), { ...process.env, NODE_OPTIONS: '' }) }, (error, stdout, stderr) => {
+        { timeout: 120_000, env: desktopNodeEnvironment(join(RUNTIME_ROOT, 'bin'), { ...process.env, NODE_OPTIONS: '' }) }, (error, stdout, stderr) => {
           if (error !== null) reject(new Error(`desktop native payload smoke failed: ${stderr}`, { cause: error }))
           else { process.stdout.write(stdout); accept() }
         })

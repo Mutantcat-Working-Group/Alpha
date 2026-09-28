@@ -109,6 +109,5 @@ Windows NSIS 安装程序为当前用户安装。macOS DMG 携带上述 ad-hoc �
 ## 已知限制
 
 - macOS 的 ad-hoc DMG 之外的产物均未签名：Gatekeeper 和 SmartScreen 会在首次运行时提示，不进行公证或发布者签名。
-- release 资源是唯一分发渠道；遗留的 Electron 打包和更新 feed 脚本仍在工作区中，但不属于发布自动化。
 - 跨操作系统产物验证只在 CI 进行；本地验证只覆盖构建主机自身的目标。
 - 桌面壳与 CLI dsh 共享 `$DSH_HOME` 下的会话、设置、凭据、工作区和存储，而可执行包、插件激活和 lockfile 保持独立。

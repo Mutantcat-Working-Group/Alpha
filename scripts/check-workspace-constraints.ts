@@ -56,7 +56,7 @@ const experimentalPackageDirectory = /^packages\/experimental\/[^/]+$/
 const experimentalPackageNamePrefix = '@mutantcat/dsh-experimental-'
 /** Ordinary directories whose packages this repository publishes: one release member each. */
 const standardReleaseMemberDirectory = /^(?:packages\/(?!experimental\/)[^/]+\/[^/]+|apps\/(?!desktop(?:-host)?$)[^/]+|vendor\/[^/]+)$/
-/** Installable application assembled by electron-builder rather than published to npm. */
+/** Installable application assembled by the Desktop release pipeline rather than published to npm. */
 const desktopApplicationDirectory = 'apps/desktop'
 const localArtifactDirs = new Set(['node_modules'])
 const appPackageFiles: Readonly<Record<string, readonly string[]>> = {
@@ -314,19 +314,19 @@ function isReleaseMemberDirectory(dir: string): boolean {
 }
 
 /**
- * Require a dsh-family manifest to carry the workspace version.
+ * Require an Alpha-family manifest to carry the workspace version.
  *
- * The dsh release sequence publishes packages/ and apps/ members and every
- * private dsh package on one shared version, written by `release:dsh` and
+ * The Alpha release sequence publishes packages/ and apps/ members and every
+ * private package on one shared version, written by `release:alpha` and
  * shared with the workspace root. This name test is that boundary: it covers
  * the family wherever the manifest lives, so apps/ members cannot drift with
  * only the release lane noticing.
  * @param manifest - the workspace package manifest.
- * @param expected - the version every dsh-family manifest must carry (the root's).
+ * @param expected - the version every Alpha-family manifest must carry (the root's).
  * @returns one violation naming the manifest and the expected version, or
  * undefined when the manifest is compliant or not in the family.
  */
-export function checkDshFamilyVersion(manifest: PackageManifest, expected: string | undefined): string | undefined {
+export function checkAlphaFamilyVersion(manifest: PackageManifest, expected: string | undefined): string | undefined {
   const name = manifest.name
   if (name !== '@mutantcat/dsh' && name?.startsWith('@mutantcat/dsh-') !== true) return undefined
   if (manifest.version !== expected) {
@@ -336,14 +336,14 @@ export function checkDshFamilyVersion(manifest: PackageManifest, expected: strin
 }
 
 /**
- * Check one workspace manifest against publication and dsh-package policy.
+ * Check one workspace manifest against publication and Alpha-package policy.
  * @param workspace - package directory and parsed manifest.
  * @returns path-qualified policy violations.
  */
 export function checkWorkspaceManifest({ dir, manifest }: WorkspaceManifest): string[] {
   const errors = checkExperimentalManifest({ dir, manifest })
   const label = manifest.name ?? dir
-  const familyVersionError = checkDshFamilyVersion(manifest, repositoryVersion)
+  const familyVersionError = checkAlphaFamilyVersion(manifest, repositoryVersion)
   if (familyVersionError !== undefined) errors.push(familyVersionError)
   const isNativePackageDir = dir.startsWith('native/system/packages/')
   const isPublicNativePackage = isNativePackageDir
@@ -370,8 +370,8 @@ export function checkWorkspaceManifest({ dir, manifest }: WorkspaceManifest): st
     //
     // Access is per release sequence, not per scope: the vendored framework and
     // the Landlock packages publish publicly because outside consumers install
-    // them, and the dsh family published publicly with its own sequence on
-    // 2026-08-13. No publish path passes `--access`; each packed manifest declares
+    // them, and the Alpha family has published publicly with its own sequence
+    // since 2026-08-13. No publish path passes `--access`; each packed manifest declares
     // it, and this gate requires every release member to be public.
     if (manifest.private === true) {
       errors.push(`${label}: release member must not set "private": true`)
@@ -492,8 +492,8 @@ function checkHierarchyShape(): string[] {
 }
 
 function checkRepositoryVersion(): string[] {
-  // The root carries the dsh release family's version, so a prerelease such as
-  // 0.0.1-rc.1 is a valid state between `release:dsh` and its publication.
+  // The root carries the Alpha release family's version, so a prerelease such as
+  // 0.0.1-rc.1 is a valid state between `release:alpha` and its publication.
   if (repositoryVersion && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(repositoryVersion)) return []
   return ['package.json: version must be X.Y.Z with an optional prerelease segment']
 }

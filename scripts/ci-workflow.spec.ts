@@ -1092,11 +1092,11 @@ describe('npm release workflows', () => {
     }
   })
 
-  it('runs dependency policy and npm layout checks in the DSH release workflow', () => {
+  it('runs dependency policy and npm layout checks in the Alpha release workflow', () => {
     const workflow = loadWorkflow('.github/workflows/release.yml')
     const dependencies = workflowJob(workflow, 'dependencies')
     if (!isRecord(workflow.on) || !Array.isArray(dependencies.steps)) {
-      throw new TypeError('DSH release workflow must define triggers and dependency steps')
+      throw new TypeError('Alpha release workflow must define triggers and dependency steps')
     }
     const commands = dependencies.steps.flatMap(step =>
       isRecord(step) && typeof step.run === 'string' ? [step.run] : [])
@@ -1108,7 +1108,7 @@ describe('npm release workflows', () => {
 })
 
 describe('Documentation site publication', () => {
-  it('keeps Pages deployment dispatch-only from a dsh-v* tag', () => {
+  it('keeps Pages deployment dispatch-only from an alpha-v* tag', () => {
     const workflow = loadWorkflow('.github/workflows/docs-pages.yml')
     const build = workflowJob(workflow, 'build')
     const deploy = workflowJob(workflow, 'deploy')
@@ -1120,7 +1120,7 @@ describe('Documentation site publication', () => {
     // publication must never appear as a PR check.
     expect(Object.keys(workflow.on)).toEqual(['workflow_dispatch'])
 
-    // RELEASE_PUBLISH makes release:verify reject every ref that is not a dsh-v*
+    // RELEASE_PUBLISH makes release:verify reject every ref that is not an alpha-v*
     // tag naming this tree's version, so the site and the npm sequence share one
     // definition of a released version.
     const steps = build.steps.filter(isRecord)
@@ -1130,7 +1130,7 @@ describe('Documentation site publication', () => {
     )
     expect(verify).toMatchObject({
       env: { RELEASE_PUBLISH: 'true' },
-      run: 'pnpm run release:verify --family dsh',
+      run: 'pnpm run release:verify --family alpha',
     })
     // Complete history: the release scripts read tags.
     expect(checkout).toMatchObject({ with: { 'fetch-depth': 0 } })

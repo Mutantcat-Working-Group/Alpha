@@ -7,7 +7,7 @@ import {
   PRIVATE_EXPERIMENTAL_PACKAGE_DIRECTORIES,
 } from './experimental-package-policy.ts'
 import {
-  checkDshFamilyVersion,
+  checkAlphaFamilyVersion,
   checkWorkspaceManifest,
   checkExperimentalDependencyIsolation,
   checkExperimentalManifest,
@@ -131,35 +131,35 @@ describe('experimental workspace constraints', () => {
   })
 })
 
-describe('dsh family version coherence', () => {
+describe('alpha family version coherence', () => {
   it('rejects a package carrying a stale shared version', () => {
-    expect(checkDshFamilyVersion(
+    expect(checkAlphaFamilyVersion(
       { name: '@mutantcat/dsh-http-proxy', version: '0.1.2-alpha.5' },
       '0.1.2-rc.1',
     )).toBe('@mutantcat/dsh-http-proxy: package.json version must match root version 0.1.2-rc.1')
   })
 
   it('rejects the root-named CLI app on a stale shared version', () => {
-    expect(checkDshFamilyVersion(
+    expect(checkAlphaFamilyVersion(
       { name: '@mutantcat/dsh', version: '0.1.2-alpha.5' },
       '0.1.2-rc.1',
     )).toBe('@mutantcat/dsh: package.json version must match root version 0.1.2-rc.1')
   })
 
   it('accepts a manifest carrying the shared version', () => {
-    expect(checkDshFamilyVersion(
+    expect(checkAlphaFamilyVersion(
       { name: '@mutantcat/dsh-http-proxy', version: '0.1.2-rc.1' },
       '0.1.2-rc.1',
     )).toBeUndefined()
   })
 
   it('leaves other sequences to their own version lines', () => {
-    expect(checkDshFamilyVersion({ name: '@mutantcat/cordis', version: '4.0.1' }, '0.1.2-rc.1')).toBeUndefined()
-    expect(checkDshFamilyVersion(
+    expect(checkAlphaFamilyVersion({ name: '@mutantcat/cordis', version: '4.0.1' }, '0.1.2-rc.1')).toBeUndefined()
+    expect(checkAlphaFamilyVersion(
       { name: '@mutantcat/node-addon-system', version: '0.1.1' },
       '0.1.2-rc.1',
     )).toBeUndefined()
-    expect(checkDshFamilyVersion({ version: '0.1.2-alpha.5' }, '0.1.2-rc.1')).toBeUndefined()
+    expect(checkAlphaFamilyVersion({ version: '0.1.2-alpha.5' }, '0.1.2-rc.1')).toBeUndefined()
   })
 })
 

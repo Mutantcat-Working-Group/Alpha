@@ -1,4 +1,4 @@
-/** Verify npm's physical package placement for two incompatible DSH releases. */
+/** Verify npm's physical package placement for two incompatible Alpha releases. */
 
 import { readFileSync } from 'node:fs'
 import { posix, resolve } from 'node:path'

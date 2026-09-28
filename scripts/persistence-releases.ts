@@ -11,7 +11,9 @@ import type { PersistenceRoot, PersistenceSchemaInventory } from './persistence-
 import { persistenceReleaseFactArtifacts } from './persistence-release-facts.ts'
 
 const ARCHIVE_DIRECTORY = 'docs/persistence-changes/releases'
-const TAG_PATTERN = /^dsh-v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-(alpha|rc)\.(0|[1-9]\d*)$/u
+// Both prefixes are accepted: pinned archives carry the historical `dsh-v` tags,
+// while releases after the Alpha rename use `alpha-v`.
+const TAG_PATTERN = /^(?:alpha|dsh)-v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-(alpha|rc)\.(0|[1-9]\d*)$/u
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/u
 
 /** Published identity and version constants observed in one pinned tag. */

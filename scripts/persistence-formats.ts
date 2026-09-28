@@ -64,7 +64,7 @@ function machineBlock(document: string, label: string): string {
 function parseSource(source: unknown, label: string): PersistenceFormatSource {
   if (source !== null && typeof source === 'object' && 'tag' in source) {
     const tag = fields(source, ['tag'], `${label} source`).tag
-    if (typeof tag !== 'string' || !/^dsh-[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(tag)) throw new Error(`${label}: invalid source tag`)
+    if (typeof tag !== 'string' || !/^(?:alpha|dsh)-[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(tag)) throw new Error(`${label}: invalid source tag`)
     return { tag }
   }
   const pullRequest = fields(source, ['pullRequest'], `${label} source`).pullRequest

@@ -181,12 +181,12 @@ export function readDesktopRuntime(root: string): DesktopRuntimeDescriptor {
 /**
  * Verify every packaged runtime file against its recorded bytes and permissions at build time.
  * @param root - Materialized runtime resources.
- * @param electronVersion - Expected shell version.
+ * @param releaseVersion - Expected shell version.
  * @param target - Required execution target; defaults to the current process.
  * @returns Validated runtime descriptor.
  */
 export async function verifyDesktopRuntime(
-  root: string, electronVersion: string, target: { platform: NodeJS.Platform; arch: string } = process,
+  root: string, releaseVersion: string, target: { platform: NodeJS.Platform; arch: string } = process,
 ): Promise<DesktopRuntimeDescriptor> {
   const descriptor = readDesktopRuntime(root)
   // readDesktopRuntime preserves the disk schema value without validating release compatibility.
@@ -195,7 +195,7 @@ export async function verifyDesktopRuntime(
     throw new Error('desktop runtime: invalid descriptor or incompatible platform/architecture')
   }
   const release = parseDesktopRelease(descriptor.release)
-  if (release.version !== electronVersion) throw new Error(`desktop runtime: ${release.version} does not match Electron ${electronVersion}`)
+  if (release.version !== releaseVersion) throw new Error(`desktop runtime: ${release.version} does not match ${releaseVersion}`)
   for (const entry of descriptor.sharedPackages) {
     const manifest: unknown = JSON.parse(readFileSync(join(runtimePath(root, entry.path), 'package.json'), 'utf8'))
     if (!record(manifest) || manifest.name !== entry.name || manifest.version !== entry.version) {

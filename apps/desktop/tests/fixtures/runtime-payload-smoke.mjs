@@ -1,4 +1,4 @@
-/** Exercise filtered Desktop native and HTML dependencies under its Electron Node runtime. */
+/** Exercise filtered Desktop native and HTML dependencies under its bundled Node runtime. */
 
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
@@ -12,7 +12,7 @@ const runtime = process.argv[2]
 assert.ok(runtime, 'Pass the filtered resources/dsh directory')
 const root = resolve(runtime)
 const descriptor = JSON.parse(readFileSync(join(root, 'desktop-runtime.json'), 'utf8'))
-assert.equal(process.versions.node, descriptor.release.nodeVersion, 'Run with the Electron Node runtime version')
+assert.equal(process.versions.node, descriptor.release.nodeVersion, 'Run with the bundled Node runtime version')
 assert.equal(process.platform, descriptor.platform)
 assert.equal(process.arch, descriptor.arch)
 const requireRuntime = createRequire(join(root, 'package.json'))
@@ -29,7 +29,6 @@ function checkPnpm() {
   writeFileSync(join(scratch, 'check.cjs'), `
 const assert = require('node:assert/strict')
 assert.equal(process.execPath, ${JSON.stringify(process.execPath)})
-assert.ok(process.versions.electron)
 assert.ok(process.execArgv.includes('--expose-internals'))
 assert.equal(typeof require('internal/modules/esm/loader').getOrInitializeCascadedLoader, 'function')
 console.log('desktop-node-script-ok')
@@ -38,7 +37,7 @@ console.log('desktop-node-script-ok')
   const systemBin = process.platform === 'win32' ? join(process.env.SystemRoot, 'System32') : '/usr/bin:/bin'
   const output = execFileSync(process.execPath, ['--expose-internals', pnpm, 'run', 'check'], {
     cwd: scratch, encoding: 'utf8', timeout: 45_000,
-    env: { ...environment, ELECTRON_RUN_AS_NODE: '1', DSH_DESKTOP_NODE_EXECUTABLE: process.execPath,
+    env: { ...environment,
       PATH: `${bin}${delimiter}${systemBin}`, HOME: scratch, USERPROFILE: scratch, TMP: scratch, TEMP: scratch, TMPDIR: scratch },
   })
   assert.match(output, /desktop-node-script-ok/u)
@@ -50,10 +49,9 @@ async function checkPty() {
   const script = join(scratch, 'pty.cjs')
   writeFileSync(script, "process.stdout.write('runtime-payload-pty-ok\\n')\n", { flag: 'wx', mode: 0o600 })
   const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => (
-    /^(?:path|systemroot|windir|comspec|ELECTRON_RUN_AS_NODE)$/iu.test(name)
+    /^(?:path|systemroot|windir|comspec)$/iu.test(name)
   )))
   Object.assign(env, { HOME: scratch, USERPROFILE: scratch, TMP: scratch, TEMP: scratch, TMPDIR: scratch })
-  env.DSH_DESKTOP_NODE_EXECUTABLE = process.execPath
   env.PATH = `${join(dirname(root), 'runtime', 'bin')}${delimiter}${env.PATH ?? env.Path ?? ''}`
   // A Windows GUI executable needs a console-owning shell when launched inside ConPTY.
   const executable = process.platform === 'win32' ? process.env.ComSpec : process.execPath

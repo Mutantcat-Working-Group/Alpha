@@ -7,7 +7,7 @@
  * verification: the harness packages declare the vendored framework as a peer,
  * those packages live in another release sequence, and this job must not depend
  * on the registry already carrying versions that match — one pull request may
- * bump both families before either publishes — so a dsh verification passes the
+ * bump both families before either publishes — so an Alpha verification passes the
  * vendored family's pack output too, while publishing only its own
  * ([rationale](../../.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
  *
@@ -27,8 +27,8 @@ import { packedIdentity } from './tarball.ts'
 import { verifyInstalledProductIsolation } from './installed-product-isolation.ts'
 
 /**
- * Environment for the installed artifact: no host Node hooks, no host DeepSeek
- * Harness home, and no ambient npm user agent that would confuse npm.
+ * Environment for the installed artifact: no host Node hooks, no host Alpha
+ * home, and no ambient npm user agent that would confuse npm.
  * @param consumerRoot - the throwaway consumer directory.
  * @returns The child environment.
  */
@@ -74,7 +74,7 @@ function main(): void {
     allowPositionals: false,
   })
   if (values.family === undefined || values.from === undefined || values.from.length === 0) {
-    throw new Error('usage: verify-packed-install.ts --family <dsh|vendor> --from <packed directory> [--from ...]')
+    throw new Error('usage: verify-packed-install.ts --family <alpha|vendor> --from <packed directory> [--from ...]')
   }
 
   const family = releaseFamily(values.family)
@@ -89,10 +89,10 @@ function main(): void {
   const expected = packed.get(entry.packageName)
   if (expected === undefined) throw new Error(`${entry.packageName} is not among the packed tarballs`)
 
-  const consumerRoot = mkdtempSync(join(tmpdir(), `dsh-packed-${family.id}-`))
+  const consumerRoot = mkdtempSync(join(tmpdir(), `alpha-packed-${family.id}-`))
   try {
     writeFileSync(join(consumerRoot, 'package.json'), `${JSON.stringify({
-      name: `dsh-packed-install-${family.id}`,
+      name: `alpha-packed-install-${family.id}`,
       version: '0.0.0',
       private: true,
       dependencies: Object.fromEntries([...packed].map(([name, entryPacked]) => [name, entryPacked.url])),

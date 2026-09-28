@@ -1,4 +1,4 @@
-/** Built Desktop Host lifecycle with Electron disconnecting before profile startup settles. */
+/** Built Desktop Host lifecycle with the parent disconnecting before profile startup settles. */
 
 import { fork } from 'node:child_process'
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
@@ -75,7 +75,7 @@ it.each([false, true])('settles startup after parent IPC disconnect (boot failur
     })
     expect(boot.packageManager.command).toBe(process.execPath)
     expect(boot.packageManager.args).toEqual(['--expose-internals', pnpm])
-    expect(boot.packageManager.env.ELECTRON_RUN_AS_NODE).toBe('1')
+    expect(boot.packageManager.env.ELECTRON_RUN_AS_NODE).toBeUndefined()
     expect(boot.packageManager.env.PATH).toBe(`${nodeBin}${delimiter}${process.env.PATH ?? ''}`)
     // The shell runs no package manager, so the host initializes the profile manifest
     // before loading the profile directory.

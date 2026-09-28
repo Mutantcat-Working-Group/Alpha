@@ -66,7 +66,7 @@ function saveReference(root: string, version: number, currentVersion: number, sn
   const schemaName = current ? 'persistence-schema.json' : `v${version}.schema.json`
   const record = {
     schemaVersion: 1, sessionFormatVersion: version,
-    source: version === 1 ? { pullRequest: 3349 } : { tag: 'dsh-v0.1.0-rc.5' },
+    source: version === 1 ? { pullRequest: 3349 } : { tag: 'alpha-v0.1.0-rc.5' },
     roots: Object.fromEntries(snapshot.roots.map(root => [root.key, root.digest])),
   }
   const lines = [
@@ -206,7 +206,7 @@ describe('complete persistence format references', () => {
     const formats = loadPersistenceFormats(fixture())
     expect(formats.currentVersion).toBe(3)
     expect(formats.entries.map(entry => entry.version)).toEqual([0, 1, 2, 3])
-    expect(formats.entries[0]?.source).toEqual({ tag: 'dsh-v0.1.0-rc.5' })
+    expect(formats.entries[0]?.source).toEqual({ tag: 'alpha-v0.1.0-rc.5' })
     expect(formats.entries[1]?.source).toEqual({ pullRequest: 3349 })
     expect(formats.entries[3]).toMatchObject({ document: 'docs/persistence-catalog.md', schemaPath: 'docs/persistence-schema.json' })
     expect(formats.entries[3]?.source).toBeUndefined()
@@ -263,7 +263,7 @@ describe('complete persistence format references', () => {
     ['schemaVersion: 1', 'schemaVersion: 2', 'unsupported persistence format record schema version'],
     ['pullRequest: 3349', 'pullRequest: 0', 'positive integer'],
     ['pullRequest: 3349', 'pullRequest: 1.5', 'positive integer'],
-    ['pullRequest: 3349', 'pullRequest: 3349\n  tag: dsh-v0.1.0', 'expected fields'],
+    ['pullRequest: 3349', 'pullRequest: 3349\n  tag: alpha-v0.1.0', 'expected fields'],
     ['pullRequest: 3349', 'other: 3349', 'expected fields'],
     ['source:\n  pullRequest: 3349', 'source: null', 'expected an object'],
     ['schemaVersion: 1', 'schemaVersion: 1\nunknown: true', 'expected fields'],
@@ -273,9 +273,9 @@ describe('complete persistence format references', () => {
     expect(() => loadPersistenceFormats(root)).toThrow(error)
   })
 
-  it('rejects a source tag outside the DSH release namespace', () => {
+  it('rejects a source tag outside the Alpha release namespace', () => {
     const root = fixture()
-    editPair(root, 0, 'tag: dsh-v0.1.0-rc.5', 'tag: latest')
+    editPair(root, 0, 'tag: alpha-v0.1.0-rc.5', 'tag: latest')
     expect(() => loadPersistenceFormats(root)).toThrow('invalid source tag')
   })
 
