@@ -2,7 +2,7 @@
 
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { copyFileSync, globSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, globSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { delimiter, join, resolve } from 'node:path'
 import { desktopTargetBuildPaths } from './desktop-build-paths.mjs'
 import { parseCiPackageInvocation, type CiPackageTarget } from './ci-package.ts'
@@ -57,6 +57,58 @@ function adHocSignImage(image: string): void {
 }
 
 /**
+ * Read the code-signing material the release workflow staged on the runner.
+ * @returns SignTool path, certificate path and password exported by the workflow.
+ */
+function signingMaterial(): { signTool: string; certificate: string; password: string } {
+  const signTool = process.env.SIGNTOOL_PATH
+  const certificate = process.env.PFX_PATH
+  const password = process.env.SIGN_PASSWORD
+  if (!signTool || !certificate || !password) {
+    throw new Error('tauri package: SIGNTOOL_PATH, PFX_PATH and SIGN_PASSWORD must be exported by the release workflow')
+  }
+  return { signTool, certificate, password }
+}
+
+/**
+ * Sign one Windows executable with the release workflow's self-signed certificate.
+ * @param file - Absolute path of the executable to sign.
+ * @param description - Description the signature is recorded with.
+ * @returns Nothing; throws when SignTool rejects the file.
+ */
+function selfSignWindowsFile(file: string, description: string): void {
+  const { signTool, certificate, password } = signingMaterial()
+  if (!existsSync(file)) throw new Error(`tauri package: missing signature target ${file}`)
+  const signed = spawnSync(signTool, ['sign', '/fd', 'SHA256', '/f', certificate, '/p', password, '/d', description, file], { stdio: 'inherit' })
+  if (signed.status !== 0) throw new Error(`tauri package: signing failed for ${file}`)
+}
+
+/**
+ * Compile the release shell and sign every executable the bundle will pack.
+ * Tauri embeds the frontend into the binary at compile time, so the binary is
+ * built and signed before the bundle step runs; otherwise the installer would
+ * ship an unsigned application inside a signed wrapper.
+ * @param triple - Rust target triple the release binary is compiled for.
+ * @param env - Process environment carrying the release configuration.
+ * @returns Nothing; throws when the build or a signature is rejected.
+ */
+function prepareSignedWindowsRelease(triple: string, env: NodeJS.ProcessEnv): void {
+  const compiled = spawnSync('cargo', ['build', '--release', '--locked', '--target', triple, '--manifest-path', 'Cargo.toml'], { cwd: SRC_TAURI, stdio: 'inherit', env })
+  if (compiled.status !== 0) throw new Error(`tauri package: cargo build exited with ${String(compiled.status)}`)
+  signStagedWindowsExecutables(triple)
+}
+
+/**
+ * Sign the shell binary and the Node sidecar the bundler packs into the installer.
+ * @param triple - Rust target triple the bundle is built for.
+ * @returns Nothing; throws when SignTool rejects a payload executable.
+ */
+function signStagedWindowsExecutables(triple: string): void {
+  selfSignWindowsFile(join(SRC_TAURI, 'target', triple, 'release', 'alpha-desktop.exe'), 'Alpha')
+  selfSignWindowsFile(join(SRC_TAURI, 'bin', `node-${triple}.exe`), 'Alpha Node Runtime')
+}
+
+/**
  * Publish the built artifact and its digest sidecar under the release asset name.
  * @param target - Validated release target.
  * @param built - Absolute path of the artifact inside the bundle directory.
@@ -100,9 +152,13 @@ export async function packageTauriTarget(target: CiPackageTarget): Promise<void>
       PATH: `${join(APP_ROOT, 'scripts', 'dmg-tools')}${delimiter}${targetEnv.PATH ?? ''}`,
     } : {}),
   }
+  // The bundle step packs the compiled binary as it stands, and the frontend is
+  // already staged by now, so build and sign the payload before it runs.
+  if (target.platform === 'win32') prepareSignedWindowsRelease(triple, tauriEnv)
   await runPnpm(['exec', 'tauri', 'build', '--target', triple, '--bundles', bundle], APP_ROOT, tauriEnv)
   const built = bundleArtifact(target, triple, bundle)
   if (target.platform === 'darwin') adHocSignImage(built)
+  if (target.platform === 'win32') selfSignWindowsFile(built, 'Alpha Installer')
   const { artifact, digest } = publishArtifact(target, built)
   process.stdout.write(`${artifact}\n${digest}\n`)
 }

@@ -36,7 +36,9 @@
     },
     "windows": {
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "languages": ["SimpChinese"],
+        "template": "installer.nsi"
       }
     },
     "linux": {
