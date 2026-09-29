@@ -35,6 +35,8 @@ jobs:
       # Hosted runners carry no signing identity. Auto-discovery would fail the
       # build before the ad-hoc identity is ever passed to codesign.
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      # Force ad-hoc signing for the macOS bundle.
+      APPLE_SIGNING_IDENTITY: "-"
     strategy:
       fail-fast: false
       matrix:
