@@ -63,7 +63,10 @@ jobs:
       ${{ matrix.runner == 'bwrap' && vars.DSH_CI_FAILOVER_LINUX == 'blacksmith'
           && 'blacksmith-4vcpu-ubuntu-2404'
           || matrix.os }}
-    timeout-minutes: 20
+    # The darwin parity leg runs the whole unit suite on a cold macos
+    # runner; the 20-minute budget measured out at 18-20 minutes including
+    # setup, so the cancellation line sits too close to the real run.
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v6
 
