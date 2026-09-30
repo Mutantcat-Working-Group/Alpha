@@ -92,6 +92,7 @@ interface GuardedLine {
  */
 const EXTERNAL_ENGINE_LINES: readonly GuardedLine[] = [
   { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 161, reason: 'stages the engine prebuilds.json beside the runtime' },
+  { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 171, reason: 'stages the engine prebuilds.json beside the runtime' },
   { file: 'python/sdk/tests/test_release_version.py', line: 124, reason: 'reads an engine asset from the packed office tree' },
   { file: 'python/sdk/tests/test_runtime_resolution.py', line: 259, reason: 'selects a foreign engine platform directory' },
   { file: 'scripts/build-exe-for-python-sdk-office.ts', line: 38, reason: 'stages the engine package into the EXE payload' },
