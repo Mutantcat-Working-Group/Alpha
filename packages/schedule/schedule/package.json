@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-schedule",
   "description": "Host-wide durable reminders with shared management and original-Session delivery",
-  "version": "1.0.20260927",
+  "version": "1.0.20260930",
   "publishConfig": {
     "access": "public"
   },
