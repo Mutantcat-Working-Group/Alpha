@@ -34,7 +34,7 @@
   "dependencies": {
     "@mutantcat/dsh-host-directory-picker": "workspace:^",
     "@mutantcat/dsh-native-command": "workspace:^",
-    "koffi": "^3.1.0"
+    "koffi": "3.2.1"
   },
   "peerDependencies": {
     "@mutantcat/cordis": "workspace:^"

@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@mutantcat/dsh-lazy-require": "workspace:^",
-    "koffi": "^3.1.0"
+    "koffi": "3.2.1"
   },
   "devDependencies": {
     "@mutantcat/cordis": "workspace:^"
