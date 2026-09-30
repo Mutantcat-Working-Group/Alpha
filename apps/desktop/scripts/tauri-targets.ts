@@ -7,6 +7,7 @@ const TARGET_TRIPLES: Record<DesktopBuildTarget, string> = {
   'mac-arm64': 'aarch64-apple-darwin',
   'mac-x64': 'x86_64-apple-darwin',
   'win-x64': 'x86_64-pc-windows-msvc',
+  'win-arm64': 'aarch64-pc-windows-msvc',
   'linux-x64': 'x86_64-unknown-linux-gnu',
   'linux-arm64': 'aarch64-unknown-linux-gnu',
 }
@@ -16,6 +17,7 @@ const TARGET_BUNDLES: Record<DesktopBuildTarget, 'dmg' | 'nsis' | 'appimage'> = 
   'mac-arm64': 'dmg',
   'mac-x64': 'dmg',
   'win-x64': 'nsis',
+  'win-arm64': 'nsis',
   'linux-x64': 'appimage',
   'linux-arm64': 'appimage',
 }
@@ -56,6 +58,8 @@ export function tauriReleaseAssetName(target: DesktopBuildTarget, version: strin
       return `Alpha-${version}-x64-mac.dmg`
     case 'win-x64':
       return `Alpha-${version}-x64-setup.exe`
+    case 'win-arm64':
+      return `Alpha-${version}-arm64-setup.exe`
     case 'linux-x64':
       return `Alpha-${version}-x86_64.AppImage`
     case 'linux-arm64':

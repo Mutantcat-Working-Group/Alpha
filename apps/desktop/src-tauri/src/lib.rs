@@ -857,6 +857,10 @@ fn target_triple() -> &'static str {
     {
         "x86_64-pc-windows-msvc"
     }
+    #[cfg(all(target_os = "windows", target_arch = "aarch64"))]
+    {
+        "aarch64-pc-windows-msvc"
+    }
     #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     {
         "x86_64-unknown-linux-gnu"

@@ -71,6 +71,7 @@ it('routes every locked Node archive through an extractor that reads its compres
   )
   expect(formats).toEqual({
     'win-x64': 'zip',
+    'win-arm64': 'zip',
     'mac-arm64': 'gzip-tar',
     'mac-x64': 'gzip-tar',
     'linux-x64': 'xz-tar',

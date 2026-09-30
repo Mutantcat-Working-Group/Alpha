@@ -95,7 +95,7 @@ export async function prepareTauriRuntime(target: DesktopBuildTarget = resolveDe
   for (const existing of readdirSync(SIDECAR_DIRECTORY)) {
     rmSync(join(SIDECAR_DIRECTORY, existing), { recursive: true, force: true })
   }
-  const windows = target === 'win-x64'
+  const windows = target.startsWith('win-')
   const sidecar = join(SIDECAR_DIRECTORY, `node-${triple}${windows ? '.exe' : ''}`)
   cpSync(node, sidecar)
   if (!windows) chmodSync(sidecar, 0o755)

@@ -10,6 +10,7 @@ describe('desktop build paths', () => {
     const arm64 = desktopTargetBuildPaths('mac-arm64')
     const x64 = desktopTargetBuildPaths('mac-x64')
     const windows = desktopTargetBuildPaths('win-x64')
+    const windowsArm64 = desktopTargetBuildPaths('win-arm64')
     const linuxX64 = desktopTargetBuildPaths('linux-x64')
     const linuxArm64 = desktopTargetBuildPaths('linux-arm64')
     const mutableKeys = [
@@ -25,11 +26,12 @@ describe('desktop build paths', () => {
     ] as const
 
     for (const key of mutableKeys) {
-      expect(new Set([arm64[key], x64[key], windows[key], linuxX64[key], linuxArm64[key]]).size).toBe(5)
+      expect(new Set([arm64[key], x64[key], windows[key], windowsArm64[key], linuxX64[key], linuxArm64[key]]).size).toBe(6)
     }
     expect(arm64.artifacts).toContain(join('targets', 'mac-arm64', 'artifacts'))
     expect(x64.dsh).toContain(join('targets', 'mac-x64', 'dsh'))
     expect(windows.runtime).toContain(join('targets', 'win-x64', 'runtime'))
+    expect(windowsArm64.runtime).toContain(join('targets', 'win-arm64', 'runtime'))
     expect(linuxX64.artifacts).toContain(join('targets', 'linux-x64', 'artifacts'))
     expect(linuxArm64.dsh).toContain(join('targets', 'linux-arm64', 'dsh'))
   })
@@ -47,6 +49,7 @@ describe('desktop build paths', () => {
       DSH_DESKTOP_TARGET_ARCH: 'x64',
     }, 'darwin', 'arm64')).toBe('mac-x64')
     expect(resolveDesktopBuildTarget({}, 'win32', 'x64')).toBe('win-x64')
+    expect(resolveDesktopBuildTarget({}, 'win32', 'arm64')).toBe('win-arm64')
     expect(resolveDesktopBuildTarget({}, 'linux', 'x64')).toBe('linux-x64')
     expect(resolveDesktopBuildTarget({}, 'linux', 'arm64')).toBe('linux-arm64')
     expect(() => resolveDesktopBuildTarget({}, 'linux', 'ppc64')).toThrow(/unsupported target/u)

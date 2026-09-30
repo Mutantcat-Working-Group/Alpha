@@ -12,6 +12,9 @@ describe('ci package target', () => {
     expect(resolveCiPackageTarget('win-x64', 'win32', 'x64')).toEqual({
       name: 'win-x64', platform: 'win32', arch: 'x64',
     })
+    expect(resolveCiPackageTarget('win-arm64', 'win32', 'arm64')).toEqual({
+      name: 'win-arm64', platform: 'win32', arch: 'arm64',
+    })
     expect(resolveCiPackageTarget('linux-x64', 'linux', 'x64')).toEqual({
       name: 'linux-x64', platform: 'linux', arch: 'x64',
     })
@@ -24,6 +27,7 @@ describe('ci package target', () => {
     expect(parseCiPackageInvocation([], 'darwin', 'arm64').name).toBe('mac-arm64')
     expect(parseCiPackageInvocation([], 'darwin', 'x64').name).toBe('mac-x64')
     expect(parseCiPackageInvocation([], 'win32', 'x64').name).toBe('win-x64')
+    expect(parseCiPackageInvocation([], 'win32', 'arm64').name).toBe('win-arm64')
     expect(parseCiPackageInvocation([], 'linux', 'x64').name).toBe('linux-x64')
     expect(parseCiPackageInvocation(['linux-arm64'], 'linux', 'arm64').name).toBe('linux-arm64')
   })

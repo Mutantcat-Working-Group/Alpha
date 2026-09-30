@@ -30,6 +30,9 @@ const TARGETS: Record<string, CiPackageTarget> = {
   'win-x64': {
     name: 'win-x64', platform: 'win32', arch: 'x64',
   },
+  'win-arm64': {
+    name: 'win-arm64', platform: 'win32', arch: 'arm64',
+  },
   'linux-x64': {
     name: 'linux-x64', platform: 'linux', arch: 'x64',
   },

@@ -28,6 +28,7 @@ describe('tauri targets', () => {
     expect(tauriTargetTriple('mac-arm64')).toBe('aarch64-apple-darwin')
     expect(tauriTargetTriple('mac-x64')).toBe('x86_64-apple-darwin')
     expect(tauriTargetTriple('win-x64')).toBe('x86_64-pc-windows-msvc')
+    expect(tauriTargetTriple('win-arm64')).toBe('aarch64-pc-windows-msvc')
     expect(tauriTargetTriple('linux-x64')).toBe('x86_64-unknown-linux-gnu')
     expect(tauriTargetTriple('linux-arm64')).toBe('aarch64-unknown-linux-gnu')
   })
@@ -38,6 +39,7 @@ describe('tauri targets', () => {
     expect(tauriBundleDirectory(tauriTargetBundle('mac-arm64'))).toBe('dmg')
     expect(tauriBundleDirectory(tauriTargetBundle('mac-x64'))).toBe('dmg')
     expect(tauriBundleDirectory(tauriTargetBundle('win-x64'))).toBe('nsis')
+    expect(tauriBundleDirectory(tauriTargetBundle('win-arm64'))).toBe('nsis')
     expect(tauriBundleDirectory(tauriTargetBundle('linux-x64'))).toBe('appimage')
     expect(tauriBundleDirectory(tauriTargetBundle('linux-arm64'))).toBe('appimage')
     expect(tauriArtifactExtension('dmg')).toBe('.dmg')
@@ -47,6 +49,7 @@ describe('tauri targets', () => {
 
   it('names each release asset after its platform and architecture', () => {
     expect(tauriReleaseAssetName('win-x64', '1.0.20260924')).toBe('Alpha-1.0.20260924-x64-setup.exe')
+    expect(tauriReleaseAssetName('win-arm64', '1.0.20260924')).toBe('Alpha-1.0.20260924-arm64-setup.exe')
     expect(tauriReleaseAssetName('mac-arm64', '1.0.20260924')).toBe('Alpha-1.0.20260924-arm64-mac.dmg')
     expect(tauriReleaseAssetName('mac-x64', '1.0.20260924')).toBe('Alpha-1.0.20260924-x64-mac.dmg')
     expect(tauriReleaseAssetName('linux-x64', '1.0.20260924')).toBe('Alpha-1.0.20260924-x86_64.AppImage')

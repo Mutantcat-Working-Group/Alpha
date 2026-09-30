@@ -93,7 +93,7 @@ async function pythonArchive(target: keyof typeof lock.targets, cache: string): 
 
 /** Platform identifier recorded by one target's runtime manifest. */
 function manifestPlatform(target: keyof typeof lock.targets): string {
-  if (target === 'win-x64') return 'win32'
+  if (target.startsWith('win-')) return 'win32'
   return target.startsWith('mac-') ? 'darwin' : 'linux'
 }
 
@@ -168,8 +168,9 @@ export async function preparePrimaryRuntime(options: { deferSmoke?: boolean } = 
     mkdirSync(join(dependencies, 'node', 'bin'), { recursive: true })
     mkdirSync(join(dependencies, 'node', 'node_modules'))
     writeFileSync(join(dependencies, 'node', 'node_modules', 'README.txt'), 'Reserved for bundled Node packages. pnpm uses its default installation directories.\n')
-    cpSync(join(nodeSource, ...(target === 'win-x64' ? ['node.exe'] : ['bin', 'node'])),
-      join(dependencies, 'node', 'bin', target === 'win-x64' ? 'node.exe' : 'node'))
+    const windows = target.startsWith('win-')
+    cpSync(join(nodeSource, ...(windows ? ['node.exe'] : ['bin', 'node'])),
+      join(dependencies, 'node', 'bin', windows ? 'node.exe' : 'node'))
     cpSync(join(nodeSource, 'LICENSE'), join(dependencies, 'node', 'LICENSE'))
     await extractTar({ file: await pythonArchive(target, paths.downloads), cwd: dependencies })
     const require = createRequire(import.meta.url)
