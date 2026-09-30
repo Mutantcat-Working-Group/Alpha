@@ -23,19 +23,22 @@ describe('Release app workflow', () => {
     // The Tauri shell, its Node sidecar, and the dsh runtime all execute on the
     // build host, so each target needs a runner of its own platform and architecture.
     expect(matrixColumn(matrix, 'target')).toEqual([
-      'win-x64', 'mac-arm64', 'mac-x64', 'linux-x64', 'linux-arm64',
+      'win-x64', 'win-arm64', 'mac-arm64', 'mac-x64', 'linux-x64', 'linux-arm64',
     ])
     expect(matrixColumn(matrix, 'runner')).toEqual([
-      'windows-latest', 'macos-14', 'macos-15-intel', 'ubuntu-24.04', 'ubuntu-24.04-arm',
+      'windows-latest', 'windows-11-arm', 'macos-14', 'macos-15-intel',
+      'ubuntu-24.04', 'ubuntu-24.04-arm',
     ])
     expect(matrixColumn(matrix, 'script')).toEqual([
-      'package:ci:tauri:win:x64', 'package:ci:tauri:mac:arm64', 'package:ci:tauri:mac:x64',
+      'package:ci:tauri:win:x64', 'package:ci:tauri:win:arm64',
+      'package:ci:tauri:mac:arm64', 'package:ci:tauri:mac:x64',
       'package:ci:tauri:linux:x64', 'package:ci:tauri:linux:arm64',
     ])
-    expect(matrixColumn(matrix, 'extension')).toEqual(['exe', 'dmg', 'dmg', 'AppImage', 'AppImage'])
+    expect(matrixColumn(matrix, 'extension')).toEqual(['exe', 'exe', 'dmg', 'dmg', 'AppImage', 'AppImage'])
     // One Rust target triple per matrix entry: the shell and its sidecar are compiled for it.
     expect(matrixColumn(matrix, 'triple')).toEqual([
-      'x86_64-pc-windows-msvc', 'aarch64-apple-darwin', 'x86_64-apple-darwin',
+      'x86_64-pc-windows-msvc', 'aarch64-pc-windows-msvc',
+      'aarch64-apple-darwin', 'x86_64-apple-darwin',
       'x86_64-unknown-linux-gnu', 'aarch64-unknown-linux-gnu',
     ])
   })

@@ -46,7 +46,8 @@ describe('TestClient (jsdom)', () => {
     expect(document.body.contains(container)).toBe(false)
     expect('__DSH_TRANSPORT__' in globalThis).toBe(false)
     expect(globals.EventSource).toBeUndefined()
-    expect(globals.ResizeObserver).toBeUndefined()
+    // The test environment supplies ResizeObserver, so the shared shim never owns it.
+    expect(globals.ResizeObserver).toBeDefined()
     await client.dispose()
   }, COLD_BOOT_TIMEOUT_MS)
 
