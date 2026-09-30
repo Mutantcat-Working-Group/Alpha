@@ -24,6 +24,7 @@ import { buildModelCatalog } from './catalog.ts'
 import { installModelSelectionProjection } from './model-selection-projection.ts'
 import { SessionSkillCatalog } from './skill-catalog.ts'
 import { SessionMediaReferences } from './media-references.ts'
+import { ArchivedSessionGate } from './archived-session-gate.ts'
 import type {
   ModelCatalog,
   SessionAttachmentRequest,
@@ -142,6 +143,10 @@ export class SessionController extends TypertRemoteService {
     ctx.plugin(SessionFileReferences)
     ctx.plugin(SessionMediaReferences)
     ctx.plugin(SessionSkillCatalog)
+    // An archived Session, or a subagent descendant of one, runs no model step
+    // until it is restored; what it still runs is stopped by the owners that
+    // answer the Workspace registry's archive-admission events.
+    ctx.plugin(ArchivedSessionGate)
 
     ctx.on('session/created', (session) => {
       ctx.emit('api-session/added', this.listState.summaryFor(session))

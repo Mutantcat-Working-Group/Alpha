@@ -28,7 +28,7 @@ async function composed(workspaces: readonly Workspace[] = []): Promise<Context>
   await ctx.plugin(SystemPrompt, { personaPrefix: '' })
   await ctx.plugin(AgentRegistry)
   installSessionReadTestServices(ctx)
-  ctx.provide('workspaceRegistry', { list: () => workspaces } as never)
+  ctx.provide('workspaceRegistry', { list: () => workspaces, archivedSessionIds: [] } as never)
   ctx.agents.setFactory({
     createAgent: async (ownerCtx: Context, options: CreateAgentOptions): Promise<AgentHandle> => {
       const session = ctx.sessions.create(options.sessionId, {
@@ -98,7 +98,7 @@ describe('sessions.fork', () => {
         const harness = await mountAgentLoopTestHarness(ctx)
         const adapter = new MockAdapter(Array.from({ length: 4 }, () => textResponse('reply')))
         ctx.llm.registerAdapter(['mock'], adapter)
-        ctx.provide('workspaceRegistry', { list: () => [] } as never)
+        ctx.provide('workspaceRegistry', { list: () => [], archivedSessionIds: [] } as never)
         const source = await harness.create(sid('source'), { provider: 'mock', model: 'mock' })
         const message = (text: string) => createUserMessage({
           content: [{ type: 'text', text }], source: { kind: 'user' },

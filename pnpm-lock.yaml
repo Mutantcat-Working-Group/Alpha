@@ -1009,6 +1009,9 @@ importers:
       '@mutantcat/dsh-plugin-manager':
         specifier: workspace:^
         version: link:../../boot/plugin-manager
+      '@mutantcat/dsh-schedule':
+        specifier: workspace:^
+        version: link:../../schedule/schedule
       '@mutantcat/dsh-scope':
         specifier: workspace:^
         version: link:../../core/scope
@@ -2253,6 +2256,9 @@ importers:
       '@mutantcat/dsh-office-to-pdf':
         specifier: workspace:^
         version: link:../../document/office-to-pdf
+      '@mutantcat/dsh-schedule':
+        specifier: workspace:^
+        version: link:../../schedule/schedule
       '@mutantcat/dsh-session-log-export':
         specifier: workspace:^
         version: link:../../session-query/session-log-export
@@ -2268,6 +2274,9 @@ importers:
       '@mutantcat/dsh-subprocess':
         specifier: workspace:^
         version: link:../../subprocess/subprocess
+      '@mutantcat/dsh-time-context':
+        specifier: workspace:^
+        version: link:../../context/time-context
       '@mutantcat/dsh-tool-subagent':
         specifier: workspace:^
         version: link:../../subagent/tool-subagent
@@ -3929,9 +3938,18 @@ importers:
       '@mutantcat/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+      '@mutantcat/dsh-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
       '@mutantcat/dsh-api-session-controller':
         specifier: workspace:^
         version: link:../../api/session-controller
+      '@mutantcat/dsh-api-workspace-controller':
+        specifier: workspace:^
+        version: link:../../api/workspace-controller
+      '@mutantcat/dsh-client-connection':
+        specifier: workspace:^
+        version: link:../connection
       '@mutantcat/dsh-client-locale':
         specifier: workspace:^
         version: link:../locale
@@ -3941,6 +3959,9 @@ importers:
       '@mutantcat/dsh-client-ui-conversation':
         specifier: workspace:^
         version: link:../ui-conversation
+      '@mutantcat/dsh-client-ui-layout':
+        specifier: workspace:^
+        version: link:../ui-layout
       '@mutantcat/dsh-client-ui-primitives':
         specifier: workspace:^
         version: link:../ui-primitives
@@ -3950,15 +3971,30 @@ importers:
       '@mutantcat/dsh-client-ui-session':
         specifier: workspace:^
         version: link:../ui-session
+      '@mutantcat/dsh-client-ui-sidebar':
+        specifier: workspace:^
+        version: link:../ui-sidebar
+      '@mutantcat/dsh-client-ui-sidebar-right':
+        specifier: workspace:^
+        version: link:../ui-sidebar-right
       '@mutantcat/dsh-client-ui-slots':
         specifier: workspace:^
         version: link:../ui-slots
+      '@mutantcat/dsh-client-ui-tool':
+        specifier: workspace:^
+        version: link:../ui-tool
+      '@mutantcat/dsh-client-ui-workspace':
+        specifier: workspace:^
+        version: link:../ui-workspace
       '@mutantcat/dsh-schedule':
         specifier: workspace:^
         version: link:../../schedule/schedule
       '@mutantcat/dsh-session':
         specifier: workspace:^
         version: link:../../core/session
+      '@mutantcat/dsh-util-values':
+        specifier: workspace:^
+        version: link:../../util/values
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.2(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -3968,6 +4004,9 @@ importers:
       '@types/react-dom':
         specifier: ~18.3.0
         version: 18.3.7(@types/react@18.3.31)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -5249,9 +5288,6 @@ importers:
       '@mutantcat/dsh-client-ui-slots':
         specifier: workspace:^
         version: link:../ui-slots
-      '@mutantcat/dsh-schedule':
-        specifier: workspace:^
-        version: link:../../schedule/schedule
       '@mutantcat/dsh-session':
         specifier: workspace:^
         version: link:../../core/session
@@ -5812,6 +5848,9 @@ importers:
       '@mutantcat/dsh-util-values':
         specifier: workspace:^
         version: link:../../util/values
+      '@mutantcat/dsh-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
 
   packages/core/agent-default-model:
     dependencies:
@@ -8983,6 +9022,12 @@ importers:
 
   packages/schedule/schedule:
     dependencies:
+      '@js-temporal/polyfill':
+        specifier: 0.5.1
+        version: 0.5.1
+      '@mutantcat/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -9002,6 +9047,9 @@ importers:
       '@mutantcat/dsh-agent-loop-testkit':
         specifier: workspace:^
         version: link:../../test-support/agent-loop-testkit
+      '@mutantcat/dsh-api-session-controller':
+        specifier: workspace:^
+        version: link:../../api/session-controller
       '@mutantcat/dsh-brand':
         specifier: workspace:^
         version: link:../../util/brand
@@ -9023,12 +9071,27 @@ importers:
       '@mutantcat/dsh-session-projection':
         specifier: workspace:^
         version: link:../../session/session-projection
+      '@mutantcat/dsh-storage':
+        specifier: workspace:^
+        version: link:../../storage/storage
+      '@mutantcat/dsh-storage-domain':
+        specifier: workspace:^
+        version: link:../../storage/storage-domain
+      '@mutantcat/dsh-storage-json':
+        specifier: workspace:^
+        version: link:../../storage/storage-json
       '@mutantcat/dsh-system-prompt':
         specifier: workspace:^
         version: link:../../core/system-prompt
       '@mutantcat/dsh-tools':
         specifier: workspace:^
         version: link:../../core/tools
+      '@mutantcat/dsh-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
+      '@mutantcat/dsh-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
 
   packages/sdk/client:
     dependencies:
@@ -14329,6 +14392,10 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
+  '@js-temporal/polyfill@0.5.1':
+    resolution: {integrity: sha512-hloP58zRVCRSpgDxmqCWJNlizAlUgJFqG2ypq79DCvyv9tHjRYMDOcPFjzfl/A1/YxDvRCZz8wvZvmapQnKwFQ==}
+    engines: {node: '>=12'}
+
   '@koromix/koffi-darwin-arm64@3.1.1':
     resolution: {integrity: sha512-+Dl0zQDh1Wb55AWOn9hp7K30qgkODvrvN+ZNkFOh81Q0oFX/rpJQtocgjAuYk2zFAcajSeVDumkcHMPwnKSXzA==}
     cpu: [arm64]
@@ -17641,6 +17708,9 @@ packages:
     resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
+  jsbi@4.3.2:
+    resolution: {integrity: sha512-9fqMSQbhJykSeii05nxKl4m6Eqn2P6rOlYiS+C5Dr/HPIU/7yZxu5qzbs40tgaFORiw2Amd0mirjxatXYMkIew==}
+
   jscpd-darwin-arm64@5.0.12:
     resolution: {integrity: sha512-CQCDYhQY9yOGGeauzkRGYW/QtXurPCjfDkEhUoM/M5UdmpzxfG3i9mnNsaheJ0RdFRf73mL7JaLVRP8U2l5/kA==}
     cpu: [arm64]
@@ -20920,6 +20990,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@js-temporal/polyfill@0.5.1':
+    dependencies:
+      jsbi: 4.3.2
+
   '@koromix/koffi-darwin-arm64@3.1.1':
     optional: true
 
@@ -24131,6 +24205,8 @@ snapshots:
   js-yaml@4.3.1:
     dependencies:
       argparse: 2.0.1
+
+  jsbi@4.3.2: {}
 
   jscpd-darwin-arm64@5.0.12:
     optional: true

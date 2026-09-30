@@ -10,7 +10,6 @@ import type { WorkspaceId, WorkspaceView } from '@mutantcat/dsh-api-workspace-co
 import type {
   SessionStatusSnapshot,
 } from '@mutantcat/dsh-client-ui-session/client'
-import type {} from '@mutantcat/dsh-schedule/client'
 import type { SessionId } from '@mutantcat/dsh-session/types'
 import { workspaceTitleOf } from '@mutantcat/dsh-util-workspace-path'
 import {
@@ -57,8 +56,6 @@ export interface SessionNode {
   runningSubagentCount: number
   /** Finished running while not selected and not yet opened (the green "done" reminder dot). */
   completed: boolean
-  /** The current list projection contains at least one active Schedule record. */
-  hasActiveSchedule: boolean
   updatedAt: number
 }
 
@@ -96,8 +93,6 @@ export interface SearchResultNode {
   runningSubagentCount: number
   /** Finished running while not selected and not yet opened (the green "done" reminder dot). */
   completed: boolean
-  /** The current list projection contains at least one active Schedule record. */
-  hasActiveSchedule: boolean
   snippet?: string
 }
 
@@ -220,11 +215,6 @@ function sessionTitle(session: SessionSummary): string {
   return session.blank ? '' : session.displayTitle
 }
 
-/** The list projection alone owns the best-effort active-Schedule indicator. */
-function hasActiveSchedule(session: SessionSummary): boolean {
-  return (session.projectionValues?.schedule?.length ?? 0) > 0
-}
-
 /** Build one group without projecting session lineage into presentation. */
 function buildGroup(
   key: string,
@@ -326,7 +316,6 @@ function sessionNode(
     running: status?.running ?? s.running,
     runningSubagentCount: descendants.get(s.id)?.runningCount ?? 0,
     completed: status?.completionUnread === true,
-    hasActiveSchedule: hasActiveSchedule(s),
     updatedAt: s.updatedAt,
     ...(pendingInteraction === undefined ? {} : { pendingInteraction }),
   }
@@ -502,7 +491,6 @@ export function deriveSearchResults(
           ? {}
           : { pendingInteraction }),
         completed: status?.completionUnread === true,
-        hasActiveSchedule: hasActiveSchedule(summary),
         ...match === undefined ? {} : { snippet: match.snippet },
       }
     }),

@@ -6,6 +6,7 @@ import commandsRemote from '@mutantcat/dsh-commands/remote'
 import settingsControllerRemote from '@mutantcat/dsh-api-settings-controller/remote'
 import officeToPdfRemote from '@mutantcat/dsh-office-to-pdf/remote'
 import goalsRemote from '@mutantcat/dsh-goal/remote'
+import scheduleRemote from '@mutantcat/dsh-schedule/remote'
 import llmRemote from '@mutantcat/dsh-llm/remote'
 import dynamicRemote from '@mutantcat/dsh-cordis-host-runner/remote'
 import pluginManagerRemote from '@mutantcat/dsh-plugin-manager/remote'
@@ -34,6 +35,7 @@ export type {} from '@mutantcat/dsh-agent-presets/remote'
 export type {} from '@mutantcat/dsh-commands/remote'
 export type {} from '@mutantcat/dsh-api-settings-controller/remote'
 export type {} from '@mutantcat/dsh-goal/remote'
+export type {} from '@mutantcat/dsh-schedule/remote'
 export type {} from '@mutantcat/dsh-office-to-pdf/remote'
 export type {} from '@mutantcat/dsh-llm/remote'
 export type {} from '@mutantcat/dsh-host-plugin-inventory/remote'
@@ -166,7 +168,7 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
   const disposers: Array<() => Promise<void>> = []
   try {
     for (const contribution of [
-      agentPresetsRemote, commandsRemote, settingsControllerRemote, goalsRemote, llmRemote, dynamicRemote,
+      agentPresetsRemote, commandsRemote, settingsControllerRemote, goalsRemote, llmRemote, dynamicRemote, scheduleRemote,
       pluginInventoryRemote, pluginManagerRemote, messageFeedbackRemote, sessionFeedbackRemote, fileUploadsRemote, sessionReferencesRemote,
       permissionPresetsRemote, subagentsRemote, sessionRemote, workspaceRemote, workspaceFilesRemote, terminalRemote, officeToPdfRemote,
     ]) {

@@ -9,6 +9,7 @@
 import type {} from '@mutantcat/dsh-api-session-controller/remote-events'
 import type {} from '@mutantcat/dsh-permission-presets/types'
 import type {} from '@mutantcat/dsh-plugin-manager/types'
+import type {} from '@mutantcat/dsh-schedule/client'
 import type { TypertForwardableEventEntry } from '@mutantcat/dsh-typert-protocol'
 
 /**
@@ -38,5 +39,6 @@ export const API_REMOTE_FORWARDED_EVENTS = [
   { event: 'plugin-manager/install-log', mode: 'emit' },
   { event: 'plugin-manager/install-state', mode: 'emit' },
   { event: 'settings/document-updated', mode: 'emit' },
+  { event: 'schedule/changed', mode: 'emit' },
   { event: 'user-questions/request', mode: 'waterfall' },
 ] as const satisfies readonly TypertForwardableEventEntry[]

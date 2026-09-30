@@ -65,7 +65,6 @@
     "@mutantcat/dsh-client-ui-session": "workspace:^",
     "@mutantcat/dsh-client-ui-sidebar": "workspace:^",
     "@mutantcat/dsh-client-ui-slots": "workspace:^",
-    "@mutantcat/dsh-schedule": "workspace:^",
     "@mutantcat/dsh-typert-protocol": "workspace:^",
     "@mutantcat/dsh-session": "workspace:^",
     "@mutantcat/dsh-subagent": "workspace:^",

@@ -143,7 +143,7 @@ class BrowserZoneAtAdapter extends LlmAdapter {
       const target = Math.ceil((Date.now() + 5_000) / 1_000) * 1_000
       this.selectedAt = localAt(target, AT_BROWSER_ZONE)
       this.scheduledAt = new Date(target).toISOString()
-      const argumentsJson = JSON.stringify({ prompt: AT_PROMPT, at: this.selectedAt })
+      const argumentsJson = JSON.stringify({ prompt: AT_PROMPT, title: AT_PROMPT, at: this.selectedAt })
       const callId = ToolCallId('schedule-at-browser-zone')
       yield { type: 'block-start', index: 0, blockType: 'tool-call' }
       yield {
@@ -312,19 +312,24 @@ describe.skipIf(MODE === 'record')('web e2e: conversational reminders', () => {
       signal: AbortSignal.timeout(10_000),
       callId: ToolCallId('schedule-after-create'),
       name: 'schedule_create',
-      arguments: { prompt: AFTER_PROMPT, after_seconds: 1 },
+      arguments: { prompt: AFTER_PROMPT, title: AFTER_PROMPT, after_seconds: 1 },
       agent: afterHandle.agent,
     })
     if (afterCreated.isError) {
       throw new Error(`Schedule After create failed: ${JSON.stringify(afterCreated.value)}`)
     }
+    const createdView: unknown = afterCreated.value
+    if (typeof createdView !== 'object' || createdView === null || !('id' in createdView)
+      || typeof createdView.id !== 'string') {
+      throw new Error(`Schedule After create returned no task id: ${JSON.stringify(createdView)}`)
+    }
+    expect(createdView.id).toMatch(/^schedule-/)
     expect(afterCreated.value).toMatchObject({
-      id: 'schedule-1',
       kind: 'after',
       prompt: AFTER_PROMPT,
       afterSeconds: 1,
       state: 'scheduled',
-      deliveryMode: 'session-local',
+      deliveryMode: 'host',
     })
     afterAssistantReply = await waitForReply(afterHandle, AFTER_REPLY, 15_000)
     await afterHandle.agent.whenIdle()
@@ -347,22 +352,25 @@ describe.skipIf(MODE === 'record')('web e2e: conversational reminders', () => {
         EVERY_PROMPTS[0],
         EVERY_INTERVAL_SECONDS,
         seededAt - EVERY_FIXTURE_AGE_MS,
+        'Every primary',
       ),
       createEveryScheduleRecord(
         ScheduleId('schedule-every-secondary'),
         EVERY_PROMPTS[1],
         EVERY_INTERVAL_SECONDS,
         seededAt - EVERY_FIXTURE_AGE_MS,
+        'Every secondary',
       ),
     ]
+    const domain = scaffold.ctx.storageDomain.get('schedule')
+    if (domain === undefined) throw new Error('Schedule domain was not opened')
     for (const record of everyRecords) {
-      everyHandle.agent.session.append('schedule/change', {
-        version: 1,
-        operation: 'create',
-        schedule: record,
-      })
+      await domain.table('tasks').put(record.id, { sessionId: everyHandle.agent.id, record, status: 'active' })
     }
-    await expect(scaffold.ctx.sessions.flush(everyHandle.agent.session)).resolves.toBe(true)
+    const wake = await scaffold.ctx.schedule.create(everyHandle.agent.id, {
+      prompt: 'Unused future scheduling wake', title: 'Future wake', after_seconds: 86_400,
+    })
+    await scaffold.ctx.schedule.delete({ sessionId: everyHandle.agent.id, id: wake.id })
     await workspace.attachSession(everyHandle.agent.id)
     const everyListed = await scaffold.ctx.tools.execute({
       signal: AbortSignal.timeout(10_000),
@@ -545,7 +553,7 @@ describe.skipIf(MODE === 'record')('web e2e: conversational reminders', () => {
       event.type === 'tool/call' && event.data.name === 'schedule_create'
     ))
     if (toolCall?.type !== 'tool/call') throw new Error('missing schedule_create tool call')
-    expect(JSON.parse(toolCall.data.arguments)).toEqual({ prompt: AT_PROMPT, at: selectedAt })
+    expect(JSON.parse(toolCall.data.arguments)).toEqual({ prompt: AT_PROMPT, title: AT_PROMPT, at: selectedAt })
     const created = atHandle.agent.session.snapshotEvents().find(event => (
       event.type === 'schedule/change'
       && event.data.operation === 'create'

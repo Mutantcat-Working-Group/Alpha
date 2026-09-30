@@ -51,10 +51,10 @@ function stubResizeObserver(): Recorded[] {
  * @param props - whether the panel is open.
  * @returns the anchor and, while open, the panel carrying the position.
  */
-function Host({ open }: { open: boolean }) {
+function Host({ open, align = 'start' }: { open: boolean; align?: 'start' | 'end' }) {
   const anchorRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
-  const position = useAnchoredPosition({ open, anchorRef, panelRef, gap: 4, margin: 12 })
+  const position = useAnchoredPosition({ open, anchorRef, panelRef, align, gap: 4, margin: 12 })
   return (
     <>
       <button ref={anchorRef} type="button">anchor</button>
@@ -106,5 +106,23 @@ describe('useAnchoredPosition', () => {
     expect(made).toHaveLength(0)
     expect(add.mock.calls.filter(([type]) => type === 'scroll' || type === 'resize')).toEqual([])
     add.mockRestore()
+  })
+
+  it('lines a panel up with the anchor right edge when aligned to the end', () => {
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      left: 200, right: 260, top: 100, bottom: 120, width: 60, height: 20, x: 200, y: 100, toJSON: () => ({}),
+    })
+    // jsdom reports zero offset sizes; the layout effect measures this property
+    // directly, so give the prototype a non-zero width for the alignment run.
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: () => 80 })
+
+    try {
+      const ui = render(<Host open align="end" />)
+
+      expect(ui.getByTestId('panel').style.left).toBe('180px')
+    } finally {
+      delete (HTMLElement.prototype as { offsetWidth?: unknown }).offsetWidth
+      rect.mockRestore()
+    }
   })
 })

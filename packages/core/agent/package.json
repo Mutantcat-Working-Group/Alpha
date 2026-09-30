@@ -45,7 +45,13 @@
     "@mutantcat/dsh-system-prompt": "workspace:^",
     "@mutantcat/dsh-typert-protocol": "workspace:^",
     "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/dsh-workspace": "workspace:^",
     "@mutantcat/cordis": "workspace:^"
+  },
+  "peerDependenciesMeta": {
+    "@mutantcat/dsh-workspace": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@mutantcat/dsh-invariants": "workspace:^",
@@ -57,6 +63,7 @@
     "@mutantcat/dsh-typert-protocol": "workspace:^",
     "@mutantcat/dsh-typert-registry": "workspace:^",
     "@mutantcat/dsh-util-values": "workspace:^",
+    "@mutantcat/dsh-workspace": "workspace:^",
     "@mutantcat/cordis": "workspace:^"
   }
 }

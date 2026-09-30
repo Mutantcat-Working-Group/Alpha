@@ -74,6 +74,7 @@
     "@mutantcat/dsh-llm": "workspace:^",
     "@mutantcat/dsh-message-feedback": "workspace:^",
     "@mutantcat/dsh-permission-presets": "workspace:^",
+    "@mutantcat/dsh-schedule": "workspace:^",
     "@mutantcat/dsh-session-reference": "workspace:^",
     "@mutantcat/dsh-settings": "workspace:^",
     "@mutantcat/dsh-subagent": "workspace:^",

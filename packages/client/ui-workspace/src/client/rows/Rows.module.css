@@ -114,10 +114,6 @@
   margin: 0 6px 0 4px;
 }
 
-.flatSessionRowWithoutStatus .title {
-  margin-left: 0;
-}
-
 @keyframes row-in {
   from { opacity: 0; }
 }
@@ -222,22 +218,6 @@
   font-size: 12px;
   line-height: 20px;
   color: var(--dsw-alias-label-tertiary);
-}
-
-.scheduleIndicator {
-  display: inline-flex;
-  flex: none;
-  width: 16px;
-  height: 20px;
-  align-items: center;
-  justify-content: center;
-  margin-right: 6px;
-  color: var(--dsw-alias-label-tertiary);
-}
-
-.searchScheduleIndicator {
-  margin-right: 0;
-  margin-left: 4px;
 }
 
 .dot {

@@ -775,7 +775,7 @@ export const IconDatabaseOutline16 = ({ size = 16, className }: IconProps) => (
 
 /** Thin-stroke clock: outlined dial with square-cut hour and minute hands. */
 export const IconClockOutline16 = ({ size = 16, className }: IconProps) => (
-  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <circle cx="8" cy="8" r="6.375" stroke="currentColor" strokeWidth="1.25" />
     <path d="M8 4.4V8.3L10.7 9.85" stroke="currentColor" strokeWidth="1.25" />
   </svg>

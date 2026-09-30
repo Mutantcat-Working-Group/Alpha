@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-schedule",
-  "description": "Read-only active Schedule catalog in the Web Session header",
-  "version": "1.0.20260926",
+  "description": "Host task management page and Session reminder catalog",
+  "version": "1.0.20260927",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -20,8 +20,17 @@
   "dsh": {
     "client": {
       "inject": [
+        "@mutantcat/dsh-api-remotes",
+        "@mutantcat/dsh-api-session-controller",
+        "@mutantcat/dsh-api-workspace-controller",
+        "@mutantcat/dsh-client-connection",
         "@mutantcat/dsh-client-locale",
         "@mutantcat/dsh-client-ui-conversation",
+        "@mutantcat/dsh-client-ui-layout",
+        "@mutantcat/dsh-client-ui-sidebar",
+        "@mutantcat/dsh-client-ui-sidebar-right",
+        "@mutantcat/dsh-client-ui-tool",
+        "@mutantcat/dsh-client-ui-workspace",
         "@mutantcat/dsh-client-ui-primitives"
       ],
       "platform": "web"
@@ -44,19 +53,29 @@
     "@mutantcat/cordis": "workspace:^"
   },
   "devDependencies": {
+    "@mutantcat/dsh-api-remotes": "workspace:^",
     "@mutantcat/dsh-api-session-controller": "workspace:^",
+    "@mutantcat/dsh-api-workspace-controller": "workspace:^",
+    "@mutantcat/dsh-client-connection": "workspace:^",
     "@mutantcat/dsh-client-locale": "workspace:^",
     "@mutantcat/dsh-client-test-runtime": "workspace:^",
     "@mutantcat/dsh-client-ui-conversation": "workspace:^",
+    "@mutantcat/dsh-client-ui-layout": "workspace:^",
     "@mutantcat/dsh-client-ui-primitives": "workspace:^",
     "@mutantcat/dsh-client-ui-renderer": "workspace:^",
     "@mutantcat/dsh-client-ui-session": "workspace:^",
+    "@mutantcat/dsh-client-ui-sidebar": "workspace:^",
+    "@mutantcat/dsh-client-ui-sidebar-right": "workspace:^",
     "@mutantcat/dsh-client-ui-slots": "workspace:^",
+    "@mutantcat/dsh-client-ui-tool": "workspace:^",
+    "@mutantcat/dsh-client-ui-workspace": "workspace:^",
     "@mutantcat/dsh-schedule": "workspace:^",
     "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-util-values": "workspace:^",
     "@testing-library/react": "^16.1.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
+    "clsx": "^2.1.1",
     "@mutantcat/cordis": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

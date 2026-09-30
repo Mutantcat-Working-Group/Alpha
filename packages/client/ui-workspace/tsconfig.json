@@ -42,9 +42,6 @@
       "path": "../../subagent/subagent"
     },
     {
-      "path": "../../schedule/schedule"
-    },
-    {
       "path": "../ui-sidebar"
     },
     {
