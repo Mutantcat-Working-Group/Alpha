@@ -218,7 +218,7 @@ describe('rewriteMarkdown', () => {
       pages,
       repoRoot: root,
       repositoryRef: 'abc123',
-    })).toBe('![logo](https://raw.githubusercontent.com/Mutantcat-Working-Group/Alpha/abc123/packages/logo.svg)\\n')
+    })).toBe('![logo](https://raw.githubusercontent.com/Mutantcat-Working-Group/Alpha/abc123/packages/logo.svg)\n')
   })
 
   it('hands an image to the placer and uses the URL it returns', () => {
@@ -297,7 +297,7 @@ describe('rewriteMarkdown', () => {
       repositoryRef: 'abc123',
     })).toBe(
       '[title](./reference/b.md "b.md") '
-      + '[escaped](https://github.com/Mutantcat-Working-Group/Alpha/blob/abc123/docs/x(y).md)\\n',
+      + '[escaped](https://github.com/Mutantcat-Working-Group/Alpha/blob/abc123/docs/x(y).md)\n',
     )
   })
 
@@ -621,7 +621,7 @@ describe('projectedPageContent', () => {
   })
 
   it('drops the repository badge every page links from its footer', () => {
-    const badge = '[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)'
+    const badge = '[![](https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)'
     expect(projectedPageContent(`# Guide\n\nBody.\n\n${badge}\n`, page('zh-guide')))
       .toBe('# Guide\n\nBody.\n')
   })
@@ -647,7 +647,7 @@ describe('rawMarkdownPageContent', () => {
   })
 
   it('drops the language switcher and repository badge like the rendered site', () => {
-    const badge = '[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)'
+    const badge = '[![](https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)'
     expect(rawMarkdownPageContent(`# Guide\n\nEnglish | [中文](./x)\n\nBody.\n\n${badge}\n`, 'docs/guide.md'))
       .toBe('# Guide\n\nBody.\n')
   })
@@ -833,7 +833,7 @@ describe('llmsTxt', () => {
 
   it('carries the site identity and the raw-Markdown convention', () => {
     const text = llmsTxt(site)
-    expect(text.startsWith('# Alpha\\n')).toBe(true)
+    expect(text.startsWith('# Alpha\n')).toBe(true)
     expect(text).toContain('> 插件化 SDK')
     expect(text).toMatch(/`\.md`/)
   })

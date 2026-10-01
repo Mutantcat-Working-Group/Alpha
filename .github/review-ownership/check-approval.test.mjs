@@ -22,7 +22,7 @@ const runApprovalCheck = options => runWithHistory({ getMergedCount: async () =>
 const HEAD_SHA = '1234567890abcdef1234567890abcdef12345678'
 
 const pullRequestEvent = ({ author = 'author', draft = false } = {}) => ({
-  repository: { full_name: 'deepseek-harness/deepseek-harness' },
+  repository: { full_name: 'Mutantcat-Working-Group/Alpha' },
   pull_request: {
     number: 42,
     state: 'open',
@@ -83,7 +83,7 @@ test('uses each reviewer current decision and clears it on dismissal', () => {
 
 test('resolves a review workflow run to the current pull request and rejects stale heads', async () => {
   const workflowRunEvent = {
-    repository: { full_name: 'deepseek-harness/deepseek-harness' },
+    repository: { full_name: 'Mutantcat-Working-Group/Alpha' },
     workflow_run: {
       name: 'weighted-approval-review-event:42',
       path: '.github/workflows/weighted-approval-review-event.yml',
@@ -97,7 +97,7 @@ test('resolves a review workflow run to the current pull request and rejects sta
   const current = await approvalEventFromWorkflowRun({
     event: workflowRunEvent,
     api: async path => {
-      assert.equal(path, '/repos/deepseek-harness/deepseek-harness/pulls/42')
+      assert.equal(path, '/repos/Mutantcat-Working-Group/Alpha/pulls/42')
       return pullRequestEvent().pull_request
     },
   })
@@ -308,7 +308,7 @@ test('publishes the required status and replaces stale success with error on eva
   })
   assert.equal(result.state, 'success')
   assert.deepEqual(calls.at(-1), {
-    path: `/repos/deepseek-harness/deepseek-harness/statuses/${HEAD_SHA}`,
+    path: `/repos/Mutantcat-Working-Group/Alpha/statuses/${HEAD_SHA}`,
     options: {
       method: 'POST',
       body: {
@@ -577,7 +577,7 @@ test('the publisher counts merged history through the production API path', asyn
     api: async (path, options) => {
       if (path.includes('/comments?')) return []
       if (path === '/graphql') {
-        assert.equal(options.body.variables.owner, 'deepseek-harness')
+        assert.equal(options.body.variables.owner, 'Mutantcat-Working-Group')
         return { data: { repository: { pullRequests: {
           nodes: Array.from({ length: 25 }, (_, i) => ({
             number: i + (options.body.variables.after ? 200 : 100), author: { id: event.pull_request.user.node_id },
@@ -1014,7 +1014,7 @@ test('comment events resolve the live PR head and skip ordinary issues and close
   const event = { repository: pullRequestEvent().repository, issue: { number: 42, pull_request: {} } }
   const pull = { ...pullRequestEvent().pull_request, state: 'open' }
   const resolved = await approvalEventFromComment({ event, api: async path => {
-    assert.equal(path, '/repos/deepseek-harness/deepseek-harness/pulls/42')
+    assert.equal(path, '/repos/Mutantcat-Working-Group/Alpha/pulls/42')
     return pull
   } })
   assert.deepEqual(resolved.pull_request, pull)

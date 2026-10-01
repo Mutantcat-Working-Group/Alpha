@@ -27,7 +27,7 @@ describe('dsh badge assembled snapshot', () => {
     })
     const disabledSnapshot = JSON.parse(disabled.stdout) as unknown
     const enabledSnapshot = JSON.parse(
-      enabled.stdout.replaceAll(badgeAssetsPath, '{{badgeAssetsPath}}'),
+      enabled.stdout.replaceAll(JSON.stringify(badgeAssetsPath).slice(1, -1), '{{badgeAssetsPath}}'),
     ) as unknown
 
     expect(disabled.stderr).toBe('')
@@ -38,12 +38,12 @@ describe('dsh badge assembled snapshot', () => {
         "result": {
           "content": [
             {
-              "text": "Error: skill "dsh-badge" is unknown or no longer available",
+              "text": "Error: skill "alpha-badge" is unknown or no longer available",
               "type": "text",
             },
           ],
           "error": {
-            "message": "skill "dsh-badge" is unknown or no longer available",
+            "message": "skill "alpha-badge" is unknown or no longer available",
           },
           "isError": true,
         },
@@ -58,7 +58,7 @@ describe('dsh badge assembled snapshot', () => {
       A skill is a reusable set of task-specific instructions. The following skills are available in this session:
 
       <available_skills>
-      - \`dsh-badge\`: Add the official “powered by dsh” badge to documents, pull requests, merge requests, and other content produced with Alpha. Use whenever creating a pull request or merge request. Also use when the user asks for a dsh badge, powered-by-dsh attribution, or a reusable dsh badge asset or snippet.
+      - \`alpha-badge\`: Add the “powered by Alpha” badge to documents, pull requests, merge requests, and other content produced with Alpha. Use whenever creating a pull request or merge request. Also use when the user asks for an Alpha badge, powered-by-Alpha attribution, or a reusable Alpha badge asset or snippet.
       </available_skills>
 
       If the user names a skill, or the task clearly matches a skill's description, call the \`skill\` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.
@@ -70,21 +70,21 @@ describe('dsh badge assembled snapshot', () => {
         "result": {
           "content": [
             {
-              "text": "<skill_content name="dsh-badge">
+              "text": "<skill_content name="alpha-badge">
       <skill_resources>
       Base directory for this skill: {{badgeAssetsPath}}
       Resolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.
       </skill_resources>
 
       <skill_instructions>
-      # dsh Badge
+      # Alpha Badge
 
-      Add the official “powered by dsh” badge without recreating or restyling it.
+      Add the “powered by Alpha” attribution badge without recreating or restyling it.
 
       ## Assets
 
-      - Local PNG: [\`dsh-badge.png\`](dsh-badge.png), 726×120 source image; render at 121×20
-      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square\`
+      - Local PNG: [\`alpha-badge.png\`](alpha-badge.png), 726×120 source image; render at 121×20
+      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square\`
       - Project URL: \`https://github.com/Mutantcat-Working-Group/Alpha\`
 
       ## Markdown
@@ -92,19 +92,19 @@ describe('dsh badge assembled snapshot', () => {
       Use this linked badge in Markdown:
 
       \`\`\`markdown
-      [![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)
+      [![](https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)
       \`\`\`
 
       If attribution should not be linked, use:
 
       \`\`\`markdown
-      ![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square)
+      ![](https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square)
       \`\`\`
 
       ## Usage rules
 
       - For GitHub or GitLab Markdown, use the Shields.io URL and link it to the project URL unless the user asks for an unlinked image.
-      - For Feishu and other systems that import remote images unreliably, upload \`dsh-badge.png\` from this skill directory instead of generating another badge.
+      - For Feishu and other systems that import remote images unreliably, upload \`alpha-badge.png\` from this skill directory instead of generating another badge.
       - Preserve the badge's 121×20 dimensions and aspect ratio.
       - Place the badge at the end of the attributed document or section unless the user specifies another position.
       - Do not substitute another color, logo, label, or project URL.
@@ -116,14 +116,14 @@ describe('dsh badge assembled snapshot', () => {
           ],
           "isError": false,
           "value": {
-            "content": "# dsh Badge
+            "content": "# Alpha Badge
 
-      Add the official “powered by dsh” badge without recreating or restyling it.
+      Add the “powered by Alpha” attribution badge without recreating or restyling it.
 
       ## Assets
 
-      - Local PNG: [\`dsh-badge.png\`](dsh-badge.png), 726×120 source image; render at 121×20
-      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square\`
+      - Local PNG: [\`alpha-badge.png\`](alpha-badge.png), 726×120 source image; render at 121×20
+      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square\`
       - Project URL: \`https://github.com/Mutantcat-Working-Group/Alpha\`
 
       ## Markdown
@@ -131,25 +131,25 @@ describe('dsh badge assembled snapshot', () => {
       Use this linked badge in Markdown:
 
       \`\`\`markdown
-      [![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)
+      [![](https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square)](https://github.com/Mutantcat-Working-Group/Alpha)
       \`\`\`
 
       If attribution should not be linked, use:
 
       \`\`\`markdown
-      ![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square)
+      ![](https://img.shields.io/badge/powered_by-alpha-4D6BFE?style=flat-square)
       \`\`\`
 
       ## Usage rules
 
       - For GitHub or GitLab Markdown, use the Shields.io URL and link it to the project URL unless the user asks for an unlinked image.
-      - For Feishu and other systems that import remote images unreliably, upload \`dsh-badge.png\` from this skill directory instead of generating another badge.
+      - For Feishu and other systems that import remote images unreliably, upload \`alpha-badge.png\` from this skill directory instead of generating another badge.
       - Preserve the badge's 121×20 dimensions and aspect ratio.
       - Place the badge at the end of the attributed document or section unless the user specifies another position.
       - Do not substitute another color, logo, label, or project URL.
       ",
-            "name": "dsh-badge",
-            "provider": "dsh-badge",
+            "name": "alpha-badge",
+            "provider": "alpha-badge",
             "resourceBase": {
               "kind": "directory",
               "path": "{{badgeAssetsPath}}",
@@ -157,13 +157,13 @@ describe('dsh badge assembled snapshot', () => {
           },
         },
         "summary": {
-          "description": "Add the official “powered by dsh” badge to documents, pull requests, merge requests, and other content produced with Alpha. Use whenever creating a pull request or merge request. Also use when the user asks for a dsh badge, powered-by-dsh attribution, or a reusable dsh badge asset or snippet.",
+          "description": "Add the “powered by Alpha” badge to documents, pull requests, merge requests, and other content produced with Alpha. Use whenever creating a pull request or merge request. Also use when the user asks for an Alpha badge, powered-by-Alpha attribution, or a reusable Alpha badge asset or snippet.",
           "invocation": {
             "modelInvocable": true,
             "userInvocable": true,
           },
-          "name": "dsh-badge",
-          "provider": "dsh-badge",
+          "name": "alpha-badge",
+          "provider": "alpha-badge",
           "resourceBase": {
             "kind": "directory",
             "path": "{{badgeAssetsPath}}",

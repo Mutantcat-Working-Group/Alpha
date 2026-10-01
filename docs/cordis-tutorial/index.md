@@ -16,7 +16,7 @@ You need a clone of this repository with dependencies installed; the [developmen
 
 ```sh
 git clone https://github.com/Mutantcat-Working-Group/Alpha.git
-cd deepseek-harness
+cd Alpha
 pnpm install
 ```
 

@@ -43,11 +43,11 @@ try {
     ? decision.messages.find(message => message.role === 'user'
       && message.source.kind === 'skill-catalog')?.content
     : undefined
-  const summary = (await ctx.skills.list()).find(skill => skill.name === 'dsh-badge')
+  const summary = (await ctx.skills.list()).find(skill => skill.name === 'alpha-badge')
   const result = await ctx.tools.execute({
     callId: ToolCallId('dsh-badge-snapshot'),
     name: 'skill',
-    arguments: { name: 'dsh-badge' },
+    arguments: { name: 'alpha-badge' },
     signal: new AbortController().signal,
   })
   process.stdout.write(`${JSON.stringify({ catalog: catalog ?? null, summary: summary ?? null, result })}\n`)

@@ -197,7 +197,7 @@ export function launchAcpTestAgent(options: AcpTestLaunchOptions): LaunchedAcpTe
   }
   const requestPermission = options.requestPermission
     ?? (() => Promise.resolve({ outcome: { outcome: 'cancelled' as const } }))
-  const clientApp = createAcpClientApp({ name: 'deepseek-harness-acp-test-client' })
+  const clientApp = createAcpClientApp({ name: 'alpha-acp-test-client' })
     .onNotification(methods.client.session.update, ({ params }) => {
       return trackClientCallback(() => {
         updates.push(params.update)

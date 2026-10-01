@@ -1,5 +1,5 @@
 ---
-description: "随包附带的「powered by dsh」徽章 skill（技能），供启用、使用或排查该可选徽章提供方的用户与维护者阅读。"
+description: "随包附带的「powered by Alpha」徽章 skill（技能），供启用、使用或排查该可选徽章提供方的用户与维护者阅读。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-agent（智能体）可以通过该内置提供方加载「powered by dsh」徽章 skill，并遵循其指令，给文档、PR（Pull Request）以及其他用 Alpha 生成的内容添加署名徽章。该提供方没有配置，随附 CLI（命令行界面）组合以禁用状态包含该插件，因此部署方需要显式启用。该 skill 同时提供 Markdown 片段和随包分发的 PNG，供无法可靠导入远程图片的系统使用。
+agent（智能体）可以通过该内置提供方加载「powered by Alpha」徽章 skill，并遵循其指令，给文档、PR（Pull Request）以及其他用 Alpha 生成的内容添加署名徽章。该提供方没有配置，随附 CLI（命令行界面）组合以禁用状态包含该插件，因此部署方需要显式启用。该 skill 同时提供 Markdown 片段和随包分发的 PNG，供无法可靠导入远程图片的系统使用。
 
 ## 目录
 
@@ -25,7 +25,7 @@ agent（智能体）可以通过该内置提供方加载「powered by dsh」徽�
 <a id="use-this-package"></a>
 ## 使用本包
 
-启用插件即可让 `dsh-badge` skill 出现在会话 skill 目录中；随后模型可以像加载任何其他 skill 一样加载它，并遵循其指令添加「powered by dsh」徽章。
+启用插件即可让 `alpha-badge` skill 出现在会话 skill 目录中；随后模型可以像加载任何其他 skill 一样加载它，并遵循其指令添加「powered by Alpha」徽章。
 
 ### 何时选择
 
@@ -39,16 +39,16 @@ agent（智能体）可以通过该内置提供方加载「powered by dsh」徽�
 - name: '@mutantcat/dsh-skill-badge'
 ```
 
-启用后，`dsh-badge` 会出现在会话目录的可用 skill 中。该 skill 覆盖远程 Markdown 徽章（基于 Shields.io）和随包分发的 PNG 徽章资源，后者用于无法可靠获取远程图片的目标环境。
+启用后，`alpha-badge` 会出现在会话目录的可用 skill 中。该 skill 覆盖远程 Markdown 徽章（基于 Shields.io）和随包分发的 PNG 徽章资源，后者用于无法可靠获取远程图片的目标环境。
 
 ### 徽章 skill 提供什么
 
 - **Markdown 片段。** 在文档、PR 与 merge request 中嵌入官方徽章标记的指令。
-- **随包分发的 PNG 资源。** `dsh-badge.png`（726×120 源图，按 121×20 渲染），在无法导入远程图片的环境中可用。
+- **随包分发的 PNG 资源。** `alpha-badge.png`（726×120 源图，按 121×20 渲染），在无法导入远程图片的环境中可用。
 
 ### 可观察的成功与失败
 
-启用插件会使 `dsh-badge` 出现在目录中并可凭名称加载；禁用或省略该行则它不会出现在任何目录中。由于提供方不可变，发现始终成功且恰好返回一个 skill，绝不会报告部分结果。
+启用插件会使 `alpha-badge` 出现在目录中并可凭名称加载；禁用或省略该行则它不会出现在任何目录中。由于提供方不可变，发现始终成功且恰好返回一个 skill，绝不会报告部分结果。
 
 -----
 
@@ -62,7 +62,7 @@ agent（智能体）可以通过该内置提供方加载「powered by dsh」徽�
 
 ### 设计理念
 
-该提供方是一个不可变、同步注册的 skill 来源：它以 `dsh-badge` 作为提供方名称、按内置 skill rank（600）注册一个固定候选项，把随包分发的 `assets/` 目录作为该 skill 的目录资源基底公开，并在每次加载时从随包分发的 `assets/dsh-badge.md` 文件读取 skill 正文。
+该提供方是一个不可变、同步注册的 skill 来源：它以 `alpha-badge` 作为提供方名称、按内置 skill rank（600）注册一个固定候选项，把随包分发的 `assets/` 目录作为该 skill 的目录资源基底公开，并在每次加载时从随包分发的 `assets/alpha-badge.md` 文件读取 skill 正文。
 
 ### 源码地图
 
@@ -70,7 +70,7 @@ agent（智能体）可以通过该内置提供方加载「powered by dsh」徽�
 |---|---|
 | [`src/index.ts`](src/index.ts) | 插件入口与不可变提供方：一个候选项、资源基底、正文加载 |
 | — | 不发布运行时不变式伴生入口；本包只持有一个不可变的提供方注册，注册唯一性与生命周期检查由 skill 注册表负责。 |
-| [`assets/`](assets/) | 随包分发的 skill 正文（`dsh-badge.md`）与 PNG 资源（`dsh-badge.png`） |
+| [`assets/`](assets/) | 随包分发的 skill 正文（`alpha-badge.md`）与 PNG 资源（`alpha-badge.png`） |
 
 </details>
 
@@ -103,7 +103,7 @@ agent（智能体）可以通过该内置提供方加载「powered by dsh」徽�
 
 这些限制说明内置提供方不做什么。它们是当前包约束，不是任务积压。
 
-- **固定一个 skill，无运行时自定义**——提供方恰好贡献 `dsh-badge` 这一个 skill；需要其他徽章变体的部署请自行编写 skill。
+- **固定一个 skill，无运行时自定义**——提供方恰好贡献 `alpha-badge` 这一个 skill；需要其他徽章变体的部署请自行编写 skill。
 - **远程 Markdown 依赖 Shields.io**——远程徽章标记内嵌 Shields.io 图片；目标环境无法可靠获取远程图片时，请使用随包分发的 PNG。
 
 <a id="dev-note"></a>

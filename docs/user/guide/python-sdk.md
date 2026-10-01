@@ -23,7 +23,7 @@ This tutorial installs the published Python SDK, runs the shipped standalone min
 
 ```sh [Linux/macOS]
 git clone https://github.com/Mutantcat-Working-Group/Alpha.git
-cd deepseek-harness
+cd Alpha
 python -m venv .venv
 . .venv/bin/activate
 python -m pip install deepseek-harness-sdk
@@ -31,7 +31,7 @@ python -m pip install deepseek-harness-sdk
 
 ```powershell [Windows PowerShell]
 git clone https://github.com/Mutantcat-Working-Group/Alpha.git
-Set-Location deepseek-harness
+Set-Location Alpha
 py -3.10 -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install deepseek-harness-sdk

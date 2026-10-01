@@ -1,5 +1,5 @@
 /**
- * Bundled `dsh-badge` skill provider.
+ * Bundled `alpha-badge` skill provider.
  *
  * @module @mutantcat/dsh-skill-badge
  */
@@ -14,16 +14,16 @@ import {
   type SkillProvider,
 } from '@mutantcat/dsh-skill'
 
-const PROVIDER_NAME = 'dsh-badge'
-const SKILL_BODY_URL = new URL('../assets/dsh-badge.md', import.meta.url)
+const PROVIDER_NAME = 'alpha-badge'
+const SKILL_BODY_URL = new URL('../assets/alpha-badge.md', import.meta.url)
 const RESOURCE_BASE = {
   kind: 'directory',
   path: fileURLToPath(new URL('../assets/', import.meta.url)),
 } as const
 const INVOCATION = { modelInvocable: true, userInvocable: true } as const
-const DESCRIPTION = 'Add the “powered by dsh” badge to documents, pull requests, merge requests, and other content produced with Alpha. Use whenever creating a pull request or merge request. Also use when the user asks for a dsh badge, powered-by-dsh attribution, or a reusable dsh badge asset or snippet.'
+const DESCRIPTION = 'Add the “powered by Alpha” badge to documents, pull requests, merge requests, and other content produced with Alpha. Use whenever creating a pull request or merge request. Also use when the user asks for an Alpha badge, powered-by-Alpha attribution, or a reusable Alpha badge asset or snippet.'
 const CANDIDATE: SkillCandidate = {
-  name: 'dsh-badge',
+  name: 'alpha-badge',
   description: DESCRIPTION,
   invocation: INVOCATION,
   provider: PROVIDER_NAME,
@@ -54,7 +54,7 @@ export const name = 'skill-badge'
 /** Service required by the bundled provider. */
 export const inject = ['skills']
 
-/** Register the bundled `dsh-badge` provider on `ctx.skills`. */
+/** Register the bundled `alpha-badge` provider on `ctx.skills`. */
 export function apply(ctx: Context): void {
   ctx.skills.registerProvider(() => provider)
 }

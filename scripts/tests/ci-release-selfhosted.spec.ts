@@ -6,7 +6,7 @@ import { load } from 'js-yaml'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(import.meta.dirname, '../..')
-const repository = 'deepseek-harness/deepseek-harness'
+const repository = 'Mutantcat-Working-Group/Alpha'
 const selfhosted = ['self-hosted', 'linux', 'x64', 'vm-backup']
 const hosted = 'ubuntu-24.04'
 

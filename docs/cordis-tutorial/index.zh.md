@@ -18,7 +18,7 @@ Cordis 是 Alpha 底层的插件框架：它是一个小型运行时，其中的
 
 ```sh
 git clone https://github.com/Mutantcat-Working-Group/Alpha.git
-cd deepseek-harness
+cd Alpha
 pnpm install
 ```
 

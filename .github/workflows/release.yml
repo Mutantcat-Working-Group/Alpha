@@ -31,7 +31,7 @@ jobs:
     # Persistent runners accept only trusted, credential-free rehearsals.
     runs-on: >-
       ${{ vars.DSH_CI_FAILOVER_LINUX == 'selfhosted'
-        && github.repository == 'deepseek-harness/deepseek-harness'
+        && github.repository == 'Mutantcat-Working-Group/Alpha'
         && github.actor != 'dependabot[bot]'
         && ((github.event_name == 'push' && github.ref == 'refs/heads/master')
           || (github.event_name == 'pull_request'
@@ -91,7 +91,7 @@ jobs:
     # Persistent runners accept only trusted, credential-free rehearsals.
     runs-on: >-
       ${{ vars.DSH_CI_FAILOVER_LINUX == 'selfhosted'
-        && github.repository == 'deepseek-harness/deepseek-harness'
+        && github.repository == 'Mutantcat-Working-Group/Alpha'
         && github.actor != 'dependabot[bot]'
         && ((github.event_name == 'push' && github.ref == 'refs/heads/master')
           || (github.event_name == 'pull_request'

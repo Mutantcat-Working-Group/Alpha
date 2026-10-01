@@ -6,14 +6,14 @@
 
 ## 前置条件
 
-- 一个可由 DSH 注册为 Web Workspace 的本地 checkout。
+- 一个可由 Alpha 注册为 Web Workspace 的本地 checkout。
 - 一个可通过 `DSH_GITHUB_WEBHOOK_SECRET` 凭据引用访问的高熵 GitHub webhook 密钥。
 - 一个可以把单个公共 URL 转发到 loopback 监听器的 TLS 反向代理或 tunnel。
 - GitHub webhook 订阅 Pull requests 事件，且 content type 为 `application/json`。
 
 overlay 默认使用启动目录作为 Workspace，并监听 `127.0.0.1:3081`。可通过 `DSH_GITHUB_REVIEW_WORKSPACE` 与 `DSH_GITHUB_WEBHOOK_PORT` 覆盖它们。
 
-## 启动 DSH
+## 启动 Alpha
 
 生成密钥，并在重启后继续使用同一值：
 
@@ -25,11 +25,11 @@ printf '%s\n' "$DSH_GITHUB_WEBHOOK_SECRET"
 在开发 checkout 中运行：
 
 ```sh
-export DSH_GITHUB_REVIEW_WORKSPACE=/path/to/deepseek-harness
+export DSH_GITHUB_REVIEW_WORKSPACE=/path/to/Alpha
 pnpm dsh web --patch apps/cli/config/examples/github-review/cordis.yml
 ```
 
-安装版 DSH 通过绝对路径使用同一 overlay：
+安装版 Alpha 通过绝对路径使用同一 overlay：
 
 ```sh
 dsh web --patch /absolute/path/to/github-review/cordis.yml
@@ -65,7 +65,7 @@ Active:       yes
 
 ## 规则行为
 
-规则只接受来源 `primary-github`、仓库 `deepseek-harness/deepseek-harness`、事件 `pull_request` 与动作 `ready_for_review`。它会把精确 head SHA 和选定 PR 字段传给评审提示词，把 JSON 标为不受信任的元数据，并禁止修改文件、分支、PR 或 GitHub 状态。
+规则只接受来源 `primary-github`、仓库 `Mutantcat-Working-Group/Alpha`、事件 `pull_request` 与动作 `ready_for_review`。它会把精确 head SHA 和选定 PR 字段传给评审提示词，把 JSON 标为不受信任的元数据，并禁止修改文件、分支、PR 或 GitHub 状态。
 
 Session 请求选择 `standard` agent preset 与 `read-only` permission preset。`workspacePath` 通过 `WorkspaceRegistry.create()` 规范化，因此第一次匹配交付会在 Workspace 不存在时创建它，后续交付会复用它。
 
@@ -89,8 +89,8 @@ if (!response.ok || (await response.json()).automaticReview !== true) return nul
 
 ```js
 const workspacePath = {
-  'deepseek-harness/deepseek-harness': '/path/to/deepseek-harness',
-  'deepseek-harness/dsh-sdk': '/path/to/dsh-sdk',
+  'Mutantcat-Working-Group/Alpha': '/path/to/Alpha',
+  'your-org/your-repo': '/path/to/your-repo',
 }[payload.repository.full_name]
 if (workspacePath === undefined) return null
 ```

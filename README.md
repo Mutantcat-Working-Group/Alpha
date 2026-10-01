@@ -94,4 +94,4 @@
 
 ## 致谢
 
-本项目是 [Mutantcat-Working-Group/Alpha](https://github.com/Mutantcat-Working-Group/Alpha) 的 Fork，感谢原仓库及其作者的优秀开源工作，本仓库在其基础上继续维护与改进。
+感谢 [Cordis](https://github.com/cordiverse/cordis) 社区与所有为本项目做出贡献的开发者。Alpha 基于开源生态构建，并在此之上独立维护与演进。

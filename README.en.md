@@ -94,4 +94,4 @@ Core value:
 
 ## Acknowledgements
 
-Alpha is a fork of [Mutantcat-Working-Group/Alpha](https://github.com/Mutantcat-Working-Group/Alpha). We thank the original repository and its authors for their excellent open-source work.
+Thanks to the [Cordis](https://github.com/cordiverse/cordis) community and every developer who contributed to this project. Alpha builds on the open-source ecosystem and continues to evolve independently.
