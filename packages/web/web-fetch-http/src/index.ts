@@ -5,11 +5,14 @@
  * @module @mutantcat/dsh-web-fetch-http
  */
 
+import { createRequire } from 'node:module'
 import type { Context } from '@mutantcat/cordis'
 import z from '@mutantcat/schemastery'
 import type {} from '@mutantcat/dsh-web'
 import { HttpFetchProvider } from './provider.ts'
 import type { HttpFetchLimits } from './provider.ts'
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string }
 
 const MAX_NODE_TIMER_DELAY_MS = 2_147_483_647
 
@@ -20,7 +23,7 @@ export {
 export type { HttpFetchLimits, HttpFetchResolver } from './provider.ts'
 
 /** Default `User-Agent`: an explicit product agent, never a browser disguise. */
-export const DEFAULT_USER_AGENT = 'deepseek-harness/0.0.1 (+https://github.com/deepseek-ai)'
+export const DEFAULT_USER_AGENT = `alpha/${version} (+https://github.com/Mutantcat-Working-Group/Alpha)`
 
 /** Cordis plugin name used by loader diagnostics. */
 export const name = 'web-fetch-http'

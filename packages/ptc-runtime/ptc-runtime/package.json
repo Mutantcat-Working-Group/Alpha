@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-ptc-runtime",
-  "description": "Abstract PTC execution seam (ctx.ptcRuntime) for the DeepSeek Harness",
+  "description": "Abstract PTC execution seam (ctx.ptcRuntime) for the Alpha",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/ptc-runtime/ptc-runtime"
   },
   "type": "module",

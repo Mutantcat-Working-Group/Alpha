@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-webhook",
-  "description": "Fire-and-forget webhook rule runtime that creates Workspace-backed DeepSeek Harness Sessions",
+  "description": "Fire-and-forget webhook rule runtime that creates Workspace-backed Alpha Sessions",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/webhook/webhook"
   },
   "type": "module",

@@ -209,9 +209,9 @@ describe('translation pairing switchers', () => {
 
   it('accepts only the canonical public URL for an absolute switcher', () => {
     const targets = languageSwitcherTargets('python/sdk/README.zh.md')
-    const canonicalMarkdown = '# README\n\nEnglish | [中文](https://github.com/deepseek-ai/deepseek-harness/blob/master/python/sdk/README.zh.md)\n'
+    const canonicalMarkdown = '# README\\n\\nEnglish | [中文](https://github.com/Mutantcat-Working-Group/Alpha/blob/master/python/sdk/README.zh.md)\\n'
     const canonical = parseTranslationMarkdown(canonicalMarkdown)
-    const wrongMarkdown = '# README\n\nEnglish | [中文](https://github.com/deepseek-ai/deepseek-harness/blob/master/other/README.zh.md)\n'
+    const wrongMarkdown = '# README\\n\\nEnglish | [中文](https://github.com/Mutantcat-Working-Group/Alpha/blob/master/other/README.zh.md)\\n'
     const wrongPath = parseTranslationMarkdown(wrongMarkdown)
 
     expect(translationStructureSignature(canonical, targets, {
@@ -226,7 +226,7 @@ describe('translation pairing switchers', () => {
       isTranslationPairSource: fixturePairSource,
       markdown: wrongMarkdown,
     }).links).toEqual([
-      'https://github.com/deepseek-ai/deepseek-harness/blob/master/other/README.zh.md',
+      'https://github.com/Mutantcat-Working-Group/Alpha/blob/master/other/README.zh.md',
     ])
   })
 

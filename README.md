@@ -57,7 +57,7 @@
 
 ### 五、插件生态与兼容层
 
-- 完整保留 DeepSeek Harness 的插件协议，[`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题下的插件仓库可直接装载，配置无需改写。
+- 完整保留 Alpha 的插件协议，[`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题下的插件仓库可直接装载，配置无需改写。
 - 插件通过 `ctx.effect()` 与 `ctx.on()` 注册贡献，`register()` 的返回值即注销函数。
 - 运行期自修改与 Claude Code / Codex 桥接保留，`extensions` 和 `hooks` 用法不变。
 - 插件清单使用 `cordis.yml`，裸写的插件名必须出现在解析清单的 `dependencies` 中。
@@ -94,4 +94,4 @@
 
 ## 致谢
 
-本项目是 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) 的 Fork，感谢原仓库及其作者的优秀开源工作，本仓库在其基础上继续维护与改进。
+本项目是 [Mutantcat-Working-Group/Alpha](https://github.com/Mutantcat-Working-Group/Alpha) 的 Fork，感谢原仓库及其作者的优秀开源工作，本仓库在其基础上继续维护与改进。

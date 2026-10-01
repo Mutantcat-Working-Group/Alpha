@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-acp",
-  "description": "Automation-only Agent Client Protocol server for driving DeepSeek Harness agents over JSON-RPC stdio",
+  "description": "Automation-only Agent Client Protocol server for driving Alpha agents over JSON-RPC stdio",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/acp/acp"
   },
   "type": "module",

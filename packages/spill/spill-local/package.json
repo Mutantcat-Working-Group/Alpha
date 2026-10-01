@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-spill-local",
-  "description": "Local-filesystem implementation of the DeepSeek Harness spill storage seam (private session-scoped files)",
+  "description": "Local-filesystem implementation of the Alpha spill storage seam (private session-scoped files)",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/spill/spill-local"
   },
   "type": "module",

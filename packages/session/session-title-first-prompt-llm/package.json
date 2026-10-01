@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-session-title-first-prompt-llm",
-  "description": "First-message LLM provider plugin for DeepSeek Harness session titles",
+  "description": "First-message LLM provider plugin for Alpha session titles",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/session/session-title-first-prompt-llm"
   },
   "type": "module",

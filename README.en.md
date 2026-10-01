@@ -57,7 +57,7 @@ Core value:
 
 ### 5. Plugin Ecosystem & Compatibility
 
-- The DeepSeek Harness plugin protocol is intact: repositories under the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic keep loading, and their configuration needs no rewrite.
+- The Alpha plugin protocol is intact: repositories under the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic keep loading, and their configuration needs no rewrite.
 - Plugins register contributions through `ctx.effect()` and `ctx.on()`; the value returned by `register()` is the disposer.
 - Runtime self-modification and the Claude Code / Codex bridges are preserved.
 - Plugin manifests stay in `cordis.yml`; a bare plugin name must appear in the `dependencies` of the resolver manifest.
@@ -94,4 +94,4 @@ Core value:
 
 ## Acknowledgements
 
-Alpha is a fork of [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness). We thank the original repository and its authors for their excellent open-source work.
+Alpha is a fork of [Mutantcat-Working-Group/Alpha](https://github.com/Mutantcat-Working-Group/Alpha). We thank the original repository and its authors for their excellent open-source work.

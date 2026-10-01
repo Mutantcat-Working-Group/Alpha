@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-ptc-runtime-node",
-  "description": "Sandboxed Node process implementation of the DeepSeek Harness PTC execution capability",
+  "description": "Sandboxed Node process implementation of the Alpha PTC execution capability",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/ptc-runtime/ptc-runtime-node"
   },
   "type": "module",

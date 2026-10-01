@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-terminal",
-  "description": "Persistent PTY session seam for the DeepSeek Harness — owner-scoped ids, backend registry, interactive sends, reads, signals, and awaited cleanup",
+  "description": "Persistent PTY session seam for the Alpha — owner-scoped ids, backend registry, interactive sends, reads, signals, and awaited cleanup",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/terminal/terminal"
   },
   "type": "module",

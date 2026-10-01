@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-spill-policy",
-  "description": "Tool-result spill policy for the DeepSeek Harness — replaces oversized plain-text tool results with a retained preview plus a spill-file path (no service API)",
+  "description": "Tool-result spill policy for the Alpha — replaces oversized plain-text tool results with a retained preview plus a spill-file path (no service API)",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/spill/spill-policy"
   },
   "type": "module",

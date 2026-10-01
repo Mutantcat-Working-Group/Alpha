@@ -46,7 +46,7 @@ kind: "package-reference"
 | `maxBodyChars` | `100,000` | 解码主体最大字符数 |
 | `timeoutMs` | `30,000` | 抓取超时——资源兜底，不是面向模型的工具预算 |
 | `maxRedirects` | `5` | 同源重定向最大跳数（`0` 表示不跟随） |
-| `userAgent` | `deepseek-harness/…` | 每次请求发送的 `User-Agent` 标头 |
+| `userAgent` | `alpha/…` | 每次请求发送的 `User-Agent` 标头 |
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-web-fetch-http)是每个受支持字段及其 JSDoc 的穷尽式真源。
 

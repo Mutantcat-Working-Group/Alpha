@@ -46,7 +46,7 @@ Load the web service and the provider; configurable limits have safe defaults an
 | `maxBodyChars` | `100,000` | Maximum decoded body length in characters |
 | `timeoutMs` | `30,000` | Fetch timeout — a resource backstop, not the model-facing tool budget |
 | `maxRedirects` | `5` | Maximum same-origin redirect hops (`0` follows none) |
-| `userAgent` | `deepseek-harness/…` | `User-Agent` header sent on every request |
+| `userAgent` | `alpha/…` | `User-Agent` header sent on every request |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-web-fetch-http) is the exhaustive source for every accepted field and its JSDoc.
 

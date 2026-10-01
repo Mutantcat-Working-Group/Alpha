@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-bash-sandbox",
-  "description": "Sandbox-consuming implementation of the DeepSeek Harness bash executor seam (confines every command via ctx.sandbox, reports denial/enforcement result facts)",
+  "description": "Sandbox-consuming implementation of the Alpha bash executor seam (confines every command via ctx.sandbox, reports denial/enforcement result facts)",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/shell/bash-sandbox"
   },
   "type": "module",

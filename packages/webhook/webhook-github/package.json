@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-webhook-github",
-  "description": "Signed GitHub HTTP webhook adapter for the DeepSeek Harness webhook runtime",
+  "description": "Signed GitHub HTTP webhook adapter for the Alpha webhook runtime",
   "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/webhook/webhook-github"
   },
   "type": "module",

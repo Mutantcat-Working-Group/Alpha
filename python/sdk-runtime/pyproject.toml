@@ -5,17 +5,17 @@ build-backend = "hatchling.build"
 [project]
 name = "deepseek-harness-runtime-bin"
 version = "0.0.0.dev0"
-description = "Bundled dsh CLI runtime for the DeepSeek Harness Python SDK"
+description = "Bundled dsh CLI runtime for the Alpha Python SDK"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "DeepSeek" }]
 
 [project.urls]
-Homepage = "https://github.com/deepseek-ai/deepseek-harness"
-Documentation = "https://github.com/deepseek-ai/deepseek-harness/blob/master/python/sdk-runtime/README.md"
-Issues = "https://github.com/deepseek-ai/deepseek-harness/issues"
-Source = "https://github.com/deepseek-ai/deepseek-harness"
+Homepage = "https://github.com/Mutantcat-Working-Group/Alpha"
+Documentation = "https://github.com/Mutantcat-Working-Group/Alpha/blob/master/python/sdk-runtime/README.md"
+Issues = "https://github.com/Mutantcat-Working-Group/Alpha/issues"
+Source = "https://github.com/Mutantcat-Working-Group/Alpha"
 
 [project.scripts]
 dsh = "deepseek_harness_runtime:main"
