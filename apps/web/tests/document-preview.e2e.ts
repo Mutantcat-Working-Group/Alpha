@@ -561,7 +561,7 @@ describe.skipIf(MODE === 'record')('web e2e: document preview through Files', ()
     ].join('\n'))
 
     const officeMenus: number[] = []
-    const configurationGuide = 'Read failed: Office previews are unavailable. Enable the document preview service on the computer running DeepSeek Harness.'
+    const configurationGuide = 'Read failed: Office previews are unavailable. Enable the document preview service on the computer running Alpha.'
     for (const extension of ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']) {
       await openFile(`unavailable.${extension}`)
       expect(await preview.locator('[data-document-viewer-menu]').count()).toBe(0)

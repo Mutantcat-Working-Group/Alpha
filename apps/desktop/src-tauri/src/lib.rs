@@ -148,6 +148,12 @@ struct HostEvent {
     injections: Option<Value>,
 }
 
+/// One window event the Web client reports when its boot fails.
+#[derive(Deserialize)]
+struct BootFailurePayload {
+    message: Option<String>,
+}
+
 /// Build and run the Alpha desktop shell.
 pub fn run() {
     tauri::Builder::default()
@@ -228,8 +234,9 @@ fn bundled_runtime(handle: &AppHandle) -> Result<PathBuf, String> {
 }
 
 /// Locate the per-target Node sidecar placed next to the application executable.
-/// Bundled applications carry the sidecar as plain `node`; a development build
-/// keeps the target-triple suffix in the target directory.
+/// Bundled applications carry the sidecar as plain `node`, `node.exe` on
+/// Windows; a development build keeps the target-triple suffix in the target
+/// directory.
 fn node_sidecar() -> Result<PathBuf, String> {
     let executable = std::env::current_exe()
         .map_err(|error| format!("Alpha could not locate its executable: {error}"))?;
@@ -237,6 +244,9 @@ fn node_sidecar() -> Result<PathBuf, String> {
         .parent()
         .ok_or_else(|| "Alpha could not resolve its install directory.".to_string())?;
     let mut candidates = vec![directory.join("node")];
+    if cfg!(target_os = "windows") {
+        candidates.push(directory.join("node.exe"));
+    }
     let mut suffixed = directory.join(format!("node-{}", target_triple()));
     if cfg!(target_os = "windows") {
         suffixed.set_extension("exe");
@@ -246,8 +256,8 @@ fn node_sidecar() -> Result<PathBuf, String> {
         return Ok(found.clone());
     }
     Err(format!(
-        "Alpha could not locate its Node runtime at {}",
-        candidates.last().map(|path| path.display().to_string()).unwrap_or_default()
+        "Alpha could not locate its Node runtime (tried {})",
+        candidates.iter().map(|path| path.display().to_string()).collect::<Vec<_>>().join(", ")
     ))
 }
 
@@ -399,9 +409,10 @@ fn build_window(
     });
     let failure_handle = handle.clone();
     window.listen(BOOT_FAILED_EVENT, move |event: Event| {
-        let message = serde_json::from_str::<HostEvent>(event.payload())
+        let message = serde_json::from_str::<BootFailurePayload>(event.payload())
             .ok()
             .and_then(|reported| reported.message)
+            .filter(|message| !message.trim().is_empty())
             .unwrap_or_else(|| "Alpha could not start its engine.".to_string());
         let reporter = failure_handle.clone();
         failure_handle.run_on_main_thread(move || report_fatal(&reporter, &message)).ok();

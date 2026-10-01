@@ -106,8 +106,8 @@ function mount(
 describe('WelcomeNotice', () => {
   it('uses the exact owner copy in both GUI locales', () => {
     expect(WELCOME_NOTICE_COPY.en).toEqual({
-      title: 'Internal Testing Notice',
-      body: "DeepSeek Harness 0.1 remains in testing for Harness developers. Many areas need further improvement, and we welcome feedback from the developer community. DeepSeek Harness's core plugins and foundational APIs will continue to evolve rapidly over the coming months.\n\nWe look forward to exploring the limits of intelligence with developers around the world, building on open-source, open, reusable, and composable infrastructure. We welcome Harness developers everywhere to join the DSH plugin ecosystem.",
+      title: 'Welcome to Alpha',
+      body: 'Alpha is an open AI code editor built on a plugin-first architecture. Desktop, Web, and CLI share one agent kernel and session format, and the installer bundles Python, Node.js, and pnpm runtimes so data processing, Office document work, and scripts run out of the box.\n\nTasks, tool calls, and model inputs are written to a replayable session log for auditing and reproduction. Welcome to Alpha.',
       continueLabel: 'Continue',
     })
     expect(en.welcomeBody).toBe(WELCOME_NOTICE_COPY.en.body)

@@ -1,4 +1,4 @@
-/** Product-wide, versioned internal-testing notice. */
+/** Product-wide, versioned welcome notice. */
 
 import { useCallback, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'

@@ -110,11 +110,11 @@ function appBoot(): AppBoot {
 // } from '@mutantcat/dsh-client-ui-settings-models'
 export const WELCOME_NOTICE_SETTINGS_NAMESPACE = 'ui-onboarding'
 export const WELCOME_NOTICE_ACK_FIELD = 'welcomeNoticeVersion'
-export const WELCOME_NOTICE_VERSION = '2026-08-13.1'
+export const WELCOME_NOTICE_VERSION = '2026-10-01.1'
 export const WELCOME_NOTICE_COPY = {
   zh: {
-    title: '内测声明',
-    body: 'DeepSeek Harness 目前的 0.1 版本仍处在面向 Harness 开发者进行测试的阶段，还有许多地方需要持续改进和打磨，希望听取广大开发者的反馈建议。预计 DeepSeek Harness 的核心插件以及基础 API 都会在接下来的一段时间内快速迭代、持续演化。\n\n我们期待与全球开发者一起，在开源、开放、可复用、可组合的基础设施之上，共同探索智能上限。欢迎全球 Harness 开发者加入 DSH 插件生态。',
+    title: '欢迎使用 Alpha',
+    body: 'Alpha 是一款开源 AI 代码编辑器，采用一切皆插件架构。桌面端、Web 端与 CLI 共用同一个 agent 内核和会话格式，安装包内置 Python、Node.js 与 pnpm，开箱即可执行数据处理、Office 文档读写和脚本任务。\n\n任务、工具调用和模型输入都会写入可回放的会话日志，便于审计、复现与排查。欢迎使用 Alpha。',
     continueLabel: '继续',
   },
 } as const
