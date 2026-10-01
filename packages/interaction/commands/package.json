@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-commands",
   "description": "Plugin-owned human command registry for DeepSeek Harness UIs",
-  "version": "1.0.20260930",
+  "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },

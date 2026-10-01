@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-cordis",
   "description": "Read-only runtime API inspection for Harness plugin development",
-  "version": "1.0.20260930",
+  "version": "1.0.20261001",
   "publishConfig": {
     "access": "public"
   },
