@@ -383,6 +383,30 @@ describe('worktree-local Lefthook installer', { timeout: 90_000 }, () => {
     )
   })
 
+  it('adopts an ownership marker written by an earlier release', async () => {
+    const fixture = createFixture()
+    const first = await runInstaller(fixture, fixture.main)
+    expect(first.status, first.stderr).toBe(0)
+    const markerName = '.dsh-lefthook-owned'
+    const hooks = hooksPath(fixture, fixture.main)
+    write(
+      join(hooks, markerName),
+      `${JSON.stringify({
+        version: 1,
+        owner: 'deepseek-harness worktree-local lefthook hooks',
+        hooksPath: hooks,
+      })}\n`,
+      0o600,
+    )
+
+    const upgraded = await runInstaller(fixture, fixture.main)
+
+    expect(upgraded.status, upgraded.stderr).toBe(0)
+    expect(readFileSync(join(hooks, markerName), 'utf8')).toContain(
+      '"owner":"Alpha worktree-local lefthook hooks"',
+    )
+  })
+
   it.skipIf(process.platform === 'win32')('refuses a multiply linked ownership marker before relocation rewrites it', async () => {
     const fixture = createFixture()
     const oldRoot = fixture.main

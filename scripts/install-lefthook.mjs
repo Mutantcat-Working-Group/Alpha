@@ -21,6 +21,12 @@ const HOOKS_DIRECTORY = 'dsh-hooks'
 const OWNERSHIP_MARKER = '.dsh-lefthook-owned'
 const OWNERSHIP_MARKER_VERSION = 1
 const OWNERSHIP_MARKER_OWNER = 'Alpha worktree-local lefthook hooks'
+/**
+ * Owners earlier releases wrote into the same marker. A directory carrying one
+ * of them is still this installer's, so an in-place upgrade rewrites the marker
+ * instead of refusing every `pnpm install` until the user deletes it by hand.
+ */
+const LEGACY_OWNERSHIP_MARKER_OWNERS = ['deepseek-harness worktree-local lefthook hooks']
 const INSTALL_LOCK = 'dsh-lefthook-install.lock'
 const INSTALL_LOCK_TIMEOUT_MS = 30_000
 const INSTALL_LOCK_INITIALIZATION_TIMEOUT_MS = 5_000
@@ -475,7 +481,7 @@ function parseOwnershipMarker(content) {
     typeof parsed !== 'object'
     || parsed === null
     || parsed.version !== OWNERSHIP_MARKER_VERSION
-    || parsed.owner !== OWNERSHIP_MARKER_OWNER
+    || ![OWNERSHIP_MARKER_OWNER, ...LEGACY_OWNERSHIP_MARKER_OWNERS].includes(parsed.owner)
     || typeof parsed.hooksPath !== 'string'
     || !isAbsolute(parsed.hooksPath)
   ) {
