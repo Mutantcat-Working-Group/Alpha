@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { cordisConfigFiles } from './cordis-config-files.ts'
+import { cordisConfigDocuments, cordisConfigFiles } from './cordis-config-files.ts'
 
 const roots: string[] = []
 
@@ -31,6 +31,20 @@ describe('cordisConfigFiles', () => {
     expect(cordisConfigFiles(root)).toEqual([
       join('apps', 'cli', 'config', 'examples', 'agent.cordis.yaml'),
       join('apps', 'cli', 'config', 'examples', 'headless.cordis.yml'),
+    ])
+  })
+
+  it('reads a materialized git symlink through its logical path once', () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-cordis-config-files-'))
+    roots.push(root)
+    mkdirSync(join(root, 'configs'), { recursive: true })
+    const target = join('configs', 'target.cordis.yml')
+    const link = join('configs', 'link.cordis.yml')
+    writeFileSync(join(root, target), '[]\n')
+    writeFileSync(join(root, link), 'target.cordis.yml\n')
+
+    expect(cordisConfigDocuments(root, { symlinkPaths: new Set([link]) })).toEqual([
+      { file: link, text: '[]\n' },
     ])
   })
 })

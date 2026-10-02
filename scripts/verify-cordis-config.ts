@@ -14,7 +14,7 @@ import { globSync, readFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { Script } from 'node:vm'
 import ts from 'typescript'
-import { cordisConfigFiles } from './cordis-config-files.ts'
+import { cordisConfigDocuments, cordisConfigFiles } from './cordis-config-files.ts'
 import { isCordisGroupEntry, isJsExpr, loadCordisYaml } from './cordis-yaml.ts'
 
 export interface PackageManifest {
@@ -58,10 +58,10 @@ const errors: string[] = []
 const pluginReferences: PluginReference[] = []
 
 if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
-  const files = cordisConfigFiles(root)
+  const documents = cordisConfigDocuments(root)
 
-  for (const file of files) {
-    const document = loadCordisYaml(readFileSync(resolve(root, file), 'utf8'))
+  for (const { file, text } of documents) {
+    const document = loadCordisYaml(text)
     if (!isUnknownArray(document)) {
       errors.push(`${file}: root must be a Loader entry array`)
       continue
@@ -83,7 +83,7 @@ if (process.argv[1] !== undefined && import.meta.filename === resolve(process.ar
     for (const error of errors) console.error(`- ${error}`)
     process.exitCode = 1
   } else {
-    console.log(`verify-cordis-config: ${files.length} config files passed.`)
+    console.log(`verify-cordis-config: ${documents.length} config files passed.`)
   }
 }
 
