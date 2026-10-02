@@ -4,7 +4,7 @@
  * feature-owned tabs registered into `settings.plugins.tab` (the read-only
  * inventory ships one); the configuration pages this package ships register
  * into the Plugins page's `plugins.item` slot, for the host-plane namespaces
- * the deployment exposes, and appear in the page's Official group. Each form
+ * the deployment exposes, and appear in the page's Built-in group. Each form
  * binds its namespace through the client settings scope, which keeps the
  * pages unaware of one another and of the section.
  */

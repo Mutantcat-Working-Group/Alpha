@@ -21,8 +21,8 @@ export interface PluginConfigViewProps {
 declare module '@mutantcat/dsh-client-ui-slots' {
   interface SlotMap {
     /**
-     * One official plugin the Plugins page lists in its Official group after
-     * the official bundles: `label` is the card's title and `order` its place.
+     * One built-in plugin the Plugins page lists in its Built-in group after
+     * the built-in bundles: `label` is the card's title and `order` its place.
      * The page renders the entry as the card's one-liner (`view: 'summary'`)
      * and, once the card is opened, as the body of the plugin's own page
      * (`view: 'page'`). OCCUPIED by the host-plane configuration pages

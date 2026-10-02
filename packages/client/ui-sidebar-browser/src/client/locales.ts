@@ -19,7 +19,7 @@ export const zh = {
   'error.invalid': '这个地址无效或过长。',
   'error.protocol': '只支持 HTTP 和 HTTPS 地址；本地文件请使用文档预览。',
   'error.credentials': '地址不能包含用户名或密码。',
-  'error.application-origin': '不能在嵌入浏览器中打开 DSH 应用自身。',
+  'error.application-origin': '不能在嵌入浏览器中打开 Alpha 应用自身。',
   'web.loadFailed': '页面报告加载失败或可能禁止嵌入；可尝试在系统浏览器中打开。',
   'web.unknown': '页面已在 iframe 内跳转；Web 模式无法读取当前 URL。',
 } satisfies Record<string, string>
@@ -48,7 +48,7 @@ export const en = {
   'error.invalid': 'That address is invalid or too long.',
   'error.protocol': 'Only HTTP and HTTPS addresses are supported; use Document Preview for local files.',
   'error.credentials': 'Addresses cannot contain a username or password.',
-  'error.application-origin': 'The embedded browser cannot open the DSH application itself.',
+  'error.application-origin': 'The embedded browser cannot open the Alpha application itself.',
   'web.loadFailed': 'The page reported a load failure or may block embedding; try opening it in the system browser.',
   'web.unknown': 'The page navigated inside the iframe; Web mode cannot read its current URL.',
 } satisfies Record<SidebarBrowserKey, string>

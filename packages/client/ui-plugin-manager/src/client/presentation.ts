@@ -8,7 +8,7 @@ import type { FailedAction, ManagerNotice, PackageView } from './manager-store.t
 /** The translate seat of the manager's dictionary. */
 export type Translate = PropsLocale<'pluginManager'>['t']
 
-/** The official packages with copy of their own, and whether each is a beta feature the page tags as such. */
+/** The built-in packages with copy of their own, and whether each is a beta feature the page tags as such. */
 const BUILTIN_COPY = new Map<string, { title: PluginManagerLocaleKey; description: PluginManagerLocaleKey; beta: boolean }>([
   ['@mutantcat/dsh-experimental-agent-team-profile', {
     title: 'builtinAgentTeamTitle', description: 'builtinAgentTeamDescription', beta: true,
