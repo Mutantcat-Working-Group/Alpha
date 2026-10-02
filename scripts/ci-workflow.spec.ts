@@ -264,7 +264,9 @@ describe('CI workflow', () => {
     expect(windowsObservational['continue-on-error']).toBe(true)
 
     // serial-windows: master-only standby, self-hosted, non-blocking, lives in ci-master.
-    expect(serialWindows.if).toBe("github.event_name == 'push' && github.ref == 'refs/heads/master'")
+    expect(serialWindows.if).toBe(
+      "github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.DSH_CI_FAILOVER_WINDOWS == 'selfhosted'",
+    )
     expect(serialWindows['runs-on']).toEqual(['self-hosted', 'dsh-win-ci', 'windows'])
     expect(serialWindows.name).toBe('serial / windows (self-hosted standby)')
     // Its store must share the ReFS workspace volume for clone; the install
@@ -489,14 +491,25 @@ describe('CI workflow', () => {
     expect(Object.keys(workflow.on).sort()).toEqual(['push', 'workflow_dispatch'])
     expect(Object.keys(prWorkflow.on)).toEqual(['pull_request'])
 
-    // Drills share the parent run’s supersession policy.
-    for (const name of ['serial-linux-selfhosted', 'serial-windows']) {
+    // Drills share the parent run’s supersession policy. Each drill also
+    // requires its platform switch, so a repository without the self-hosted
+    // pool never queues the job on absent runners.
+    for (const [name, variable] of [
+      ['serial-linux-selfhosted', 'DSH_CI_FAILOVER_LINUX'],
+      ['serial-windows', 'DSH_CI_FAILOVER_WINDOWS'],
+    ] as const) {
       const job = workflow.jobs[name]
       if (!isRecord(job)) throw new TypeError(`${name} must be defined`)
       expect(job.concurrency).toBeUndefined()
       // Standby drills remain post-merge work, but share run cancellation.
-      expect(job.if).toBe("github.event_name == 'push' && github.ref == 'refs/heads/master'")
+      expect(job.if).toBe(
+        `github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.${variable} == 'selfhosted'`,
+      )
     }
+    // The Linux drill bounds a pool that accepts and then stalls.
+    const linuxStandby = workflow.jobs['serial-linux-selfhosted']
+    if (!isRecord(linuxStandby)) throw new TypeError('serial-linux-selfhosted must be defined')
+    expect(linuxStandby['timeout-minutes']).toBe(240)
 
     // Pin the post-merge runtime, Wine, and standby inventory.
     const NOT_PUSH_REACHABLE = new Set([
@@ -640,6 +653,16 @@ describe('Runtime and LLM e2e Blacksmith routing', () => {
 })
 
 describe('DeepSeek e2e workflow', () => {
+  it('requires the repository opt-in before spending the external-API key', () => {
+    const e2e = workflowJob(loadWorkflow('.github/workflows/e2e.yml'), 'e2e')
+    const condition = String(e2e.if)
+    // The external key is a repository secret this repository does not own, so
+    // the job runs only where an operator sets ALPHA_CI_REAL_API to `enabled`.
+    expect(condition).toContain("vars.ALPHA_CI_REAL_API == 'enabled'")
+    expect(condition).toContain('github.event.pull_request.head.repo.fork')
+    expect(condition).toContain("github.event.pull_request.user.login == 'dependabot[bot]'")
+  })
+
   it('prepares bubblewrap from the pinned payload without a package transaction', () => {
     const workflow = loadWorkflow('.github/workflows/e2e.yml')
     const e2e = workflowJob(workflow, 'e2e')

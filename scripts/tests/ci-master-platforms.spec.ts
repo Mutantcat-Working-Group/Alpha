@@ -92,7 +92,7 @@ describe('master-only platform scheduling', () => {
     }))
   })
 
-  it('runs all three deferred carriers on master pushes with fail-loud API credentials', () => {
+  it('runs all three deferred carriers on master pushes and fails loud on opted-in API credentials', () => {
     const master = workflow('ci-master.yml')
     expect(master.on.push).toEqual({ branches: ['master'] })
     expect(Object.keys(master.on).sort()).toEqual(['push', 'workflow_dispatch'])
@@ -112,6 +112,10 @@ describe('master-only platform scheduling', () => {
     const build = builder.jobs.build!
     const preflight = build.steps!.find(step => step.name === 'Preflight installed-wheel real API test (POSIX)')!
     expect(preflight.if).toContain('inputs.ci')
+    // The live step needs the external key this repository does not own, so it
+    // waits for the ALPHA_CI_REAL_API opt-in and then fails loud on a missing
+    // secret instead of passing while the suite self-skips.
+    expect(preflight.if).toContain("vars.ALPHA_CI_REAL_API == 'enabled'")
     expect(preflight.if).toContain("github.event_name != 'pull_request'")
     expect(preflight.if).toContain('github.event.pull_request.head.repo.fork')
     expect(preflight.if).toContain("github.event.pull_request.user.login == 'dependabot[bot]'")

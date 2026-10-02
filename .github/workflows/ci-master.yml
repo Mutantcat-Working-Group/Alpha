@@ -120,20 +120,28 @@ jobs:
         if: always()
         run: wineserver -k 2>/dev/null || true
 
-  # Hot-standby drill for the in-house self-hosted pool: every master move
-  # re-runs the complete unsharded aggregate on the persistent 64-core VM,
-  # continuously proving that environment can take over a required lane if
-  # the hosted pools degrade (the switch is then setting the writer-manageable
-  # DSH_CI_FAILOVER_LINUX variable — see the failover runbook, no merge required).
-  # Push-triggered, so this lane always executes the base branch's own
-  # workflow definition. This workflow never listens to pull_request, so the
-  # drill does not appear in PR checks. No cache steps because the VM's
-  # persistent pnpm store and tool caches make them redundant (and saving here
-  # would poison the hosted cache namespace with self-hosted paths).
+  # Hot-standby drill for the in-house self-hosted pool: re-runs the complete
+  # unsharded aggregate on the persistent 64-core VM, proving that environment
+  # can take over a required lane before the writer-manageable
+  # DSH_CI_FAILOVER_LINUX variable routes the lanes to it (see the failover
+  # runbook, no merge required). A repository without that pool — including
+  # this fork — leaves the variable unset, so the drill stays off instead of
+  # queueing forever on absent runners; enabling the pool and the drill is one
+  # variable write. Push-triggered, so this lane always executes the base
+  # branch's own workflow definition. This workflow never listens to
+  # pull_request, so the drill does not appear in PR checks. No cache steps
+  # because the VM's persistent pnpm store and tool caches make them redundant
+  # (and saving here would poison the hosted cache namespace with self-hosted
+  # paths).
   serial-linux-selfhosted:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/master'
+      && vars.DSH_CI_FAILOVER_LINUX == 'selfhosted'
     name: serial / linux (self-hosted standby)
     runs-on: [self-hosted, linux, x64, vm-backup]
+    # Bounds a degraded pool that accepts the job and then stalls; the drill is
+    # a readiness signal, never a lane that occupies a runner indefinitely.
+    timeout-minutes: 240
     steps:
       # DSH_ARCHIVE_BASE_REF below compares the frozen-archive gate against
       # github.event.before, so full history is required: depth 2 would miss it
@@ -213,19 +221,22 @@ jobs:
           DSH_SNAPSHOT_MAX_CONCURRENCY: '1'
         run: pnpm run check:ci
 
-  # Hot-standby drill for the in-house self-hosted Windows pool: every master
-  # move re-runs the complete unsharded Windows gate inventory on the persistent
-  # VM, continuously proving that environment can take over the required
-  # `windows` lane if the hosted pool degrades (the switch is setting the
-  # writer-manageable DSH_CI_FAILOVER_WINDOWS variable — see the failover
-  # runbook, no merge required). Push-triggered, so this lane always executes
-  # the base branch's own workflow definition. This workflow never listens to
-  # pull_request, so the drill does not appear in PR checks. No cache steps
-  # because the VM's persistent pnpm store and tool caches make them redundant
-  # (and saving here would poison the hosted cache namespace with self-hosted
-  # paths).
+  # Hot-standby drill for the in-house self-hosted Windows pool: re-runs the
+  # complete unsharded Windows gate inventory on the persistent VM, proving
+  # that environment can take over the required `windows` lane before the
+  # writer-manageable DSH_CI_FAILOVER_WINDOWS variable routes the lanes to it
+  # (see the failover runbook, no merge required). A repository without that
+  # pool — including this fork — leaves the variable unset, so the drill stays
+  # off instead of queueing on absent runners. Push-triggered, so this lane
+  # always executes the base branch's own workflow definition. This workflow
+  # never listens to pull_request, so the drill does not appear in PR checks.
+  # No cache steps because the VM's persistent pnpm store and tool caches make
+  # them redundant (and saving here would poison the hosted cache namespace
+  # with self-hosted paths).
   serial-windows:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/master'
+      && vars.DSH_CI_FAILOVER_WINDOWS == 'selfhosted'
     name: serial / windows (self-hosted standby)
     runs-on: [self-hosted, dsh-win-ci, windows]
     timeout-minutes: 120
