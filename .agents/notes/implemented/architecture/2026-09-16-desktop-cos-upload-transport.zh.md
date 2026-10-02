@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-[desktop-cos.ts](../../../../apps/desktop/scripts/desktop-cos.ts)使用官方 `cos-nodejs-sdk-v5` 包构造每个 Desktop COS 客户端：HTTPS、不保持连接、不跟随重定向、不切换备用域名、不做时钟偏移校正，无活动超时为 900 秒。[upload-target.ts](../../../../apps/desktop/scripts/upload-target.ts)与[installed-update-cos.ts](../../../../apps/desktop/scripts/installed-update-cos.ts)都从该工厂获取客户端，`@aws-sdk/client-s3` 不再是 Desktop 依赖。
+desktop-cos.ts使用官方 `cos-nodejs-sdk-v5` 包构造每个 Desktop COS 客户端：HTTPS、不保持连接、不跟随重定向、不切换备用域名、不做时钟偏移校正，无活动超时为 900 秒。upload-target.ts与installed-update-cos.ts都从该工厂获取客户端，`@aws-sdk/client-s3` 不再是 Desktop 依赖。
 
 所有上传对象——安装包、blockmap 和 YAML 清单，包括很小的字符串清单——都以一次 `putObject` 发送，其请求体是流，并携带显式 `ContentLength` 与预先算好的 `Content-MD5`。正是流使写入不可重复：SDK 只在请求体没有 `pipe` 时才重发请求，因此流式 PUT 只会尝试一次，两个上传器自身也不再添加重试。当调用方未指定时，SDK 还会注入空的 `Cache-Control` 头；工厂会移除该头，因此发布上传器仍然把缓存策略留给部署基础设施。
 
@@ -18,9 +18,9 @@ qualification 传输保持原有 store 接口与命名空间检查不变。它�
 
 ## 测试
 
-[cos-loopback.ts](../../../../apps/desktop/tests/cos-loopback.ts)把真实 SDK 实例 `before-send` 中的 URL 重定向到每个测试独立的 loopback 源，并记录实际收到的字节，因此测试观察的是传输的序列化结果，而不是它的 mock。[desktop-upload-run.spec.ts](../../../../apps/desktop/tests/desktop-upload-run.spec.ts)与[installed-update-cos.spec.ts](../../../../apps/desktop/tests/installed-update-cos.spec.ts)断言确切的请求体字节、`Content-Length`、`Content-MD5`、不存在传输编码与内容编码、已签名的 `x-cos-forbid-overwrite` 头、HTTP 500 与连接中断时每个对象只发一次请求、读取 404/403/截断的处理，以及保留记录不包含凭据与原始服务端消息。
+cos-loopback.ts把真实 SDK 实例 `before-send` 中的 URL 重定向到每个测试独立的 loopback 源，并记录实际收到的字节，因此测试观察的是传输的序列化结果，而不是它的 mock。desktop-upload-run.spec.ts与installed-update-cos.spec.ts断言确切的请求体字节、`Content-Length`、`Content-MD5`、不存在传输编码与内容编码、已签名的 `x-cos-forbid-overwrite` 头、HTTP 500 与连接中断时每个对象只发一次请求、读取 404/403/截断的处理，以及保留记录不包含凭据与原始服务端消息。
 
-[cos-operation.spec.ts](../../../../apps/desktop/tests/cos-operation.spec.ts)验证跨重试的总截止时间、持续返回数据的响应流、未确认 PUT 的取消，以及关闭请求不影响其他操作。测试组合虚拟截止时间计时器与真实 socket 和流观测。
+cos-operation.spec.ts验证跨重试的总截止时间、持续返回数据的响应流、未确认 PUT 的取消，以及关闭请求不影响其他操作。测试组合虚拟截止时间计时器与真实 socket 和流观测。
 
 ## 考虑过的替代方案
 
@@ -34,7 +34,7 @@ qualification 传输保持原有 store 接口与命名空间检查不变。它�
 
 ## 结果
 
-对象写入不可重复，这正是本次故障所需的性质，传输也不再依赖 S3 兼容行为。代价是每个对象只有一次请求：超大安装包不会并行，也没有进度上报，与它替换掉的单请求行为一致。qualification 版本查询的所有 SDK 尝试共享 30 秒总截止时间；对象读取与 PUT 的总截止时间为 15 分钟。每次操作独立拥有客户端与取消信号。[cos-operation.ts](../../../../apps/desktop/scripts/cos-operation.ts)通过 SDK 传输将信号传给底层 HTTP 请求，并在返回前等待请求的关闭事件，超时也不例外。持续返回数据不会延长截止时间，过期信号会阻止后续重试建立连接。发布上传器保留独立的无活动超时。
+对象写入不可重复，这正是本次故障所需的性质，传输也不再依赖 S3 兼容行为。代价是每个对象只有一次请求：超大安装包不会并行，也没有进度上报，与它替换掉的单请求行为一致。qualification 版本查询的所有 SDK 尝试共享 30 秒总截止时间；对象读取与 PUT 的总截止时间为 15 分钟。每次操作独立拥有客户端与取消信号。cos-operation.ts通过 SDK 传输将信号传给底层 HTTP 请求，并在返回前等待请求的关闭事件，超时也不例外。持续返回数据不会延长截止时间，过期信号会阻止后续重试建立连接。发布上传器保留独立的无活动超时。
 
 该 SDK 的依赖树源自已停止维护的 `request` 包，会引入较旧的 `http-signature`、`tough-cookie` 和 `form-data` 版本；lockfile 的供应链检查接受它，替代方案是自行实现 COS 请求签名。
 

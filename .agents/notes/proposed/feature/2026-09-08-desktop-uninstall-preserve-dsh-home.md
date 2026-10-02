@@ -8,7 +8,7 @@ English | [中文](2026-09-08-desktop-uninstall-preserve-dsh-home.zh.md)
 
 Users need Desktop uninstallation to remove its application files and external application state while retaining the complete Harness home. Removing an application directory does not account for browser storage, cached installers, or native updater state. Browser storage also contains unsent drafts and UI preferences, so removing it changes more than disk cache usage.
 
-The [packaging configuration](../../../../apps/desktop/electron-builder.config.mjs), [desktop entry](../../../../apps/desktop/src/main.ts), and [update coordinator](../../../../apps/desktop/src/update-coordinator.ts) are the inspection inputs. Source inspection identifies cleanup candidates; installed-artifact observation must establish the complete supported inventory before implementation is accepted. No uninstall experiment has yet established an exhaustive Windows or macOS inventory.
+The packaging configuration, desktop entry, and update coordinator are the inspection inputs. Source inspection identifies cleanup candidates; installed-artifact observation must establish the complete supported inventory before implementation is accepted. No uninstall experiment has yet established an exhaustive Windows or macOS inventory.
 
 ## Proposal
 

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-16-host-schedule-storage.md
-2026-09-16-host-schedule-storage.md: 79a4f7207184e592f00a4d9946c2ca2e9345032d
-2026-09-16-host-schedule-storage.zh.md: 393a773fa01204893b54729bc8e751c039ec3740
+2026-09-16-host-schedule-storage.md: 756eecbbb040b2ed4a7d208ab4cb86b8a0df02ad
+2026-09-16-host-schedule-storage.zh.md: b43c4cccffad4f92e5205febbcd68d0621aa3da4

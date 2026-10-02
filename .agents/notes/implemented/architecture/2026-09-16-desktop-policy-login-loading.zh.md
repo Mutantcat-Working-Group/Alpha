@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-[policy-test-auth.ts](../../../../apps/desktop/src/policy-test-auth.ts)把 [renderer/policy-login-loading.html](../../../../apps/desktop/renderer/policy-login-loading.html) 作为窗口的首个文档载入，并在该文档提交之后才请求策略 origin。占位页是随包发布的、自包含的文件，其中唯一的文本是主进程通过 `loadFile` 的 query 传入的文案，因此文案仍由 shell 本地化字典（`policyLoginLoading`）拥有。首个提交的远端文档会替换它。
+policy-test-auth.ts把 renderer/policy-login-loading.html 作为窗口的首个文档载入，并在该文档提交之后才请求策略 origin。占位页是随包发布的、自包含的文件，其中唯一的文本是主进程通过 `loadFile` 的 query 传入的文案，因此文案仍由 shell 本地化字典（`policyLoginLoading`）拥有。首个提交的远端文档会替换它。
 
 占位页从不与远端页面共存，因此没有移除步骤，也没有计时器：Chromium 会一直保留占位帧，直到远端文档的首帧就绪；此后窗口归第三方页面所有。重定向链会把占位页保持到最后一个文档提交。窗口仍与之前一样在创建时即显示且可关闭。
 
@@ -34,4 +34,4 @@ Status: implemented
 
 占位页共享登录 Session，因此它的请求会经过同一个文档过滤器；该过滤器的豁免按文件名限定，不会放宽导航所用的允许 origin 检查。窗口标题仍是 shell 拥有的登录标题（渲染器阻止了 `page-title-updated`），因此占位页不贡献自己的文案。
 
-[policy-test-auth.spec.ts](../../../../apps/desktop/tests/policy-test-auth.spec.ts)覆盖顺序（先占位页，只有它稳定后才请求远端页面）、过滤器对占位页的接受、占位页载入失败不得导致登录失败，以及占位页加载期间关闭窗口后绝不启动远端页面。[policy-login-loading.spec.ts](../../../../apps/desktop/tests/policy-login-loading.spec.ts)在 jsdom 下载入随包发布的文档，检查它渲染传入的文案、在没有文案时保持为空，并禁止一切网络来源。占位页的实际渲染帧与替代登录页的首帧时机仍未在真实登录窗口上验证。
+policy-test-auth.spec.ts覆盖顺序（先占位页，只有它稳定后才请求远端页面）、过滤器对占位页的接受、占位页载入失败不得导致登录失败，以及占位页加载期间关闭窗口后绝不启动远端页面。policy-login-loading.spec.ts在 jsdom 下载入随包发布的文档，检查它渲染传入的文案、在没有文案时保持为空，并禁止一切网络来源。占位页的实际渲染帧与替代登录页的首帧时机仍未在真实登录窗口上验证。
