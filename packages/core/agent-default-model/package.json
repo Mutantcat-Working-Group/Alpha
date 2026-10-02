@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-agent-default-model",
   "description": "Default model selection shared by Agent entry points",
-  "version": "1.0.20261001",
+  "version": "1.0.20261002",
   "publishConfig": {
     "access": "public"
   },

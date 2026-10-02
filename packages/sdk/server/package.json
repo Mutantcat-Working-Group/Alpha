@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-sdk-jsonrpc-server",
   "description": "Stdio JSON-RPC server plugin for out-of-process Alpha SDK clients",
-  "version": "1.0.20261001",
+  "version": "1.0.20261002",
   "publishConfig": {
     "access": "public"
   },

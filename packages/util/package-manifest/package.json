@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-package-manifest",
   "description": "Shared type declarations for package.json.dsh configuration fields",
-  "version": "1.0.20261001",
+  "version": "1.0.20261002",
   "publishConfig": {
     "access": "public"
   },

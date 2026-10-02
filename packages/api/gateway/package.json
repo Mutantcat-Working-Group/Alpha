@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-api-gateway",
   "description": "Typert Remote Host dispatcher and Client API endpoint",
-  "version": "1.0.20261001",
+  "version": "1.0.20261002",
   "publishConfig": {
     "access": "public"
   },
