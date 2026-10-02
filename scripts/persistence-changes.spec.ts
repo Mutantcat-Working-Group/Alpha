@@ -194,6 +194,32 @@ function unionBody(arms: readonly (readonly SchemaProperty[])[]): PersistenceRoo
   return { ...typeRoot('event:example/value', {}), schema, digest: schemaDigest(schema) }
 }
 
+function messageSourceRoot(kinds: readonly (readonly [string, string?])[]): PersistenceRoot {
+  const nodes: SchemaNode[] = [
+    { kind: 'object', indices: [], properties: [{ name: 'data', type: 1, optional: false }] },
+    { kind: 'object', indices: [], properties: [{ name: 'source', type: 2, optional: false }] },
+    { kind: 'union', types: [] },
+  ]
+  const arms: number[] = []
+  for (const [kind, payload] of kinds) {
+    const literal = nodes.length
+    nodes.push({ kind: 'literal', value: kind })
+    const properties: SchemaProperty[] = [{ name: 'kind', type: literal, optional: false }]
+    if (payload !== undefined) {
+      const payloadLiteral = nodes.length
+      nodes.push({ kind: 'literal', value: payload })
+      properties.push({ name: 'plugin', type: payloadLiteral, optional: false })
+    }
+    arms.push(nodes.length)
+    nodes.push({ kind: 'object', indices: [], properties })
+  }
+  nodes[2] = { kind: 'union', types: arms }
+  const schema = canonicalizeSchema(nodes, 0)
+  return { ...typeRoot('event:example/value', {}), schema, digest: schemaDigest(schema) }
+}
+
+const MESSAGE_SOURCE_KINDS = [['user'], ['model'], ['tool'], ['plugin', 'alpha']] as const
+
 describe('persistence change classification', () => {
   it('treats a new optional payload subtree as one additive change even with required descendants', () => {
     const before = typeRoot('event:example/value', { value: 'string' })
@@ -312,6 +338,28 @@ describe('persistence change classification', () => {
     expect(classifyPersistenceChange(null, added)[0]?.requiresVersionBump).toBe(false)
     expect(classifyPersistenceChange(null, { ...added, surface: true })[0]?.requiresVersionBump).toBe(true)
     expect(classifyPersistenceChange(added, null)[0]?.requiresVersionBump).toBe(true)
+  })
+
+  it('admits an added MessageSourceMap producer kind only under the current-tree policy', () => {
+    const before = messageSourceRoot(MESSAGE_SOURCE_KINDS)
+    const after = messageSourceRoot([...MESSAGE_SOURCE_KINDS, ['schedule']])
+    expect(classifyPersistenceChange(before, after).some(change => change.requiresVersionBump)).toBe(true)
+    const allowed = classifyPersistenceChange(before, after, true)
+    expect(allowed.length).toBeGreaterThan(0)
+    expect(allowed.every(change => !change.requiresVersionBump)).toBe(true)
+  })
+
+  it('keeps closed, removed, renamed, and non-source unions strict under the message-source policy', () => {
+    const before = messageSourceRoot(MESSAGE_SOURCE_KINDS)
+    const closed = messageSourceRoot([['provider'], ['fallback'], ['user']])
+    expect(classifyPersistenceChange(closed, messageSourceRoot([['provider'], ['fallback'], ['user'], ['schedule']]), true)
+      .some(change => change.requiresVersionBump)).toBe(true)
+    expect(classifyPersistenceChange(messageSourceRoot([['user'], ['model'], ['tool']]), before, true)
+      .some(change => change.requiresVersionBump)).toBe(true)
+    expect(classifyPersistenceChange(before, messageSourceRoot([['human'], ['model'], ['tool'], ['plugin', 'alpha']]), true)
+      .some(change => change.requiresVersionBump)).toBe(true)
+    const renamedPayload = messageSourceRoot([['user'], ['model'], ['tool'], ['plugin', 'beta'], ['schedule']])
+    expect(classifyPersistenceChange(before, renamedPayload, true).some(change => change.requiresVersionBump)).toBe(true)
   })
 })
 

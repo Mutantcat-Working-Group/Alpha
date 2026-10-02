@@ -317,6 +317,69 @@ function subDigest(schema: CanonicalSchema, node: number): string {
   return schemaDigest(canonicalizeSchema(schema.nodes, node))
 }
 
+/**
+ * Core producer kinds declared by the merge-extensible `MessageSourceMap` in
+ * `packages/llm/llm/src/message.ts`. Every persisted message source carries all
+ * four, while closed source unions such as the Session title source do not.
+ */
+const MESSAGE_SOURCE_CORE_KINDS = ['user', 'model', 'tool', 'plugin'] as const
+
+/**
+ * Read one union alternative as a source record discriminated by a required string `kind`.
+ * @param schema - graph owning the alternative.
+ * @param index - alternative node index.
+ * @returns the literal kind, or undefined when the alternative is not such a record.
+ */
+function literalSourceKind(schema: CanonicalSchema, index: number): string | undefined {
+  const node = schema.nodes[index]
+  if (node === undefined || node.kind !== 'object') return undefined
+  const property = node.properties.find(candidate => candidate.name === 'kind')
+  const kind = property === undefined ? undefined : schema.nodes[property.type]
+  return property?.optional === false && kind?.kind === 'literal'
+    && typeof kind.value === 'string' && kind.value.length > 0 ? kind.value : undefined
+}
+
+/**
+ * Recognize a purely additive change to the merge-extensible `MessageSourceMap`.
+ *
+ * Readers of persisted messages are documented to preserve an unknown `source.kind`
+ * as opaque content, so a new producer kind is backward compatible even though the
+ * structural union grows. The rule is deliberately narrow: the property is named
+ * `source`, both unions are closed records discriminated by a required literal
+ * `kind`, the four core kinds are present on both sides, no existing kind is
+ * removed or renamed, every retained alternative is byte-identical, and at least
+ * one kind is added.
+ * @param path - classification path of the compared union.
+ * @param oldNode - predecessor union node.
+ * @param newNode - successor union node.
+ * @param oldSchema - predecessor graph.
+ * @param newSchema - successor graph.
+ * @returns whether the only change is one or more added producer kinds.
+ */
+function isMessageSourceExtension(
+  path: string, oldNode: SchemaNode, newNode: SchemaNode, oldSchema: CanonicalSchema, newSchema: CanonicalSchema,
+): boolean {
+  if (!path.endsWith('.source') || oldNode.kind !== 'union' || newNode.kind !== 'union') return false
+  const groups = (schema: CanonicalSchema, types: readonly number[]): Map<string, number[]> | undefined => {
+    const entries = new Map<string, number[]>()
+    for (const index of types) {
+      const kind = literalSourceKind(schema, index)
+      if (kind === undefined) return undefined
+      entries.set(kind, [...entries.get(kind) ?? [], index])
+    }
+    return entries
+  }
+  const before = groups(oldSchema, oldNode.types)
+  const after = groups(newSchema, newNode.types)
+  if (before === undefined || after === undefined) return false
+  if (!MESSAGE_SOURCE_CORE_KINDS.every(kind => before.has(kind) && after.has(kind))) return false
+  if (after.size <= before.size || ![...before.keys()].every(kind => after.has(kind))) return false
+  const fingerprints = (schema: CanonicalSchema, indices: readonly number[]): string[] =>
+    indices.map(index => subDigest(schema, index)).sort()
+  return [...before].every(([kind, indices]) =>
+    fingerprints(oldSchema, indices).join('\n') === fingerprints(newSchema, after.get(kind) as number[]).join('\n'))
+}
+
 function matchUnionVariants(candidates: readonly (readonly number[])[]): number[] | undefined {
   const owners = new Map<number, number>()
   function assign(previous: number, visited: Set<number>): boolean {
@@ -339,12 +402,16 @@ function matchUnionVariants(candidates: readonly (readonly number[])[]): number[
   return matches
 }
 
-/** Classify structural differences; only optional payload properties and ordinary event additions are additive.
+/** Classify structural differences; only optional payload properties, ordinary event additions,
+ * and additive message sources are compatible.
  * @param before - predecessor root, or absence for an addition.
  * @param after - successor root, or absence for deletion.
+ * @param allowMessageSourceExtension - whether the current-tree policy admits additive `MessageSourceMap` kinds.
  * @returns concrete changes and their format-bump requirement.
  */
-export function classifyPersistenceChange(before: PersistenceRoot | null, after: PersistenceRoot | null): PersistenceTypeChange[] {
+export function classifyPersistenceChange(
+  before: PersistenceRoot | null, after: PersistenceRoot | null, allowMessageSourceExtension = false,
+): PersistenceTypeChange[] {
   if (before === null) {
     return after === null ? [] : [{ path: after.key, kind: 'root-added', description: 'root added',
       requiresVersionBump: after.kind !== 'event' || after.surface !== false }]
@@ -419,7 +486,10 @@ export function classifyPersistenceChange(before: PersistenceRoot | null, after:
       return differences
     }
     if (oldNode.kind === 'union' && newNode.kind === 'union') {
-      if (oldNode.types.length !== newNode.types.length) return [describe(path, 'union-variants-changed')]
+      if (oldNode.types.length !== newNode.types.length) {
+        return [describe(path, 'union-variants-changed',
+          !allowMessageSourceExtension || !isMessageSourceExtension(path, oldNode, newNode, oldRoot.schema, newRoot.schema))]
+      }
       const candidates = oldNode.types.map(oldType => newNode.types.map(newType => compare(oldType, newType, path, scope, active)))
       const matching = matchUnionVariants(candidates.map(row => row.flatMap((candidate, index) =>
         candidate.every(change => !change.requiresVersionBump) ? [index] : [])))
@@ -515,7 +585,7 @@ export function validatePersistenceHistory(entries: readonly PersistenceHistoryE
     states.set(key, 'visiting')
     const before = found.change.previous === null ? null : visit(found.change.previous, root)
     if (!found.entry.record.baseline) {
-      const differences = classifyPersistenceChange(before, after)
+      const differences = classifyPersistenceChange(before, after, true)
       if (differences.length === 0) throw new Error(`${id}: unchanged acknowledgement for ${root}`)
       if (differences.some(change => change.requiresVersionBump) && found.change.decision !== 'version-bump') {
         throw new PersistenceChangeFailure(
@@ -586,7 +656,7 @@ function currentDifferences(history: PersistenceHistory, current: PersistenceSch
   const roots = new Map(current.roots.map(root => [root.key, root]))
   const differences: string[] = []
   for (const key of new Set([...history.tips.keys(), ...roots.keys()])) {
-    if (classifyPersistenceChange(history.tips.get(key)?.root ?? null, roots.get(key) ?? null).length !== 0) differences.push(key)
+    if (classifyPersistenceChange(history.tips.get(key)?.root ?? null, roots.get(key) ?? null, true).length !== 0) differences.push(key)
   }
   return differences.sort()
 }
@@ -627,7 +697,7 @@ function rootTransitions(history: PersistenceHistory | undefined, current: Persi
 
 function reportedDifferences(history: PersistenceHistory, current: PersistenceSchemaInventory): ReportedChange[] {
   return currentDifferences(history, current).flatMap(root => classifyPersistenceChange(
-    history.tips.get(root)?.root ?? null, current.roots.find(item => item.key === root) ?? null,
+    history.tips.get(root)?.root ?? null, current.roots.find(item => item.key === root) ?? null, true,
   ).map(change => ({ root, ...change })))
 }
 
