@@ -95,8 +95,23 @@ async function main(): Promise<void> {
 }
 
 // `import.meta.main` is absent before Node 24.2; compare real paths so a
-// launcher that passes a symlinked entry still starts the host.
-if (import.meta.main === true || (process.argv[1] !== undefined && realpathSync(process.argv[1]) === realpathSync(import.meta.filename))) {
+// launcher that passes a symlinked entry still starts the host. Packaged
+// single-file runtimes import this module from a virtual path that
+// `realpathSync` cannot resolve, so an unresolvable launcher means the module
+// was imported, not run.
+function isProcessEntry(): boolean {
+  if (import.meta.main === true) return true
+  const argv1 = process.argv[1]
+  if (argv1 === undefined) return false
+  try {
+    return realpathSync(argv1) === realpathSync(import.meta.filename)
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+    return false
+  }
+}
+
+if (isProcessEntry()) {
   if (process.argv.includes('--recover')) {
     void runRecoverMain(process.argv[process.argv.indexOf('--recover') + 1] ?? '', shell)
       .then((code) => { process.exitCode = code })

@@ -72,7 +72,19 @@ export async function runCli(): Promise<void> {
 
 // `import.meta.main` is absent before Node 24.2, and the fallback must still
 // detect the documented `npx @mutantcat/dsh` launch, where argv[1] is the
-// `node_modules/.bin/dsh` symlink rather than this file.
-if (import.meta.main === true || (process.argv[1] !== undefined && realpathSync(process.argv[1]) === realpathSync(import.meta.filename))) {
-  await runCli()
+// `node_modules/.bin/dsh` symlink rather than this file. Packaged single-file
+// runtimes import this module from a virtual path that `realpathSync` cannot
+// resolve, so an unresolvable launcher means the module was imported, not run.
+function isProcessEntry(): boolean {
+  if (import.meta.main === true) return true
+  const argv1 = process.argv[1]
+  if (argv1 === undefined) return false
+  try {
+    return realpathSync(argv1) === realpathSync(import.meta.filename)
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+    return false
+  }
 }
+
+if (isProcessEntry()) await runCli()
