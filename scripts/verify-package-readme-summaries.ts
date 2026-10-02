@@ -61,7 +61,7 @@ function packageReadmes(): string[] {
     .sort()
 }
 
-if (import.meta.main) {
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
   const files = packageReadmes()
   const failures = files.length === 0
     ? ['no English package READMEs found; the scan is empty or narrowed']

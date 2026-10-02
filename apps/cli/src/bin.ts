@@ -6,7 +6,7 @@
 
 /* v8 ignore file -- built-bin acceptance exercises this self-executing dispatch. */
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { loadLayeredEnv, StartupError } from '@mutantcat/dsh-app-boot'
 import { resolveDshHome } from '@mutantcat/dsh-home-paths'
@@ -70,6 +70,9 @@ export async function runCli(): Promise<void> {
   }
 }
 
-if (import.meta.main) {
+// `import.meta.main` is absent before Node 24.2, and the fallback must still
+// detect the documented `npx @mutantcat/dsh` launch, where argv[1] is the
+// `node_modules/.bin/dsh` symlink rather than this file.
+if (import.meta.main === true || (process.argv[1] !== undefined && realpathSync(process.argv[1]) === realpathSync(import.meta.filename))) {
   await runCli()
 }

@@ -50,4 +50,4 @@ function main(): void {
   )
 }
 
-if (import.meta.main) main()
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) main()

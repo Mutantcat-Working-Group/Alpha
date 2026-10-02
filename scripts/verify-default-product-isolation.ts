@@ -389,7 +389,7 @@ function profilePackages(source: string): { packages: string[]; webBundles: stri
   return { packages, webBundles, optionalBundles }
 }
 
-if (import.meta.main) {
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
   const result = verifyDefaultProductIsolation(resolve(import.meta.dirname, '..'))
   if (result.failures.length > 0) {
     for (const failure of result.failures) console.error(`verify-default-product-isolation: ${failure}`)

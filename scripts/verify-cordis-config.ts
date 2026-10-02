@@ -57,7 +57,7 @@ const CHOOSER_BACKEND_PACKAGES = [
 const errors: string[] = []
 const pluginReferences: PluginReference[] = []
 
-if (import.meta.main) {
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
   const files = cordisConfigFiles(root)
 
   for (const file of files) {

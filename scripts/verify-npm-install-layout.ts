@@ -210,7 +210,7 @@ async function main(): Promise<void> {
   )
 }
 
-if (import.meta.main) {
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
   try {
     await main()
   } catch (error) {

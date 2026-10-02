@@ -178,4 +178,4 @@ function main(): number {
   return 1
 }
 
-if (import.meta.main) process.exitCode = main()
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) process.exitCode = main()

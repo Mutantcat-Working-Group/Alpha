@@ -66,7 +66,7 @@ export async function generateWorkflowGuest(root: string, check: boolean): Promi
   }
 }
 
-if (import.meta.main) {
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
   const { values } = parseArgs({ options: { check: { type: 'boolean', default: false } } })
   await generateWorkflowGuest(resolve(import.meta.dirname, '..'), values.check)
 }

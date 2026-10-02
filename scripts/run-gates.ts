@@ -96,7 +96,7 @@ type GateExecutor = (gate: Gate, signal?: AbortSignal) => Promise<GateResult>
 type ResultObserver = (result: GateResult) => void
 
 const root = resolve(import.meta.dirname, '..')
-if (import.meta.main) {
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
   process.exitCode = await main(process.argv.slice(2))
 }
 

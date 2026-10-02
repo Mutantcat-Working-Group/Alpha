@@ -224,4 +224,4 @@ export function smokePrimaryRuntime(root: string): void {
   execFileSync(entries.node, [entries.pnpm, '--version'], options)
 }
 
-if (import.meta.main) await preparePrimaryRuntime()
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) await preparePrimaryRuntime()

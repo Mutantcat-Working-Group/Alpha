@@ -98,7 +98,7 @@ export async function verifyRuntimeClosure(
   }
 }
 
-if (import.meta.main) {
+if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) {
   const root = resolve(import.meta.dirname, '..')
   const { values } = parseArgs({
     args: process.argv.slice(2),

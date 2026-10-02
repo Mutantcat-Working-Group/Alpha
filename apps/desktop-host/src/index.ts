@@ -5,6 +5,7 @@ const ENGINE_PORT = 19387
 /** Built-in bundles the desktop profile activates when its manifest is absent. */
 const WEB_PROFILE_BUNDLES = (PROFILE_TEMPLATES.web as ProfileTemplate).bundles
 
+import { realpathSync } from 'node:fs'
 import { delimiter, join } from 'node:path'
 import { initProfile, loadLayeredEnv, loadProfileDirectory, PROFILE_TEMPLATES, type ProfileTemplate } from '@mutantcat/dsh-app-boot'
 import { runProfile } from '@mutantcat/dsh/profile-boot'
@@ -93,7 +94,9 @@ async function main(): Promise<void> {
   if (shell.connected) await shell.send({ type: 'ready', url, injections: ctx.webServer.collectIndexInjections() })
 }
 
-if (import.meta.main) {
+// `import.meta.main` is absent before Node 24.2; compare real paths so a
+// launcher that passes a symlinked entry still starts the host.
+if (import.meta.main === true || (process.argv[1] !== undefined && realpathSync(process.argv[1]) === realpathSync(import.meta.filename))) {
   if (process.argv.includes('--recover')) {
     void runRecoverMain(process.argv[process.argv.indexOf('--recover') + 1] ?? '', shell)
       .then((code) => { process.exitCode = code })
