@@ -49,8 +49,23 @@ export function apply(ctx) {
     const login = await fetch(ready.url, { redirect: 'manual' })
     const cookie = login.headers.getSetCookie().map(value => value.split(';')[0]).join('; ')
     const response = await fetch(new URL('/', ready.url), { headers: { cookie } })
-    if (response.status !== 200 || !(await response.text()).includes('<html')) {
+    const index = await response.text()
+    if (response.status !== 200 || !index.includes('<html')) {
       throw new Error('desktop runtime: packaged frontend smoke failed')
+    }
+    // A page that answers <html> can still ship a broken client boot graph, so
+    // prove the served form names the module-system bootstrap and that one
+    // application batch it schedules is actually served.
+    if (!index.includes('window.__ModuleLoader__') || !index.includes('__DSH_BOOT__')) {
+      throw new Error('desktop runtime: packaged frontend boot graph is missing from the served document')
+    }
+    const batchSrc = /<script[^>]*src="([^"]*\/plugins\/[^"]*)"/u.exec(index)?.[1]
+    if (batchSrc === undefined) {
+      throw new Error('desktop runtime: packaged frontend serves no client bundle')
+    }
+    const batch = await fetch(new URL(batchSrc.replaceAll('&amp;', '&'), ready.url), { headers: { cookie } })
+    if (!batch.ok || batch.headers.get('content-type') !== 'text/javascript; charset=utf-8') {
+      throw new Error(`desktop runtime: packaged client bundle ${batchSrc} is not served as JavaScript`)
     }
     const pluginResponse = await fetch(new URL('/desktop-smoke', ready.url), { headers: { cookie } })
     if (await pluginResponse.text() !== 'plugin route ready') throw new Error('desktop runtime: plugin HTTP route failed')

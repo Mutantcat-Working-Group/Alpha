@@ -1,10 +1,10 @@
 /** Browser entry for the Web client. */
-import { AppWebEntry, applyIndexInjections } from '@mutantcat/dsh-client-web'
+import { AppWebEntry } from '@mutantcat/dsh-client-web'
 
 interface DesktopBootGlobal {
   dshDesktopBoot?: {
     failed(message: string): Promise<void>
-    ready(): Promise<{ injections: Parameters<typeof applyIndexInjections>[0]; streamBaseUrl: string }>
+    ready(): Promise<{ streamBaseUrl: string }>
   }
 }
 const desktop = (globalThis as DesktopBootGlobal).dshDesktopBoot
@@ -20,16 +20,14 @@ try {
   if (desktop !== undefined) {
     const gate = (globalThis as { __DSH_BOOT_READY__?: PromiseWithResolvers<void> }).__DSH_BOOT_READY__
     if (gate === undefined) throw new Error('desktop web: boot readiness is missing')
-    void desktop.ready().then(async ({ injections, streamBaseUrl }) => {
+    void desktop.ready().then(({ streamBaseUrl }) => {
       const transport = globalThis as { __DSH_TRANSPORT__?: { ownsHost: boolean; streamBaseUrl: string } }
       transport.__DSH_TRANSPORT__ = { ownsHost: true, streamBaseUrl }
-      await applyIndexInjections(injections, src => new Promise<void>((resolve, reject) => {
-        const script = document.createElement('script')
-        script.src = src
-        script.onload = () => { resolve() }
-        script.onerror = () => { reject(new Error(`desktop web: failed to load ${src}`)) }
-        document.head.append(script)
-      }))
+      // The engine serves the document with its injection table already
+      // rendered: the application bundles registered with the live module
+      // system while the head parsed. The desktop carrier therefore only
+      // publishes the stream origin and must not replay the table, whose
+      // queue-bootstrap row would replace the running module system.
       gate.resolve()
     }).catch((error: unknown) => { gate.reject(error) })
   }

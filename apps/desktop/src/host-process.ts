@@ -7,7 +7,6 @@ import { desktopNodeEnvironment } from './node-environment.ts'
 interface ReadyEvent {
   readonly type: 'ready'
   readonly url: string
-  readonly injections?: readonly unknown[] | undefined
 }
 
 interface FatalEvent {
@@ -58,7 +57,6 @@ async function exitsWithin(exit: Promise<void>, milliseconds: number): Promise<b
 /** Browser authentication URL reported by the running Web application. */
 export interface DesktopHostReady {
   readonly url: string
-  readonly injections?: readonly unknown[] | undefined
 }
 
 /** The child has exited, but task teardown did not finish successfully. */
@@ -136,7 +134,7 @@ export class DesktopHostProcess {
         child.kill('SIGTERM')
         return
       }
-      if (message.type === 'ready') this.readyResolve({ url: message.url, injections: message.injections })
+      if (message.type === 'ready') this.readyResolve({ url: message.url })
       else if (message.type === 'shutdown-complete') {
         if (this.stopping) this.shutdownCompleted = true
         else this.fail(new Error('dsh desktop host acknowledged an unrequested shutdown'))

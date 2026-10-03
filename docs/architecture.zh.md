@@ -52,7 +52,7 @@ Python SDK 遵循相同的应用架构。其运行时 wheel 把普通 `dsh` CLI 
 
 [Alpha 桌面应用](../apps/desktop/README.zh.md)在随包资源中携带精确匹配的 dsh 生产运行时，并拥有保留的 `$DSH_HOME/profiles/desktop`。共享 profile helper 初始化其文件、协调已安装 bundle，并解析安装与 bundle 的依赖而不替换 pnpm 拥有的包。CLI 与 Desktop 共享产品数据，可执行包、启用选择与锁文件保持独立。公开 CLI 不能管理 Desktop profile。
 
-Tauri 以随包的 Node sidecar 启动私有 Desktop Host，并通过该 sidecar stdout 与 stdin 上的换行分隔 JSON 与之通信。Host 调用共享 CLI profile runner 与完整 Web 应用。窗口立即加载打包的加载页，Host 以引擎 URL 与启动注入报告就绪后，壳将其导航到已认证的 Host。Web 负责 RPC 与流；壳把本地页面连接到已认证的 Host。该 sidecar 通道承载启动注入、就绪、致命错误与关闭。Desktop 默认端口为 `19387`，profile 配置可覆盖。壳拥有的 UI 通过内置 pnpm 执行插件事务，并遵循正常用户与 profile 配置。
+Tauri 以随包的 Node sidecar 启动私有 Desktop Host，并通过其 stdout 与 stdin 上的换行分隔 JSON 与之通信。Host 调用共享 CLI profile runner 与 Web 应用。窗口先加载打包的加载页，待 Host 报告引擎 URL 后，壳将其导航到已认证的 Host。Web 负责 RPC 与流；壳把本地页面连接到已认证的 Host。该通道承载就绪、致命错误与关闭。提供的文档已携带自身的注入表，载体因此只发布 stream 来源。Desktop 默认端口为 `19387`，profile 配置可覆盖。壳拥有的 UI 通过内置 pnpm 执行插件事务，并遵循正常用户与 profile 配置。
 
 ## 核心包
 

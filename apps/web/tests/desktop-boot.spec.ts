@@ -3,11 +3,9 @@ import { afterEach, expect, it, vi } from 'vitest'
 
 const boot = vi.hoisted(() => ({
   run: vi.fn(),
-  applyIndexInjections: vi.fn(async () => {}),
 }))
 vi.mock('@mutantcat/dsh-client-web', () => ({
   AppWebEntry: class { run = boot.run },
-  applyIndexInjections: boot.applyIndexInjections,
 }))
 
 afterEach(() => {
@@ -17,16 +15,19 @@ afterEach(() => {
   document.body.replaceChildren()
 })
 
-it('forwards client initialization failures to native recovery', async () => {
+it('publishes the stream origin without replaying the served injection table', async () => {
   document.body.innerHTML = '<div id="root"></div>'
   const gate = Promise.withResolvers<undefined>()
   const failed = vi.fn(async () => {})
   vi.stubGlobal('__DSH_BOOT_READY__', gate)
-  vi.stubGlobal('dshDesktopBoot', { ready: async () => ({ injections: [], streamBaseUrl: 'http://127.0.0.1:3080' }), failed })
+  vi.stubGlobal('dshDesktopBoot', { ready: async () => ({ streamBaseUrl: 'http://127.0.0.1:3080' }), failed })
   vi.stubGlobal('__DSH_TRANSPORT__', undefined)
   await import('../src/main.ts')
   await gate.promise
-  expect(boot.applyIndexInjections).toHaveBeenCalledWith([], expect.any(Function))
+  expect((globalThis as { __DSH_TRANSPORT__?: unknown }).__DSH_TRANSPORT__).toStrictEqual({
+    ownsHost: true,
+    streamBaseUrl: 'http://127.0.0.1:3080',
+  })
   const report = boot.run.mock.calls[0]![0] as (reason: unknown) => void
   report(new Error('client plugin activation failed'))
   expect(failed).toHaveBeenCalledWith('client plugin activation failed')
@@ -41,7 +42,6 @@ it('rejects the shared boot wait when the Desktop Host cannot start', async () =
   vi.stubGlobal('dshDesktopBoot', { ready: async () => { throw failure }, failed: vi.fn() })
   await import('../src/main.ts')
   await rejected
-  expect(boot.applyIndexInjections).not.toHaveBeenCalled()
   expect(boot.run).toHaveBeenCalledWith(expect.any(Function))
 })
 

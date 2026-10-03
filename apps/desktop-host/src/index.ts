@@ -90,8 +90,8 @@ async function main(): Promise<void> {
     root: join(resolveDshHome(), 'dsh-runtimes', 'dsh-primary-runtime'),
   })
   const url = ctx.connection.authenticatedUrl(`http://127.0.0.1:${String(ctx.webServer.port)}`)
-  // A shell that already disappeared never receives the URL, so skip the injection read.
-  if (shell.connected) await shell.send({ type: 'ready', url, injections: ctx.webServer.collectIndexInjections() })
+  // The engine document carries its own injection table, so the shell only needs the URL.
+  if (shell.connected) await shell.send({ type: 'ready', url })
 }
 
 // `import.meta.main` is absent before Node 24.2; compare real paths so a

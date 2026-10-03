@@ -3,9 +3,10 @@
 //! The host is a Node sidecar launched without a child-process IPC channel, so it reports
 //! readiness and accepts commands as newline-delimited JSON on stdout and stdin. This shell
 //! keeps its loader page visible until the host's HTTP server answers, then navigates the
-//! window to the authenticated engine URL and hands the Web client the boot payload the
-//! readiness event carried. A host that dies before answering leaves the loader visible and
-//! reports the cause instead of an empty window.
+//! window to the authenticated engine URL and hands the Web client the engine's stream
+//! origin. The served document already carries its injection table, so the carrier never
+//! replays it. A host that dies before answering leaves the loader visible and reports the
+//! cause instead of an empty window.
 //!
 //! The loader document is served from a loopback address rather than the `tauri` scheme,
 //! because the engine authenticates its browser session with a `SameSite=Strict` cookie that
@@ -31,6 +32,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, Receiver};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime};
+
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
 
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -130,8 +134,8 @@ type BootPayload = Arc<Mutex<Option<Value>>>;
 
 /// One host event the stdout reader forwards to the thread that booted it.
 enum HostReport {
-    /// Host reported readiness with its authenticated URL and boot payload.
-    Ready { url: String, injections: Option<Value> },
+    /// Host reported readiness with its authenticated URL.
+    Ready { url: String },
     /// Host reported a startup failure it will not recover from.
     Fatal(String),
     /// Host closed its output stream without reporting either outcome.
@@ -145,7 +149,6 @@ struct HostEvent {
     kind: String,
     url: Option<String>,
     message: Option<String>,
-    injections: Option<Value>,
 }
 
 /// One window event the Web client reports when its boot fails.
@@ -433,18 +436,15 @@ fn start_engine(
     payload: &BootPayload,
 ) -> Result<Url, String> {
     let reports = spawn_host(handle, launch)?;
-    let (url, injections) = await_ready(&reports)?;
-    let held = payload.lock().ok().and_then(|slot| slot.clone()).or(injections);
-    let Some(held) = held else {
-        return Err("Alpha engine readiness carried no boot payload.".to_string());
-    };
+    let url = await_ready(&reports)?;
+    let held = payload_object(&url);
     let target = url.clone();
     let navigator = window.clone();
     let reporter = handle.clone();
     let slot = Arc::clone(payload);
     // Navigation owns the window, so the payload is published from the main thread.
     let _ = handle.run_on_main_thread(move || {
-        if let Err(message) = navigate_engine(&navigator, target, &slot, Some(&held)) {
+        if let Err(message) = navigate_engine(&navigator, target, &slot, &held) {
             report_fatal(&reporter, &message);
         }
     });
@@ -483,6 +483,9 @@ fn spawn_host(handle: &AppHandle, launch: &EngineLaunch) -> Result<Receiver<Host
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+    // A console-subsystem Node child would flash a console window on Windows.
+    #[cfg(windows)]
+    command.creation_flags(0x0800_0000);
     let mut child =
         command.spawn().map_err(|error| format!("Alpha could not start its engine: {error}"))?;
     let stdout = child
@@ -519,7 +522,6 @@ fn spawn_host(handle: &AppHandle, launch: &EngineLaunch) -> Result<Receiver<Host
                     // A booting thread that already left is not an error: the drain continues.
                     let _ = sender.send(HostReport::Ready {
                         url: event.url.clone().unwrap_or_default(),
-                        injections: event.injections.clone(),
                     });
                 }
                 "fatal" => {
@@ -537,13 +539,13 @@ fn spawn_host(handle: &AppHandle, launch: &EngineLaunch) -> Result<Receiver<Host
 
 /// Wait for the host to report the outcome of its boot.
 /// @param reports - Receiver the host's stdout reader forwards into.
-/// @returns The engine URL and boot payload, or the failure the host reported.
-fn await_ready(reports: &Receiver<HostReport>) -> Result<(Url, Option<Value>), String> {
+/// @returns The engine URL, or the failure the host reported.
+fn await_ready(reports: &Receiver<HostReport>) -> Result<Url, String> {
     match reports.recv_timeout(Duration::from_millis(HOST_BOOT_TIMEOUT_MS)) {
-        Ok(HostReport::Ready { url, injections }) => {
+        Ok(HostReport::Ready { url }) => {
             let parsed = Url::parse(&url)
                 .map_err(|_| "Alpha engine reported an unreadable URL.".to_string())?;
-            Ok((parsed, injections))
+            Ok(parsed)
         }
         Ok(HostReport::Fatal(message)) => Err(message),
         Ok(HostReport::Closed) | Err(_) => {
@@ -746,16 +748,15 @@ fn navigate_engine(
     window: &WebviewWindow,
     url: Url,
     payload: &BootPayload,
-    injections: Option<&Value>,
+    object: &Value,
 ) -> Result<(), String> {
     // The engine document is a different origin from the loader, so the payload cannot
     // travel with the navigation: publishing it in the shared slot lets the page-load
     // hook carry it into every document that loads after readiness.
-    let object = payload_object(injections, &url);
     if let Ok(mut slot) = payload.lock() {
         *slot = Some(object.clone());
     }
-    inject_payload(window, &object);
+    inject_payload(window, object);
     if !engine_answers(&url) {
         return Err("Alpha could not reach its engine after it reported readiness.".to_string());
     }
@@ -766,14 +767,11 @@ fn navigate_engine(
 }
 
 /// Shape the readiness payload the Web client consumes for boot.
-fn payload_object(payload: Option<&Value>, url: &Url) -> Value {
-    match payload {
-        Some(injections) => json!({
-            "injections": injections,
-            "streamBaseUrl": url.origin().unicode_serialization(),
-        }),
-        None => Value::Null,
-    }
+///
+/// The engine's served document already carries its injection table, so the
+/// carrier publishes only the stream origin and never replays the table.
+fn payload_object(url: &Url) -> Value {
+    json!({ "streamBaseUrl": url.origin().unicode_serialization() })
 }
 
 /// Publish the readiness payload to the current document.
@@ -879,5 +877,17 @@ fn target_triple() -> &'static str {
     #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
     {
         "aarch64-unknown-linux-gnu"
+    }
+    // `cargo check` on a host the shell does not ship for still needs a value.
+    #[cfg(not(any(
+        all(target_os = "macos", target_arch = "aarch64"),
+        all(target_os = "macos", target_arch = "x86_64"),
+        all(target_os = "windows", target_arch = "x86_64"),
+        all(target_os = "windows", target_arch = "aarch64"),
+        all(target_os = "linux", target_arch = "x86_64"),
+        all(target_os = "linux", target_arch = "aarch64"),
+    )))]
+    {
+        "unknown"
     }
 }
