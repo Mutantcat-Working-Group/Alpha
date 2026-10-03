@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-mcp-resources",
   "description": "Scoped MCP resource discovery and reading through shared model tools",
-  "version": "1.0.20261002",
+  "version": "1.0.20261003",
   "publishConfig": {
     "access": "public"
   },

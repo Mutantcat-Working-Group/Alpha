@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-chat",
   "description": "Chat Conversation target, node definitions, renderers, and details surface",
-  "version": "1.0.20261002",
+  "version": "1.0.20261003",
   "publishConfig": {
     "access": "public"
   },

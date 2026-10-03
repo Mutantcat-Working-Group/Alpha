@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-agent",
   "description": "Agent interface, registry, initiator scope, and event vocabulary for the Alpha",
-  "version": "1.0.20261002",
+  "version": "1.0.20261003",
   "publishConfig": {
     "access": "public"
   },

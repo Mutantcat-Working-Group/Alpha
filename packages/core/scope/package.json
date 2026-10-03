@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-scope",
   "description": "Scoped-context registration primitive (scope tags, scope-filtered event dispatch) for the Alpha",
-  "version": "1.0.20261002",
+  "version": "1.0.20261003",
   "publishConfig": {
     "access": "public"
   },

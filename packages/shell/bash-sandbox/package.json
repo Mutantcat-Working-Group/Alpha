@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-bash-sandbox",
   "description": "Sandbox-consuming implementation of the Alpha bash executor seam (confines every command via ctx.sandbox, reports denial/enforcement result facts)",
-  "version": "1.0.20261002",
+  "version": "1.0.20261003",
   "publishConfig": {
     "access": "public"
   },

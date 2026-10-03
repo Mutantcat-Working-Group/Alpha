@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-bash-local",
   "description": "Local-subprocess implementation of the Alpha bash executor seam",
-  "version": "1.0.20261002",
+  "version": "1.0.20261003",
   "publishConfig": {
     "access": "public"
   },

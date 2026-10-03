@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-fs-local",
   "description": "Local-filesystem implementation of the Alpha filesystem seam (ctx.fs)",
-  "version": "1.0.20261002",
+  "version": "1.0.20261003",
   "publishConfig": {
     "access": "public"
   },
