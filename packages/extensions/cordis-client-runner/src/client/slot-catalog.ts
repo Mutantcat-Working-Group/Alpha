@@ -1656,8 +1656,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     key: 'plugins.item',
     kind: 'list',
     scope: 'root',
-    summary: 'One official plugin the Plugins page lists in its Official group after the official bundles: `label` is the card\'s title and `order` its place.',
-    doc: 'One official plugin the Plugins page lists in its Official group after\nthe official bundles: `label` is the card\'s title and `order` its place.\nThe page renders the entry as the card\'s one-liner (`view: \'summary\'`)\nand, once the card is opened, as the body of the plugin\'s own page\n(`view: \'page\'`). OCCUPIED by the host-plane configuration pages\n`ui-settings-plugins` ships; a bundle\'s configuration belongs in\n`plugins.bundle.config` or `plugins.row.config` instead.',
+    summary: 'One built-in plugin the Plugins page lists in its Built-in group after the built-in bundles: `label` is the card\'s title and `order` its place.',
+    doc: 'One built-in plugin the Plugins page lists in its Built-in group after\nthe built-in bundles: `label` is the card\'s title and `order` its place.\nThe page renders the entry as the card\'s one-liner (`view: \'summary\'`)\nand, once the card is opened, as the body of the plugin\'s own page\n(`view: \'page\'`). OCCUPIED by the host-plane configuration pages\n`ui-settings-plugins` ships; a bundle\'s configuration belongs in\n`plugins.bundle.config` or `plugins.row.config` instead.',
     registerOptions: [
       {
         name: 'id',
