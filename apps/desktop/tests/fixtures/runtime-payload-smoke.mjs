@@ -2,11 +2,12 @@
 
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdtempSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { delimiter, dirname, join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const runtime = process.argv[2]
 assert.ok(runtime, 'Pass the filtered resources/dsh directory')
@@ -108,6 +109,25 @@ function checkKoffi() {
   }
 }
 
+/**
+ * Acquire and release a real POSIX write lock through the packaged flock entry.
+ * The entry resolves its platform package at import time, so a runtime that
+ * omitted the matching tarball fails here instead of on the user's first lock.
+ */
+async function checkFlock() {
+  if (process.platform === 'win32') return
+  const entry = join(root, 'node_modules', '@mutantcat', 'node-addon-system', 'lib', 'flock.js')
+  const { tryLockExclusive } = await import(pathToFileURL(entry).href)
+  const target = join(scratch, 'flock-target')
+  writeFileSync(target, 'lock carrier', { flag: 'wx' })
+  const handle = openSync(target, 'r+')
+  try {
+    await tryLockExclusive(handle)
+  } finally {
+    closeSync(handle)
+  }
+}
+
 /** Encode and decode a pixel through the packaged libvips binary. */
 async function checkSharp() {
   const sharp = requireRuntime('sharp')
@@ -139,6 +159,7 @@ try {
   checkKoffi()
   await checkSharp()
   checkHtml()
+  await checkFlock()
   await checkPty()
 } finally {
   // This private tree contains only fixture files; Windows may release handles after terminal exit.
@@ -148,5 +169,5 @@ try {
 // Natural event-loop drain includes node-pty's worker and console-list helper teardown.
 process.once('beforeExit', () => {
   console.log(JSON.stringify({ node: process.versions.node, platform: process.platform, arch: process.arch,
-    koffi: true, sharp: true, html: true, pty: true, pnpm: true }))
+    koffi: true, sharp: true, html: true, flock: true, pty: true, pnpm: true }))
 })

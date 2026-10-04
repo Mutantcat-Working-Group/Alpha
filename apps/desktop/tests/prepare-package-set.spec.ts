@@ -89,4 +89,33 @@ describe('desktop package-set selection', () => {
       assertDesktopHostPackageFiles(files.slice(1))
     }).toThrow(/lib\/index\.js/u)
   })
+
+  it('selects the native platform package the runtime resolves and skips the others', () => {
+    // Reproduces the missing-addon release: the entry declares every platform
+    // package optionally, but only the target's tarball is packed.
+    const systemEntry = packed('@mutantcat/node-addon-system', {
+      optionalDependencies: {
+        '@mutantcat/node-addon-system-darwin-arm64': '0.1.2',
+        '@mutantcat/node-addon-system-darwin-x64': '0.1.2',
+        '@mutantcat/node-addon-system-linux-arm64': '0.1.2',
+        '@mutantcat/node-addon-system-linux-x64': '0.1.2',
+      },
+    })
+    const roots = [
+      ['@mutantcat/dsh', packed('@mutantcat/dsh', {
+        dependencies: { '@mutantcat/node-addon-system': '0.1.2' },
+      })],
+      ['@mutantcat/dsh-desktop-host', packed('@mutantcat/dsh-desktop-host')],
+      ['@mutantcat/node-addon-system', systemEntry],
+    ] as const
+    expect(selectDesktopPackageClosure(new Map([...roots])).map(packed => packed.manifest.name)).toEqual([
+      '@mutantcat/dsh', '@mutantcat/dsh-desktop-host', '@mutantcat/node-addon-system',
+    ])
+    expect(selectDesktopPackageClosure(new Map([
+      ...roots, ['@mutantcat/node-addon-system-darwin-arm64', packed('@mutantcat/node-addon-system-darwin-arm64')],
+    ])).map(packed => packed.manifest.name)).toEqual([
+      '@mutantcat/dsh', '@mutantcat/dsh-desktop-host', '@mutantcat/node-addon-system',
+      '@mutantcat/node-addon-system-darwin-arm64',
+    ])
+  })
 })

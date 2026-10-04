@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseCiPackageInvocation, resolveCiPackageTarget } from '../scripts/ci-package.ts'
+import { nativePlatformPackageDir } from '../scripts/ci-release-inputs.ts'
 
 describe('ci package target', () => {
   it('maps each release target to its platform and architecture', () => {
@@ -41,5 +42,23 @@ describe('ci package target', () => {
     expect(() => resolveCiPackageTarget('sunos-x64', 'linux', 'x64')).toThrow(/unsupported target/u)
     expect(() => parseCiPackageInvocation(['mac-arm64', 'mac-x64'], 'darwin', 'arm64'))
       .toThrow(/at most one target/u)
+  })
+
+  it('maps each target to the native platform package its runtime resolves', () => {
+    expect(nativePlatformPackageDir(resolveCiPackageTarget('mac-arm64', 'darwin', 'arm64')))
+      .toBe('native/system/packages/darwin-arm64')
+    expect(nativePlatformPackageDir(resolveCiPackageTarget('mac-x64', 'darwin', 'x64')))
+      .toBe('native/system/packages/darwin-x64')
+    expect(nativePlatformPackageDir(resolveCiPackageTarget('linux-x64', 'linux', 'x64')))
+      .toBe('native/system/packages/linux-x64')
+    expect(nativePlatformPackageDir(resolveCiPackageTarget('linux-arm64', 'linux', 'arm64')))
+      .toBe('native/system/packages/linux-arm64')
+  })
+
+  it('ships no native platform package for Windows targets', () => {
+    // flock is unsupported on Windows and Landlock is Linux-only, so the
+    // Windows installers must not expect a platform tarball.
+    expect(nativePlatformPackageDir(resolveCiPackageTarget('win-x64', 'win32', 'x64'))).toBeUndefined()
+    expect(nativePlatformPackageDir(resolveCiPackageTarget('win-arm64', 'win32', 'arm64'))).toBeUndefined()
   })
 })

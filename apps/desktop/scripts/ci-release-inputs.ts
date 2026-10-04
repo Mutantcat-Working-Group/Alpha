@@ -43,6 +43,39 @@ export function runPnpm(args: readonly string[], cwd: string, env: NodeJS.Proces
 }
 
 /**
+ * Run one npm command and inherit its output.
+ * Platform packages are packed with npm because `pnpm pack` normalizes file
+ * modes and strips the Landlock launcher's executable bit.
+ * @param args - Arguments passed to the npm CLI.
+ * @param cwd - Working directory for the command.
+ * @param env - Environment for the command.
+ * @returns Resolves when the command exits successfully.
+ */
+export function runNpm(args: readonly string[], cwd: string, env: NodeJS.ProcessEnv): Promise<void> {
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn('npm', args, { cwd, env, stdio: 'inherit' })
+    child.once('error', reject)
+    child.once('close', (code, signal) => {
+      if (code === 0) resolvePromise()
+      else reject(new Error(`ci package: npm ${args.join(' ')} exited with ${String(code ?? signal)}`))
+    })
+  })
+}
+
+/**
+ * Native platform package that supplies one release target's prebuilt system binaries.
+ * Windows has no native package: flock is unsupported there and Landlock is Linux-only.
+ * @param target - Validated release target.
+ * @returns Repository-relative package directory, or undefined when the target ships no native package.
+ */
+export function nativePlatformPackageDir(target: CiPackageTarget): string | undefined {
+  if (target.platform === 'darwin' || target.platform === 'linux') {
+    return `native/system/packages/${target.platform}-${target.arch}`
+  }
+  return undefined
+}
+
+/**
  * Build the monorepo and stage the packed dsh runtime every shell technology bundles.
  * @param target - Validated release target.
  * @returns Resolves after the target's runtime and package set are prepared.
@@ -57,6 +90,13 @@ export async function prepareReleaseInputs(target: CiPackageTarget): Promise<voi
   rmSync(buildPaths.packedLandlock, { recursive: true, force: true })
   mkdirSync(buildPaths.packedLandlock, { recursive: true })
   await runPnpm(['--dir', 'native/system', 'run', 'build:ts'], REPOSITORY_ROOT, buildEnv)
+  // The entry resolves its platform package at runtime, so a release that omits
+  // the matching tarball ships an addon that fails on first lock acquisition.
+  const platformPackage = nativePlatformPackageDir(target)
+  if (platformPackage !== undefined) {
+    await runPnpm(['--dir', 'native/system', 'run', 'build:native'], REPOSITORY_ROOT, buildEnv)
+    await runNpm(['pack', platformPackage, '--pack-destination', buildPaths.packedLandlock], REPOSITORY_ROOT, buildEnv)
+  }
   await runPnpm([
     '--dir', 'native/system/packages/entry', 'pack', '--pack-destination', buildPaths.packedLandlock,
   ], REPOSITORY_ROOT, buildEnv)
