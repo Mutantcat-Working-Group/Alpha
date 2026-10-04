@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-title",
   "description": "Log-backed session title service and provider registry for the Alpha",
-  "version": "1.0.20261003",
+  "version": "1.0.20261004",
   "publishConfig": {
     "access": "public"
   },

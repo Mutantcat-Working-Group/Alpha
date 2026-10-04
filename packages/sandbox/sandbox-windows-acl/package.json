@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-sandbox-windows-acl",
   "description": "Windows ACL write-restriction sandbox backend (restricted-token spawn with capability-SID write allowlist) for the Alpha sandbox seam",
-  "version": "1.0.20261003",
+  "version": "1.0.20261004",
   "publishConfig": {
     "access": "public"
   },

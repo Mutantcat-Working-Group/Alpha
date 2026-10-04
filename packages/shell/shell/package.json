@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-shell",
   "description": "Abstract bash executor seam (ctx.shell) for the Alpha",
-  "version": "1.0.20261003",
+  "version": "1.0.20261004",
   "publishConfig": {
     "access": "public"
   },

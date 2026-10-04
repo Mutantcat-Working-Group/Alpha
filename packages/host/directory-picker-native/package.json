@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-host-directory-picker-native",
   "description": "Native-OS-chooser backend of the directory-picker seam for the Alpha web GUI host",
-  "version": "1.0.20261003",
+  "version": "1.0.20261004",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-sandbox",
   "description": "Abstract process-sandbox seam (ctx.sandbox) for the Alpha: same-world confinement vocabulary and the SandboxProvider contract",
-  "version": "1.0.20261003",
+  "version": "1.0.20261004",
   "publishConfig": {
     "access": "public"
   },

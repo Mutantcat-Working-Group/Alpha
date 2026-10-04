@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-skill",
   "description": "Model-facing skill loading tool for the Alpha",
-  "version": "1.0.20261003",
+  "version": "1.0.20261004",
   "publishConfig": {
     "access": "public"
   },
