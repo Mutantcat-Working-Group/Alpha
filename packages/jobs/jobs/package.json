@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-jobs",
   "description": "Background job registry (ctx.jobs) for the Alpha — shared ids, owner isolation, polling, cancellation, and completion listeners for long-running tool work",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

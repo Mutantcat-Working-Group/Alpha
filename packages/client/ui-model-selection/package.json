@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-model-selection",
   "description": "Model selection over the shared model catalog, Session projection, and session.selectModel",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

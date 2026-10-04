@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-session",
   "description": "Session Controller adapter for React and session-scoped slots",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

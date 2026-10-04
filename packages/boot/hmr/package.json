@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-hmr",
   "description": "Coordinated module and profile configuration hot reload",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

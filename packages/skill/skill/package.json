@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-skill",
   "description": "Agent skill provider registry for the Alpha",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

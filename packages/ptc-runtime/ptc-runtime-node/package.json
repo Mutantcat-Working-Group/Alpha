@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-ptc-runtime-node",
   "description": "Sandboxed Node process implementation of the Alpha PTC execution capability",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

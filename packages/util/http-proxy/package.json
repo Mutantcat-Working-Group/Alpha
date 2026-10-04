@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-http-proxy",
   "description": "Process-wide outbound HTTP proxy policy for Alpha: resolve it from the launch environment and install it as undici's global dispatcher",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

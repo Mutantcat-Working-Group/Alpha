@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-settings-file",
   "description": "File-backed settings provider (settings.yaml) for the Alpha",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },

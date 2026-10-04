@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-llm-deepseek",
   "description": "DeepSeek adapter with Chat Completions and Messages protocols",
-  "version": "1.0.20261004",
+  "version": "1.0.20261005",
   "publishConfig": {
     "access": "public"
   },
