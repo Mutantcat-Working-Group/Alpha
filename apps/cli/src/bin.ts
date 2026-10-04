@@ -76,7 +76,7 @@ export async function runCli(): Promise<void> {
 // runtimes import this module from a virtual path that `realpathSync` cannot
 // resolve, so an unresolvable launcher means the module was imported, not run.
 function isProcessEntry(): boolean {
-  if (import.meta.main === true) return true
+  if (import.meta.main) return true
   const argv1 = process.argv[1]
   if (argv1 === undefined) return false
   try {
