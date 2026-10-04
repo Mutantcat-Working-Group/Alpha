@@ -83,7 +83,9 @@ it('refuses a Node archive published in an unknown compression', () => {
   expect(() => nodeArchiveFormat('linux-x64.tar.bz2')).toThrow('unsupported Node archive')
 })
 
-it('unpacks the xz-compressed Linux Node distribution with the platform tar', async () => {
+// Windows bsdtar has no xz writer, and no Windows target extracts an xz-tar, so
+// the end-to-end fixture is meaningful only where a Linux build runs.
+it.skipIf(process.platform === 'win32')('unpacks the xz-compressed Linux Node distribution with the platform tar', async () => {
   const root = await mkdtemp(join(tmpdir(), 'desktop-node-archive-'))
   try {
     const distribution = 'node-v24.21.0-linux-x64'

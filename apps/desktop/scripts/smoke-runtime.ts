@@ -54,18 +54,44 @@ export function apply(ctx) {
       throw new Error('desktop runtime: packaged frontend smoke failed')
     }
     // A page that answers <html> can still ship a broken client boot graph, so
-    // prove the served form names the module-system bootstrap and that one
-    // application batch it schedules is actually served.
-    if (!index.includes('window.__ModuleLoader__') || !index.includes('__DSH_BOOT__')) {
+    // read the injected graph and prove EVERY advertised client bundle is
+    // served. Fetching stages one batch is not enough: one missing package
+    // bundle is the "N entries did not activate" failure users hit.
+    if (!index.includes('window.__ModuleLoader__')) {
       throw new Error('desktop runtime: packaged frontend boot graph is missing from the served document')
     }
-    const batchSrc = /<script[^>]*src="([^"]*\/plugins\/[^"]*)"/u.exec(index)?.[1]
-    if (batchSrc === undefined) {
-      throw new Error('desktop runtime: packaged frontend serves no client bundle')
+    const bootMatch = /globalThis\["__DSH_BOOT__"\] = (.*?)<\/script>/u.exec(index)
+    if (bootMatch === null) {
+      throw new Error('desktop runtime: packaged frontend serves no __DSH_BOOT__ graph')
     }
-    const batch = await fetch(new URL(batchSrc.replaceAll('&amp;', '&'), ready.url), { headers: { cookie } })
-    if (!batch.ok || batch.headers.get('content-type') !== 'text/javascript; charset=utf-8') {
-      throw new Error(`desktop runtime: packaged client bundle ${batchSrc} is not served as JavaScript`)
+    const graph = JSON.parse(bootMatch[1] as string) as {
+      batches?: { url?: unknown; entries?: unknown }[]
+      entries?: { id?: unknown; url?: unknown }[]
+    }
+    if (!Array.isArray(graph.batches) || !Array.isArray(graph.entries) || graph.entries.length === 0) {
+      throw new Error('desktop runtime: packaged frontend boot graph carries no client entries')
+    }
+    const bundleUrls = new Set<string>()
+    for (const batch of graph.batches) {
+      if (typeof batch.url !== 'string' || !Array.isArray(batch.entries) || batch.entries.length === 0) {
+        throw new Error('desktop runtime: packaged frontend boot batch is malformed')
+      }
+      bundleUrls.add(batch.url)
+    }
+    for (const entry of graph.entries) {
+      if (typeof entry.id !== 'string' || typeof entry.url !== 'string') {
+        throw new Error('desktop runtime: packaged frontend boot entry is malformed')
+      }
+      bundleUrls.add(entry.url)
+    }
+    for (const bundleUrl of bundleUrls) {
+      const bundle = await fetch(new URL(bundleUrl, ready.url), { headers: { cookie } })
+      if (!bundle.ok || bundle.headers.get('content-type') !== 'text/javascript; charset=utf-8') {
+        throw new Error(
+          `desktop runtime: packaged client bundle ${bundleUrl} is not served as JavaScript `
+          + `(${String(bundle.status)} ${bundle.headers.get('content-type') ?? 'no content-type'})`,
+        )
+      }
     }
     const pluginResponse = await fetch(new URL('/desktop-smoke', ready.url), { headers: { cookie } })
     if (await pluginResponse.text() !== 'plugin route ready') throw new Error('desktop runtime: plugin HTTP route failed')
