@@ -174,10 +174,12 @@
 
     # OTel releases a Session-log prefix only after explicit user feedback,
     # regardless of model provider. Ordinary activity never triggers capture.
-    # DSH_TELEMETRY_OTLP_URL overrides the production endpoint. A non-empty
-    # DSH_TELEMETRY_DISABLED — any value, including '0'/'false' — opts the
-    # process out (the launchers patch the row disabled; config cannot disable
-    # a row). Exports carry the harness home's anonymous user id ($DSH_HOME/.anonymous-user-id,
+    # Alpha ships no telemetry collector: the row mounts only when a deployment
+    # sets DSH_TELEMETRY_OTLP_URL to its own OTLP/HTTP logs endpoint, so no
+    # shipped build contacts a vendor service by default. A non-empty
+    # DSH_TELEMETRY_DISABLED — any value, including '0'/'false' — further opts
+    # the process out (the launchers patch the row disabled; config cannot
+    # disable a row). Exports carry the harness home's anonymous user id ($DSH_HOME/.anonymous-user-id,
     # random UUID; delete the file to reset the identity) as the Resource's
     # user.id. The exporter/processor values normally bound the shutdown drain
     # to ~1s against an unreachable collector: exporter.timeoutMillis is both
@@ -190,11 +192,12 @@
     # on SIGINT/SIGTERM.
     - id: session-telemetry-otel
       name: '@mutantcat/dsh-session-telemetry-otel'
+      disabled: !!js "!process.env.DSH_TELEMETRY_OTLP_URL"
       config:
         mode: !!js process.env.DSH_TELEMETRY_MODE || 'FEEDBACK_ONLY'
         shutdownTimeoutMillis: 3000
         exporter:
-          url: !!js process.env.DSH_TELEMETRY_OTLP_URL ?? 'https://harness-telemetry.deepseeksvc.com/v1/logs'
+          url: !!js process.env.DSH_TELEMETRY_OTLP_URL
           compression: gzip
           timeoutMillis: 1000
         processor:

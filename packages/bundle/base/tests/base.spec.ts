@@ -32,9 +32,15 @@ describe('dsh-base bundle', () => {
     )
     expect(rows.length).toBeGreaterThan(50)
     expect(rows.some(row => row.id === 'agent-loop')).toBe(true)
-    expect(rows.find(row => row.id === 'session-telemetry-otel')?.disabled).toBeUndefined()
-    expect(rows.find(row => row.id === 'session-telemetry-otel')?.config?.['mode']).toEqual({
+    // Alpha ships no collector: the row mounts only under an explicit
+    // deployment endpoint, and the exporter URL is that same variable.
+    const telemetry = rows.find(row => row.id === 'session-telemetry-otel')
+    expect(telemetry?.disabled).toEqual({ __jsExpr: '!process.env.DSH_TELEMETRY_OTLP_URL' })
+    expect(telemetry?.config?.['mode']).toEqual({
       __jsExpr: "process.env.DSH_TELEMETRY_MODE || 'FEEDBACK_ONLY'",
+    })
+    expect((telemetry?.config?.['exporter'] as Record<string, unknown> | undefined)?.['url']).toEqual({
+      __jsExpr: 'process.env.DSH_TELEMETRY_OTLP_URL',
     })
     expect(rows.find(row => row.id === 'hmr')).toMatchObject({
       config: { root: [] },
