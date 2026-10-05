@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-terminal-bash",
   "description": "Persistent shell PTY backend over the Alpha subprocess terminal primitive",
-  "version": "1.0.20261006",
+  "version": "1.0.20261007",
   "publishConfig": {
     "access": "public"
   },

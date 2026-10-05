@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-api-remotes",
   "description": "Remote BFF assembly for application-selected Host capabilities",
-  "version": "1.0.20261006",
+  "version": "1.0.20261007",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-sandbox-ssh",
   "description": "Remote POSIX sandbox argv provider over the shared SSH helper",
-  "version": "1.0.20261006",
+  "version": "1.0.20261007",
   "publishConfig": {
     "access": "public"
   },
