@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-web-search-exa",
   "description": "Exa-backed search provider for the Alpha web capability seam (ctx.web)",
-  "version": "1.0.20261005",
+  "version": "1.0.20261006",
   "publishConfig": {
     "access": "public"
   },

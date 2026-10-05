@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-llm",
   "description": "Provider-neutral LLM service interface for the Alpha",
-  "version": "1.0.20261005",
+  "version": "1.0.20261006",
   "publishConfig": {
     "access": "public"
   },

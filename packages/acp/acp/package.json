@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-acp",
   "description": "Automation-only Agent Client Protocol server for driving Alpha agents over JSON-RPC stdio",
-  "version": "1.0.20261005",
+  "version": "1.0.20261006",
   "publishConfig": {
     "access": "public"
   },
