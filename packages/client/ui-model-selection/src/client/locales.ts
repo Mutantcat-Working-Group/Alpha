@@ -29,7 +29,9 @@ export const zh = {
   'error.sessionInUse': '当前会话已被占用，可能是其他正在运行的 Alpha 实例导致的（如 Web 或桌面端），请退出其他正在运行的 Alpha 后重试。',
   'action.reload': '重新加载',
   'warning.groupLoad': '{name} 加载失败：{message}',
+  'unlisted.current': '当前会话使用 {model}，目录中没有该模型；从下面选一个即可切换。',
   'empty.models': '没有可用的模型。',
+  'empty.modelsHint': '请到「设置 → 模型」添加提供方，然后重试。',
   'blocked.composer': '当前模型不可用，请先选择模型',
   'empty.efforts': '当前模型未提供推理等级。',
 } satisfies Record<string, string>
@@ -58,7 +60,9 @@ export const en = {
   'error.sessionInUse': 'This session is already in use, possibly by another running Alpha instance (such as the Web or desktop app). Quit other running Alpha instances and try again.',
   'action.reload': 'Reload',
   'warning.groupLoad': '{name} failed to load: {message}',
+  'unlisted.current': 'This session uses {model}, which the directory does not list; pick one below to switch.',
   'empty.models': 'No models available.',
+  'empty.modelsHint': 'Add a provider under Settings → Models, then retry.',
   'blocked.composer': 'This model is unavailable — select one to continue',
   'empty.efforts': 'This model provides no reasoning effort levels.',
 } satisfies Record<ModelKey, string>

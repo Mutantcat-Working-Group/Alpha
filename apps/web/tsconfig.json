@@ -58,6 +58,8 @@
     "tests/deepseek-messages-settings.e2e.ts",
     "tests/deepseek-messages-chat.e2e.ts",
     "tests/models-settings-recovery.e2e.ts",
+    "tests/model-seat-catalog.e2e.ts",
+    "tests/model-catalog-routes.e2e.ts",
     "tests/default-model.e2e.ts",
     "tests/github-ready-review.e2e.ts",
     "tests/streaming-fence-highlight.e2e.ts",

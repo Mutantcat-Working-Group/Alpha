@@ -408,6 +408,16 @@ export function ModelSelect(
                   <button type="button" className={css.retry} onClick={reload}>{t('retry')}</button>
                 </div>
               ))}
+              {/* The trigger falls back to the durable provider/model id
+                  when no group lists it; the pane names the same fact once so
+                  the raw id is a stated cause rather than a mystery. */}
+              {state.current !== null && currentChoice === undefined && (
+                <div className={css.unlisted}>
+                  <span>{t('unlisted.current', {
+                    model: `${state.current.provider}/${state.current.model}`,
+                  })}</span>
+                </div>
+              )}
               <div className={clsx(css.groups, 'scrollable')}>
                 {state.groups.map((group) => {
                   const headingId = `${id}-${group.id}`
@@ -442,7 +452,11 @@ export function ModelSelect(
                 })}
               </div>
               {state.status === 'ready' && choices.length === 0 && (
-                <div className={css.empty}>{t('empty.models')}</div>
+                <div className={css.empty}>
+                  <span>{t('empty.models')}</span>
+                  <span>{t('empty.modelsHint')}</span>
+                  <button type="button" className={css.retry} onClick={reload}>{t('action.reload')}</button>
+                </div>
               )}
             </>
           )}

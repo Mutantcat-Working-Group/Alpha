@@ -144,6 +144,47 @@ describe('ModelSelect reasoning effort', () => {
     expect(screen.queryByText('Fast catalog description')).toBeNull()
   })
 
+  it('names the model in use when the directory lists nothing under it', () => {
+    const directory = createSnapshotStore(state({
+      current: { provider: 'deepseek-official', model: 'removed-model' },
+    }))
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={directory}
+      load={vi.fn()}
+      select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      t={t}
+    />)
+
+    fireEvent.click(screen.getByRole('button', { name: '选择模型，当前 deepseek-official/removed-model' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /模型/ }))
+    // The raw id on the trigger stays a fact, and the pane states the cause:
+    // nothing under the current provider is pickable, so the way out is here.
+    expect(screen.getByText(zh['unlisted.current'].replace('{model}', 'deepseek-official/removed-model'))).toBeTruthy()
+    expect(screen.getByRole('menuitemradio', { name: 'DeepSeek-V4-Flash' })).toBeTruthy()
+  })
+
+  it('tells an empty directory where to configure a provider, with a reload', () => {
+    const load = vi.fn()
+    const directory = createSnapshotStore(state({ current: null, routable: null, groups: [] }))
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={directory}
+      load={load}
+      select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      t={t}
+    />)
+
+    fireEvent.click(screen.getByRole('button', { name: '选择模型' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /模型/ }))
+    expect(screen.getByText(zh['empty.models'])).toBeTruthy()
+    expect(screen.getByText(zh['empty.modelsHint'])).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: zh['action.reload'] }))
+    expect(load).toHaveBeenCalled()
+  })
+
   it('shows loading until the catalog and Session projection are both ready', async () => {
     const directory = createSnapshotStore<ModelDirectoryState>(state({
       current: null,
