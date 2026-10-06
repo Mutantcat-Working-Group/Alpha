@@ -90,7 +90,7 @@ Read these pages when the wire contract is not enough. They move from the servin
 - [JSON-RPC serving plugin](../server/README.md) — the runtime plugin that serves this protocol over stdio.
 - [TypeScript SDK client](../client/README.md) — the client that drives this protocol.
 - [Python SDK](../../../python/README.md) — the Python counterpart that mirrors these shapes.
-- [SDK application bundle](../../bundle/sdk-app/README.md) — the `dsh --profile sdk` application that boots the server.
+- [SDK application bundle](../../bundle/sdk-app/README.md) — the `alpha --profile sdk` application that boots the server.
 
 -----
 

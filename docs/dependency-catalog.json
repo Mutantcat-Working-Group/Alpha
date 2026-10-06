@@ -1,7 +1,7 @@
 {
-  "package": "@mutantcat/dsh",
+  "package": "@mutantcat/alpha",
   "version": "0.1.5-rc.1",
-  "requested": "@mutantcat/dsh@latest",
+  "requested": "@mutantcat/alpha@latest",
   "resolution": {
     "capturedAt": "2026-09-12T08:56:20.434Z",
     "npm": "11.17.0",

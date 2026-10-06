@@ -17,7 +17,7 @@ import { copyOfficeSidecar, OFFICE_ASSET_IGNORES } from './build-exe-for-python-
 const root = resolve(import.meta.dirname, '..')
 
 /** The closure manifest whose dependencies define the executable. */
-const DEPLOY_ROOT_PACKAGE = 'dsh-python-runtime-closure'
+const DEPLOY_ROOT_PACKAGE = 'alpha-python-runtime-closure'
 /** The sole executable entry inside the deployed closure. */
 const ENTRY_BIN = 'runtime-bootstrap.mjs'
 /** Python-visible executable basename. */

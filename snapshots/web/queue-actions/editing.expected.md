@@ -22,7 +22,7 @@
   - img
   - text: Context injection @mutantcat/dsh-system-prompt
 - paragraph: partial
-- status: Deep diving...
+- status: Thinking…
 - button "2 queued messages" [disabled] [expanded]
 - list:
   - listitem:

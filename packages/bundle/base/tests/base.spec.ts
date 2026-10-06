@@ -32,15 +32,25 @@ describe('dsh-base bundle', () => {
     )
     expect(rows.length).toBeGreaterThan(50)
     expect(rows.some(row => row.id === 'agent-loop')).toBe(true)
-    // Alpha ships no collector: the row mounts only under an explicit
-    // deployment endpoint, and the exporter URL is that same variable.
-    const telemetry = rows.find(row => row.id === 'session-telemetry-otel')
-    expect(telemetry?.disabled).toEqual({ __jsExpr: '!process.env.DSH_TELEMETRY_OTLP_URL' })
-    expect(telemetry?.config?.['mode']).toEqual({
-      __jsExpr: "process.env.DSH_TELEMETRY_MODE || 'FEEDBACK_ONLY'",
-    })
-    expect((telemetry?.config?.['exporter'] as Record<string, unknown> | undefined)?.['url']).toEqual({
-      __jsExpr: 'process.env.DSH_TELEMETRY_OTLP_URL',
+    // Alpha ships no online paths of its own: no telemetry collector row, no
+    // search route, and no request-field contributor aimed at a vendor
+    // endpoint. Every row that would leave the process with session data or a
+    // request is a deployment's own overlay, never part of this layer.
+    for (const id of [
+      'session-telemetry-otel',
+      'web-search-deepseek',
+      'llm-deepseek',
+      'deepseek-llm-api-extensions',
+      'session-log-deepseek',
+      'plugin-package-inventory-deepseek',
+    ]) {
+      expect(rows.find(row => row.id === id), `row ${id} must not ship`).toBeUndefined()
+    }
+    // The default-model row mounts with no preset: a deployment that wants a
+    // preselected provider states it in a later layer.
+    expect(rows.find(row => row.id === 'agent-default-model')).toMatchObject({
+      name: '@mutantcat/dsh-agent-default-model',
+      config: undefined,
     })
     expect(rows.find(row => row.id === 'hmr')).toMatchObject({
       config: { root: [] },
@@ -49,9 +59,19 @@ describe('dsh-base bundle', () => {
     expect(rows.filter(row => row.id === 'subagent-claude-code')).toHaveLength(0)
     expect(rows.find(row => row.id === 'web')?.config).toMatchObject({ fetchProvider: 'http' })
     expect(rows.find(row => row.id === 'web-fetch-http')).toBeDefined()
-    expect(rows.find(row => row.id === 'tool-web')?.config).toMatchObject({ fetch: true })
+    expect(rows.find(row => row.id === 'tool-web')?.config).toMatchObject({ search: false, fetch: true })
     expect(manifest.dependencies).not.toHaveProperty('@mutantcat/dsh-subagent-codex')
     expect(manifest.dependencies).not.toHaveProperty('@mutantcat/dsh-subagent-claude-code')
+    for (const dependency of [
+      '@mutantcat/dsh-session-telemetry-otel',
+      '@mutantcat/dsh-web-search-deepseek',
+      '@mutantcat/dsh-llm-deepseek',
+      '@mutantcat/dsh-deepseek-llm-api-extensions',
+      '@mutantcat/dsh-session-log-deepseek',
+      '@mutantcat/dsh-plugin-package-inventory-deepseek',
+    ]) {
+      expect(manifest.dependencies, `dependency ${dependency} must not ship`).not.toHaveProperty(dependency)
+    }
     expect(manifest.dependencies).toHaveProperty('@mutantcat/dsh-web-fetch-http')
   })
 

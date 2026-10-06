@@ -44,7 +44,7 @@ async function fixture(reload: 'live' | 'startup' = 'live', overlay = false, pre
     ...(packageManager === undefined ? {} : { packageManager }),
     startedBundles: ['core', 'extra'],
     dir, patchPath: join(dir, 'cordis.patch.yml'), installAnchor: anchor, cwd: home, home,
-    overlays, telemetryDisabledEnv: undefined,
+    overlays,
   }
   const ctx = await boot('test', join(dir, 'cordis.yml'), readProfilePatches('test', profile), (ctx) => {
     ctx.provide('appReady', { onReady: (listener: () => void) => { listener(); return () => {} } })

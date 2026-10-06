@@ -1,4 +1,4 @@
-/** dsh plugin forwards pnpm through the shared profile package operations. */
+/** alpha plugin forwards pnpm through the shared profile package operations. */
 import { runPluginCommand } from '@mutantcat/dsh-plugin-manager/operations'
 import { INSTALL_ANCHOR } from './profile-boot.ts'
 import { resolveProfileDir } from '@mutantcat/dsh-app-boot'
@@ -16,10 +16,10 @@ export async function runPlugin(profile: string, args: readonly string[]): Promi
     lockWaitMs: 120000,
     onOutput: (text, stream) => { process[stream].write(text) },
   })
-  if (result.exitCode === 127) process.stderr.write('dsh: pnpm was not found; install pnpm and make it available on PATH.\n')
-  if (result.exitCode !== 0) process.stderr.write(`dsh: pnpm failed; diagnostics: ${result.logPath}\n`)
+  if (result.exitCode === 127) process.stderr.write('alpha: pnpm was not found; install pnpm and make it available on PATH.\n')
+  if (result.exitCode !== 0) process.stderr.write(`alpha: pnpm failed; diagnostics: ${result.logPath}\n`)
   if (result.exitCode !== 0 && args.some(argument => /^git\+|^github:|\.git(?:#|$)/.test(argument))) {
-    process.stderr.write(`dsh: git-hosted plugins build on install via their prepare script, which pnpm blocks until allowed — add the exact key pnpm printed above under allowBuilds in ${join(resolveProfileDir(profile), 'pnpm-workspace.yaml')}, then re-run\n`)
+    process.stderr.write(`alpha: git-hosted plugins build on install via their prepare script, which pnpm blocks until allowed — add the exact key pnpm printed above under allowBuilds in ${join(resolveProfileDir(profile), 'pnpm-workspace.yaml')}, then re-run\n`)
   }
   return result.exitCode
 }

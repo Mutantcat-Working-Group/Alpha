@@ -5,7 +5,7 @@ packages:
   # its native build and publication scripts under native/system.
   - native/system
   - native/system/packages/*
-  # Product assemblies over the package tier; apps/cli owns the `dsh` bin.
+  # Product assemblies over the package tier; apps/cli owns the `alpha` bin.
   - apps/*
   # Private package owning repository-level benchmark dependencies.
   - benchmarks

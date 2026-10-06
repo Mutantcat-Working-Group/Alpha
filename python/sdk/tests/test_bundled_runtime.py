@@ -1,4 +1,4 @@
-"""Keyless boot tests for the production exe and development dsh carrier.
+"""Keyless boot tests for the production exe and development alpha carrier.
 
 Each carrier skips independently when absent. The dummy API key only satisfies
 adapter loading; initialize and shutdown do not call a model.

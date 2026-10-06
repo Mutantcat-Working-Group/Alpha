@@ -53,7 +53,7 @@ Alpha 子进程使用产品启动器和一个显式的绝对路径 `DSH_HOME`。
   name: '@mutantcat/dsh-subagent-acp'
   config:
     providerName: acp
-    command: dsh
+    command: alpha
     args: ['--profile', 'acp', '--patch', '/absolute/path/to/acp.patch.yml']
     permission: reject
     env:

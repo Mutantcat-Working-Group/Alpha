@@ -1,5 +1,5 @@
 ---
-description: "App-owned command lines for dsh app bins: your app parses its own flags, --help, and exit behavior from the launcher's remaining arguments."
+description: "App-owned command lines for alpha app bins: your app parses its own flags, --help, and exit behavior from the launcher's remaining arguments."
 kind: "package-library"
 ---
 
@@ -31,7 +31,7 @@ Your app reads the invocation's inner arguments at startup, and any number of it
 
 The launcher makes three things available to your app:
 
-- `ctx.cmdlineArgs` — the inner arguments of your invocation. Reading them returns an immutable snapshot and never consumes or changes them: `dsh --profile tui --resume abc` gives your app `['--resume', 'abc']`.
+- `ctx.cmdlineArgs` — the inner arguments of your invocation. Reading them returns an immutable snapshot and never consumes or changes them: `alpha --profile tui --resume abc` gives your app `['--resume', 'abc']`.
 - `ctx.appExit` — a way to ask the process to exit once the tree has shut down, wired to the launcher's shutdown controller.
 - `ctx.appReady` — the successful-startup signal, committed only after the Loader tree and launcher-owned setup succeed.
 
@@ -59,7 +59,7 @@ Rows configured from the parsed values inject the published service and read it 
     port: !!js ctx.webStartup.port ?? 3080
 ```
 
-The outcomes: `dsh --profile web --port 8080` starts the server on port 8080 even when the config says 3080, because the flag wins. `--help` prints your app's help and exits 0 without starting anything; a rejected value (for example a non-numeric port) prints your error and exits nonzero, and no row that depends on the parsed values ever starts.
+The outcomes: `alpha --profile web --port 8080` starts the server on port 8080 even when the config says 3080, because the flag wins. `--help` prints your app's help and exits 0 without starting anything; a rejected value (for example a non-numeric port) prints your error and exits nonzero, and no row that depends on the parsed values ever starts.
 
 ### How flags beat config values
 

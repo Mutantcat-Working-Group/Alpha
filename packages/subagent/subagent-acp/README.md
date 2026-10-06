@@ -53,7 +53,7 @@ A Alpha child uses the product launcher and an explicit absolute `DSH_HOME`. The
   name: '@mutantcat/dsh-subagent-acp'
   config:
     providerName: acp
-    command: dsh
+    command: alpha
     args: ['--profile', 'acp', '--patch', '/absolute/path/to/acp.patch.yml']
     permission: reject
     env:

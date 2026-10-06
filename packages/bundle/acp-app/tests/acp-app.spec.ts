@@ -30,7 +30,9 @@ describe('dsh-acp-app bundle', () => {
     expect(rows.find(row => row.id === 'acp-app-startup')?.name).toBe('@mutantcat/dsh-acp-app')
     expect(rows.find(row => row.id === 'acp')).toMatchObject({
       inject: ['acpAppStartup'],
-      config: { provider: 'deepseek-official', model: 'deepseek-v4-flash' },
     })
+    // No provider is preselected: the profile ships zero chat routes, so a
+    // created agent follows the deployment default instead.
+    expect(rows.find(row => row.id === 'acp')?.config).toBeUndefined()
   })
 })

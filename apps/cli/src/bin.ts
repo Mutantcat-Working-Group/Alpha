@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Command-line entry for dsh.
- * @module @mutantcat/dsh/bin
+ * Command-line entry for Alpha.
+ * @module @mutantcat/alpha/bin
  */
 
 /* v8 ignore file -- built-bin acceptance exercises this self-executing dispatch. */
@@ -10,7 +10,7 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { loadLayeredEnv, StartupError } from '@mutantcat/dsh-app-boot'
 import { resolveDshHome } from '@mutantcat/dsh-home-paths'
-import { parseDshArgs } from './args.ts'
+import { parseAlphaArgs } from './args.ts'
 import { reportStartupFailure } from './startup-diagnostics.ts'
 
 // Both the source tree (apps/cli/src) and the bundled bin (apps/cli/lib) sit
@@ -24,19 +24,19 @@ function readVersion(): string {
 }
 
 /**
- * Run the public dsh command-line interface.
+ * Run the public Alpha command-line interface.
  * @returns a promise that settles when the selected command mode finishes.
  */
 export async function runCli(): Promise<void> {
   const version = readVersion()
-  const invocation = parseDshArgs(process.argv.slice(2), version)
+  const invocation = parseAlphaArgs(process.argv.slice(2), version)
 
   switch (invocation.mode) {
     case 'profile': {
       const { runProfile } = await import('./profile-boot.ts')
       try {
         await runProfile({
-          environment: loadLayeredEnv('dsh'),
+          environment: loadLayeredEnv('alpha'),
           profile: invocation.profile,
           fromDefaultProfile: invocation.fromDefaultProfile,
           patchFiles: invocation.patches,
@@ -66,13 +66,13 @@ export async function runCli(): Promise<void> {
     }
     default:
       invocation satisfies never
-      throw new Error(`dsh: unhandled invocation mode ${JSON.stringify(invocation)}`)
+      throw new Error(`alpha: unhandled invocation mode ${JSON.stringify(invocation)}`)
   }
 }
 
 // `import.meta.main` is absent before Node 24.2, and the fallback must still
-// detect the documented `npx @mutantcat/dsh` launch, where argv[1] is the
-// `node_modules/.bin/dsh` symlink rather than this file. Packaged single-file
+// detect the documented `npx @mutantcat/alpha` launch, where argv[1] is the
+// `node_modules/.bin/alpha` symlink rather than this file. Packaged single-file
 // runtimes import this module from a virtual path that `realpathSync` cannot
 // resolve, so an unresolvable launcher means the module was imported, not run.
 function isProcessEntry(): boolean {

@@ -94,7 +94,7 @@ function resolveClientExport(packagePath: string, pkg: ClientPackageManifest): s
 const comboUrl = (ids: readonly string[], rev: string): string =>
   `/plugins/??${ids.map(id => `${id}/client.js`).join(',')}&rev=${rev}`
 
-/** Derive the assembled browser graph from the same bundle patches and package declarations as `dsh web`. */
+/** Derive the assembled browser graph from the same bundle patches and package declarations as `alpha web`. */
 function loadAssembledPlugins(): readonly AssembledPlugin[] {
   const entries = appBoot.composeEntries(BUNDLE_LAYERS.map(layer =>
     appBoot.loadOverlayPatches('assembled boot', layer.patch)))

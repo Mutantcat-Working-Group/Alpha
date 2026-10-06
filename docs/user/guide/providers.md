@@ -4,17 +4,13 @@ English | [中文](providers.zh.md)
 
 This guide assumes you started the Web UI through the [root README](../../../README.en.md#run). Model changes take effect on the next request without restarting the server.
 
-## Configure DeepSeek
+## Add a provider
 
-Open **Settings → Models**. The DeepSeek card exposes one API-key field; enter the key and save it.
+Alpha mounts no provider of its own, so the first run opens **Settings → Models** with an empty list: add the one whose key you hold. Choose **Add provider** and pick from the installed catalog; the list shows provider ids such as `anthropic`, `openai`, `moonshotai` for Kimi, or `zai` for GLM. Enter its API key and save. The installed catalog supplies the endpoint, protocol, and model list.
 
-![The Models page: the DeepSeek card, with Add provider and Add a custom provider below it](providers-models-page.png)
+![The Models page: Add provider and Add a custom provider](providers-models-page.png)
 
 Keys are write-only. The page receives a redacted descriptor after saving, never the literal secret. The key is stored in `$DSH_HOME/.credentials.yaml`, while settings retain only its credential reference.
-
-## Add a built-in provider
-
-Choose **Add provider** and pick a provider dsh ships with; the list shows provider ids such as `anthropic`, `openai`, `moonshotai` for Kimi, or `zai` for GLM. Enter its API key and save. The installed catalog supplies the endpoint, protocol, and model list.
 
 Providers that sign in with OAuth, such as Codex, are not supported here yet.
 

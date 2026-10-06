@@ -88,7 +88,7 @@ Existing logs remain readable. The optional offloaded image field leaves unmarke
 <a id="verification"></a>
 ## Verification
 
-Session and image-offload tests cover event validation, immutable message projection, missing interpreters, restore, and retry. The focused 1,144-test run and two TypeScript image snapshots pass. The Python advanced SDK recording was refreshed through the built dsh profile and includes the standalone image/offload event.
+Session and image-offload tests cover event validation, immutable message projection, missing interpreters, restore, and retry. The focused 1,144-test run and two TypeScript image snapshots pass. The Python advanced SDK recording was refreshed through the built alpha profile and includes the standalone image/offload event.
 
 <a id="dev-note"></a>
 ## Dev Note

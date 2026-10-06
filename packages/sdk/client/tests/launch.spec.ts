@@ -1,4 +1,4 @@
-/** Public dsh launch resolution for the TypeScript SDK. */
+/** Public alpha launch resolution for the TypeScript SDK. */
 
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -46,7 +46,7 @@ describe('SDK dsh launch resolution', () => {
         '--patch', resolve(bin, '..', '..', 'src/sdk-source.cordis.patch.yml'),
       ])
     expect(launch.initializeTimeoutMs).toBe(DEFAULT_INITIALIZE_TIMEOUT_MS)
-    expect(launch.description).toBe('dsh profile "sdk"')
+    expect(launch.description).toBe('alpha profile "sdk"')
   })
 
   it('makes every filesystem input absolute before spawn and preserves patch order', () => {
@@ -73,7 +73,7 @@ describe('SDK dsh launch resolution', () => {
         '--patch', resolve(caller, '../second.yml'),
       ],
       cwd: join(caller, 'worker'),
-      description: 'dsh profile "custom-sdk"',
+      description: 'alpha profile "custom-sdk"',
       initializeTimeoutMs: 123,
       requestTimeoutMs: 456,
       shutdownTimeoutMs: 789,
@@ -145,11 +145,11 @@ describe('SDK dsh launch resolution', () => {
   })
 
   it.each([2, '2.0.0'])(
-    'rejects a dsh version that differs from the client (%j)',
+    'rejects an alpha version that differs from the client (%j)',
     (version) => {
       const pair = manifestPair({ version, bin: 'bin.js' }, { version: '1.0.0' })
       expect(() => resolveDshBinFromManifests(pair.dshUrl, pair.clientUrl))
-        .toThrow(`requires the same dsh version, got ${String(version)}`)
+        .toThrow(`requires the same alpha version, got ${String(version)}`)
     },
   )
 
@@ -159,11 +159,11 @@ describe('SDK dsh launch resolution', () => {
   })
 
   it.each([null, {}, ''])(
-    'rejects a manifest without a usable dsh executable (%j)',
+    'rejects a manifest without a usable alpha executable (%j)',
     (bin) => {
       const pair = manifestPair({ version: '1.0.0', bin }, { version: '1.0.0' })
       expect(() => resolveDshBinFromManifests(pair.dshUrl, pair.clientUrl))
-        .toThrow('declares no dsh executable')
+        .toThrow('declares no alpha executable')
     },
   )
 })

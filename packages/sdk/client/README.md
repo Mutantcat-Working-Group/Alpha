@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-sdk-client` lets TypeScript programs start and drive a complete Alpha runtime over stdio JSON-RPC. Use `DeepSeekHarness` to open sessions, send text or image prompts, collect event and notification streams, and obtain the last committed assistant response when the runtime becomes idle; use `HarnessClient` for direct protocol requests and subscriptions. Callers may provide `dshBin`; otherwise the client resolves the same-version `@mutantcat/dsh` executable. The client owns the subprocess across runs, exposes typed transport and protocol failures, and reaps it on `close()` or `await using`. It is suitable when the caller can choose the runtime profile and launch settings.
+`dsh-sdk-client` lets TypeScript programs start and drive a complete Alpha runtime over stdio JSON-RPC. Use `DeepSeekHarness` to open sessions, send text or image prompts, collect event and notification streams, and obtain the last committed assistant response when the runtime becomes idle; use `HarnessClient` for direct protocol requests and subscriptions. Callers may provide `dshBin`; otherwise the client resolves the same-version `@mutantcat/alpha` executable. The client owns the subprocess across runs, exposes typed transport and protocol failures, and reaps it on `close()` or `await using`. It is suitable when the caller can choose the runtime profile and launch settings.
 
 ## Table of Contents
 
@@ -99,7 +99,7 @@ Read these pages when the client contract is not enough. They move from the wire
 - [JSON-RPC serving plugin](../server/README.md) — the runtime plugin that serves this client.
 - [Python SDK](../../../python/README.md) — the design twin that shares the same runtime peer and protocol.
 - [SDK subagent backend](../../subagent/subagent-dsh-sdk/README.md) — a harness-internal consumer of this client.
-- [SDK application bundle](../../bundle/sdk-app/README.md) — the `dsh --profile sdk` runtime application this client launches.
+- [SDK application bundle](../../bundle/sdk-app/README.md) — the `alpha --profile sdk` runtime application this client launches.
 
 -----
 
@@ -119,7 +119,7 @@ None in the client process. Profile, patch, provider, model, and history choices
 
 These limits define when the client is a poor fit or needs special care. They are current package constraints, not a comparison with other SDK clients or a task backlog.
 
-- **No bundled-runtime resolution** — the client resolves the same-version `@mutantcat/dsh` package (or a caller-provided `dshBin`); packaged-executable discovery stays Python-side until a TypeScript distribution consumer exists.
+- **No bundled-runtime resolution** — the client resolves the same-version `@mutantcat/alpha` package (or a caller-provided `dshBin`); packaged-executable discovery stays Python-side until a TypeScript distribution consumer exists.
 - **No mid-turn cancel** — the wire has no prompt-cancel method; abandoning a turn means closing the runtime (see the [protocol limitations](../protocol/README.md#known-limitations-and-deferred-work)).
 - **No per-prompt result** — low-level `prompt()` returns only an enqueue receipt; high-level `run()` owns receipt-to-idle collection, and abandoning it means closing the runtime.
 - **Client→server notifications and server→client requests are unimplemented** on both wire ends; the transport carries them for future approval flows.

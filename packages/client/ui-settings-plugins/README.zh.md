@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的「内置插件」设置分区，以及注册进插件页的官方插件配置页。"
+description: "alpha Web 客户端的「内置插件」设置分区，以及注册进插件页的官方插件配置页。"
 kind: "package-reference"
 ---
 

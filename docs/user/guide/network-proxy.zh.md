@@ -2,7 +2,7 @@
 
 [English](network-proxy.md) | 中文
 
-Alpha 会把自身的出站请求——模型调用、web 搜索、页面抓取、走 HTTP 的 MCP 服务器——都经由标准代理环境变量所指定的代理发出。它在启动时读取这些变量，不需要其他配置。有几条路径出于设计或运行时限制保持直连，下文"哪些保持直连"一节列出了它们。
+Alpha 会把自身的出站请求——模型调用、页面抓取、走 HTTP 的 MCP 服务器——都经由标准代理环境变量所指定的代理发出。它在启动时读取这些变量，不需要其他配置。有几条路径出于设计或运行时限制保持直连，下文"哪些保持直连"一节列出了它们。
 
 ## 导出环境变量
 
@@ -11,7 +11,7 @@ export HTTPS_PROXY=http://127.0.0.1:7890
 export HTTP_PROXY=http://127.0.0.1:7890
 ```
 
-把这两行写进 shell 配置，这样每次调用 `dsh` 都会继承它们；也可以写进 `$DSH_HOME/.env`（默认 `~/.dsh/.env`），和 API key 放在一起；导出的环境变量始终优先于该文件。项目自己的 `.env` 不能设置它们：它随 `git clone` 一起到来，Alpha 宁可拒绝启动，也不让一个仓库决定你的流量去向。
+把这两行写进 shell 配置，这样每次调用 `alpha` 都会继承它们；也可以写进 `$DSH_HOME/.env`（默认 `~/.dsh/.env`），和 API key 放在一起；导出的环境变量始终优先于该文件。项目自己的 `.env` 不能设置它们：它随 `git clone` 一起到来，Alpha 宁可拒绝启动，也不让一个仓库决定你的流量去向。
 
 需要凭据的代理把凭据写在 URL 里：`http://user:password@proxy.example:8080`。Alpha 绝不会回显这个 URL：诊断只点名被拒绝的变量，因此用户名和密码都不会出现在任何地方。
 
@@ -55,7 +55,7 @@ export NO_PROXY=internal.example.com,.corp.example.com,registry.local
 export NODE_EXTRA_CA_CERTS=/path/to/corporate-ca.pem
 ```
 
-Node 只在进程启动时读取该变量，所以要在运行 `dsh` 之前导出。
+Node 只在进程启动时读取该变量，所以要在运行 `alpha` 之前导出。
 
 **Alpha 替你运行的工具遵循同一个代理。** bash 工具里的命令、`git`、`gh`，以及作为子进程启动的 MCP 服务器都会继承这些变量。子进程若本身是 Node 程序，则需 Node 22.21 或更高版本才会遵循；更旧的 Node 会直连。如果你的某个代理变量是 Alpha 拒绝的值——比如 SOCKS URL——基于 Node 的工具同样直连而不是起不来，`curl` 与 `git` 则仍会读取那个值。
 
@@ -67,7 +67,7 @@ Node 只在进程启动时读取该变量，所以要在运行 `dsh` 之前导�
 
 - **本机上的一切。** loopback 始终直连：`localhost`、整个 `127.0.0.0/8` 段、`::1` 与 `0.0.0.0`。代理无法有意义地访问一个只在本地监听的服务。
 - **模型编写的代码。** Workflow worker 与 Node ptc-runtime 进程不接收代理配置，因此模型脚本读不到可能携带密码的代理 URL。直接请求必须自行配置所需代理，并继续受到执行沙箱的约束。
-- **使用情况遥测。** OTLP 导出器用的是 Node 自带的 HTTP 客户端，而不是代理所配置的那个，因此遥测直连；在禁止直连出网的环境里它只会失败。Alpha 的任何功能都不依赖它。设 `DSH_TELEMETRY_MODE=DISABLED` 可完全关闭。
+- **部署方自己的使用情况遥测。** Alpha 不挂载任何遥测导出器，因此默认安装不会把使用数据发往任何地方。部署方若在自己的 profile patch 中追加了 OTel 行，得到的导出器用的是 Node 自带的 HTTP 客户端，而不是代理所配置的那个，因此它会直连，在禁止直连出网的环境里只会失败。Alpha 的任何功能都不依赖它。
 - **`web_fetch` 访问字面量私网地址。** 形如 `http://10.0.0.5/` 的 URL 会被拒绝而非交给代理，与未配置代理时得到的拒绝相同。
 
 ## 验证是否生效
@@ -75,7 +75,7 @@ Node 只在进程启动时读取该变量，所以要在运行 `dsh` 之前导�
 让 agent 抓取一个页面，同时观察代理软件的连接日志：
 
 ```sh
-dsh --profile headless "fetch https://example.com and tell me the page title"
+alpha --profile headless "fetch https://example.com and tell me the page title"
 ```
 
 如果请求没有出现在那里，确认变量确实进入了 Alpha 自己的环境：

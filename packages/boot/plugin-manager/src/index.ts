@@ -1,4 +1,4 @@
-/** Current-profile plugin and bundle management over shared dsh plugin operations. */
+/** Current-profile plugin and bundle management over shared alpha plugin operations. */
 import { randomUUID } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { readFile, rm } from 'node:fs/promises'
@@ -31,7 +31,7 @@ export { InvalidInstallSpecError, parseInstallSpec, type ParsedInstallSpec } fro
 
 /** The pnpm executable and the limits for package diagnostics and registry lookups. */
 export interface Config {
-  /** The pnpm executable name or path; resolved through `PATH` like the `dsh plugin` command. */
+  /** The pnpm executable name or path; resolved through `PATH` like the `alpha plugin` command. */
   pnpmCommand?: string
   /** Maximum retained pnpm diagnostic bytes per operation. */
   outputBytes?: number
@@ -95,7 +95,7 @@ function stringField(manifest: object, field: string): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-/** The fields of the dsh installation's own manifest the manager reads. */
+/** The fields of the alpha installation's own manifest the manager reads. */
 interface InstallationManifest {
   dependencies?: Record<string, string>
 }
@@ -168,7 +168,7 @@ export class PluginManager extends TypertRemoteService {
    */
   @Remote
   async listPlugins(): Promise<PluginInfo[]> {
-    const rows = flatten(composeEntries([readProfilePatches('dsh', this.profile)]))
+    const rows = flatten(composeEntries([readProfilePatches('alpha', this.profile)]))
     const snapshot = await readPluginInventory(this.ctx)
     return snapshot.entries.map((entry) => {
       const actual = [...this.ctx.loader.entries()].find(row => row.id === entry.entryId)
@@ -185,14 +185,14 @@ export class PluginManager extends TypertRemoteService {
     })
   }
 
-  /** Read the profile's installed bundles, the bundles this dsh installation supplies, and the selected names that are not bundles.
+  /** Read the profile's installed bundles, the bundles this alpha installation supplies, and the selected names that are not bundles.
    * A dependency without a bundle patch is listed, as a `not-bundle` problem, only while it is selected.
    * @returns Package versions, one-liners, rows, activation selections, whether the installation offers the
    * bundle, and removal availability.
    */
   @Remote
   listBundles(): Promise<BundleInfo[]> {
-    const manifest = readProfileManifest('dsh', this.profile.dir)
+    const manifest = readProfileManifest('alpha', this.profile.dir)
     const selected = manifest.dsh?.profile?.bundles ?? []
     const dependencies = Object.keys(manifest.dependencies ?? {})
     const installation = JSON.parse(readFileSync(this.profile.installAnchor, 'utf8')) as InstallationManifest
@@ -239,7 +239,7 @@ export class PluginManager extends TypertRemoteService {
       if (!(error instanceof InvalidInstallSpecError)) throw error
       return refused('invalid-spec', error.reason)
     }
-    const manifest = readProfileManifest('dsh', this.profile.dir)
+    const manifest = readProfileManifest('alpha', this.profile.dir)
     const installation = JSON.parse(readFileSync(this.profile.installAnchor, 'utf8')) as InstallationManifest
     const known = new Set([
       ...manifest.dsh?.profile?.bundles ?? [], ...Object.keys(manifest.dependencies ?? {}), ...Object.keys(installation.dependencies ?? {}),
@@ -326,7 +326,7 @@ export class PluginManager extends TypertRemoteService {
   }
 
   /**
-   * Install a package using the same pnpm implementation as dsh plugin. A run
+   * Install a package using the same pnpm implementation as alpha plugin. A run
    * that fails, is cancelled, or adds a package without a bundle patch restores
    * `package.json` and `pnpm-lock.yaml` as they were; downloaded files can stay.
    * @param spec One package spec, including local paths relative to the invocation directory.
@@ -351,7 +351,7 @@ export class PluginManager extends TypertRemoteService {
         result.approvedBuilds = options.approvedBuilds
       }
       const files = await this.readRestoredFiles()
-      const before = readProfileManifest('dsh', this.profile.dir).dependencies ?? {}
+      const before = readProfileManifest('alpha', this.profile.dir).dependencies ?? {}
       announce('installing')
       let name: string
       try {
@@ -365,17 +365,17 @@ export class PluginManager extends TypertRemoteService {
           }
           throw new Error(result.packageResult.output)
         }
-        const after = readProfileManifest('dsh', this.profile.dir).dependencies ?? {}
+        const after = readProfileManifest('alpha', this.profile.dir).dependencies ?? {}
         const installed = Object.keys(after).filter(name => before[name] !== after[name])
         // Registry retries can retain the saved range after a partial installation.
         if (installed.length === 0) installed.push(...Object.keys(after).filter(name => spec === name || spec.startsWith(`${name}@`)))
         const target = installed[0]
         if (installed.length !== 1 || target === undefined) throw new ManagementFailure('ambiguous-install')
         name = target
-        const dir = resolveBundleDir('dsh', name, this.profile.installAnchor, this.profile.dir)
+        const dir = resolveBundleDir('alpha', name, this.profile.installAnchor, this.profile.dir)
         const manifest = bundleManifest(name, this.profile.dir, this.profile.installAnchor)
         if (manifest?.dsh?.bundle?.patch === undefined) throw new ManagementFailure('not-bundle')
-        loadOverlayPatches('dsh', join(dir, manifest.dsh.bundle.patch))
+        loadOverlayPatches('alpha', join(dir, manifest.dsh.bundle.patch))
       } catch (error) {
         // pnpm has exited by now, so the files it rewrote go back as they were.
         await this.restoreFiles(files)
@@ -413,7 +413,7 @@ export class PluginManager extends TypertRemoteService {
     return { status: 'cancelled' }
   }
 
-  /** Unload and remove a profile-owned bundle dependency through dsh plugin's pnpm path.
+  /** Unload and remove a profile-owned bundle dependency through alpha plugin's pnpm path.
    * @param name Installed dependency name.
    * @returns Removal diagnostics and the remaining profile state.
    */
@@ -448,8 +448,8 @@ export class PluginManager extends TypertRemoteService {
     const patch = info.dsh?.bundle?.patch
     /* v8 ignore next -- bundleManifest answers only manifests that declare a patch */
     if (patch === undefined) return { rows: [], overrides: [] }
-    const dir = resolveBundleDir('dsh', name, this.profile.installAnchor, this.profile.dir)
-    const patches: PatchOptions[] = loadOverlayPatches('dsh', join(dir, patch))
+    const dir = resolveBundleDir('alpha', name, this.profile.installAnchor, this.profile.dir)
+    const patches: PatchOptions[] = loadOverlayPatches('alpha', join(dir, patch))
     // One entry per row id: the Loader keeps a single entry for an id, whichever layer declared it last.
     const live = new Map<string, PluginEntryId>()
     for (const entry of this.ctx.loader.entries()) {
@@ -518,7 +518,7 @@ export class PluginManager extends TypertRemoteService {
   }
 
   private async selectBundle(name: string, enabled: boolean): Promise<void> {
-    const manifest = readProfileManifest('dsh', this.profile.dir)
+    const manifest = readProfileManifest('alpha', this.profile.dir)
     const previous = manifest.dsh?.profile?.bundles ?? []
     if ((enabled || !previous.includes(name)) && bundleManifest(name, this.profile.dir, this.profile.installAnchor) === undefined) {
       throw new ManagementFailure('not-bundle')
@@ -535,8 +535,8 @@ export class PluginManager extends TypertRemoteService {
   private bundleRows(name: string): EntryOptions[] {
     const info = bundleManifest(name, this.profile.dir, this.profile.installAnchor)
     if (info?.dsh?.bundle === undefined) return []
-    const dir = resolveBundleDir('dsh', name, this.profile.installAnchor, this.profile.dir)
-    return flatten(composeEntries([loadOverlayPatches('dsh', join(dir, info.dsh.bundle.patch))]))
+    const dir = resolveBundleDir('alpha', name, this.profile.installAnchor, this.profile.dir)
+    return flatten(composeEntries([loadOverlayPatches('alpha', join(dir, info.dsh.bundle.patch))]))
   }
 
   private protectsManager(name: string): boolean {
@@ -551,7 +551,7 @@ export class PluginManager extends TypertRemoteService {
 
   private async reload(requiredIds: readonly string[] = []): Promise<string[]> {
     if (this.ownerContext.get('hmr') === undefined) return []
-    return reconcileProfilePatches(this.ownerContext.root, readProfilePatches('dsh', this.profile), 'dsh', requiredIds)
+    return reconcileProfilePatches(this.ownerContext.root, readProfilePatches('alpha', this.profile), 'alpha', requiredIds)
   }
 
   private async change(

@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 /**
- * The dsh CLI ships its command and the profile lifecycle shared with Desktop.
+ * The alpha CLI ships its command and the profile lifecycle shared with Desktop.
  * Declarations come from `tsc -b` (dts: false), matching every package.
  */
 export default defineConfig({

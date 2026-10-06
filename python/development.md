@@ -51,7 +51,7 @@ Alternatively export a non-empty `DSH_HOME`. The SDK rejects a launch that would
 
 ## Run against Node source
 
-Repository contributors can select either development route; both execute the normal `dsh --profile sdk` launcher:
+Repository contributors can select either development route; both execute the normal `alpha --profile sdk` launcher:
 
 - Set `DSH_RUNTIME_MODE=node` to use the built Node carrier on system Node `>=22.19`. The build script refreshes this carrier, but distributions never include or auto-select it.
 - Set `dsh_bin` to the absolute built `apps/cli/lib/bin.js` path to exercise the checkout's CLI directly. Supply an explicit `dsh_home`, plus `profile` and ordered `patches` as needed.

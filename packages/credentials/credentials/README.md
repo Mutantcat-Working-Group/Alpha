@@ -92,7 +92,7 @@ Requests that need the key use its current stored value, so rotating the key tak
 
 ### What can go wrong
 
-- **A key the launching environment supplies cannot be overwritten** — `DEEPSEEK_API_KEY=… dsh` (or a CI secret, a container `-e`) wins for this run and is reported read-only; clear the variable in the launching shell before storing a different value.
+- **A key the launching environment supplies cannot be overwritten** — `DEEPSEEK_API_KEY=… alpha` (or a CI secret, a container `-e`) wins for this run and is reported read-only; clear the variable in the launching shell before storing a different value.
 - **An empty value cannot be stored** — storing an empty string is refused; remove the key instead.
 - **Key values never appear in configuration UIs or diagnostics** — the UI shows whether a key is set, where it comes from, and whether you can change it; the value itself stays in the store.
 

@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-commands` 让用户能在交互式 Harness UI 中运行 `/command [input]` 操作，且不会把命令或结果变成模型消息。命令可以展示输入提示、接受附件，并只针对一个 agent 生效，同时为其他 agent 保留同名的全局命令。每次通过准入的执行都会记录到接收 agent 的会话日志中，UI 则在模型历史之外渲染结算结果。它适合为 `dsh` CLI（命令行界面）或 Web 客户端提供直接面向用户的控制；无 UI 的演示与 ACP（Agent Client Protocol）自动化不提供此命令面。
+`dsh-commands` 让用户能在交互式 Harness UI 中运行 `/command [input]` 操作，且不会把命令或结果变成模型消息。命令可以展示输入提示、接受附件，并只针对一个 agent 生效，同时为其他 agent 保留同名的全局命令。每次通过准入的执行都会记录到接收 agent 的会话日志中，UI 则在模型历史之外渲染结算结果。它适合为 `alpha` CLI（命令行界面）或 Web 客户端提供直接面向用户的控制；无 UI 的演示与 ACP（Agent Client Protocol）自动化不提供此命令面。
 
 ## 目录
 

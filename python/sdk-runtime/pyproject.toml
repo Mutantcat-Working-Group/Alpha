@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "deepseek-harness-runtime-bin"
 version = "0.0.0.dev0"
-description = "Bundled dsh CLI runtime for the Alpha Python SDK"
+description = "Bundled Alpha CLI runtime for the Alpha Python SDK"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -18,9 +18,9 @@ Issues = "https://github.com/Mutantcat-Working-Group/Alpha/issues"
 Source = "https://github.com/Mutantcat-Working-Group/Alpha"
 
 [project.scripts]
-dsh = "deepseek_harness_runtime:main"
+alpha = "deepseek_harness_runtime:main"
 
-# Include the injected dsh executable and sidecars; exclude the dev-only node closure.
+# Include the injected alpha executable and sidecars; exclude the dev-only node closure.
 [tool.hatch.build]
 artifacts = ["src/deepseek_harness_runtime/runtime/deepseek-harness-sdk-runtime-*", "src/deepseek_harness_runtime/runtime/deepseek-harness-sdk-runtime-*/**"]
 exclude = ["src/deepseek_harness_runtime/runtime/node"]

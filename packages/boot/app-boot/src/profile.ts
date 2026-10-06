@@ -1,6 +1,6 @@
 /**
  * Profile discovery, initialization, and patch-layer composition for the
- * `dsh --profile` launcher family.
+ * `alpha --profile` launcher family.
  *
  * A profile is a directory under `$DSH_HOME/profiles/<name>` holding a
  * `package.json` (out-of-tree plugin dependencies plus the profile manifest
@@ -13,9 +13,9 @@
  * layers (`--patch` files and flag-derived patches).
  *
  * Module resolution is two-anchor by construction: a bundle name resolves
- * first from the dsh installation (the launcher's own package), then from the
+ * first from the alpha installation (the launcher's own package), then from the
  * profile directory. Pnpm-managed entries in the profile's `node_modules`
- * resolve first. Dsh-owned links add packages carried only by selected
+ * resolve first. Alpha-owned links add packages carried only by selected
  * bundles, while `$DSH_HOME/profiles/node_modules` supplies the installation
  * dependency closure through Node's ordinary parent-walk. Plain Node uses
  * symlinks for that shared fallback; packaged executables use ESM proxies so
@@ -118,7 +118,7 @@ export type ProfileResolutionMode = 'link' | 'dual' | 'runtime'
 
 /**
  * Resolve a profile's directory under the Harness home.
- * @param name - the profile name (`dsh --profile <name>`).
+ * @param name - the profile name (`alpha --profile <name>`).
  * @param home - the Harness home; defaults to {@link resolveDshHome}.
  * @returns the absolute profile directory (which may not exist yet).
  */
@@ -126,7 +126,7 @@ export function resolveProfileDir(name: string, home: string = resolveDshHome())
   if (name === '' || name.includes('/') || name.includes('\\') || name === '.' || name === '..'
     // The launcher-maintained flat module fallback lives at this sibling path.
     || name === 'node_modules') {
-    throw new Error(`dsh: invalid profile name ${JSON.stringify(name)}`)
+    throw new Error(`alpha: invalid profile name ${JSON.stringify(name)}`)
   }
   return join(home, PROFILES_DIR, name)
 }
@@ -155,11 +155,11 @@ const INSTALLATION_OWNED_PROFILE_TUPLES: Record<string, readonly string[]> = {
   headless: ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app', '@mutantcat/dsh-headless'],
 }
 
-/** The bundle list a `dsh plugin` init uses for a name with no shipped template. */
+/** The bundle list an `alpha plugin` init uses for a name with no shipped template. */
 export const DEFAULT_PROFILE_BUNDLES: readonly string[] = ['@mutantcat/dsh-base']
 
 /**
- * The bundles the dsh installation ships for a person to switch on: each a
+ * The bundles the alpha installation ships for a person to switch on: each a
  * runtime dependency of the installation that declares `dsh.bundle.patch`,
  * selected by no shipped template, and offered switched off by the plugin
  * manager ([rationale](../../../../.agents/notes/implemented/process/2026-09-15-shipped-optional-bundles.md)).
@@ -169,7 +169,7 @@ export const OPTIONAL_BUNDLES: readonly string[] = [
   '@mutantcat/dsh-experimental-agent-team-web-profile',
 ]
 
-const PROFILE_PATCH_TEMPLATE = `# Your patch layer for this dsh profile, applied after every bundle layer:
+const PROFILE_PATCH_TEMPLATE = `# Your patch layer for this alpha profile, applied after every bundle layer:
 # a top-level YAML array of loader patch entries (id-targeted config
 # overrides, disables, and insert lists; \`!!js\` expressions allowed).
 []
@@ -202,7 +202,7 @@ export function initProfile(
   const manifestPath = join(dir, 'package.json')
   if (!existsSync(manifestPath)) {
     const manifest: ProfileManifest & { private: boolean } = {
-      name: `dsh-profile-${basename(dir)}`,
+      name: `alpha-profile-${basename(dir)}`,
       private: true,
       dependencies: {},
       dsh: { profile: { bundles: [...bundles] } },
@@ -224,7 +224,7 @@ function readModuleProxyRecord(link: string): ModuleProxyRecord | undefined {
   }
 }
 
-/** Ensure `link` is a symlink to `target`, replacing a wrong link or a dsh-managed packaged proxy. */
+/** Ensure `link` is a symlink to `target`, replacing a wrong link or an alpha-managed packaged proxy. */
 function ensureSymlink(link: string, target: string): void {
   let stat
   try {
@@ -238,7 +238,7 @@ function ensureSymlink(link: string, target: string): void {
     if (!stat.isSymbolicLink()) {
       const existing = stat.isDirectory() ? readModuleProxyRecord(link) : undefined
       if (existing?.dsh?.moduleFallback?.targets === undefined) {
-        throw new Error(`dsh: ${link} exists and is not a symlink or dsh-managed module proxy; remove it so dsh can manage the installation fallback`)
+        throw new Error(`alpha: ${link} exists and is not a symlink or alpha-managed module proxy; remove it so alpha can manage the installation fallback`)
       }
       rmSync(link, { recursive: true })
       stat = undefined
@@ -334,14 +334,14 @@ function packageEntryFromPackage(
   } catch (error) {
     if ((error as Error).message.startsWith('No known conditions for ')) return undefined
     const specifier = subpath === '.' ? packageName : packageName + subpath.slice(1)
-    throw new Error(`dsh: cannot resolve ESM export ${specifier} from installed package ${packageName}`, { cause: error })
+    throw new Error(`alpha: cannot resolve ESM export ${specifier} from installed package ${packageName}`, { cause: error })
   }
   for (const candidate of candidates ?? []) {
     const target = candidate
     const entry = resolve(packageDir, target)
     const relativeEntry = relative(packageDir, entry)
     if (!target.startsWith('./') || /^\.\.(?:[\\/]|$)/u.test(relativeEntry)) {
-      throw new Error(`dsh: installed package ${packageName} export ${subpath} resolves outside its package: ${target}`)
+      throw new Error(`alpha: installed package ${packageName} export ${subpath} resolves outside its package: ${target}`)
     }
     if (existsSync(entry) && statSync(entry).isFile()) return pathToFileURL(entry).href
   }
@@ -362,7 +362,7 @@ function packageProxySource(
     version?: unknown
   }
   if (typeof manifest.version !== 'string' || manifest.version.length === 0) {
-    throw new Error(`dsh: installed package ${packageName} must declare a non-empty version`)
+    throw new Error(`alpha: installed package ${packageName} must declare a non-empty version`)
   }
   const declared = manifest.exports
   if (declared === undefined) {
@@ -376,7 +376,7 @@ function packageProxySource(
         && (manifest.bin !== undefined || manifest.types !== undefined || manifest.typings !== undefined)) {
         return { version: manifest.version, targets: {} }
       }
-      throw new Error(`dsh: installed package ${packageName} main entry is missing at ${entry}`, { cause: error })
+      throw new Error(`alpha: installed package ${packageName} main entry is missing at ${entry}`, { cause: error })
     }
   }
   const subpaths = declared !== null && typeof declared === 'object' && !Array.isArray(declared)
@@ -434,7 +434,7 @@ function ensureModuleProxy(
   if (stat !== undefined) {
     const existing = readModuleProxyRecord(link)
     if (existing?.dsh?.moduleFallback?.targets === undefined) {
-      throw new Error(`dsh: ${link} exists and is not a dsh-managed module proxy; remove it so dsh can manage the installation fallback`)
+      throw new Error(`alpha: ${link} exists and is not an alpha-managed module proxy; remove it so alpha can manage the installation fallback`)
     }
     if (existing.version === version
       && JSON.stringify(existing.dsh.moduleFallback.targets) === JSON.stringify(targets)
@@ -546,7 +546,7 @@ function moduleFallbackCurrent(modulesDir: string, entries: readonly ModuleFallb
 
 /** Inputs for {@link healProfilesModuleFallback}. */
 export interface ProfileModuleFallbackOptions {
-  /** Absolute package.json path of the running dsh installation. */
+  /** Absolute package.json path of the running alpha installation. */
   installAnchor: string
   /** Loaded profile whose selected bundles may carry profile-local plugins. */
   profile?: Profile
@@ -558,7 +558,7 @@ export interface ProfileModuleFallbackOptions {
 
 /**
  * Maintain module fallbacks for one profile launch. The shared
- * `$DSH_HOME/profiles/node_modules` mirrors the dsh installation dependency
+ * `$DSH_HOME/profiles/node_modules` mirrors the alpha installation dependency
  * closure. Plain Node writes symlinks; a packaged executable writes ESM
  * proxies under a cross-process lock because operating-system links cannot
  * enter pkg's virtual filesystem. Missing packages carried only by selected
@@ -845,11 +845,11 @@ function packageDirFromAnchor(
  * Resolve one bundle package's directory: installation anchor first, then the
  * profile directory. The installation-first order is the contract that
  * `@mutantcat/dsh-base` (and every other in-box bundle) always comes from
- * the same installation as the running dsh, never from a profile-local copy.
+ * the same installation as the running alpha, never from a profile-local copy.
  * Resolution does not require the package to export `./package.json`.
  * @param binName - the diagnostic prefix on the thrown error.
  * @param packageName - the bundle's package name from `dsh.profile.bundles`.
- * @param installAnchor - absolute path of a file inside the dsh app package (its package.json).
+ * @param installAnchor - absolute path of a file inside the alpha app package (its package.json).
  * @param profileDir - the profile directory (second anchor).
  * @returns the bundle package's absolute directory.
  */
@@ -861,8 +861,8 @@ export function resolveBundleDir(
     if (dir !== undefined) return dir
   }
   throw new Error(
-    `${binName}: cannot resolve profile bundle ${JSON.stringify(packageName)} from the dsh installation or ${profileDir}; `
-    + `run 'dsh plugin --profile ${basename(profileDir)} install' if its dependency is not installed`,
+    `${binName}: cannot resolve profile bundle ${JSON.stringify(packageName)} from the alpha installation or ${profileDir}; `
+    + `run 'alpha plugin --profile ${basename(profileDir)} install' if its dependency is not installed`,
   )
 }
 
@@ -872,7 +872,7 @@ export function resolveBundleDir(
  * package project and lifecycle belong to that application.
  * @param binName - the diagnostic prefix on thrown errors.
  * @param dir - absolute profile package directory.
- * @param installAnchor - absolute path of the owning dsh app's package.json.
+ * @param installAnchor - absolute path of the owning alpha app's package.json.
  * @param options - `userLayer: false` skips reading `cordis.patch.yml`.
  * @returns the resolved bundle layers and optional user patch layer.
  */
@@ -908,7 +908,7 @@ export function loadProfileDirectory(
  * is a misconfiguration, not "no patches".
  * @param binName - the diagnostic prefix on thrown errors.
  * @param name - the profile name.
- * @param installAnchor - absolute path of the dsh app's package.json (first resolution anchor).
+ * @param installAnchor - absolute path of the alpha app's package.json (first resolution anchor).
  * @param home - the Harness home; defaults to {@link resolveDshHome}.
  * @param options - `userLayer: false` skips reading `cordis.patch.yml`, so a
  * bundles-only consumer (`--dump-default-config`, a recovery diagnostic)
@@ -924,7 +924,7 @@ export function loadProfile(
     const template = PROFILE_TEMPLATES[name]
     if (template === undefined) {
       throw new Error(
-        `${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`,
+        `${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'alpha plugin --profile ${name} add <package>'`,
       )
     }
     initProfile(dir, template.bundles)

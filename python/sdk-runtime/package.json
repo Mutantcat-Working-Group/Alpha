@@ -1,6 +1,6 @@
 {
-  "name": "dsh-python-runtime-closure",
-  "description": "Dependency-only deploy root defining the dsh executable shipped by the Python runtime wheel.",
+  "name": "alpha-python-runtime-closure",
+  "description": "Dependency-only deploy root defining the alpha executable shipped by the Python runtime wheel.",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "@mutantcat/cordis-plugin-loader": "workspace:^",
     "@mutantcat/cordis-plugin-timer": "workspace:^",
     "@mutantcat/cosmokit": "workspace:^",
-    "@mutantcat/dsh": "workspace:^",
+    "@mutantcat/alpha": "workspace:^",
     "@mutantcat/dsh-acp": "workspace:^",
     "@mutantcat/dsh-agent": "workspace:^",
     "@mutantcat/dsh-agent-instructions": "workspace:^",

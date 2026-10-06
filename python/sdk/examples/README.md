@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Runnable Python SDK example over the sole application launcher, `dsh --profile sdk-minimal`. The Python client owns JSON-RPC stdio; the profile owns the agent composition, persistence, execution policy, and plugins.
+Runnable Python SDK example over the sole application launcher, `alpha --profile sdk-minimal`. The Python client owns JSON-RPC stdio; the profile owns the agent composition, persistence, execution policy, and plugins.
 
 ## Run the minimal agent
 
@@ -29,15 +29,15 @@ The persistent PTY can modify any path available to the runtime process, so use 
 
 ## Add plugins
 
-Use the runtime wheel's `dsh` command against the same explicit home for persistent profile changes:
+Use the runtime wheel's `alpha` command against the same explicit home for persistent profile changes:
 
 ```sh
 export DSH_HOME=/absolute/path/to/example-dsh-home
-dsh plugin --profile sdk-minimal add file:/absolute/path/to/my-plugin-bundle
+alpha plugin --profile sdk-minimal add file:/absolute/path/to/my-plugin-bundle
 ```
 
 Use `sdk-minimal` in that command to extend this example, or `sdk` to extend the full base-backed SDK profile. The Python call can also pass additional absolute patch paths in `patches=(...)`; later files win. A selected profile must retain `@mutantcat/dsh-sdk-app` or another JSON-RPC server row. The example accepts no complete Cordis file or arbitrary process argv.
 
-The same runtime wheel packages the `web` profile and its frontend assets for direct CLI use: `dsh web` starts that separate application. A Python SDK client cannot select `web` because it has no JSON-RPC server row.
+The same runtime wheel packages the `web` profile and its frontend assets for direct CLI use: `alpha web` starts that separate application. A Python SDK client cannot select `web` because it has no JSON-RPC server row.
 
 See the [Python SDK tutorial](../../../docs/user/guide/python-sdk.md) and [SDK reference](../README.md).

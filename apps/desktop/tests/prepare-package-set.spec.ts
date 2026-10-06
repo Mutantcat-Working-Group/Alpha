@@ -23,12 +23,12 @@ describe('desktop package-set selection', () => {
 
   it('includes only the available internal production closure', () => {
     const available = new Map<string, PackedDesktopPackage>([
-      ['@mutantcat/dsh', packed('@mutantcat/dsh', {
+      ['@mutantcat/alpha', packed('@mutantcat/alpha', {
         dependencies: { '@mutantcat/dsh-base': '^1.0.0', external: '^2.0.0' },
         optionalDependencies: { '@mutantcat/platform-package': '1.0.0', '@mutantcat/missing-platform': '1.0.0' },
       })],
       ['@mutantcat/dsh-desktop-host', packed('@mutantcat/dsh-desktop-host', {
-        dependencies: { '@mutantcat/dsh': '^1.0.0' },
+        dependencies: { '@mutantcat/alpha': '^1.0.0' },
       })],
       ['@mutantcat/dsh-base', packed('@mutantcat/dsh-base', {
         peerDependencies: { '@mutantcat/cordis': '^1.0.0' },
@@ -39,7 +39,7 @@ describe('desktop package-set selection', () => {
     ])
     expect(selectDesktopPackageClosure(available).map(entry => entry.manifest.name)).toEqual([
       '@mutantcat/cordis',
-      '@mutantcat/dsh',
+      '@mutantcat/alpha',
       '@mutantcat/dsh-base',
       '@mutantcat/dsh-desktop-host',
       '@mutantcat/platform-package',
@@ -50,22 +50,22 @@ describe('desktop package-set selection', () => {
     '@mutantcat/dsh-base', '@mutantcat/cordis', '@mutantcat/node-addon-system',
   ])('rejects required prepared package %s absent from the packed release inputs', (dependency) => {
     const available = new Map<string, PackedDesktopPackage>([
-      ['@mutantcat/dsh', packed('@mutantcat/dsh', {
+      ['@mutantcat/alpha', packed('@mutantcat/alpha', {
         dependencies: { [dependency]: '^1.0.0' },
       })],
       ['@mutantcat/dsh-desktop-host', packed('@mutantcat/dsh-desktop-host', {
-        dependencies: { '@mutantcat/dsh': '^1.0.0' },
+        dependencies: { '@mutantcat/alpha': '^1.0.0' },
       })],
     ])
     expect(() => selectDesktopPackageClosure(available)).toThrow(/unpacked package/u)
     expect(() => selectDesktopPackageClosure(new Map([
-      ['@mutantcat/dsh', packed('@mutantcat/dsh')],
+      ['@mutantcat/alpha', packed('@mutantcat/alpha')],
     ]))).toThrow(/omit @mutantcat\/dsh-desktop-host/u)
   })
 
   it('leaves independently published Office packages to npm resolution', () => {
     const available = new Map<string, PackedDesktopPackage>([
-      ['@mutantcat/dsh', packed('@mutantcat/dsh', {
+      ['@mutantcat/alpha', packed('@mutantcat/alpha', {
         dependencies: {
           '@deepseek-ai/libreoffice-kit': '0.0.1',
           '@deepseek-ai/libreoffice-kit-wasm': '0.0.1',
@@ -74,7 +74,7 @@ describe('desktop package-set selection', () => {
       ['@mutantcat/dsh-desktop-host', packed('@mutantcat/dsh-desktop-host')],
     ])
     expect(selectDesktopPackageClosure(available).map(entry => entry.manifest.name)).toEqual([
-      '@mutantcat/dsh', '@mutantcat/dsh-desktop-host',
+      '@mutantcat/alpha', '@mutantcat/dsh-desktop-host',
     ])
   })
 
@@ -102,19 +102,19 @@ describe('desktop package-set selection', () => {
       },
     })
     const roots = [
-      ['@mutantcat/dsh', packed('@mutantcat/dsh', {
+      ['@mutantcat/alpha', packed('@mutantcat/alpha', {
         dependencies: { '@mutantcat/node-addon-system': '0.1.2' },
       })],
       ['@mutantcat/dsh-desktop-host', packed('@mutantcat/dsh-desktop-host')],
       ['@mutantcat/node-addon-system', systemEntry],
     ] as const
     expect(selectDesktopPackageClosure(new Map([...roots])).map(packed => packed.manifest.name)).toEqual([
-      '@mutantcat/dsh', '@mutantcat/dsh-desktop-host', '@mutantcat/node-addon-system',
+      '@mutantcat/alpha', '@mutantcat/dsh-desktop-host', '@mutantcat/node-addon-system',
     ])
     expect(selectDesktopPackageClosure(new Map([
       ...roots, ['@mutantcat/node-addon-system-darwin-arm64', packed('@mutantcat/node-addon-system-darwin-arm64')],
     ])).map(packed => packed.manifest.name)).toEqual([
-      '@mutantcat/dsh', '@mutantcat/dsh-desktop-host', '@mutantcat/node-addon-system',
+      '@mutantcat/alpha', '@mutantcat/dsh-desktop-host', '@mutantcat/node-addon-system',
       '@mutantcat/node-addon-system-darwin-arm64',
     ])
   })

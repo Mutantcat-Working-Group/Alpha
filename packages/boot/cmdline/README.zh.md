@@ -1,5 +1,5 @@
 ---
-description: "dsh app bin 的应用自有命令行：应用从启动器剩余参数中解析自己的 flag、--help 与退出行为。"
+description: "alpha app bin 的应用自有命令行：应用从启动器剩余参数中解析自己的 flag、--help 与退出行为。"
 kind: "package-library"
 ---
 
@@ -31,7 +31,7 @@ kind: "package-library"
 
 启动器向你的应用提供三样东西：
 
-- `ctx.cmdlineArgs`——本次调用的内层参数。读取它返回一份不可变快照，且绝不会消费或修改它们：`dsh --profile tui --resume abc` 给你的应用 `['--resume', 'abc']`。
+- `ctx.cmdlineArgs`——本次调用的内层参数。读取它返回一份不可变快照，且绝不会消费或修改它们：`alpha --profile tui --resume abc` 给你的应用 `['--resume', 'abc']`。
 - `ctx.appExit`——在整棵树关闭后请求进程退出的方式，接到启动器的关停控制器上。
 - `ctx.appReady`——成功启动信号，只在 Loader 树与启动器自有设置成功后提交。
 
@@ -59,7 +59,7 @@ kind: "package-library"
     port: !!js ctx.webStartup.port ?? 3080
 ```
 
-结果：即使配置写的是 3080，`dsh --profile web --port 8080` 也会让服务器监听 8080 端口，因为 flag 优先。`--help` 打印你的应用帮助并以 0 退出、不启动任何内容；被拒绝的值（例如非数字端口）打印你的错误并以非零码退出，任何依赖解析值的行都不会启动。
+结果：即使配置写的是 3080，`alpha --profile web --port 8080` 也会让服务器监听 8080 端口，因为 flag 优先。`--help` 打印你的应用帮助并以 0 退出、不启动任何内容；被拒绝的值（例如非数字端口）打印你的错误并以非零码退出，任何依赖解析值的行都不会启动。
 
 ### flag 如何胜过配置值
 

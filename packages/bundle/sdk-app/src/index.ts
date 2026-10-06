@@ -37,12 +37,12 @@ export const Config: z<Config> = z.object({
  */
 function sdkCommand(profile: string): Command {
   return new Command()
-    .name(`dsh --profile ${profile}`)
+    .name(`alpha --profile ${profile}`)
     .description('Serve Alpha SDK clients over stdio JSON-RPC.')
     .helpOption('-h, --help', 'show this help')
     .addHelpText('after', `
 Example:
-  dsh --profile ${profile}     serve one SDK runtime until its client disconnects
+  alpha --profile ${profile}     serve one SDK runtime until its client disconnects
 `)
 }
 

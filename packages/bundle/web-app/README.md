@@ -1,5 +1,5 @@
 ---
-description: "The browser GUI for dsh: interactive chat, model and settings management, and session history, for users running the dsh web surface."
+description: "The browser GUI for dsh: interactive chat, model and settings management, and session history, for users running the alpha web surface."
 kind: "package-bundle"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Run `dsh --profile web` to open an interactive browser GUI with chat, model and settings management, and session history. It uses the same model access, tools, and safety defaults as other dsh surfaces. Startup prints an authenticated URL and normally opens it in the default browser; SSH sessions and `--no-open` leave the URL for manual opening. You can change the port and allow extra hosts, but cannot bind all network interfaces. Choose this package for interactive browser work; use `dsh-headless` for one-shot command-line tasks.
+Run `alpha --profile web` to open an interactive browser GUI with chat, model and settings management, and session history. It uses the same model access, tools, and safety defaults as other alpha surfaces. Startup prints an authenticated URL and normally opens it in the default browser; SSH sessions and `--no-open` leave the URL for manual opening. You can change the port and allow extra hosts, but cannot bind all network interfaces. Choose this package for interactive browser work; use `dsh-headless` for one-shot command-line tasks.
 
 ## Table of Contents
 
@@ -30,15 +30,15 @@ Start the GUI, open your browser, and start talking to the agent. The flags fine
 ### Starting the Web GUI
 
 ```sh
-dsh --profile web
-dsh --profile web --no-open --port 8080
+alpha --profile web
+alpha --profile web --no-open --port 8080
 ```
 
-After startup you see a `dsh web:` line whose root URL carries a fresh process token. Unless `--no-open` or an SSH session suppresses it, the default browser opens that URL, receives a signed cookie, and redirects to the clean root page. You know it worked when the page loads and you can chat with the agent. Two failures to expect: if the frontend is not built, startup stops with a build hint (`pnpm run build` in a checkout); if the browser cannot be opened, a credential-free diagnostic prints to stderr while the server keeps running — open the printed startup URL yourself.
+After startup you see a `alpha web:` line whose root URL carries a fresh process token. Unless `--no-open` or an SSH session suppresses it, the default browser opens that URL, receives a signed cookie, and redirects to the clean root page. You know it worked when the page loads and you can chat with the agent. Two failures to expect: if the frontend is not built, startup stops with a build hint (`pnpm run build` in a checkout); if the browser cannot be opened, a credential-free diagnostic prints to stderr while the server keeps running — open the printed startup URL yourself.
 
-**Settings → Models** displays **DeepSeek**, using `DEEPSEEK_API_KEY`. The default is `deepseek-official` / `deepseek-flash` (DeepSeek-V41-Flash). The [DeepSeek plugin](../../llm/llm-deepseek/README.md#choose-a-protocol) defaults to Messages; set `protocol: chat-completions` in Cordis YAML to select Chat Completions. Web has no protocol selector.
+**Settings → Models** starts empty. Add a provider from the installed catalog, or declare a custom one, then save its API key; the first model you save becomes the default for new sessions. The page exposes the API key, display name, base URL, API protocol, and each model's id, name, capacity, and input types, while a built-in provider's endpoint and protocol come from the installed catalog. See [Configure models](../../../docs/user/guide/providers.md).
 
-Saved model selections override the composition default. Both protocols share `deepseek-official` and `llm-deepseek` settings, so switching preserves model selections and credential references. Endpoint overrides retain their values; the settings card lets users supply a compatible API address.
+A saved selection outlives the session that made it: a new session opens on the model you last picked, and a session that has already sent a request keeps the model recorded in its own log. Endpoint overrides retain their values; the settings card lets users supply a compatible API address.
 
 ### Configuration
 
@@ -47,7 +47,7 @@ Most users never set these; the command-line flags feed the four settings below 
 | Field | Default | Meaning |
 |---|---|---|
 | `openBrowser` | `true` | Open the default browser after startup; SSH launches suppress it |
-| `printUrl` | `true` | Print the `dsh web:` URL line at startup |
+| `printUrl` | `true` | Print the `alpha web:` URL line at startup |
 | `surfaceContext` | `true` | Give the agent GUI-orientation context and expose `DSH_WEB_URL` to its shell commands |
 | `trustedHosts` | `[]` | Extra hosts allowed to reach the GUI from the network |
 
@@ -59,7 +59,7 @@ By default the GUI accepts connections from this machine only. A deployment that
 
 ### Running over SSH
 
-When you launch `dsh --profile web` over SSH, the URL line still prints but the browser is not opened for you: the SSH client or editor owns the local forwarding address. Open the forwarded URL on your machine yourself; the printed URL names the remote host's loopback endpoint.
+When you launch `alpha --profile web` over SSH, the URL line still prints but the browser is not opened for you: the SSH client or editor owns the local forwarding address. Open the forwarded URL on your machine yourself; the printed URL names the remote host's loopback endpoint.
 
 ### Per-session agent setup
 

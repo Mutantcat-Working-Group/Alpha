@@ -409,7 +409,7 @@ describe('HarnessClient', () => {
     const client = processClient(fakeLaunch(
       { FAKE_HANG_INIT: '1' },
       {
-        description: 'dsh profile "profile-without-sdk-server"',
+        description: 'alpha profile "profile-without-sdk-server"',
         initializeTimeoutMs: 50,
         disposeEofGraceMs: 100,
         // Wide SIGKILL confirmation: the hang-init child may still be
@@ -420,7 +420,7 @@ describe('HarnessClient', () => {
     ))
     cleanups.push(() => client.close())
     await expect(client.initialize({ cwd: process.cwd(), provider: 'p', model: 'm' }))
-      .rejects.toThrow(/initialize timed out after 50ms waiting for dsh profile "profile-without-sdk-server"/)
+      .rejects.toThrow(/initialize timed out after 50ms waiting for alpha profile "profile-without-sdk-server"/)
     await client.close()
   })
 
@@ -491,7 +491,7 @@ describe('HarnessClient', () => {
     expect(String(failure)).toContain('no trailing newline')
   })
 
-  it('fails when the configured dsh CLI module does not exist', async () => {
+  it('fails when the configured alpha CLI module does not exist', async () => {
     const client = new HarnessClient({ dshBin: join(tmpdir(), 'dsh-no-such-runtime-bin') })
     cleanups.push(() => client.close())
     await expect(client.request('initialize', {}, 1_000)).rejects.toThrow(TransportClosedError)

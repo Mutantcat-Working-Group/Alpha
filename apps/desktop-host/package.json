@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "@mutantcat/cordis": "workspace:^",
-    "@mutantcat/dsh": "workspace:^",
+    "@mutantcat/alpha": "workspace:^",
     "@mutantcat/dsh-agent": "workspace:^",
     "@mutantcat/dsh-app-boot": "workspace:^",
     "@mutantcat/dsh-client-connection": "workspace:^",

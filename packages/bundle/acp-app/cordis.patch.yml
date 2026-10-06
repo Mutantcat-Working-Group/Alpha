@@ -16,9 +16,6 @@
     - id: acp
       name: '@mutantcat/dsh-acp'
       inject: [acpAppStartup]
-      config:
-        provider: deepseek-official
-        model: deepseek-v4-flash
 
 - id: hmr
   disabled: true

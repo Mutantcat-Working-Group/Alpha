@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 Trajectory 视图：按轮次组织的事件记录表加交互式时间概览，注册进对话视图环。"
+description: "alpha Web 客户端的 Trajectory 视图：按轮次组织的事件记录表加交互式时间概览，注册进对话视图环。"
 kind: "package-reference"
 ---
 

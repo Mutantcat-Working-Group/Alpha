@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-`dsh-experimental-agent-team-profile` 是在 `@mutantcat/dsh-base` 之上启用 [Agent Teams](../agent-team/README.zh.md) 的公开实验性 profile 层。它的 patch 会插入 Team domain 与 Team-scoped 工具，并禁用普通 subagent 委派和名称重叠的全局 continuable-child control。Workflow 仍可创建 fresh 子代理。dsh 安装随附本包作为可选组合包，随附 profile 都不会启用它；可在 Web 侧栏的插件页开启，或显式添加到已初始化的 profile。
+`dsh-experimental-agent-team-profile` 是在 `@mutantcat/dsh-base` 之上启用 [Agent Teams](../agent-team/README.zh.md) 的公开实验性 profile 层。它的 patch 会插入 Team domain 与 Team-scoped 工具，并禁用普通 subagent 委派和名称重叠的全局 continuable-child control。Workflow 仍可创建 fresh 子代理。alpha 安装随附本包作为可选组合包，随附 profile 都不会启用它；可在 Web 侧栏的插件页开启，或显式添加到已初始化的 profile。
 
 ## 目录
 
@@ -30,11 +30,11 @@ kind: "package-bundle"
 将本包添加到已初始化的 profile，然后运行一个要求 Lead 委派工作的任务：
 
 ```sh
-dsh plugin --profile headless add @mutantcat/dsh-experimental-agent-team-profile
-dsh --profile headless "Use Agent Teams to split this task between two teammates, wait, and summarize."
+alpha plugin --profile headless add @mutantcat/dsh-experimental-agent-team-profile
+alpha --profile headless "Use Agent Teams to split this task between two teammates, wait, and summarize."
 ```
 
-profile 必须已经包含 `@mutantcat/dsh-base`，本层会使用其中的 Subagent 服务与提供方配置行。执行 `dsh plugin --profile <name> remove @mutantcat/dsh-experimental-agent-team-profile` 移除本包时，bundle 也会从 profile 的有序层列表中移除。
+profile 必须已经包含 `@mutantcat/dsh-base`，本层会使用其中的 Subagent 服务与提供方配置行。执行 `alpha plugin --profile <name> remove @mutantcat/dsh-experimental-agent-team-profile` 移除本包时，bundle 也会从 profile 的有序层列表中移除。
 
 ### 获得的功能
 

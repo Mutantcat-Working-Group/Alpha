@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端共享的 React UI 原子组件：控件、图标、Markdown 与数学公式渲染，以及终端/读取/差异/搜索/网页输出卡片（零 Cordis）。"
+description: "alpha Web 客户端共享的 React UI 原子组件：控件、图标、Markdown 与数学公式渲染，以及终端/读取/差异/搜索/网页输出卡片（零 Cordis）。"
 kind: "package-library"
 ---
 

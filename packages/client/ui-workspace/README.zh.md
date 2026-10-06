@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的共享 Workspace 浏览器与选择器插件：分组或扁平的会话行、添加、重命名、重排序、搜索、fork、归档，以及目录流选取子 slot。"
+description: "alpha Web 客户端的共享 Workspace 浏览器与选择器插件：分组或扁平的会话行、添加、重命名、重排序、搜索、fork、归档，以及目录流选取子 slot。"
 kind: "package-reference"
 ---
 

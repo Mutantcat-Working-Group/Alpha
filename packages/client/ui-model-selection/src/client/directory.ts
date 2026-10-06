@@ -23,6 +23,8 @@ export interface ModelDirectoryState {
    * this rather than "current matches no group": catalog membership is
    * advisory, so a route serving a model it stopped advertising is missing
    * from the groups yet perfectly usable.
+   * null also when nothing is selected, because an absent selection is not an
+   * unroutable one.
    */
   routable: boolean | null
   /** Successfully loaded provider groups (last good load). */
@@ -167,7 +169,9 @@ export class ModelDirectory {
     this.resolved = true
     this.store.set({
       current,
-      routable: catalog.value.routableProviders.includes(current.provider),
+      routable: current === null
+        ? null
+        : catalog.value.routableProviders.includes(current.provider),
       groups: catalog.value.groups,
       failures: catalog.value.failures,
       status: this.store.getSnapshot().status === 'selecting'

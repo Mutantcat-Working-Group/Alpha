@@ -40,7 +40,7 @@ export function recoverDesktopProfile(projectDir: string): string | undefined {
   try {
     writeSync(descriptor, `${String(process.pid)}\n`)
     fsyncSync(descriptor)
-    return sanitizeProfile('dsh', projectDir, WEB_PROFILE.bundles)
+    return sanitizeProfile('alpha', projectDir, WEB_PROFILE.bundles)
   } finally {
     closeSync(descriptor)
     unlinkSync(lockPath)

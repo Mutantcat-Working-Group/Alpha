@@ -65,7 +65,7 @@ Manage profile files and apply their declared reload lifecycle.
  */
 @Remote async listPlugins(): Promise<PluginInfo[]>
 
-/** Read the profile's installed bundles, the bundles this dsh installation supplies, and the selected names that are not bundles.
+/** Read the profile's installed bundles, the bundles this alpha installation supplies, and the selected names that are not bundles.
  * A dependency without a bundle patch is listed, as a `not-bundle` problem, only while it is selected.
  * @returns Package versions, one-liners, rows, activation selections, whether the installation offers the
  * bundle, and removal availability.
@@ -94,7 +94,7 @@ Manage profile files and apply their declared reload lifecycle.
 @Remote setBundleEnabled(name: string, enabled: boolean): Promise<ChangeResult>
 
 /**
- * Install a package using the same pnpm implementation as dsh plugin. A run
+ * Install a package using the same pnpm implementation as alpha plugin. A run
  * that fails, is cancelled, or adds a package without a bundle patch restores
  * `package.json` and `pnpm-lock.yaml` as they were; downloaded files can stay.
  * @param spec One package spec, including local paths relative to the invocation directory.
@@ -111,7 +111,7 @@ Manage profile files and apply their declared reload lifecycle.
  */
 @Remote async cancelInstall(requestId: PluginInstallRequestId): Promise<PluginInstallCancellation>
 
-/** Unload and remove a profile-owned bundle dependency through dsh plugin's pnpm path.
+/** Unload and remove a profile-owned bundle dependency through alpha plugin's pnpm path.
  * @param name Installed dependency name.
  * @returns Removal diagnostics and the remaining profile state.
  */

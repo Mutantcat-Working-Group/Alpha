@@ -1,5 +1,5 @@
 ---
-description: "Trajectory view for the dsh web client: a turn-aware event ledger with an interactive timing overview, registered into the conversation view ring."
+description: "Trajectory view for the alpha web client: a turn-aware event ledger with an interactive timing overview, registered into the conversation view ring."
 kind: "package-reference"
 ---
 

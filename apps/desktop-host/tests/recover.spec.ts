@@ -48,7 +48,7 @@ it('backs up the profile patch and retains only the Web bundles', async () => {
     expect(backup).toBeDefined()
     expect(readFileSync(backup!, 'utf8')).toBe(PATCH_BODY)
     expect(existsSync(join(dir, PROFILE_PATCH_FILENAME))).toBe(false)
-    expect(readProfileManifest('dsh', dir).dsh?.profile?.bundles).toEqual([...PROFILE_TEMPLATES.web!.bundles])
+    expect(readProfileManifest('alpha', dir).dsh?.profile?.bundles).toEqual([...PROFILE_TEMPLATES.web!.bundles])
   })
 })
 

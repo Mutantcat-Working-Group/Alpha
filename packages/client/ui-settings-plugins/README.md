@@ -1,5 +1,5 @@
 ---
-description: "Built-in plugins settings section for the dsh web client, and the official plugin configuration pages that register into the Plugins page."
+description: "Built-in plugins settings section for the alpha web client, and the official plugin configuration pages that register into the Plugins page."
 kind: "package-reference"
 ---
 

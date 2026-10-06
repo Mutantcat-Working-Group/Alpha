@@ -2,7 +2,7 @@
 
 English | [中文](github-review.zh.md)
 
-This opt-in overlay adds a signed GitHub endpoint to `dsh web`. When a pull request in the configured repository changes from draft to ready for review, the rule creates a titled root Session under the repository's Web Workspace and starts a read-only review prompt.
+This opt-in overlay adds a signed GitHub endpoint to `alpha web`. When a pull request in the configured repository changes from draft to ready for review, the rule creates a titled root Session under the repository's Web Workspace and starts a read-only review prompt.
 
 ## Prerequisites
 
@@ -26,16 +26,16 @@ From a development checkout:
 
 ```sh
 export DSH_GITHUB_REVIEW_WORKSPACE=/path/to/Alpha
-pnpm dsh web --patch apps/cli/config/examples/github-review/cordis.yml
+pnpm alpha web --patch apps/cli/config/examples/github-review/cordis.yml
 ```
 
 An installed Alpha uses the same overlay through an absolute path:
 
 ```sh
-dsh web --patch /absolute/path/to/github-review/cordis.yml
+alpha web --patch /absolute/path/to/github-review/cordis.yml
 ```
 
-For a permanent profile, place `github-ready-review-rule.mjs` beside `$DSH_HOME/profiles/web/cordis.patch.yml`, append the rows from `cordis.yml` to that patch, and start with `dsh web`. The shipped CLI already contains both webhook packages; the overlay alone activates them.
+For a permanent profile, place `github-ready-review-rule.mjs` beside `$DSH_HOME/profiles/web/cordis.patch.yml`, append the rows from `cordis.yml` to that patch, and start with `alpha web`. The shipped CLI already contains both webhook packages; the overlay alone activates them.
 
 ## Expose the dedicated endpoint
 

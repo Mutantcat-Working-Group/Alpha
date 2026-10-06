@@ -8,7 +8,7 @@ import { parseArgs } from 'node:util'
 import { runCommandWithTimeout } from './benchmark-npm-resolution.ts'
 
 const ROOT = resolve(import.meta.dirname, '..')
-const PACKAGE = '@mutantcat/dsh'
+const PACKAGE = '@mutantcat/alpha'
 const ENTRY = `node_modules/${PACKAGE}`
 const REGISTRY = 'https://registry.npmjs.org/'
 const LOCK = 'scripts/dependency-catalog/package-lock.json'

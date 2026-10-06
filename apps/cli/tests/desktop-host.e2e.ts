@@ -13,7 +13,7 @@ it.each([false, true])('settles startup after parent IPC disconnect (boot failur
   const modules = join(root, 'node_modules', '@mutantcat')
   const hostDirectory = fileURLToPath(new URL('../../desktop-host/', import.meta.url))
   const manifest = JSON.parse(readFileSync(join(hostDirectory, 'package.json'), 'utf8')) as { dependencies: Record<string, string> }
-  const stubbed = new Set(['@mutantcat/dsh-app-boot', '@mutantcat/dsh', '@mutantcat/dsh-home-paths', '@mutantcat/dsh-tools'])
+  const stubbed = new Set(['@mutantcat/dsh-app-boot', '@mutantcat/alpha', '@mutantcat/dsh-home-paths', '@mutantcat/dsh-tools'])
   for (const name of Object.keys(manifest.dependencies)) {
     const destination = join(root, 'node_modules', name)
     mkdirSync(dirname(destination), { recursive: true })

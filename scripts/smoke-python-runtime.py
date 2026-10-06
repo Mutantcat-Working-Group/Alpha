@@ -1281,10 +1281,10 @@ def smoke_sdk_profile_plugin(base_url: str) -> None:
             "insert": [{"id": "python-sdk-blackbox-plugin", "name": "dsh-python-blackbox-plugin"}],
         }], indent=2))
 
-        dsh = Path(sysconfig.get_path("scripts")) / ("dsh.exe" if IS_WINDOWS else "dsh")
+        alpha = Path(sysconfig.get_path("scripts")) / ("alpha.exe" if IS_WINDOWS else "alpha")
         environment = {**os.environ, "DSH_HOME": str(dsh_home)}
         installed = subprocess.run(
-            [str(dsh), "plugin", "--profile", "sdk", "add", f"file:{plugin}"],
+            [str(alpha), "plugin", "--profile", "sdk", "add", f"file:{plugin}"],
             cwd=root,
             env=environment,
             text=True,
@@ -1293,15 +1293,15 @@ def smoke_sdk_profile_plugin(base_url: str) -> None:
         )
         if installed.returncode != 0:
             raise AssertionError(
-                f"Python-installed dsh could not add the external profile plugin: "
+                f"Python-installed alpha could not add the external profile plugin: "
                 f"returncode={installed.returncode} (0x{installed.returncode & 0xffffffff:08x}) "
                 f"stdout={installed.stdout!r} stderr={installed.stderr!r}"
             )
         manifest = json.loads((dsh_home / "profiles" / "sdk" / "package.json").read_text())
         if "dsh-python-blackbox-plugin" not in manifest.get("dependencies", {}):
-            raise AssertionError(f"dsh plugin did not record the external dependency: {manifest}")
+            raise AssertionError(f"alpha plugin did not record the external dependency: {manifest}")
         if "dsh-python-blackbox-plugin" not in manifest["dsh"]["profile"]["bundles"]:
-            raise AssertionError(f"dsh plugin did not activate the external bundle: {manifest}")
+            raise AssertionError(f"alpha plugin did not activate the external bundle: {manifest}")
 
         harness = DeepSeekHarness(
             provider="deepseek-official",

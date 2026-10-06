@@ -28,7 +28,7 @@
     // not declaration path aliases, keep each package/vendor source compiled
     // under its own tsconfig boundary.
     "paths": {
-      "@mutantcat/dsh/profile-boot": ["./apps/cli/src/profile-boot.ts"],
+      "@mutantcat/alpha/profile-boot": ["./apps/cli/src/profile-boot.ts"],
       "@mutantcat/dsh-browser-use": ["./packages/browser-use/browser-use/src/index.ts"],
       "@mutantcat/dsh-browser-use/brand": ["./packages/browser-use/browser-use/src/brand.ts"],
       "@mutantcat/dsh-experimental-browser-use-runtime": ["./packages/experimental/browser-use-runtime/src/index.ts"],

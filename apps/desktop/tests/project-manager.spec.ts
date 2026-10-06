@@ -29,7 +29,7 @@ function seedPlugin(manager: DesktopProjectManager): void {
 }
 function plugins(manager: DesktopProjectManager) {
   return readProfilePlugins({ binName: 'dsh', profileDir: manager.paths.profile,
-    installAnchor: join(manager.runtime.dsh, 'node_modules/@mutantcat/dsh/package.json') }).dependencies
+    installAnchor: join(manager.runtime.dsh, 'node_modules/@mutantcat/alpha/package.json') }).dependencies
     .map(({ name, version, enabled }) => ({ name, version, enabled }))
 }
 function setup(): { root: string; manager: DesktopProjectManager } {

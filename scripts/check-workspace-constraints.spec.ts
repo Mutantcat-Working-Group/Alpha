@@ -90,17 +90,17 @@ describe('experimental workspace constraints', () => {
 
   it('allows the dsh installation to ship the optional bundles the launcher names, and nothing else experimental', () => {
     const listed = { '@mutantcat/dsh-experimental-prototype': 'workspace:^' }
-    const installation = { dir: 'apps/cli', manifest: { name: '@mutantcat/dsh', dependencies: listed } } satisfies WorkspaceManifest
+    const installation = { dir: 'apps/cli', manifest: { name: '@mutantcat/alpha', dependencies: listed } } satisfies WorkspaceManifest
     expect(checkExperimentalDependencyIsolation([experimental, installation], ['@mutantcat/dsh-experimental-prototype'])).toEqual([])
     expect(checkExperimentalDependencyIsolation([experimental, installation], [])).toEqual([
-      '@mutantcat/dsh: dependencies.@mutantcat/dsh-experimental-prototype must not reference an experimental package',
+      '@mutantcat/alpha: dependencies.@mutantcat/dsh-experimental-prototype must not reference an experimental package',
     ])
     // Only a plain dependency edge is offered; a peer would make the bundle a requirement of every consumer.
     expect(checkExperimentalDependencyIsolation([experimental, {
       dir: 'apps/cli',
-      manifest: { name: '@mutantcat/dsh', peerDependencies: listed },
+      manifest: { name: '@mutantcat/alpha', peerDependencies: listed },
     }], ['@mutantcat/dsh-experimental-prototype'])).toEqual([
-      '@mutantcat/dsh: peerDependencies.@mutantcat/dsh-experimental-prototype must not reference an experimental package',
+      '@mutantcat/alpha: peerDependencies.@mutantcat/dsh-experimental-prototype must not reference an experimental package',
     ])
   })
 
@@ -141,9 +141,9 @@ describe('alpha family version coherence', () => {
 
   it('rejects the root-named CLI app on a stale shared version', () => {
     expect(checkAlphaFamilyVersion(
-      { name: '@mutantcat/dsh', version: '0.1.2-alpha.5' },
+      { name: '@mutantcat/alpha', version: '0.1.2-alpha.5' },
       '0.1.2-rc.1',
-    )).toBe('@mutantcat/dsh: package.json version must match root version 0.1.2-rc.1')
+    )).toBe('@mutantcat/alpha: package.json version must match root version 0.1.2-rc.1')
   })
 
   it('accepts a manifest carrying the shared version', () => {
@@ -188,7 +188,7 @@ it('publishes CLI runtime declarations and rejects a payload that omits them', (
   const manifest = JSON.parse(readFileSync(new URL('../apps/cli/package.json', import.meta.url), 'utf8')) as WorkspaceManifest['manifest']
   expect(checkWorkspaceManifest({ dir: 'apps/cli', manifest })).toEqual([])
   expect(checkWorkspaceManifest({ dir: 'apps/cli', manifest: { ...manifest, files: ['lib/*.js'] } }))
-    .toEqual([expect.stringContaining('@mutantcat/dsh: package.json files must be ["lib/*.js","lib/types/*.d.ts"]')])
+    .toEqual([expect.stringContaining('@mutantcat/alpha: package.json files must be ["lib/*.js","lib/types/*.d.ts"]')])
 })
 
 it('requires the shared Web injection entry in the published payload', () => {

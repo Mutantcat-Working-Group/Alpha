@@ -22,7 +22,7 @@
   - img
   - text: Context injection @mutantcat/dsh-system-prompt
 - paragraph: partial
-- status: Deep diving...
+- status: Thinking…
 - list:
   - listitem:
     - text: Queue item to remove

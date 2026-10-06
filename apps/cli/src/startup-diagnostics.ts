@@ -39,7 +39,7 @@ export async function reportStartupFailure(
   const now = new Date().toISOString()
   const report = 'WARNING: Raw diagnostics may contain configuration or credential values from plugin errors. Review before sharing.\n\n' + inspect({
     timestamp: now,
-    dshVersion: context.version,
+    alphaVersion: context.version,
     nodeVersion: process.version,
     platform: process.platform,
     arch: process.arch,
@@ -61,7 +61,7 @@ export async function reportStartupFailure(
     await mkdir(logDir, { recursive: true, mode: 0o700 })
     await writeFile(logPath, report, { flag: 'wx', mode: 0o600 })
   } catch (writeError) {
-    await write(`\ndsh: warning: could not write startup diagnostics: ${String(writeError)}\nFull diagnostics:\n${report}`)
+    await write(`\nalpha: warning: could not write startup diagnostics: ${String(writeError)}\nFull diagnostics:\n${report}`)
     return
   }
   await write(`\nFull diagnostics: ${logPath}\n`)

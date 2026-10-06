@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 slot 注册表纯核心：普通扩展 slots、可复用 Component Factory、推导 props 类型、store 席位与渲染器安装约定。"
+description: "alpha Web 客户端的 slot 注册表纯核心：普通扩展 slots、可复用 Component Factory、推导 props 类型、store 席位与渲染器安装约定。"
 kind: "package-library"
 ---
 

@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-experimental-agent-team-web-profile` is the published experimental Web layer for [Agent Teams](../agent-team/README.md). Add it after `@mutantcat/dsh-web-app` and [`@mutantcat/dsh-experimental-agent-team-profile`](../agent-team-profile/README.md) to show the Team roster, task board, and teammate navigation in the browser. Removing either experimental layer leaves the stable base and Web composition unchanged. The dsh installation ships it as an optional bundle that no shipped Web profile enables; switch it on from the Web sidebar's Plugins page after the Host layer.
+`dsh-experimental-agent-team-web-profile` is the published experimental Web layer for [Agent Teams](../agent-team/README.md). Add it after `@mutantcat/dsh-web-app` and [`@mutantcat/dsh-experimental-agent-team-profile`](../agent-team-profile/README.md) to show the Team roster, task board, and teammate navigation in the browser. Removing either experimental layer leaves the stable base and Web composition unchanged. The alpha installation ships it as an optional bundle that no shipped Web profile enables; switch it on from the Web sidebar's Plugins page after the Host layer.
 
 ## Table of Contents
 
@@ -30,11 +30,11 @@ English | [中文](README.zh.md)
 Add the Host and Web Agent Teams layers to an initialized `web` profile in this order:
 
 ```sh
-dsh plugin --profile web add @mutantcat/dsh-experimental-agent-team-profile
-dsh plugin --profile web add @mutantcat/dsh-experimental-agent-team-web-profile
+alpha plugin --profile web add @mutantcat/dsh-experimental-agent-team-profile
+alpha plugin --profile web add @mutantcat/dsh-experimental-agent-team-web-profile
 ```
 
-The first command supplies the Team domain, generated Remote methods, and model tools. The second command activates this package's declared patch and its browser presentation. Removing the package with `dsh plugin --profile web remove @mutantcat/dsh-experimental-agent-team-web-profile` removes the Web layer from the profile's ordered bundle list.
+The first command supplies the Team domain, generated Remote methods, and model tools. The second command activates this package's declared patch and its browser presentation. Removing the package with `alpha plugin --profile web remove @mutantcat/dsh-experimental-agent-team-web-profile` removes the Web layer from the profile's ordered bundle list.
 
 ### What you get
 

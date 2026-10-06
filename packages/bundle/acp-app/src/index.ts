@@ -24,12 +24,12 @@ export const ACP_APP_STARTUP_SERVICE = 'acpAppStartup'
  */
 function acpCommand(): Command {
   return new Command()
-    .name('dsh --profile acp')
+    .name('alpha --profile acp')
     .description('Serve automation clients over Agent Client Protocol stdio.')
     .helpOption('-h, --help', 'show this help')
     .addHelpText('after', `
 Example:
-  dsh --profile acp     serve ACP until the client disconnects
+  alpha --profile acp     serve ACP until the client disconnects
 `)
 }
 

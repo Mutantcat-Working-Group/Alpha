@@ -72,12 +72,12 @@ Keys are resolved in one fixed order — the first place that has a value wins:
 
 | Place | Writable? | Wins over |
 |---|---|---|
-| The environment you launched in (`DEEPSEEK_API_KEY=… dsh`) | no | everything |
+| The environment you launched in (`DEEPSEEK_API_KEY=… alpha`) | no | everything |
 | The stored file | yes (`set`/`unset`) | both `.env` files |
 | Your project's `.env` (`<invocation cwd>/.env`) | not here | your home `.env` |
 | Your home `.env` (`$DSH_HOME/.env`) | not here | nothing |
 
-The launching environment wins because a per-run override — `DEEPSEEK_API_KEY=… dsh`, a CI secret, a container `-e` — is this run's explicit intent; it cannot be edited from inside the product, so it is reported read-only and writes to it are refused. Everything else loses to the stored file, which is why a key you save takes effect immediately even when an older key sits in a `.env`; those two `.env` layers resolve when nothing is stored. The environment layer is the launcher's snapshot taken at launch ([environment snapshot](../../util/launch-environment/README.md)), so a variable exported after startup is not seen.
+The launching environment wins because a per-run override — `DEEPSEEK_API_KEY=… alpha`, a CI secret, a container `-e` — is this run's explicit intent; it cannot be edited from inside the product, so it is reported read-only and writes to it are refused. Everything else loses to the stored file, which is why a key you save takes effect immediately even when an older key sits in a `.env`; those two `.env` layers resolve when nothing is stored. The environment layer is the launcher's snapshot taken at launch ([environment snapshot](../../util/launch-environment/README.md)), so a variable exported after startup is not seen.
 
 ### The credential file
 
@@ -116,7 +116,7 @@ Only your OS user can read the file: the product creates it with owner-only perm
 
 ### What can go wrong
 
-- **A key the launching environment supplies is read-only** — `DEEPSEEK_API_KEY=… dsh` wins for this run; saving or removing it is refused. Clear the variable in the launching shell first.
+- **A key the launching environment supplies is read-only** — `DEEPSEEK_API_KEY=… alpha` wins for this run; saving or removing it is refused. Clear the variable in the launching shell first.
 - **An empty value cannot be saved** — storing an empty string is refused; remove the key instead.
 - **The store refuses to load a file it cannot trust** — a file any other user can read, malformed YAML, or an unreachable path fails at startup; on a live reload the last good content keeps serving with a warning.
 - **Changes made at the same time are both kept** — if you edit the file while the product writes, your change is folded in rather than overwritten.

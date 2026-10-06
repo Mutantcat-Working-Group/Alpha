@@ -2,17 +2,17 @@
 
 English | [中文](index.zh.md)
 
-Start the Web UI through the [root README](../../../README.en.md#run); the command prints its URL. This guide begins after that server is running. The `dsh` process uses its invoking directory as the default filesystem location, but a fresh Web UI has no selected workspace until you add one.
+Start the Web UI through the [root README](../../../README.en.md#run); the command prints its URL. This guide begins after that server is running. The `alpha` process uses its invoking directory as the default filesystem location, but a fresh Web UI has no selected workspace until you add one.
 
 ## Configure a model
 
-Open **Settings → Models**, enter a [DeepSeek API key](https://platform.deepseek.com/), and save it. The model route becomes usable immediately without restarting the server.
+Open **Settings → Models** and add a provider: pick one from the installed catalog, or declare a custom one for a gateway or a self-hosted server. Enter its API key, select a model, and save. The route becomes usable immediately without restarting the server, and the model you picked becomes the default for new sessions.
 
-The [model configuration guide](./providers.md) covers other providers and custom OpenAI-compatible endpoints.
+The [model configuration guide](./providers.md) covers the installed catalog, custom providers, model discovery, and request compatibility.
 
 ## Choose a workspace
 
-Click **Choose workspace**, add the project directory where you started `dsh`, and select it. The session composer remains unavailable until a workspace is selected.
+Click **Choose workspace**, add the project directory where you started `alpha`, and select it. The session composer remains unavailable until a workspace is selected.
 
 ## Run a task
 

@@ -1,5 +1,5 @@
 /**
- * Shared boot glue for `dsh` profiles, including the CLI packaged by the Python runtime wheel: load the gitignored
+ * Shared boot glue for `alpha` profiles, including the CLI packaged by the Python runtime wheel: load the gitignored
  * `.env`, install the fail-loud Loader guards, resolve the config path (snapshot-aware), load the
  * optional user patch layers from the Harness home (`~/.dsh`), expose its path resolver to
  * config expressions, and drive the Cordis Loader against a leaf `cordis.yml` until the tree settles.
@@ -17,7 +17,7 @@ import Include, { applyEntryPatches, entryListSchema, type PatchOptions } from '
 import Group from '@mutantcat/cordis-plugin-group'
 import { dshHomePath, resolveDshHome } from '@mutantcat/dsh-home-paths'
 import { createLaunchEnvironmentSnapshot, type LaunchEnvironmentSnapshot } from '@mutantcat/dsh-launch-environment'
-export { readProfilePatches, resolveTelemetryPatch, type ProfileContext, type ProfilePnpmInvocation } from './profile-context.ts'
+export { readProfilePatches, type ProfileContext, type ProfilePnpmInvocation } from './profile-context.ts'
 export { sanitizeProfile } from './profile-sanitize.ts'
 import type {} from '@mutantcat/dsh-system-prompt'
 

@@ -24,7 +24,7 @@
   - img
   - text: Context injection @mutantcat/dsh-system-prompt
 - paragraph: partial
-- status: Deep diving...
+- status: Thinking…
 - list:
   - listitem:
     - text: Keep working until I stop you again.

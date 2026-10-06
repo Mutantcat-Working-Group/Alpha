@@ -25,7 +25,7 @@ export async function writePluginEnabled(filename: string, id: string, name: str
   const error = document.errors[0]
   if (error !== undefined) throw error
   if (!isSeq(document.contents)) throw new Error('Profile patch must be a YAML sequence')
-  loadOptionalPatches('dsh', filename)
+  loadOptionalPatches('alpha', filename)
   const items = document.contents.items
   const target = items.findLast((item, index) => {
     if (!isMap(item) || document.getIn([index, 'id']) !== id || item.has('insert')) return false

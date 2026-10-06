@@ -1,5 +1,5 @@
 ---
-description: "Web ask_user_question feature for the dsh web client: the composer-takeover question UI and the plan-review approval card."
+description: "Web ask_user_question feature for the alpha web client: the composer-takeover question UI and the plan-review approval card."
 kind: "package-reference"
 ---
 

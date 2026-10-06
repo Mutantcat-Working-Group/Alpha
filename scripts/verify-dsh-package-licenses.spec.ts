@@ -20,17 +20,17 @@ function createWorkspace(): string {
   const root = mkdtempSync(join(tmpdir(), 'dsh-package-licenses-'))
   roots.push(root)
   writeManifest(root, 'package.json', {
-    name: '@mutantcat/dsh-root',
+    name: '@mutantcat/alpha-root',
     license: 'MIT',
     workspaces: ['apps/*', 'packages/*/*', 'vendor/*'],
   })
   return root
 }
 
-describe('DSH package license gate', () => {
+describe('Alpha package license gate', () => {
   it('checks root, unhyphenated CLI, and dsh-prefixed package names while ignoring other families', () => {
     const root = createWorkspace()
-    writeManifest(root, 'apps/cli/package.json', { name: '@mutantcat/dsh', license: 'MIT' })
+    writeManifest(root, 'apps/cli/package.json', { name: '@mutantcat/alpha', license: 'MIT' })
     writeManifest(root, 'packages/core/agent/package.json', {
       name: '@mutantcat/dsh-agent',
       license: 'BSD-3-Clause',

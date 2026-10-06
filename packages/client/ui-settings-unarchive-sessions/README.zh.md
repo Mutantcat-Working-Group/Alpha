@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的已归档会话设置页：把注册表全局归档集合呈现为可搜索列表，每行提供一个取消归档操作。"
+description: "alpha Web 客户端的已归档会话设置页：把注册表全局归档集合呈现为可搜索列表，每行提供一个取消归档操作。"
 kind: "package-reference"
 ---
 

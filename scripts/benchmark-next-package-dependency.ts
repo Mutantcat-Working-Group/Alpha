@@ -19,7 +19,7 @@ import {
   type WorkspacePackageManifest,
 } from './verify-package-dependencies.ts'
 
-const TARGET_PACKAGE = '@mutantcat/dsh'
+const TARGET_PACKAGE = '@mutantcat/alpha'
 const CORDIS = '@mutantcat/cordis'
 
 interface Options {

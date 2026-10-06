@@ -130,14 +130,14 @@ export class DesktopHostProcess {
     child.stdout?.pipe(process.stdout)
     child.on('message', (message: unknown) => {
       if (!isDesktopHostEvent(message)) {
-        this.fail(new Error('dsh desktop host sent an invalid IPC event'))
+        this.fail(new Error('alpha desktop host sent an invalid IPC event'))
         child.kill('SIGTERM')
         return
       }
       if (message.type === 'ready') this.readyResolve({ url: message.url })
       else if (message.type === 'shutdown-complete') {
         if (this.stopping) this.shutdownCompleted = true
-        else this.fail(new Error('dsh desktop host acknowledged an unrequested shutdown'))
+        else this.fail(new Error('alpha desktop host acknowledged an unrequested shutdown'))
       }
       else if (message.type === 'fatal') this.fail(new Error(message.message))
       else {
@@ -150,8 +150,8 @@ export class DesktopHostProcess {
     this.exitPromise = new Promise<void>((resolve) => {
       child.once('close', (code) => {
         const suffix = this.stderr.trim() === '' ? '' : `: ${this.stderr.trim()}`
-        if (code !== 0 && code !== null) this.fail(new Error(`dsh desktop host exited with ${String(code)}${suffix}`))
-        else this.fail(new Error(`dsh desktop host stopped${suffix}`))
+        if (code !== 0 && code !== null) this.fail(new Error(`alpha desktop host exited with ${String(code)}${suffix}`))
+        else this.fail(new Error(`alpha desktop host stopped${suffix}`))
         resolve()
       })
     })
@@ -200,7 +200,7 @@ export class DesktopHostProcess {
     if (!await exitsWithin(exited, 5_000)) {
       child.kill('SIGKILL')
       if (!await exitsWithin(exited, 5_000)) {
-        throw new Error('dsh desktop host did not exit after SIGKILL')
+        throw new Error('alpha desktop host did not exit after SIGKILL')
       }
     }
     this.child = undefined

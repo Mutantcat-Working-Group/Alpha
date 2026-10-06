@@ -34,14 +34,8 @@
     - id: llm
       name: '@mutantcat/dsh-llm'
 
-    - id: deepseek-llm-api-extensions
-      name: '@mutantcat/dsh-deepseek-llm-api-extensions'
-
     - id: session
       name: '@mutantcat/dsh-session'
-
-    - id: session-log-deepseek
-      name: '@mutantcat/dsh-session-log-deepseek'
 
     - id: typert
       name: '@mutantcat/dsh-typert-registry'
@@ -74,16 +68,13 @@
     - id: agent
       name: '@mutantcat/dsh-agent'
 
-    - id: plugin-package-inventory-deepseek
-      name: '@mutantcat/dsh-plugin-package-inventory-deepseek'
-
     # The transport-independent default for Agents created by entry points.
-    # Settings may supply a saved selection; consumers read it at creation time.
+    # No provider ships preselected: every field stays optional, so the
+    # deployment starts with no model at all and the first selection a user
+    # saves — from the composer seat, or written straight into the settings
+    # section — becomes the default for later Agents.
     - id: agent-default-model
       name: '@mutantcat/dsh-agent-default-model'
-      config:
-        provider: deepseek-official
-        model: deepseek-flash
 
     - id: jobs
       name: '@mutantcat/dsh-jobs-local'
@@ -92,8 +83,8 @@
       name: '@mutantcat/dsh-llm-retry'
 
     # User-settings document (`$DSH_HOME/settings.yaml`, hot-reloaded): a
-    # `llm-deepseek:` or `llm-pi-ai:` section there overrides the adapter entries
-    # below without a restart, and is what the web Models page writes.
+    # `llm-pi-ai:` section there declares provider profiles without a restart,
+    # and is what the web Models page writes.
     - id: settings
       name: '@mutantcat/dsh-settings-file'
 
@@ -171,40 +162,6 @@
       config:
         writeEveryEvents: 200
         writeIntervalMs: 5000
-
-    # OTel releases a Session-log prefix only after explicit user feedback,
-    # regardless of model provider. Ordinary activity never triggers capture.
-    # Alpha ships no telemetry collector: the row mounts only when a deployment
-    # sets DSH_TELEMETRY_OTLP_URL to its own OTLP/HTTP logs endpoint, so no
-    # shipped build contacts a vendor service by default. A non-empty
-    # DSH_TELEMETRY_DISABLED — any value, including '0'/'false' — further opts
-    # the process out (the launchers patch the row disabled; config cannot
-    # disable a row). Exports carry the harness home's anonymous user id ($DSH_HOME/.anonymous-user-id,
-    # random UUID; delete the file to reset the identity) as the Resource's
-    # user.id. The exporter/processor values normally bound the shutdown drain
-    # to ~1s against an unreachable collector: exporter.timeoutMillis is both
-    # the per-attempt socket timeout and the retry deadline (1s effectively
-    # disables the SDK's 5-try backoff), while maxExportBatchSize == maxQueueSize
-    # (both explicit) makes the drain a single batch. The SDK awaits
-    # exporter.forceFlush() outside exportTimeoutMillis, so the backend's 3s
-    # shutdownTimeoutMillis is the load-bearing outer bound when a transport
-    # promise never settles. Every CLI exit path drains it by disposing the root
-    # on SIGINT/SIGTERM.
-    - id: session-telemetry-otel
-      name: '@mutantcat/dsh-session-telemetry-otel'
-      disabled: !!js "!process.env.DSH_TELEMETRY_OTLP_URL"
-      config:
-        mode: !!js process.env.DSH_TELEMETRY_MODE || 'FEEDBACK_ONLY'
-        shutdownTimeoutMillis: 3000
-        exporter:
-          url: !!js process.env.DSH_TELEMETRY_OTLP_URL
-          compression: gzip
-          timeoutMillis: 1000
-        processor:
-          scheduledDelayMillis: 10000
-          maxQueueSize: 2048
-          maxExportBatchSize: 2048
-          exportTimeoutMillis: 1500
 
     - id: subprocess
       name: '@mutantcat/dsh-subprocess-local'
@@ -447,27 +404,18 @@
         thresholds: [3, 5, 8]
         argumentsPreviewChars: 500
 
-    # The shared base enables the stable model-facing web_search and web_fetch
-    # tools. The Web app disables this host row and composes both tools per agent
-    # preset; products with a stricter network policy override tool-web. DeepSeek
-    # search resolves the same DEEPSEEK_API_KEY
-    # credential the Models page manages for chat, at each search; its Messages
-    # endpoint is separate from the chat-completions endpoint, so it takes its own
-    # base-URL override. Anonymous fetch accepts only public HTTP(S) destinations,
-    # resolves and validates every destination, and pins every actual connection.
-    # Search is a full auxiliary model request with server-side retrieval, so this
-    # shipped DeepSeek route gets 60s while the provider-neutral tool default
-    # remains 30s.
+    # The shared base enables the model-facing web_fetch tool only. Alpha ships
+    # no search route: web_search stays unregistered rather than advertised
+    # without a provider, and a deployment that mounts a search provider on the
+    # web seam flips `search` back on. The Web app disables this host row and
+    # composes both tools per agent preset; products with a stricter network
+    # policy override tool-web. Anonymous fetch accepts only public HTTP(S)
+    # destinations, resolves and validates every destination, and pins every
+    # actual connection.
     - id: web
       name: '@mutantcat/dsh-web'
       config:
-        searchProvider: deepseek-official
         fetchProvider: http
-
-    - id: web-search-deepseek
-      name: '@mutantcat/dsh-web-search-deepseek'
-      config:
-        apiKeyEnv: DEEPSEEK_API_KEY
 
     - id: web-fetch-http
       name: '@mutantcat/dsh-web-fetch-http'
@@ -475,8 +423,8 @@
     - id: tool-web
       name: '@mutantcat/dsh-tool-web'
       config:
+        search: false
         fetch: true
-        searchTimeoutMs: 60000
 
     - id: mcp-resources
       name: '@mutantcat/dsh-mcp-resources'
@@ -506,10 +454,3 @@
     # overlay can pin another workspace.
     - id: fs-sandbox
       name: '@mutantcat/dsh-fs-sandbox'
-
-    # The native DeepSeek adapter. No key or endpoint is inlined: both resolve per
-    # request from the `llm-deepseek:` settings section over this entry, with the
-    # key coming from the credential store below. Thinking defaults are a deployment
-    # choice.
-    - id: llm-deepseek
-      name: '@mutantcat/dsh-llm-deepseek'

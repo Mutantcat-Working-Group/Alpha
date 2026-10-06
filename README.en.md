@@ -43,7 +43,7 @@ Core value:
 ### 3. Installation & Downloads
 
 1. Desktop: download the installer for your platform from [Releases](https://github.com/Mutantcat-Working-Group/Alpha/releases); double-clicking it installs and runs Alpha with no further configuration. Windows emits an NSIS installer, macOS emits an ad-hoc signed DMG for each of Apple Silicon and Intel, and Linux emits an AppImage.
-2. Web: install Node.js and run `npx @mutantcat/dsh web`, which serves `http://127.0.0.1:3080` by default; `--no-open` starts the server without opening a browser.
+2. Web: install Node.js and run `npx @mutantcat/alpha web`, which serves `http://127.0.0.1:3080` by default; `--no-open` starts the server without opening a browser.
 3. To run from source or package installers yourself, see section 7.
 
 <a id="run"></a>
@@ -57,9 +57,17 @@ Core value:
 
 ### 5. Plugin Ecosystem & Compatibility
 
-- The Alpha plugin protocol is intact: repositories under the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic keep loading, and their configuration needs no rewrite.
+Alpha does not rebuild the plugin ecosystem; it wires the existing ones in. Every entry below is a bridge that actually exists in this repository, and each one can be mounted or left out on its own.
+
+- **DSH plugin protocol**: the plugin protocol and manifest conventions are intact, so repositories under the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic keep loading without a configuration rewrite. The `dsh.bundle`, `dsh.profile`, and `dsh.client` manifest fields in `package.json` are unchanged.
+- **Claude Code**: the subagent bridge (`@mutantcat/dsh-subagent-claude-code`) runs tasks through Claude Code, the hooks bridge (`@mutantcat/dsh-hooks-claude-code`) takes over its hook protocol, skills are read from `~/.claude/skills`, and `CLAUDE.md` is treated as an instruction file just like `AGENTS.md`.
+- **Codex**: the subagent bridge (`@mutantcat/dsh-subagent-codex`) runs tasks through Codex, the hooks bridge (`@mutantcat/dsh-hooks-codex`) takes over its hook protocol, and skills are read from the `skills` subdirectory of `$CODEX_HOME` or `~/.codex`.
+- **ACP (Agent Client Protocol)**: arbitrary clients reach Alpha through `@mutantcat/dsh-subagent-acp`; in the other direction the `acp` profile ships an ACP server that any ACP client can drive.
+- **MCP (Model Context Protocol)**: `@mutantcat/dsh-mcp-client` registers external MCP server tools and resources onto `ctx.tools`, one configuration entry per server, with no server enabled by default. `@mutantcat/dsh-mcp-resources` owns shared resource discovery and reading.
+- **Skills**: local skills come from `<projectRoot>/.dsh/skills`, custom `customSkillDirs`, and the Codex and Claude Code user roots above. Both directory bundles with `SKILL.md` and flat `<name>.md` files are parsed, the roots are watched, and additions, removals, and edits reach the session catalog without a restart.
+- **Office document skills**: `@mutantcat/dsh-skill-office` provides Word, PowerPoint, and Excel authoring, structural checks, and delivery, running on the bundled Python environment by default.
 - Plugins register contributions through `ctx.effect()` and `ctx.on()`; the value returned by `register()` is the disposer.
-- Runtime self-modification and the Claude Code / Codex bridges are preserved.
+- Runtime self-modification (`extensions`) is preserved and unchanged.
 - Plugin manifests stay in `cordis.yml`; a bare plugin name must appear in the `dependencies` of the resolver manifest.
 - Plugin authors follow the conventions in [AGENTS.md](AGENTS.md), `docs/`, and `.agents/`.
 
@@ -75,12 +83,12 @@ Core value:
 
 ### 7. Build from Source & Packaging
 
-1. Running from source needs Node.js `^22.19` or `>=24` plus pnpm: `pnpm install`, `pnpm run build`, then `pnpm dsh web`.
+1. Running from source needs Node.js `^22.19` or `>=24` plus pnpm: `pnpm install`, `pnpm run build`, then `pnpm alpha web`.
 2. To package one platform yourself, run `pnpm run package:ci:tauri:<target>` inside `apps/desktop`, where `<target>` is one of `mac:arm64`, `mac:x64`, `win:x64`, `linux:x64`, or `linux:arm64`. Artifacts land in `.desktop-build/targets/<target>/artifacts/`.
 
 ### 8. Community
 
-- Send feedback and bug reports through [GitHub Discussions](https://github.com/Mutantcat-Working-Group/Alpha/discussions).
+- Type `/feedback` in a session, or rate any reply thumbs up/down and fill in a category with details; feedback is recorded with that conversation log.
 - Tag plugin repositories with [`dsh-plugin`](https://github.com/topics/dsh-plugin) so others can find them.
 - Agent participants follow [AGENTS.md](AGENTS.md).
 

@@ -9,9 +9,9 @@ function validLayout(): NpmPackageLock {
   return {
     lockfileVersion: 3,
     packages: {
-      '': { dependencies: { '@mutantcat/dsh': '0.2.0', 'dsh-previous': 'npm:@mutantcat/dsh@0.1.0' } },
+      '': { dependencies: { '@mutantcat/alpha': '0.2.0', 'dsh-previous': 'npm:@mutantcat/alpha@0.1.0' } },
       'node_modules/@mutantcat/cordis': { version: '4.0.1' },
-      'node_modules/@mutantcat/dsh': {
+      'node_modules/@mutantcat/alpha': {
         version: '0.2.0',
         dependencies: { '@mutantcat/dsh-child': '^0.2.0' },
         peerDependencies: { '@mutantcat/cordis': '^4.0.1' },
@@ -22,7 +22,7 @@ function validLayout(): NpmPackageLock {
       },
       'node_modules/@mutantcat/dsh-leaf': { version: '0.2.0' },
       'node_modules/dsh-previous': {
-        name: '@mutantcat/dsh',
+        name: '@mutantcat/alpha',
         version: '0.1.0',
         dependencies: { '@mutantcat/dsh-child': '^0.1.0' },
         peerDependencies: { '@mutantcat/cordis': '^4.0.1' },
@@ -39,8 +39,8 @@ function validLayout(): NpmPackageLock {
 describe('npm install layout verifier', () => {
   it('creates two incompatible versions of every DSH package', () => {
     const index: RegistryIndex = new Map([
-      ['@mutantcat/dsh', new Map([['0.1.1-rc.2', {
-        name: '@mutantcat/dsh',
+      ['@mutantcat/alpha', new Map([['0.1.1-rc.2', {
+        name: '@mutantcat/alpha',
         version: '0.1.1-rc.2',
         dependencies: { '@mutantcat/dsh-child': '^0.1.1-rc.2' },
         peerDependencies: { '@mutantcat/cordis': '^4.0.1' },
@@ -57,13 +57,13 @@ describe('npm install layout verifier', () => {
 
     const dual = buildDualDshRegistry(index, '0.1.1-rc.2')
 
-    expect([...dual.get('@mutantcat/dsh')?.keys() ?? []]).toEqual(['0.1.0', '0.2.0'])
-    expect(dual.get('@mutantcat/dsh')?.get('0.1.0')).toMatchObject({
+    expect([...dual.get('@mutantcat/alpha')?.keys() ?? []]).toEqual(['0.1.0', '0.2.0'])
+    expect(dual.get('@mutantcat/alpha')?.get('0.1.0')).toMatchObject({
       version: '0.1.0',
       dependencies: { '@mutantcat/dsh-child': '^0.1.0' },
       peerDependencies: { '@mutantcat/cordis': '^4.0.1' },
     })
-    expect(dual.get('@mutantcat/dsh')?.get('0.2.0')).toMatchObject({
+    expect(dual.get('@mutantcat/alpha')?.get('0.2.0')).toMatchObject({
       version: '0.2.0',
       dependencies: { '@mutantcat/dsh-child': '^0.2.0' },
     })

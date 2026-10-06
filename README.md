@@ -43,7 +43,7 @@
 ### 三、安装与下载
 
 1. 桌面端：从 [Releases](https://github.com/Mutantcat-Working-Group/Alpha/releases) 下载对应平台的安装包，双击即可安装运行，无需额外配置。Windows 输出 NSIS 安装程序，macOS 输出 ad-hoc 签名的 DMG（Apple Silicon 与 Intel 各一个），Linux 输出 AppImage。
-2. Web 版：安装 Node.js 后执行 `npx @mutantcat/dsh web`，默认在 `http://127.0.0.1:3080` 打开；`--no-open` 只起服务不打开浏览器。
+2. Web 版：安装 Node.js 后执行 `npx @mutantcat/alpha web`，默认在 `http://127.0.0.1:3080` 打开；`--no-open` 只起服务不打开浏览器。
 3. 从源码运行或自行打包见第七节。
 
 <a id="run"></a>
@@ -57,9 +57,17 @@
 
 ### 五、插件生态与兼容层
 
-- 完整保留 Alpha 的插件协议，[`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题下的插件仓库可直接装载，配置无需改写。
+Alpha 不重造插件生态，而是把已有的生态直接接进来。下面每一项都是仓库里真实存在的桥接层，可以单独装载或关闭。
+
+- **DSH 插件协议**：完整保留插件协议与 manifest 约定，[`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题下的插件仓库可直接装载，配置无需改写；`package.json` 的 `dsh.bundle` / `dsh.profile` / `dsh.client` 清单字段保持原样。
+- **Claude Code**：子代理桥接（`@mutantcat/dsh-subagent-claude-code`）复用 Claude Code 执行任务；hooks 桥接（`@mutantcat/dsh-hooks-claude-code`）接管其钩子协议；技能读取 `~/.claude/skills`，`CLAUDE.md` 与 `AGENTS.md` 一样被当作指令文件。
+- **Codex**：子代理桥接（`@mutantcat/dsh-subagent-codex`）复用 Codex 执行任务；hooks 桥接（`@mutantcat/dsh-hooks-codex`）接管其钩子协议；技能读取 `$CODEX_HOME` 或 `~/.codex` 下的 `skills` 子目录。
+- **ACP（Agent Client Protocol）**：通用客户端经 `@mutantcat/dsh-subagent-acp` 接入；反方向的 ACP 服务端随 `acp` profile 提供，可被任何 ACP 客户端驱动。
+- **MCP（Model Context Protocol）**：`@mutantcat/dsh-mcp-client` 把外部 MCP 服务器的工具与资源注册进 `ctx.tools`，一条服务器一个配置项，默认不启用任何服务器；`@mutantcat/dsh-mcp-resources` 负责共享资源发现与读取。
+- **技能（Skills）**：本地技能来自 `<projectRoot>/.dsh/skills`、自定义目录 `customSkillDirs`，以及上述 Codex / Claude Code 用户根；目录包 `SKILL.md` 与扁平 `<name>.md` 都会被解析，目录被监听，增删改无需重启即进入会话目录。
+- **Office 文档技能**：`@mutantcat/dsh-skill-office` 提供 Word、PowerPoint、Excel 的读写、结构检查与交付流程，默认走安装包内置的 Python 环境。
 - 插件通过 `ctx.effect()` 与 `ctx.on()` 注册贡献，`register()` 的返回值即注销函数。
-- 运行期自修改与 Claude Code / Codex 桥接保留，`extensions` 和 `hooks` 用法不变。
+- 运行期自修改（`extensions`）保留，用法不变。
 - 插件清单使用 `cordis.yml`，裸写的插件名必须出现在解析清单的 `dependencies` 中。
 - 插件作者请遵循 [AGENTS.md](AGENTS.md) 与 `docs/`、`.agents/` 中的约定。
 
@@ -75,12 +83,12 @@
 
 ### 七、从源码构建与打包
 
-1. 从源码运行需要 Node.js `^22.19` 或 `>=24` 与 pnpm，依次执行 `pnpm install`、`pnpm run build`、`pnpm dsh web`。
+1. 从源码运行需要 Node.js `^22.19` 或 `>=24` 与 pnpm，依次执行 `pnpm install`、`pnpm run build`、`pnpm alpha web`。
 2. 自行打包某个平台的安装包，在 `apps/desktop` 下执行 `pnpm run package:ci:tauri:<target>`，`<target>` 取 `mac:arm64`、`mac:x64`、`win:x64`、`linux:x64`、`linux:arm64` 之一。产物落在 `.desktop-build/targets/<target>/artifacts/`。
 
 ### 八、社区与贡献
 
-- 通过 [GitHub Discussions](https://github.com/Mutantcat-Working-Group/Alpha/discussions) 提交反馈和缺陷报告。
+- 在会话中输入 `/feedback`，或对任意回复点赞/点踩并填写分类与详情，反馈会随当前对话日志一并记录。
 - 给插件仓库加上 [`dsh-plugin`](https://github.com/topics/dsh-plugin) 主题，便于他人发现。
 - agent 参与者遵循 [AGENTS.md](AGENTS.md)。
 

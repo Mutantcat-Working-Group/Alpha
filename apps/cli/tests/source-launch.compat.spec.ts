@@ -16,7 +16,7 @@ import { describe, expect, it } from 'vitest'
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const dshSourceBin = 'apps/cli/src/bin.ts'
 
-describe('dsh SOURCE launcher (node --import tsx/esm)', () => {
+describe('alpha SOURCE launcher (node --import tsx/esm)', () => {
   it('launches the source CLI without building', async () => {
     const rootPackage = JSON.parse(await readFile(new URL('../../../package.json', import.meta.url), 'utf8')) as {
       readonly scripts?: Record<string, string>
@@ -33,7 +33,7 @@ describe('dsh SOURCE launcher (node --import tsx/esm)', () => {
       reject: false,
     })
     if (result.timedOut) {
-      throw new Error(`dsh source launch did not exit within 25s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+      throw new Error(`alpha source launch did not exit within 25s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
     }
     expect(result.exitCode).not.toBe(0)
     expect(result.stderr).toContain('--profile <name> is required')

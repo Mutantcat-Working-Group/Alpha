@@ -25,7 +25,7 @@ This package keeps long agent conversations working near the model's context lim
 <a id="use-this-package"></a>
 ## Use this package
 
-Mount this package to get automatic conversation condensation in a composition that already provides an LLM, session storage, and token measurement. The shipped `dsh` base enables it by default; mount it explicitly to control when condensation starts.
+Mount this package to get automatic conversation condensation in a composition that already provides an LLM, session storage, and token measurement. The shipped `alpha` base enables it by default; mount it explicitly to control when condensation starts.
 
 ### What you get
 

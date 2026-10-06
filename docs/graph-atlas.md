@@ -12,7 +12,7 @@ The process decision behind this index is recorded in [the documentation graph A
 | [module dependency graph](module-graph.md) | `generated` |
 | [tool schema catalog and package map](tool-catalog.md) | `generated` |
 | [capability seams and core services](capability-seams.md) | `hybrid generated` |
-| [dsh shared base composition](../apps/cli/composition.md) | `hybrid generated` |
+| [alpha shared base composition](../apps/cli/composition.md) | `hybrid generated` |
 | [event producer/consumer matrix](event-producer-consumer.md) | `hybrid generated` |
 | [agent turn and step lifecycle](agent-lifecycle.md) | `curated` |
 | [tool execution pipeline](tool-execution-pipeline.md) | `curated` |

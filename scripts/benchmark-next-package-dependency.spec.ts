@@ -95,8 +95,8 @@ describe('next package benchmark graph', () => {
 
   it('finds reachable unconfigured packages with non-Cordis peers', () => {
     const index = new Map([
-      ['@mutantcat/dsh', new Map([['1.0.0', {
-        name: '@mutantcat/dsh', version: '1.0.0', dependencies: { '@f/a': '^1.0.0', '@f/b': '^1.0.0' },
+      ['@mutantcat/alpha', new Map([['1.0.0', {
+        name: '@mutantcat/alpha', version: '1.0.0', dependencies: { '@f/a': '^1.0.0', '@f/b': '^1.0.0' },
       }]])],
       ['@f/a', new Map([['1.0.0', {
         name: '@f/a', version: '1.0.0', peerDependencies: { '@f/runtime': '^1.0.0' },
@@ -117,7 +117,7 @@ describe('next package benchmark graph', () => {
 
     expect(discoverBenchmarkCandidates(
       index,
-      new Map([['@mutantcat/dsh', '1.0.0'], ['@f/a', '1.0.0'], ['@f/b', '1.0.0']]),
+      new Map([['@mutantcat/alpha', '1.0.0'], ['@f/a', '1.0.0'], ['@f/b', '1.0.0']]),
       release,
       new Set(),
     )).toEqual(['@f/a'])

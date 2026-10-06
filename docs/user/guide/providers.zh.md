@@ -4,17 +4,13 @@
 
 本指南假定你已按照[根 README](../../../README.md#run)启动 Web UI。模型变更会在下一次请求时生效，不需要重启服务器。
 
-## 配置 DeepSeek
+## 添加提供方
 
-打开**设置 → 模型**。DeepSeek 卡片提供一个 API 密钥字段；输入密钥并保存。
+Alpha 自身不挂载任何提供方，因此首次运行打开**设置 → 模型**时列表是空的：请添加你持有密钥的那个。选择**添加提供方**，从已安装目录中挑选；列表显示的是提供方 id，例如 `anthropic`、`openai`、Kimi 对应的 `moonshotai`、GLM 对应的 `zai`。输入其 API 密钥并保存。已安装目录会提供端点、协议和模型列表。
 
-![模型页：DeepSeek 卡片，以及添加提供方与添加自定义提供方两个入口](providers-models-page.zh.png)
+![模型页：添加提供方与添加自定义提供方两个入口](providers-models-page.zh.png)
 
 密钥是只写的。保存后，页面只会收到脱敏描述符，永远不会收到明文密钥。密钥存储在 `$DSH_HOME/.credentials.yaml` 中，settings 只保留它的凭据引用。
-
-## 添加内置提供方
-
-选择**添加提供方**，选取 dsh 自带的提供方；列表显示的是提供方 id，例如 `anthropic`、`openai`、Kimi 对应的 `moonshotai`、GLM 对应的 `zai`。输入其 API 密钥并保存。已安装目录会提供端点、协议和模型列表。
 
 通过 OAuth 登录的提供方（例如 Codex）暂不支持。
 

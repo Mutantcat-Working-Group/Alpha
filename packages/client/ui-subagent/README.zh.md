@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 subagent 对话目录、续接路由 UI 与 '@' 引用 source。"
+description: "alpha Web 客户端的 subagent 对话目录、续接路由 UI 与 '@' 引用 source。"
 kind: "package-reference"
 ---
 

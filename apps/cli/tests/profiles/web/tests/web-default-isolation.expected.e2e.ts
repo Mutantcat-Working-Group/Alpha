@@ -27,7 +27,7 @@ it('boots the default Web profile without experimental Host modules, mounted plu
     ]))
     expect(roster.entries.some(entry => entry.name.endsWith('/runtime-roster-observer.js') && entry.state === FiberState.ACTIVE)).toBe(true)
     expect(roster.plugins.length).toBeGreaterThan(roster.entries.length)
-    expect(roster.modules.some(url => modulePackage(url) === '@mutantcat/dsh')).toBe(true)
+    expect(roster.modules.some(url => modulePackage(url) === '@mutantcat/alpha')).toBe(true)
     expect(roster.client.entries.length).toBeGreaterThan(0)
     expect(experimentalRuntimeReferences(roster)).toEqual([])
 

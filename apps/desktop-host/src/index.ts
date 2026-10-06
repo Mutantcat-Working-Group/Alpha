@@ -8,7 +8,7 @@ const WEB_PROFILE_BUNDLES = (PROFILE_TEMPLATES.web as ProfileTemplate).bundles
 import { realpathSync } from 'node:fs'
 import { delimiter, join } from 'node:path'
 import { initProfile, loadLayeredEnv, loadProfileDirectory, PROFILE_TEMPLATES, type ProfileTemplate } from '@mutantcat/dsh-app-boot'
-import { runProfile } from '@mutantcat/dsh/profile-boot'
+import { runProfile } from '@mutantcat/alpha/profile-boot'
 import type {} from '@mutantcat/dsh-client-connection'
 import type {} from '@mutantcat/dsh-host-webserver'
 import { resolveDshHome } from '@mutantcat/dsh-home-paths'
@@ -29,10 +29,10 @@ async function main(): Promise<void> {
   // The desktop shell runs no package manager, so the host writes the profile manifest
   // the desktop shell used to create; existing manifests are left untouched.
   initProfile(projectDir, WEB_PROFILE_BUNDLES)
-  const installAnchor = join(runtimeDir, 'node_modules', '@mutantcat', 'dsh', 'package.json')
-  const profile = loadProfileDirectory('dsh', projectDir, installAnchor)
+  const installAnchor = join(runtimeDir, 'node_modules', '@mutantcat', 'alpha', 'package.json')
+  const profile = loadProfileDirectory('alpha', projectDir, installAnchor)
   const application = runProfile({
-    environment: loadLayeredEnv('dsh'),
+    environment: loadLayeredEnv('alpha'),
     profile: 'desktop',
     resolutionMode: process.argv[5] === 'runtime' ? 'runtime' : 'link',
     resolvedProfile: { profile, installAnchor },

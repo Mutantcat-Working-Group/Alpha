@@ -77,7 +77,7 @@ it('unlinks development fallbacks without deleting their target, including dangl
 
 it('uses the old package inventory to remove retired core names', () => {
   const root = fixture()
-  const names = ['@mutantcat/dsh', '@mutantcat/dsh-desktop-host', core].sort()
+  const names = ['@mutantcat/alpha', '@mutantcat/dsh-desktop-host', core].sort()
   writeFileSync(join(root, 'desktop-packages.json'), JSON.stringify({ schemaVersion: 1, packages: names.map((name, index) => ({
     name, version: '0.1.2', file: `${index}.tgz`, bytes: 1, integrity: 'sha512-YQ==',
   })) }))

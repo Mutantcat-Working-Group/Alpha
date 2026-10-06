@@ -1,4 +1,4 @@
-/** Assembled keyless snapshot for the default `dsh web` browser handoff. */
+/** Assembled keyless snapshot for the default `alpha web` browser handoff. */
 
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -11,12 +11,12 @@ const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const builtBin = join(repoRoot, 'apps/cli/lib/bin.js')
 const frontendIndex = join(repoRoot, 'apps/web/dist/index.html')
 const openerHook = new URL('./fixtures/web-browser-open/register.mjs', import.meta.url).href
-const openingMessage = 'dsh web: opening the default browser; pass --no-open to disable'
+const openingMessage = 'alpha web: opening the default browser; pass --no-open to disable'
 const tempRoots: string[] = []
 const builtArtifactsExist = existsSync(builtBin) && existsSync(frontendIndex)
 
 if (process.env.DSH_EXAMPLE_MODE === 'lib' && !builtArtifactsExist) {
-  throw new Error('dsh web browser-open snapshot requires built CLI and Web artifacts in lib mode')
+  throw new Error('alpha web browser-open snapshot requires built CLI and Web artifacts in lib mode')
 }
 
 afterEach(() => {
@@ -37,7 +37,7 @@ function normalizeLocalUrl(url: string): string {
     .replace(/token=[^&]+/u, 'token={{token}}')
 }
 
-describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot', () => {
+describe.skipIf(!builtArtifactsExist)('alpha web browser-open assembled snapshot', () => {
   it('hands the reachable page to the default browser after the shipped tree settles', async () => {
     const root = mkdtempSync(join(tmpdir(), 'dsh-web-browser-open-snapshot-'))
     tempRoots.push(root)
@@ -53,7 +53,6 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
         DEEPSEEK_API_KEY: 'keyless-browser-open-no-call',
         DSH_AGENTS_HOME: join(root, '.agents'),
         DSH_HOME: join(root, '.dsh'),
-        DSH_TELEMETRY_DISABLED: '1',
         NODE_NO_WARNINGS: '1',
         SSH_CONNECTION: '',
         SSH_TTY: '',
@@ -63,13 +62,13 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
       killSignal: 'SIGKILL',
       reject: false,
     })
-    const readyUrl = /dsh web: (http:\/\/[^\s]+)/u.exec(result.stdout)?.[1]
-    const openLine = result.stdout.split('\n').find(line => line.startsWith('dsh browser-open: '))
+    const readyUrl = /alpha web: (http:\/\/[^\s]+)/u.exec(result.stdout)?.[1]
+    const openLine = result.stdout.split('\n').find(line => line.startsWith('alpha browser-open: '))
     const opening = result.stdout.includes(openingMessage)
     if (readyUrl === undefined || openLine === undefined || !opening) {
-      throw new Error(`dsh web browser-open evidence missing\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+      throw new Error(`alpha web browser-open evidence missing\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
     }
-    const opened = JSON.parse(openLine.slice('dsh browser-open: '.length)) as BrowserOpenRecord
+    const opened = JSON.parse(openLine.slice('alpha browser-open: '.length)) as BrowserOpenRecord
 
     expect({
       exitCode: result.exitCode,
@@ -113,7 +112,6 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
         DSH_AGENTS_HOME: join(root, '.agents'),
         DSH_BROWSER_OPEN_TEST_EXIT_ON_FAILURE: '1',
         DSH_HOME: join(root, '.dsh'),
-        DSH_TELEMETRY_DISABLED: '1',
         NODE_NO_WARNINGS: '1',
         SSH_CONNECTION: '',
         SSH_TTY: '',
@@ -123,19 +121,19 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
       killSignal: 'SIGKILL',
       reject: false,
     })
-    const readyUrl = /dsh web: (http:\/\/[^\s]+)/u.exec(result.stdout)?.[1]
+    const readyUrl = /alpha web: (http:\/\/[^\s]+)/u.exec(result.stdout)?.[1]
     const diagnostic = result.stderr.split(/\r?\n/u)
       .find(line => line.startsWith('web-app: could not open the default browser because '))
 
     expect({
       diagnostic,
       exitCode: result.exitCode,
-      opened: result.stdout.includes('dsh browser-open: '),
+      opened: result.stdout.includes('alpha browser-open: '),
       opening: result.stdout.includes(openingMessage),
       readyUrl: readyUrl === undefined ? undefined : normalizeLocalUrl(readyUrl),
     }).toMatchInlineSnapshot(`
       {
-        "diagnostic": "web-app: could not open the default browser because fixture desktop unavailable; use the dsh web URL printed at startup",
+        "diagnostic": "web-app: could not open the default browser because fixture desktop unavailable; use the alpha web URL printed at startup",
         "exitCode": 0,
         "opened": false,
         "opening": true,
@@ -160,7 +158,6 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
         DSH_AGENTS_HOME: join(root, '.agents'),
         DSH_BROWSER_OPEN_TEST_EXIT_ON_READY: '1',
         DSH_HOME: join(root, '.dsh'),
-        DSH_TELEMETRY_DISABLED: '1',
         NODE_NO_WARNINGS: '1',
         SSH_CONNECTION: '10.0.0.2 55000 10.0.0.9 22',
         SSH_TTY: '',
@@ -171,13 +168,13 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
       killSignal: 'SIGKILL',
       reject: false,
     })
-    const readyUrl = /dsh web: (http:\/\/[^\s]+)/u.exec(result.stdout)?.[1]
+    const readyUrl = /alpha web: (http:\/\/[^\s]+)/u.exec(result.stdout)?.[1]
 
     expect({
       exitCode: result.exitCode,
       opening: result.stdout.includes(openingMessage),
       readyUrl: readyUrl === undefined ? undefined : normalizeLocalUrl(readyUrl),
-      opened: result.stdout.includes('dsh browser-open: '),
+      opened: result.stdout.includes('alpha browser-open: '),
       stderr: result.stderr,
     }).toMatchInlineSnapshot(`
       {
@@ -206,7 +203,6 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
         DEEPSEEK_API_KEY: 'keyless-browser-open-no-call',
         DSH_AGENTS_HOME: join(root, '.agents'),
         DSH_HOME: join(root, '.dsh'),
-        DSH_TELEMETRY_DISABLED: '1',
         NODE_NO_WARNINGS: '1',
         SSH_CONNECTION: '',
         SSH_TTY: '',
@@ -218,18 +214,18 @@ describe.skipIf(!builtArtifactsExist)('dsh web browser-open assembled snapshot',
     })
 
     const diagnostic = result.stderr.split(/\r?\n/u)
-      .find(line => line.startsWith('Error: dsh: '))
-      ?.replace(/^Error: dsh: .*[/\\]\.env/u, 'dsh: {{root}}/.env')
+      .find(line => line.startsWith('Error: alpha: '))
+      ?.replace(/^Error: alpha: .*[/\\]\.env/u, 'alpha: {{root}}/.env')
 
     expect({
       diagnostic,
       exitCode: result.exitCode,
       opening: result.stdout.includes(openingMessage),
-      opened: result.stdout.includes('dsh browser-open: '),
-      ready: result.stdout.includes('dsh web: '),
+      opened: result.stdout.includes('alpha browser-open: '),
+      ready: result.stdout.includes('alpha web: '),
     }).toMatchInlineSnapshot(`
       {
-        "diagnostic": "dsh: {{root}}/.env sets "BROWSER", which only the launching environment may set (it decides how this process starts, where its code and instructions load from, or how it reaches the network); export BROWSER instead of putting it in a .env file",
+        "diagnostic": "alpha: {{root}}/.env sets "BROWSER", which only the launching environment may set (it decides how this process starts, where its code and instructions load from, or how it reaches the network); export BROWSER instead of putting it in a .env file",
         "exitCode": 1,
         "opened": false,
         "opening": false,

@@ -1,4 +1,4 @@
-/** Shared profile package operations used by dsh plugin and the running manager. */
+/** Shared profile package operations used by alpha plugin and the running manager. */
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, open } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
@@ -23,7 +23,7 @@ export interface PackageOperationContext {
 
 /** Output and cancellation policy for one pnpm operation. */
 export interface PackageOperationOptions {
-  /** The pnpm executable name or path; resolved through `PATH` like the `dsh plugin` command. Defaults to `pnpm`. */
+  /** The pnpm executable name or path; resolved through `PATH` like the `alpha plugin` command. Defaults to `pnpm`. */
   command?: string
   /** Prefix arguments for an application-owned executable. */
   args?: readonly string[]
@@ -56,8 +56,8 @@ export function anchorPathSpec(argument: string, cwd: string): string {
  * @returns Resolved metadata, or undefined for packages without bundle metadata.
  */
 export function bundleManifest(name: string, dir: string, anchor: string): ProfileManifest | undefined {
-  const packageDir = resolveBundleDir('dsh', name, anchor, dir)
-  const manifest = readProfileManifest('dsh', packageDir)
+  const packageDir = resolveBundleDir('alpha', name, anchor, dir)
+  const manifest = readProfileManifest('alpha', packageDir)
   return manifest.dsh?.bundle?.patch === undefined ? undefined : manifest
 }
 
@@ -71,7 +71,7 @@ export async function saveManifest(dir: string, manifest: ProfileManifest): Prom
 
 /** Reconcile package removals and newly installed bundles without re-enabling retained dependencies. */
 async function reconcile(before: ProfileManifest, dir: string, anchor: string, options: PackageOperationOptions): Promise<void> {
-  const after = readProfileManifest('dsh', dir)
+  const after = readProfileManifest('alpha', dir)
   const dependencies = Object.keys(after.dependencies ?? {})
   const beforeDeps = new Set(Object.keys(before.dependencies ?? {}))
   const previous = after.dsh?.profile?.bundles ?? []
@@ -83,10 +83,10 @@ async function reconcile(before: ProfileManifest, dir: string, anchor: string, o
     if (beforeDeps.has(name)) continue
     const metadata = bundleManifest(name, dir, anchor)
     if (metadata?.dsh?.bundle === undefined) {
-      options.onOutput?.(`dsh: warning: ${name} declares no dsh.bundle — installed as a plain dependency, not a profile layer\n`, 'stderr')
+      options.onOutput?.(`alpha: warning: ${name} declares no dsh.bundle — installed as a plain dependency, not a profile layer\n`, 'stderr')
       continue
     }
-    loadOverlayPatches('dsh', join(resolveBundleDir('dsh', name, anchor, dir), metadata.dsh.bundle.patch))
+    loadOverlayPatches('alpha', join(resolveBundleDir('alpha', name, anchor, dir), metadata.dsh.bundle.patch))
     if (!bundles.includes(name)) {
       bundles.push(name)
     }
@@ -106,7 +106,7 @@ export async function runProfilePnpm(
   context: PackageOperationContext, args: readonly string[], options: PackageOperationOptions,
 ): Promise<PackageResult> {
   const dir = context.dir ?? resolveProfileDir(context.profile, context.home)
-  const before = readProfileManifest('dsh', dir)
+  const before = readProfileManifest('alpha', dir)
   const logRoot = join(dir, '.plugin-manager', 'logs')
   await mkdir(logRoot, { recursive: true, mode: 0o700 })
   const logDir = await mkdtemp(join(logRoot, 'operation-'))
@@ -164,7 +164,7 @@ export async function runProfilePnpm(
   return { exitCode, output: output.toString('utf8'), truncated, logPath }
 }
 
-/** Initialize and run the dsh plugin command with the same write lock as the service.
+/** Initialize and run the alpha plugin command with the same write lock as the service.
  * @param context Launcher-owned locations.
  * @param args Pnpm arguments.
  * @param options Output and cancellation policy.
@@ -179,7 +179,7 @@ export async function runPluginCommand(
     if (!existsSync(join(dir, 'package.json'))) {
       const template = PROFILE_TEMPLATES[context.profile]
       initProfile(dir, template?.bundles ?? DEFAULT_PROFILE_BUNDLES)
-      options.onOutput?.(`dsh: initialized profile ${context.profile} at ${dir}\n`, 'stderr')
+      options.onOutput?.(`alpha: initialized profile ${context.profile} at ${dir}\n`, 'stderr')
     }
     return runProfilePnpm(context, args, options)
   }, options.lockWaitMs === undefined ? undefined : { waitMs: options.lockWaitMs })

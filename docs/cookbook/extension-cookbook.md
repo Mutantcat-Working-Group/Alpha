@@ -93,7 +93,7 @@ export function apply(ctx: Context) {
 
 ## Runnable wirings
 
-Shipped applications contribute profile layers through `packages/bundle/*/cordis.patch.yml`, and the product `dsh` launcher owns Web, ACP, SDK, and one-shot headless execution through named profiles. Optional user-facing overlays live under `apps/cli/config/examples/`; profile integration tests live under `apps/cli/tests/profiles/`, while package-specific Loader compositions stay with their package tests.
+Shipped applications contribute profile layers through `packages/bundle/*/cordis.patch.yml`, and the product `alpha` launcher owns Web, ACP, SDK, and one-shot headless execution through named profiles. Optional user-facing overlays live under `apps/cli/config/examples/`; profile integration tests live under `apps/cli/tests/profiles/`, while package-specific Loader compositions stay with their package tests.
 
 ## The feature → mechanism map
 

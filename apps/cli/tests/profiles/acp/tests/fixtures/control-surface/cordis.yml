@@ -1,4 +1,4 @@
-# Keyless generic ACP v1 control-surface patch over `dsh --profile acp`.
+# Keyless generic ACP v1 control-surface patch over `alpha --profile acp`.
 
 - id: llm-deepseek
   name: '@mutantcat/dsh-llm-deepseek'

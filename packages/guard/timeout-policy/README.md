@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Use this package to give tool calls their configured cooperative time limits and return a clear timeout error to the model after cancellation settles. Calls that finish in time are unchanged. A tool that ignores or slowly handles cancellation can keep the caller waiting because the package cannot hard-stop downstream work. Each tool supplies its own limit; the package has no configuration and is enabled in the `dsh` base bundle.
+Use this package to give tool calls their configured cooperative time limits and return a clear timeout error to the model after cancellation settles. Calls that finish in time are unchanged. A tool that ignores or slowly handles cancellation can keep the caller waiting because the package cannot hard-stop downstream work. Each tool supplies its own limit; the package has no configuration and is enabled in the `alpha` base bundle.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ Use this package to give tool calls their configured cooperative time limits and
 <a id="use-this-package"></a>
 ## Use this package
 
-The common path is one line: add the plugin to the composition — the `dsh` base bundle already has it. Tools that have a limit configured are protected automatically; every other tool is untouched.
+The common path is one line: add the plugin to the composition — the `alpha` base bundle already has it. Tools that have a limit configured are protected automatically; every other tool is untouched.
 
 ### When to choose it
 

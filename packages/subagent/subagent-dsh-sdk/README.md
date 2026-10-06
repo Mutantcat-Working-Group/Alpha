@@ -38,7 +38,7 @@ The provider advertises `agentOptions: true`, with `outputSchema`/`depthLimit`/`
 | Field | Default | Meaning |
 |---|---|---|
 | `providerName` | `dsh-sdk` | Registry name on `ctx.subagents` |
-| `dshBin` | SDK dependency | Explicit dsh CLI module, resolved and checked at plugin load; omission uses the SDK dependency |
+| `dshBin` | SDK dependency | Explicit alpha CLI module, resolved and checked at plugin load; omission uses the SDK dependency |
 | `profile` | `sdk` | Named child profile |
 | `patches` | `[]` | Ordered per-launch profile patch files, resolved and checked at plugin load |
 | `dshHome` | required | Absolute isolated Harness home for every nested child process |

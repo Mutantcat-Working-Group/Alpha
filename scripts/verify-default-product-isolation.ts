@@ -75,8 +75,8 @@ export function verifyDefaultProductIsolation(root: string): ProductIsolationRes
     if (!existsSync(resolve(root, path))) failures.push(`missing default product root ${path}`)
   }
   const cli = directories.get(resolve(root, 'apps/cli'))
-  if (cli?.manifest.name !== '@mutantcat/dsh') {
-    failures.push('apps/cli/package.json must identify @mutantcat/dsh')
+  if (cli?.manifest.name !== '@mutantcat/alpha') {
+    failures.push('apps/cli/package.json must identify @mutantcat/alpha')
   }
   // The bundles the launcher ships switched off: each a runtime dependency of the installation that is a bundle, none a default.
   const profilePath = resolve(root, PROFILE_SOURCE)

@@ -22,7 +22,7 @@
   - img
   - text: Context injection @mutantcat/dsh-system-prompt
 - paragraph: partial
-- status: Deep diving...
+- status: Thinking…
 - textbox "Message or run a task, / commands, @ files or sessions":
   - paragraph: Queue this follow-up while the current turn is running.
 - button "Add files or run commands":

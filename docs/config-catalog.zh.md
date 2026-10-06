@@ -1887,7 +1887,7 @@ export interface PlanModeConfig {
 ```ts config-catalog
 /** The pnpm executable and the limits for package diagnostics and registry lookups. */
 export interface Config {
-  /** The pnpm executable name or path; resolved through `PATH` like the `dsh plugin` command. */
+  /** The pnpm executable name or path; resolved through `PATH` like the `alpha plugin` command. */
   pnpmCommand?: string
   /** Maximum retained pnpm diagnostic bytes per operation. */
   outputBytes?: number
@@ -2836,7 +2836,7 @@ export type CodexPermissionMode =
 export interface Config {
   /** Provider name on `ctx.subagents` (default `dsh-sdk`). */
   providerName: string
-  /** Explicit dsh CLI module, resolved and checked at plugin load; omission uses the SDK dependency. */
+  /** Explicit alpha CLI module, resolved and checked at plugin load; omission uses the SDK dependency. */
   dshBin?: string
   /** Named child profile (default `sdk`). */
   profile: string

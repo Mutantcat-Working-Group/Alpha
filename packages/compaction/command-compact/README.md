@@ -25,7 +25,7 @@ English | [中文](README.zh.md)
 <a id="use-this-package"></a>
 ## Use this package
 
-Type `/compact` in a chat UI when the conversation has grown long and you want to condense it immediately. The shipped `dsh` base mounts the command next to the default backend, so it is usually already available.
+Type `/compact` in a chat UI when the conversation has grown long and you want to condense it immediately. The shipped `alpha` base mounts the command next to the default backend, so it is usually already available.
 
 ### Using the command
 
@@ -62,7 +62,7 @@ Mount the command registry, one condensation backend, and this plugin:
   name: '@mutantcat/dsh-command-compact'
 ```
 
-The shipped `dsh` base mounts it beside the default backend, and the Web client provides the command adapter. Automation surfaces that compose no command adapter keep automatic condensation only.
+The shipped `alpha` base mounts it beside the default backend, and the Web client provides the command adapter. Automation surfaces that compose no command adapter keep automatic condensation only.
 
 ### What happens to the conversation
 

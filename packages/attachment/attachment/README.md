@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Attach images and generic files to prompts and commands, then reuse them after restarting the same session, without extra setup in the shipped `dsh` composition. Images are validated and normalized before the message is accepted; PNG, JPEG, WebP, and GIF are supported within deployment limits. Other files are stored byte-for-byte without format or size limits, and models read them on demand through saved read-only paths instead of receiving their bytes. Durable session events exclude browser paths, provider URLs, local storage paths, and base64. Stored attachments are never deleted automatically; audio and video have no dedicated handling.
+Attach images and generic files to prompts and commands, then reuse them after restarting the same session, without extra setup in the shipped `alpha` composition. Images are validated and normalized before the message is accepted; PNG, JPEG, WebP, and GIF are supported within deployment limits. Other files are stored byte-for-byte without format or size limits, and models read them on demand through saved read-only paths instead of receiving their bytes. Durable session events exclude browser paths, provider URLs, local storage paths, and base64. Stored attachments are never deleted automatically; audio and video have no dedicated handling.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ Attach images and generic files to prompts and commands, then reuse them after r
 <a id="use-this-package"></a>
 ## Use this package
 
-Image attachments work end to end: attach an image to a prompt or a command, and it is saved, shown in history, and sent to the model without any further action from you. In the default `dsh` composition everything is already wired; when you compose your own setup, one plugin enables the capability.
+Image attachments work end to end: attach an image to a prompt or a command, and it is saved, shown in history, and sent to the model without any further action from you. In the default `alpha` composition everything is already wired; when you compose your own setup, one plugin enables the capability.
 
 ### Attach images to a prompt
 

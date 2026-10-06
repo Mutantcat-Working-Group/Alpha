@@ -90,7 +90,7 @@ kind: "package-library"
 - [JSON-RPC 服务插件](../server/README.zh.md) — 通过 stdio 服务该协议的运行时插件。
 - [TypeScript SDK 客户端](../client/README.zh.md) — 驱动该协议的客户端。
 - [Python SDK](../../../python/README.zh.md) — 复现这些结构的 Python 对应实现。
-- [SDK 应用组合包](../../bundle/sdk-app/README.zh.md) — 启动服务器的 `dsh --profile sdk` 应用。
+- [SDK 应用组合包](../../bundle/sdk-app/README.zh.md) — 启动服务器的 `alpha --profile sdk` 应用。
 
 -----
 

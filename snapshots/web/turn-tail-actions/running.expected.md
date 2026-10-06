@@ -32,7 +32,7 @@
   - img
   - text: Bash Print alpha to stdout
 - paragraph: partial
-- status: Deep diving...
+- status: Thinking…
 - textbox "Message or run a task, / commands, @ files or sessions"
 - button "Add files or run commands":
   - img

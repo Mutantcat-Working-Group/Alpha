@@ -32,9 +32,9 @@ kind: "package-bundle"
 把包安装进目标 Profile，然后重启该 Profile。安装会把官方 wrapper 与一个兼容的原生平台载荷带入 Profile；声明的 patch 层只注册休眠的提供方，不启动任何 Codex 进程。
 
 ```sh
-dsh plugin --profile <name> add @mutantcat/dsh-subagent-codex
-dsh plugin --profile <name> remove @mutantcat/dsh-subagent-codex
-dsh --profile <name>
+alpha plugin --profile <name> add @mutantcat/dsh-subagent-codex
+alpha plugin --profile <name> remove @mutantcat/dsh-subagent-codex
+alpha --profile <name>
 ```
 
 移除包后，下一次 Profile 启动会撤回提供方及其私有运行时闭包。安装决定 Host 可用性，而不是模型权限：模型只能通过你组合的委派工具行触达提供方。

@@ -1,4 +1,4 @@
-/** Application-entrypoint classification and dsh-launch enforcement. */
+/** Application-entrypoint classification and alpha-launch enforcement. */
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -34,7 +34,7 @@ describe('application entrypoints', () => {
     write(root, 'packages/example/app/package.json', JSON.stringify({ bin: { app: 'lib/bin.js' } }))
 
     expect(applicationEntrypointViolations(root)).toEqual([
-      'packages/example/app/package.json: package bin bypasses the dsh launcher; applications use apps/cli profiles',
+      'packages/example/app/package.json: package bin bypasses the alpha launcher; applications use apps/cli profiles',
     ])
   })
 
@@ -83,7 +83,7 @@ describe('application entrypoints', () => {
     ])
   })
 
-  it('rejects a private Python application carrier outside dsh', () => {
+  it('rejects a private Python application carrier outside alpha', () => {
     const root = fixture()
     write(root, 'packages/sdk/rogue-python-runtime/package.json', JSON.stringify({ private: true }))
     write(root, 'packages/sdk/rogue-python-runtime/src/bin.ts', '#!/usr/bin/env node\n')
@@ -109,7 +109,7 @@ describe('application entrypoints', () => {
     write(root, 'package.json', JSON.stringify({ scripts: { 'demo:new-app': 'dsh --profile new-app' } }))
 
     expect(applicationEntrypointViolations(root)).toEqual([
-      'package.json scripts.demo:new-app: demo launcher has no explicit dsh or in-process classification',
+      'package.json scripts.demo:new-app: demo launcher has no explicit alpha or in-process classification',
     ])
   })
 })

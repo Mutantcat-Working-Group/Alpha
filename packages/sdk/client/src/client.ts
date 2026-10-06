@@ -183,7 +183,7 @@ class NotificationSubscriptionImpl implements NotificationSubscription {
  * runtime is closed.
  */
 export class HarnessClient {
-  /** Original public dsh launch and timeout options for this client. */
+  /** Original public alpha launch and timeout options for this client. */
   readonly options: HarnessClientOptions
   private readonly runtime: RuntimeProcessOptions
   private child: ChildProcess | undefined
@@ -197,7 +197,7 @@ export class HarnessClient {
   private streamsSettled: Promise<void> = Promise.resolve()
   private closeTask: Promise<void> | undefined
 
-  /** @param options - dsh profile, patch, home, process, environment, and timeout options. */
+  /** @param options - alpha profile, patch, home, process, environment, and timeout options. */
   constructor(options?: HarnessClientOptions)
   constructor(options: HarnessClientOptions = {}, runtime?: RuntimeProcessOptions) {
     this.options = options

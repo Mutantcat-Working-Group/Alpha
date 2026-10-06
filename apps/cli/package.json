@@ -1,6 +1,6 @@
 {
-  "name": "@mutantcat/dsh",
-  "description": "dsh CLI: profile launch, plugin management, and configuration inspection",
+  "name": "@mutantcat/alpha",
+  "description": "Alpha CLI: profile launch, plugin management, and configuration inspection",
   "version": "1.0.20261007",
   "publishConfig": {
     "access": "public"
@@ -12,7 +12,7 @@
   },
   "type": "module",
   "bin": {
-    "dsh": "lib/bin.js"
+    "alpha": "lib/bin.js"
   },
   "files": [
     "lib/*.js",

@@ -8,19 +8,19 @@
 
 ## Cordis
 
-[Cordis](cordis-primer.zh.md) 是 dsh 底层的框架：插件向共享上下文贡献服务、类型化事件和可逆的副作用。产品的每一部分都是插件，包括模型适配器、工具注册表、会话日志，以及 agent loop（智能体循环）本身，因此每个都可以从配置替换。
+[Cordis](cordis-primer.zh.md) 是 alpha 底层的框架：插件向共享上下文贡献服务、类型化事件和可逆的副作用。产品的每一部分都是插件，包括模型适配器、工具注册表、会话日志，以及 agent loop（智能体循环）本身，因此每个都可以从配置替换。
 
-不存在需要打补丁的特权内核：扩展 dsh 的方式是把插件挂载到其他插件旁边，而各项注册都是副作用，会在其插件卸载时撤销。
+不存在需要打补丁的特权内核：扩展 alpha 的方式是把插件挂载到其他插件旁边，而各项注册都是副作用，会在其插件卸载时撤销。
 
 ## Profile 与组合包
 
-运行中的 `dsh` 是一棵插件树，由启动时按序叠加的各层组合而成。
+运行中的 `alpha` 是一棵插件树，由启动时按序叠加的各层组合而成。
 
 **profile** 是存放在 Harness home 中的具名组装。它列出自己叠放的组合包，存放自己安装的树外插件，并保存用户自己的 `cordis.patch.yml`。`web`、`headless`、`sdk`、`sdk-minimal` 和 `acp` 作为模板随发行版交付。
 
 **组合包**是 Cordis 配置项及其挂载代码的分发格式，因此它插入的内容始终可被其上各层 patch。
 
-两者都在各自的 `package.json` 中通过 `dsh` 字段声明自己：`dsh.profile` 列出一个 profile 的组合包，`dsh.bundle` 指向一个组合包的 patch 文件。
+两者都在各自的 `package.json` 中通过 `alpha` 字段声明自己：`dsh.profile` 列出一个 profile 的组合包，`dsh.bundle` 指向一个组合包的 patch 文件。
 
 [`dsh-base`](../packages/bundle/base/README.zh.md) 是 `web`、`headless`、`sdk` 与 `acp` profile 的共享第一层：模型适配器、工具、持久化、沙箱与审批策略、设置、凭据、遥测。[`dsh-web-app`](../packages/bundle/web-app/README.zh.md) 增加浏览器应用，[`dsh-headless`](../packages/bundle/headless/README.zh.md) 增加不带服务器的一次性运行器，[`dsh-sdk-app`](../packages/bundle/sdk-app/README.zh.md) 增加 SDK JSON-RPC 服务器，[`dsh-acp-app`](../packages/bundle/acp-app/README.zh.md) 增加仅用于自动化的 ACP 服务器。[`dsh-sdk-minimal`](../packages/bundle/sdk-minimal/README.zh.md) 是刻意保留的例外：一个组合包拥有完整的显式 SDK 配置树，不应用 `dsh-base`。
 
@@ -33,7 +33,7 @@ base 提供用于 Web 和 Agent 的[插件管理器](../packages/boot/plugin-man
 要查看你的机器启动的配置树：
 
 ```sh
-dsh --profile web --dump-config
+alpha --profile web --dump-config
 ```
 
 它打印出的任何条目，都可以由你自己的 patch 替换。
@@ -42,15 +42,15 @@ dsh --profile web --dump-config
 
 ## 应用启动
 
-受支持的 Node 应用通过具名 `dsh` profile 启动。随附 profile 为 `web`、`headless`、`sdk`、`sdk-minimal` 和 `acp`，可通过 `dsh --profile <name>` 或 `dsh <name>` 选择。`plugin` 表示管理命令；同名 profile 必须用 `--profile plugin` 选择。TypeScript SDK 会解析其同版本 `dsh` 依赖并选择 `sdk`；自定义插件组合继续由 profile 与有序 patch 文件表达，而不是另一个可执行文件或内联应用树。`sdk-minimal` 是位于同一 launcher 后的仓库自有独立组合包，而不是由调用方提供的 Cordis 配置树。
+受支持的 Node 应用通过具名 `alpha` profile 启动。随附 profile 为 `web`、`headless`、`sdk`、`sdk-minimal` 和 `acp`，可通过 `alpha --profile <name>` 或 `alpha <name>` 选择。`plugin` 表示管理命令；同名 profile 必须用 `--profile plugin` 选择。TypeScript SDK 会解析其同版本 `alpha` 依赖并选择 `sdk`；自定义插件组合继续由 profile 与有序 patch 文件表达，而不是另一个可执行文件或内联应用树。`sdk-minimal` 是位于同一 launcher 后的仓库自有独立组合包，而不是由调用方提供的 Cordis 配置树。
 
-Vendored CLI、仅用于构建和测试的可执行文件、进程内直接挂载插件以及私有浏览器 WebWorker 预览都不属于 Harness 应用启动器。[`verify-application-entrypoints`](../scripts/verify-application-entrypoints.ts)将每个包 bin、可执行源码与根 demo 归入显式类别，并拒绝任何绕过 `dsh` 的 Node 应用路径。
+Vendored CLI、仅用于构建和测试的可执行文件、进程内直接挂载插件以及私有浏览器 WebWorker 预览都不属于 Harness 应用启动器。[`verify-application-entrypoints`](../scripts/verify-application-entrypoints.ts)将每个包 bin、可执行源码与根 demo 归入显式类别，并拒绝任何绕过 `alpha` 的 Node 应用路径。
 
-Python SDK 遵循相同的应用架构。其运行时 wheel 把普通 `dsh` CLI 打包为 `deepseek-harness-sdk-runtime-<platform>-<arch>`，客户端默认以显式 Harness home 启动 `dsh --profile sdk`。极简示例选择随附的 `sdk-minimal` profile。Python 暴露 profile 选择与有序 patch 文件，而不是完整 Cordis 树；持久外部插件通过 `dsh plugin` 安装。已删除的私有直读配置载体没有兼容 bin 或回退 parser。
+Python SDK 遵循相同的应用架构。其运行时 wheel 把普通 `alpha` CLI 打包为 `deepseek-harness-sdk-runtime-<platform>-<arch>`，客户端默认以显式 Harness home 启动 `alpha --profile sdk`。极简示例选择随附的 `sdk-minimal` profile。Python 暴露 profile 选择与有序 patch 文件，而不是完整 Cordis 树；持久外部插件通过 `alpha plugin` 安装。已删除的私有直读配置载体没有兼容 bin 或回退 parser。
 
 ## 桌面应用
 
-[Alpha 桌面应用](../apps/desktop/README.zh.md)在随包资源中携带精确匹配的 dsh 生产运行时，并拥有保留的 `$DSH_HOME/profiles/desktop`。共享 profile helper 初始化其文件、协调已安装 bundle，并解析安装与 bundle 的依赖而不替换 pnpm 拥有的包。CLI 与 Desktop 共享产品数据，可执行包、启用选择与锁文件保持独立。公开 CLI 不能管理 Desktop profile。
+[Alpha 桌面应用](../apps/desktop/README.zh.md)在随包资源中携带精确匹配的 alpha 生产运行时，并拥有保留的 `$DSH_HOME/profiles/desktop`。共享 profile helper 初始化其文件、协调已安装 bundle，并解析安装与 bundle 的依赖而不替换 pnpm 拥有的包。CLI 与 Desktop 共享产品数据，可执行包、启用选择与锁文件保持独立。公开 CLI 不能管理 Desktop profile。
 
 Tauri 以随包的 Node sidecar 启动私有 Desktop Host，并通过其 stdout 与 stdin 上的换行分隔 JSON 与之通信。Host 调用共享 CLI profile runner 与 Web 应用。窗口先加载打包的加载页，待 Host 报告引擎 URL 后，壳将其导航到已认证的 Host。Web 负责 RPC 与流；壳把本地页面连接到已认证的 Host。该通道承载就绪、致命错误与关闭。提供的文档已携带自身的注入表，载体因此只发布 stream 来源。Desktop 默认端口为 `19387`，profile 配置可覆盖。壳拥有的 UI 通过内置 pnpm 执行插件事务，并遵循正常用户与 profile 配置。
 

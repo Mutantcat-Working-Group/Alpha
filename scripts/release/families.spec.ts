@@ -134,7 +134,7 @@ describe('release families', () => {
   it('names one tag for the whole Alpha family and one per vendored package', () => {
     const alpha = releaseFamily('alpha')
     const vendor = releaseFamily('vendor')
-    const cli = member('apps/cli', '@mutantcat/dsh')
+    const cli = member('apps/cli', '@mutantcat/alpha')
     const cordis = { ...member('vendor/cordis', '@mutantcat/cordis'), version: '4.0.1' }
 
     expect(alpha.tagFor(cli)).toBe('alpha-v0.0.1')
@@ -159,7 +159,7 @@ describe('release families', () => {
 
   it('rejects a family whose members disagree on the shared version', () => {
     const alpha = releaseFamily('alpha')
-    const members = [member('apps/cli', '@mutantcat/dsh'), { ...member('apps/web', '@mutantcat/dsh-web-frontend'), version: '0.0.2' }]
+    const members = [member('apps/cli', '@mutantcat/alpha'), { ...member('apps/web', '@mutantcat/dsh-web-frontend'), version: '0.0.2' }]
 
     expect(() => { alpha.verifyVersions(members) }).toThrow(/must share one version/)
     expect(() => { alpha.verifyVersions([members[0]!]) }).not.toThrow()
@@ -319,7 +319,7 @@ describe('release families', () => {
   })
 
   it('drives the installed entry only for the family that publishes one', () => {
-    expect(releaseFamily('alpha').installedEntry).toEqual({ packageName: '@mutantcat/dsh', binPath: 'lib/bin.js' })
+    expect(releaseFamily('alpha').installedEntry).toEqual({ packageName: '@mutantcat/alpha', binPath: 'lib/bin.js' })
     expect(releaseFamily('vendor').installedEntry).toBeUndefined()
   })
 

@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 ask_user_question 功能：接管编辑器的提问 UI 与 plan-review 审批卡片。"
+description: "alpha Web 客户端的 ask_user_question 功能：接管编辑器的提问 UI 与 plan-review 审批卡片。"
 kind: "package-reference"
 ---
 

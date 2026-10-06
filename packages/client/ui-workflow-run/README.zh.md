@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的持久化工作流运行 Conversation Node：把顶层工作流运行重建为带嵌套成员折叠的独立聊天节点。"
+description: "alpha Web 客户端的持久化工作流运行 Conversation Node：把顶层工作流运行重建为带嵌套成员折叠的独立聊天节点。"
 kind: "package-reference"
 ---
 

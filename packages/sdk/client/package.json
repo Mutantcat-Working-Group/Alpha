@@ -26,7 +26,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@mutantcat/dsh": "workspace:*"
+    "@mutantcat/alpha": "workspace:*"
   },
   "peerDependencies": {
     "@mutantcat/dsh-llm": "workspace:^",

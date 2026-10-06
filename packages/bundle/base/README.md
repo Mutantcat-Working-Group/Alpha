@@ -1,5 +1,5 @@
 ---
-description: "The shared dsh core: model access, tools, durable sessions, and safety defaults for every dsh --profile surface, for users composing or customizing a profile."
+description: "The shared alpha core: model access, tools, durable sessions, and safety defaults for every alpha --profile surface, for users composing or customizing a profile."
 kind: "package-bundle"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Every base-backed `dsh --profile` surface runs on `dsh-base`, so those surfaces share a model connection, the full tool set, durable session history, and workspace safety defaults. The shipped `sdk-minimal` profile deliberately uses a complete standalone tree instead. You rarely touch this bundle directly — shipped base-backed profiles already include it, and a custom base-backed profile names it first. When you need different defaults, change your profile patch or add a later bundle; this package is not a library you import.
+Every base-backed `alpha --profile` surface runs on `dsh-base`, so those surfaces share the full tool set, durable session history, and workspace safety defaults, while the model connection stays the deployment's own to configure. The shipped `sdk-minimal` profile deliberately uses a complete standalone tree instead. You rarely touch this bundle directly — shipped base-backed profiles already include it, and a custom base-backed profile names it first. When you need different defaults, change your profile patch or add a later bundle; this package is not a library you import.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ Every base-backed `dsh --profile` surface runs on `dsh-base`, so those surfaces 
 <a id="use-this-package"></a>
 ## Use this package
 
-You get the dsh core automatically: the shipped `web`, `headless`, `sdk`, and `acp` profiles already include it, and a custom profile names it as its first bundle. After that, everything works with no further configuration.
+You get the alpha core automatically: the shipped `web`, `headless`, `sdk`, and `acp` profiles already include it, and a custom profile names it as its first bundle. After that, everything works with no further configuration.
 
 ### A minimal custom profile
 
@@ -43,11 +43,15 @@ To build a profile on the shared core, create a profile with a `package.json` th
 }
 ```
 
-Run `dsh --profile my-profile "your task"` and you get a working agent with model access, tools, persistence, and the default permission policy. The shipped `web`, `headless`, `sdk`, and `acp` profiles are created for you on first use. To add more bundles, run `dsh plugin --profile <name> add <package>`; in-box bundles resolve from the dsh installation. The profile contract is documented in the [app-boot profile section](../../boot/app-boot/README.md).
+Run `alpha --profile my-profile "your task"` and you get a working agent with tools, persistence, and the default permission policy; configure a model before the first request. The shipped `web`, `headless`, `sdk`, and `acp` profiles are created for you on first use. To add more bundles, run `alpha plugin --profile <name> add <package>`; in-box bundles resolve from the alpha installation. The profile contract is documented in the [app-boot profile section](../../boot/app-boot/README.md).
 
 ### What you get
 
-Out of the box, every profile built on this core provides: a DeepSeek model connection (the provider and model are configurable, and you can enable extra providers from your settings), the full tool set — file editing, shell commands, web search, public HTTP(S) fetch, subagents, task and goal tracking — durable sessions that survive restarts, and the default permission policy that confines file writes to your workspace and asks before risky actions. Web fetch runs without per-call approval; its provider rejects non-public destinations. Feedback stays in the Session log. Alpha ships no telemetry collector, so the [OTel session upload](../../session/session-telemetry-otel/README.md) row mounts only when a deployment sets `DSH_TELEMETRY_OTLP_URL` to its own endpoint and no shipped build contacts a vendor service. With an endpoint configured, `FEEDBACK_ONLY` releases the complete canonical prefix on new text feedback, message ratings, edits, and withdrawals, including context, for every provider including `deepseek-official`; later records wait for the next explicit feedback, and `DISABLED` prevents OTel capture. The default-on [DeepSeek session-log contributor](../../session/session-log-deepseek/README.md) remains a separate request path.
+Out of the box, every profile built on this core provides: the full tool set — file editing, shell commands, public HTTP(S) fetch, subagents, task and goal tracking — durable sessions that survive restarts, and the default permission policy that confines file writes to your workspace and asks before risky actions. Web fetch runs without per-call approval; its provider rejects non-public destinations.
+
+No model connection is preselected. The core mounts the multi-provider adapter dormant, so a fresh install has no provider, no default model, and no vendor route; supplying provider profiles is what brings routes to life. Write a `llm-pi-ai:` section in `$DSH_HOME/settings.yaml` — by hand, or through **Settings → Models** in the Web app — and each profile's route registers with its key resolved per request from the credential seam. The first selection you save becomes the default for agents created later. The [model configuration guide](../../../docs/user/guide/providers.md) covers the whole flow.
+
+Feedback stays in the Session log. Alpha ships no search route either: `web_search` stays unregistered rather than advertised without a provider, and a deployment that mounts one flips `search` back on. The same holds for uploads — no shipped build contacts a vendor service, and a deployment that wants one appends the [OTel session upload](../../session/session-telemetry-otel/README.md) row to its own profile patch, with that row's `exporter.url` naming its own collector.
 
 Default file editing uses `read`, `write`, and `edit`. The `str_replace_editor` tool remains available as an explicit opt-in. To add it to a base-backed profile, put this entry in the profile, home, or invocation patch:
 

@@ -1,5 +1,5 @@
 ---
-description: "共享的 dsh 核心：为每个 dsh --profile 表层提供模型访问、工具、持久会话与安全默认值，供用户组合或定制 profile。"
+description: "共享的 alpha 核心：为每个 alpha --profile 表层提供模型访问、工具、持久会话与安全默认值，供用户组合或定制 profile。"
 kind: "package-bundle"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-每个基于 base 的 `dsh --profile` 表层都运行在 `dsh-base` 上，因此这些表层共享模型连接、完整工具集、持久会话历史和 workspace 安全默认值。随附的 `sdk-minimal` profile 刻意改用完整的独立配置树。你通常不直接操作本组合包——随发行版交付的基于 base 的 profile 已经包含它，自定义的基于 base 的 profile 则把它放在第一位。需要其他默认值时，应修改自己的 profile patch 或添加后续组合包；本包不是供导入的库。
+每个基于 base 的 `alpha --profile` 表层都运行在 `dsh-base` 上，因此这些表层共享完整工具集、持久会话历史与 workspace 安全默认值，而模型连接由部署方自行配置。随附的 `sdk-minimal` profile 刻意改用完整的独立配置树。你通常不直接操作本组合包——随发行版交付的基于 base 的 profile 已经包含它，自定义的基于 base 的 profile 则把它放在第一位。需要其他默认值时，应修改自己的 profile patch 或添加后续组合包；本包不是供导入的库。
 
 ## 目录
 
@@ -25,7 +25,7 @@ kind: "package-bundle"
 <a id="use-this-package"></a>
 ## 使用本包
 
-你会自动获得 dsh 核心：随发行版交付的 `web`、`headless`、`sdk` 与 `acp` profile 已包含它，自定义 profile 则把它列为第一个组合包。之后一切无需任何额外配置即可工作。
+你会自动获得 alpha 核心：随发行版交付的 `web`、`headless`、`sdk` 与 `acp` profile 已包含它，自定义 profile 则把它列为第一个组合包。之后一切无需任何额外配置即可工作。
 
 ### 最小自定义 profile
 
@@ -43,11 +43,15 @@ kind: "package-bundle"
 }
 ```
 
-运行 `dsh --profile my-profile "your task"`，你就得到一个可用的 agent（智能体），带模型访问、工具、持久化与默认权限策略。随发行版交付的 `web`、`headless`、`sdk` 与 `acp` profile 会在首次使用时为你创建。要添加更多组合包，运行 `dsh plugin --profile <name> add <package>`；内置组合包从 dsh 安装目录解析。profile 约定见 [app-boot 的 profile 章节](../../boot/app-boot/README.zh.md)。
+运行 `alpha --profile my-profile "your task"`，你就得到一个可用的 agent（智能体），带工具、持久化与默认权限策略；请在首次请求前先配置模型。随发行版交付的 `web`、`headless`、`sdk` 与 `acp` profile 会在首次使用时为你创建。要添加更多组合包，运行 `alpha plugin --profile <name> add <package>`；内置组合包从 alpha 安装目录解析。profile 约定见 [app-boot 的 profile 章节](../../boot/app-boot/README.zh.md)。
 
 ### 你得到什么
 
-开箱即用，基于本核心构建的每个 profile 都提供：DeepSeek 模型连接（提供方与模型可配置，你还可以在设置中启用额外提供方）、完整工具集——文件编辑、shell 命令、web 搜索、公开 HTTP(S) 抓取、subagent、任务与目标跟踪——可跨重启存活的持久会话，以及默认权限策略：把文件写入限制在工作区内，危险操作前征询许可。Web 抓取无需逐次审批，其提供方会拒绝非公开目的地址。反馈保存在会话日志中。Alpha 不自带遥测采集端：[OTel 会话上传](../../session/session-telemetry-otel/README.zh.md)这一行仅在部署方把 `DSH_TELEMETRY_OTLP_URL` 指向自己的端点时挂载，任何随产品交付的构建都不会连接厂商服务。配置了端点时，`FEEDBACK_ONLY` 会在新的文本反馈、消息评分、编辑与撤回时释放截至该事件的完整规范会话日志前缀，包含上下文，对所有提供方都适用（包括 `deepseek-official`）；后续记录等待下一次显式反馈，`DISABLED` 阻止 OTel 捕获。默认开启的 [DeepSeek 会话日志贡献器](../../session/session-log-deepseek/README.zh.md)仍是独立的请求路径。
+开箱即用，基于本核心构建的每个 profile 都提供：完整工具集——文件编辑、shell 命令、公开 HTTP(S) 抓取、subagent、任务与目标跟踪——可跨重启存活的持久会话，以及默认权限策略：把文件写入限制在工作区内，危险操作前征询许可。Web 抓取无需逐次审批，其提供方会拒绝非公开目的地址。
+
+没有任何模型连接是预选的。本核心以休眠状态挂载多提供方适配器，因此全新安装既没有提供方、没有默认模型，也没有任何厂商路由；给出提供方 profile 才是路由诞生的方式。在 `$DSH_HOME/settings.yaml` 中写一个 `llm-pi-ai:` 一节——手写，或通过 Web 应用的**设置 → 模型**页写入——该 profile 的路由随之注册，其密钥在每次请求时经凭据 seam 解析。你保存的第一个选择会成为后续创建的 agent 的默认值。完整流程见[模型配置指南](../../../docs/user/guide/providers.zh.md)。
+
+反馈保存在会话日志中。Alpha 同样不附带搜索路由：与其挂出没有提供方支撑的 `web_search`，不如让它保持未注册，需要它的部署方自行挂载后再把 `search` 打开。上传路径也是如此：任何随产品交付的构建都不会连接厂商服务，需要上传的部署方在自己的 profile patch 中追加 [OTel 会话上传](../../session/session-telemetry-otel/README.zh.md)一行，并把该行的 `exporter.url` 指向自己的采集端点。
 
 默认文件编辑使用 `read`、`write` 和 `edit`。`str_replace_editor` 工具仍可显式启用。要将它加入基于 base 的 profile，请在 profile、home 或逐次调用 patch 中添加以下条目：
 

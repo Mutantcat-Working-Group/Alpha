@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Alpha is a Tauri shell around the complete dsh Web application. The shell window opens on a packaged loader page, starts a bundled Node sidecar that runs the private Desktop Host, and navigates to the Host's URL once that Host reports readiness. Desktop defaults to port `19387`, separate from Web's `3080`; a `webserver.config.port` patch can override it. The product name, version, and application identifier live in [tauri.conf.json](src-tauri/tauri.conf.json), and every release family shares that one version string.
+Alpha is a Tauri shell around the complete alpha Web application. The shell window opens on a packaged loader page, starts a bundled Node sidecar that runs the private Desktop Host, and navigates to the Host's URL once that Host reports readiness. Desktop defaults to port `19387`, separate from Web's `3080`; a `webserver.config.port` patch can override it. The product name, version, and application identifier live in [tauri.conf.json](src-tauri/tauri.conf.json), and every release family shares that one version string.
 
 ## Shell boot
 
@@ -40,15 +40,15 @@ The original artwork lives in the repository root `icon.png`; the platform files
 
 | Decision | Why | Direct consequence |
 | ---|---|---|
-| Release identity | The shell API, Web client, backend, and plugin graph are qualified as one combination; independent versions would create untested combinations and ambiguous update availability. | Alpha and `@mutantcat/dsh` always carry the same exact version. A dsh upgrade is a Desktop release, even when the shell code is unchanged. |
+| Release identity | The shell API, Web client, backend, and plugin graph are qualified as one combination; independent versions would create untested combinations and ambiguous update availability. | Alpha and `@mutantcat/alpha` always carry the same exact version. A alpha upgrade is a Desktop release, even when the shell code is unchanged. |
 | Runtime | The application must run without a system Node.js or pnpm installation. | The bundled Node sidecar runs the Host with `--expose-internals`, and every package operation uses the bundled pnpm. |
 | Package sources | Core installation at startup adds work even when offline. | The staged runtime carries a complete production dependency tree; the profile installs only external plugins. |
-| State ownership | Sharing executable dependency graphs would let CLI and Desktop change each other's dsh, Cordis, plugin, or native-module versions, while two desktop processes could race on the same profile. | Alpha acquires its process-lifetime single-instance lock before any profile access and exclusively owns its application data directory, which is also the profile root, plus its package-manager state. CLI and Desktop share supported product data under `$DSH_HOME`, but never executable packages, plugin activation, lockfiles, or `node_modules`. |
+| State ownership | Sharing executable dependency graphs would let CLI and Desktop change each other's alpha, Cordis, plugin, or native-module versions, while two desktop processes could race on the same profile. | Alpha acquires its process-lifetime single-instance lock before any profile access and exclusively owns its application data directory, which is also the profile root, plus its package-manager state. CLI and Desktop share supported product data under `$DSH_HOME`, but never executable packages, plugin activation, lockfiles, or `node_modules`. |
 | Transport | Web serving and authentication share one implementation. | The shell loads the packaged Web assets for its loader page only; the Host supplies the engine document and authenticated APIs. |
 
 ## Installation ownership
 
-Alpha owns its application data directory, which doubles as the profile root: `~/Library/Application Support/org.mutantcat.alpha` on macOS, `%LOCALAPPDATA%\org.mutantcat.alpha` on Windows, and `~/.local/share/org.mutantcat.alpha` on Linux. Its `dependencies` contains packages installed by pnpm; `dsh.profile.bundles` contains the built-in bundles followed by enabled plugins. The staged runtime supplies dsh, the private Desktop Host, and their production packages. Packaged applications select runtime profile resolution without creating package links; development profiles use filesystem links. The host and plugins execute in the Node sidecar process; no renderer receives filesystem access, raw Tauri IPC, a shell, or arbitrary pnpm arguments.
+Alpha owns its application data directory, which doubles as the profile root: `~/Library/Application Support/org.mutantcat.alpha` on macOS, `%LOCALAPPDATA%\org.mutantcat.alpha` on Windows, and `~/.local/share/org.mutantcat.alpha` on Linux. Its `dependencies` contains packages installed by pnpm; `dsh.profile.bundles` contains the built-in bundles followed by enabled plugins. The staged runtime supplies alpha, the private Desktop Host, and their production packages. Packaged applications select runtime profile resolution without creating package links; development profiles use filesystem links. The host and plugins execute in the Node sidecar process; no renderer receives filesystem access, raw Tauri IPC, a shell, or arbitrary pnpm arguments.
 
 The product UI retains Web actions, including "Open In..." through the shared authenticated HTTP routes. Plugin management uses the Web application's authenticated HTTP APIs against the Desktop profile, and the shell exposes no separate plugin-management IPC. Native directory selection is the one desktop-side interaction: it opens the platform chooser attached to the application window and returns a single path.
 
@@ -109,4 +109,4 @@ The Windows NSIS installer installs for the current user. The macOS DMG carries 
 
 - Release artifacts are unsigned outside macOS's ad-hoc DMG: Gatekeeper and SmartScreen prompt on first run, and no notarization or publisher signature is performed.
 - Cross-OS artifact qualification runs only in CI; local verification covers the build host's own target.
-- The desktop shell shares sessions, settings, credentials, workspaces, and storage under `$DSH_HOME` with CLI dsh, while executable packages, plugin activation, and lockfiles remain separate.
+- The desktop shell shares sessions, settings, credentials, workspaces, and storage under `$DSH_HOME` with CLI alpha, while executable packages, plugin activation, and lockfiles remain separate.

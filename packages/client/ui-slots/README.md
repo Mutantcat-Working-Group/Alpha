@@ -1,5 +1,5 @@
 ---
-description: "Slot registry pure core for the dsh web client: ordinary extension slots, reusable Component Factories, derived props types, store seats, and the renderer install contract."
+description: "Slot registry pure core for the alpha web client: ordinary extension slots, reusable Component Factories, derived props types, store seats, and the renderer install contract."
 kind: "package-library"
 ---
 

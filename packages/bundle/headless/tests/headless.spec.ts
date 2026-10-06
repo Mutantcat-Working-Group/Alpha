@@ -365,13 +365,13 @@ describe('headless runner', () => {
     const result = await running
     expect(streamed).toEqual({
       out: '',
-      err: 'dsh: reasoning:\nchecking the workspace safely\nsecond pass\n',
+      err: 'alpha: reasoning:\nchecking the workspace safely\nsecond pass\n',
       order: [],
     })
     expect(result).toEqual({
       code: 0,
       out: 'done\n',
-      err: 'dsh: reasoning:\nchecking the workspace safely\nsecond pass\n',
+      err: 'alpha: reasoning:\nchecking the workspace safely\nsecond pass\n',
       order: ['flush', 'exit'],
     })
     await test.ctx.fiber.dispose()
@@ -410,11 +410,11 @@ describe('headless runner', () => {
     })
     const running = test.run()
     await reasoningAppended.promise
-    expect(test.output().err).toBe('dsh: reasoning:\nunfinished reasoning')
+    expect(test.output().err).toBe('alpha: reasoning:\nunfinished reasoning')
 
     releaseEnd.resolve(undefined)
     await ended.promise
-    expect(test.output().err).toBe('dsh: reasoning:\nunfinished reasoning\n')
+    expect(test.output().err).toBe('alpha: reasoning:\nunfinished reasoning\n')
 
     finish.resolve(undefined)
     await expect(running).resolves.toMatchObject({ code: 1 })
@@ -445,7 +445,7 @@ describe('headless runner', () => {
     expect(await test.run()).toMatchObject({
       code: 1,
       out: '\n',
-      err: 'dsh: SERVER: provider unavailable\n',
+      err: 'alpha: SERVER: provider unavailable\n',
     })
     await test.ctx.fiber.dispose()
   })
@@ -468,7 +468,7 @@ describe('headless runner', () => {
     expect(await test.run()).toMatchObject({
       code: 1,
       out: '\n',
-      err: 'dsh: reasoning:\ntrying recovery\ndsh: SERVER: provider unavailable\n',
+      err: 'alpha: reasoning:\ntrying recovery\nalpha: SERVER: provider unavailable\n',
     })
     await test.ctx.fiber.dispose()
   })
@@ -516,7 +516,7 @@ describe('headless runner', () => {
     })
     expect(await test.run()).toMatchObject({
       code: 1,
-      err: 'dsh: a task is required, for example: dsh --profile headless "run the tests"\n',
+      err: 'alpha: a task is required, for example: alpha --profile headless "run the tests"\n',
     })
     await test.ctx.fiber.dispose()
   })
@@ -898,7 +898,7 @@ describe('headless runner', () => {
     })
     const result = await test.run()
     expect(result.code).toBe(1)
-    expect(result.err).toBe('dsh: log is corrupt\n')
+    expect(result.err).toBe('alpha: log is corrupt\n')
     await test.ctx.fiber.dispose()
   })
 
@@ -990,7 +990,7 @@ describe('headless runner', () => {
     ctx.provide('agents', { create: () => Promise.reject(new Error('factory exploded')) } as never)
     apply(ctx, { task: 't' })
     expect(await exited).toBe(1)
-    expect(err).toBe('dsh: factory exploded\n')
+    expect(err).toBe('alpha: factory exploded\n')
     await ctx.fiber.dispose()
   })
 
@@ -1012,7 +1012,7 @@ describe('headless runner', () => {
     ctx.provide('agents', { create: () => rejected } as never)
     apply(ctx, { task: 't' })
     expect(await exited).toBe(1)
-    expect(err).toBe('dsh: factory exploded\n')
+    expect(err).toBe('alpha: factory exploded\n')
     await ctx.fiber.dispose()
   })
 

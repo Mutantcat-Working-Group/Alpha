@@ -56,7 +56,7 @@ describe('ACP app startup', () => {
 
   it('prints app help without publishing readiness or binding stdin', () => {
     const { ctx, exits, out, stdin } = start(['--help'])
-    expect(out()).toContain('dsh --profile acp')
+    expect(out()).toContain('alpha --profile acp')
     expect(ctx.get(ACP_APP_STARTUP_SERVICE)).toBeUndefined()
     expect(exits).toEqual([0])
     stdin.end()

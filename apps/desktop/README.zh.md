@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-Alpha 是完整 dsh Web 应用外的一层 Tauri 壳。壳窗口先打开内置加载页，启动承载私有 Desktop Host 的 Node sidecar，待该 Host 报告就绪后导航到它的地址。Desktop 默认使用端口 `19387`，与 Web 的 `3080` 分开；可通过 `webserver.config.port` patch 覆盖。产品名、版本号和应用 ID 都在 [tauri.conf.json](src-tauri/tauri.conf.json)，所有发布家族共用同一个版本字符串。
+Alpha 是完整 alpha Web 应用外的一层 Tauri 壳。壳窗口先打开内置加载页，启动承载私有 Desktop Host 的 Node sidecar，待该 Host 报告就绪后导航到它的地址。Desktop 默认使用端口 `19387`，与 Web 的 `3080` 分开；可通过 `webserver.config.port` patch 覆盖。产品名、版本号和应用 ID 都在 [tauri.conf.json](src-tauri/tauri.conf.json)，所有发布家族共用同一个版本字符串。
 
 ## 壳启动
 
@@ -40,15 +40,15 @@ Desktop 默认注册 `office-docx`、`office-pptx` 和 `office-xlsx`。这些技
 
 | 决策 | 原因 | 直接后果 |
 | ---|---|--- |
-| 发布身份 | 壳 API、Web 客户端、后端和插件图作为一个组合被验证；独立版本会产生未经测试的组合和含糊的更新判定。 | Alpha 与 `@mutantcat/dsh` 始终携带完全相同的版本。dsh 升级就是一次 Desktop 发布，即使壳代码未变。 |
+| 发布身份 | 壳 API、Web 客户端、后端和插件图作为一个组合被验证；独立版本会产生未经测试的组合和含糊的更新判定。 | Alpha 与 `@mutantcat/alpha` 始终携带完全相同的版本。alpha 升级就是一次 Desktop 发布，即使壳代码未变。 |
 | 运行时 | 应用必须在没有系统 Node.js 或 pnpm 的情况下运行。 | Node sidecar 以 `--expose-internals` 运行 Host，所有包操作使用内置 pnpm。 |
 | 包来源 | 启动时安装核心依赖即使离线也要付出代价。 | staged 运行时携带完整的产品依赖树；profile 只安装外部插件。 |
-| 状态归属 | 共享可执行依赖图会让 CLI 和 Desktop 互相修改对方的 dsh、Cordis、插件或原生模块版本，而两个桌面进程可能争抢同一 profile。 | Alpha 在访问任何 profile 前获取进程级单实例锁，独占它的应用数据目录（同时是 profile 根目录）及其包管理器状态。CLI 与 Desktop 共享 `$DSH_HOME` 下的受支持产品数据，但从不共享可执行包、插件激活、lockfile 或 `node_modules`。 |
+| 状态归属 | 共享可执行依赖图会让 CLI 和 Desktop 互相修改对方的 alpha、Cordis、插件或原生模块版本，而两个桌面进程可能争抢同一 profile。 | Alpha 在访问任何 profile 前获取进程级单实例锁，独占它的应用数据目录（同时是 profile 根目录）及其包管理器状态。CLI 与 Desktop 共享 `$DSH_HOME` 下的受支持产品数据，但从不共享可执行包、插件激活、lockfile 或 `node_modules`。 |
 | 传输 | Web 服务和认证使用同一实现。 | 壳只加载内置 Web 资源作为加载页；引擎文档和认证 API 由 Host 提供。 |
 
 ## 安装归属
 
-Alpha 拥有它的应用数据目录，它同时是 profile 根目录：macOS 上为 `~/Library/Application Support/org.mutantcat.alpha`，Windows 上为 `%LOCALAPPDATA%\org.mutantcat.alpha`，Linux 上为 `~/.local/share/org.mutantcat.alpha`。其 `dependencies` 存放 pnpm 安装的包；`dsh.profile.bundles` 依次存放内置 bundle 和启用的插件。staged 运行时提供 dsh、私有 Desktop Host 及其产品依赖。打包后的应用选择运行时 profile 解析，不创建包链接；开发 profile 使用文件系统链接。Host 和插件运行在 Node sidecar 进程中；渲染进程不获得文件系统访问、原始 Tauri IPC、shell 或任意 pnpm 参数。
+Alpha 拥有它的应用数据目录，它同时是 profile 根目录：macOS 上为 `~/Library/Application Support/org.mutantcat.alpha`，Windows 上为 `%LOCALAPPDATA%\org.mutantcat.alpha`，Linux 上为 `~/.local/share/org.mutantcat.alpha`。其 `dependencies` 存放 pnpm 安装的包；`dsh.profile.bundles` 依次存放内置 bundle 和启用的插件。staged 运行时提供 alpha、私有 Desktop Host 及其产品依赖。打包后的应用选择运行时 profile 解析，不创建包链接；开发 profile 使用文件系统链接。Host 和插件运行在 Node sidecar 进程中；渲染进程不获得文件系统访问、原始 Tauri IPC、shell 或任意 pnpm 参数。
 
 产品界面保留 Web 操作，包括通过共享认证 HTTP 路由的“Open In...”。插件管理使用 Web 应用的认证 HTTP API 操作 Desktop profile，壳不暴露单独的插件管理 IPC。原生目录选择是唯一的桌面侧交互：打开绑定应用窗口的平台选择器，返回单个路径。
 
@@ -111,4 +111,4 @@ Windows NSIS 安装程序为当前用户安装。macOS DMG 携带上述 ad-hoc �
 
 - macOS 的 ad-hoc DMG 之外的产物均未签名：Gatekeeper 和 SmartScreen 会在首次运行时提示，不进行公证或发布者签名。
 - 跨操作系统产物验证只在 CI 进行；本地验证只覆盖构建主机自身的目标。
-- 桌面壳与 CLI dsh 共享 `$DSH_HOME` 下的会话、设置、凭据、工作区和存储，而可执行包、插件激活和 lockfile 保持独立。
+- 桌面壳与 CLI alpha 共享 `$DSH_HOME` 下的会话、设置、凭据、工作区和存储，而可执行包、插件激活和 lockfile 保持独立。

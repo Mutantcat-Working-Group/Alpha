@@ -1,5 +1,5 @@
 ---
-description: "Archived-session Settings page for the dsh web client: the registry-global archive set as a searchable list with one Unarchive action per row."
+description: "Archived-session Settings page for the alpha web client: the registry-global archive set as a searchable list with one Unarchive action per row."
 kind: "package-reference"
 ---
 

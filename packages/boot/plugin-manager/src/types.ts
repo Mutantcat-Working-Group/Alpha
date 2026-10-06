@@ -36,7 +36,7 @@ export interface BundleInfo {
   /** `description` of the package manifest. */
   description?: string
   enabled: boolean
-  /** Whether the profile's own dependencies hold the package; false for a bundle the dsh installation supplies. */
+  /** Whether the profile's own dependencies hold the package; false for a bundle the alpha installation supplies. */
   installed: boolean
   /**
    * Whether the installation ships the bundle for the person to switch on: named by the launcher's `OPTIONAL_BUNDLES`,

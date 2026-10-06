@@ -49,7 +49,7 @@ When pnpm 11 blocks dependency scripts, the failed installation reports every pe
 
 | Field | Default | Meaning |
 |---|---|---|
-| `pnpmCommand` | `pnpm` | The pnpm executable name or path, resolved through `PATH` like the `dsh plugin` command. |
+| `pnpmCommand` | `pnpm` | The pnpm executable name or path, resolved through `PATH` like the `alpha plugin` command. |
 | `inspectTimeoutMs` | `20000` | Bound on one registry lookup an inspection runs, in milliseconds. |
 | `outputBytes` | `16384` | Maximum pnpm diagnostic bytes returned per operation; the full output remains in the returned log path. |
 | `lockWaitMs` | `120000` | Maximum time in milliseconds to acquire the profile write lock. |
@@ -62,7 +62,7 @@ When pnpm 11 blocks dependency scripts, the failed installation reports every pe
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-The service and `dsh plugin` share the package operations in [operations.ts](src/operations.ts). The launcher supplies the current profile; [DSH HMR](../hmr/README.md) serializes module reloads, file watching and management writes. Each refresh re-reads bundle selection and patch layers, updates the original root Include, and awaits removed plugin resources as well as the remaining Loader tree. CLI and service operations share the profile manifest writer lock to prevent concurrent package and manifest writes. HMR does not acquire that lock. Pnpm runs outside the HMR queue; installation selects the bundle after pnpm succeeds, while removal deselects and unloads the bundle before pnpm runs. Dependency-only changes do not trigger configuration reloads.
+The service and `alpha plugin` share the package operations in [operations.ts](src/operations.ts). The launcher supplies the current profile; [DSH HMR](../hmr/README.md) serializes module reloads, file watching and management writes. Each refresh re-reads bundle selection and patch layers, updates the original root Include, and awaits removed plugin resources as well as the remaining Loader tree. CLI and service operations share the profile manifest writer lock to prevent concurrent package and manifest writes. HMR does not acquire that lock. Pnpm runs outside the HMR queue; installation selects the bundle after pnpm succeeds, while removal deselects and unloads the bundle before pnpm runs. Dependency-only changes do not trigger configuration reloads.
 
 Results contain the last attempted stage, target, saved-state change, application status and error codes. Web dictionaries render management text; pnpm and Loader diagnostics remain unmodified. Unrelated pre-existing inactive entries return warnings; new or changed failures and inactive explicit enablement targets fail the operation. A failed or cancelled installation restores the manifest and lockfile it snapshotted before pnpm ran ([rationale](../../../.agents/notes/implemented/architecture/2026-09-15-guided-plugin-installation.md)); a failed removal retains its partial changes and diagnostics. Installations are tracked by request id until their call settles, so a cancellation names one run and joins its settlement without taking the profile lock. The CLI inherits authentication variables and terminal descriptors; service operations use a scrubbed environment and captured output. No invariant companion is published because the manager reads files and Loader state directly and owns no independent state projection.
 
@@ -101,7 +101,7 @@ Tool results append to the transcript. Enabling or disabling other tools can cha
 
 - Web approves the entire displayed pending group; it has no per-package selection.
 - Package replacements require restarting the process to load a fresh JavaScript module generation.
-- Startup-only profiles cannot remove packages used to start the current process; stop it and use `dsh plugin`.
+- Startup-only profiles cannot remove packages used to start the current process; stop it and use `alpha plugin`.
 - The manager cannot disable its own management components, change another profile, or edit an agent preset's composition.
 - A failed removal may leave dependencies partially changed, and a failed or cancelled installation can leave downloaded files under `node_modules` or the pnpm store. Inactive dependencies with missing files remain removable. Diagnostic logs remain under the profile's `.plugin-manager/logs` directory.
 - Management results describe Host activation. Browser synchronization failures appear separately in the Settings plugin list.

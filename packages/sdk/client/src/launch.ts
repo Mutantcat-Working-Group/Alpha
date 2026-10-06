@@ -1,5 +1,5 @@
 /**
- * Resolve the public SDK launch configuration to one dsh subprocess.
+ * Resolve the public SDK launch configuration to one alpha subprocess.
  * @module @mutantcat/dsh-sdk-client/launch
  */
 
@@ -26,7 +26,7 @@ export interface RuntimeProcessOptions {
   disposeGraceMs?: number
 }
 
-/** Node argv plus internal profile patches required by one resolved dsh entry. */
+/** Node argv plus internal profile patches required by one resolved alpha entry. */
 export interface DshNodeLaunch {
   /** Arguments before the profile selector. */
   nodeArgs: string[]
@@ -47,38 +47,38 @@ function manifest(url: string): PackageManifest {
 }
 
 /**
- * Resolve and version-check a dsh executable from package manifests.
- * @param dshManifestUrl - resolved URL of the dsh package manifest.
+ * Resolve and version-check an alpha executable from package manifests.
+ * @param dshManifestUrl - resolved URL of the alpha package manifest.
  * @param clientManifestUrl - resolved URL of the SDK client manifest.
- * @returns the absolute dsh executable path.
+ * @returns the absolute alpha executable path.
  */
 export function resolveDshBinFromManifests(dshManifestUrl: string, clientManifestUrl: string): string {
   const dshManifest = manifest(dshManifestUrl)
   const clientManifest = manifest(clientManifestUrl)
   if (typeof dshManifest.version !== 'string' || dshManifest.version !== clientManifest.version) {
-    throw new Error(`dsh SDK client ${String(clientManifest.version)} requires the same dsh version, got ${String(dshManifest.version)}`)
+    throw new Error(`alpha SDK client ${String(clientManifest.version)} requires the same alpha version, got ${String(dshManifest.version)}`)
   }
   const bin = typeof dshManifest.bin === 'object' && dshManifest.bin !== null
-    ? (dshManifest.bin as Record<string, unknown>).dsh
+    ? (dshManifest.bin as Record<string, unknown>).alpha
     : dshManifest.bin
-  if (typeof bin !== 'string' || bin === '') throw new Error('@mutantcat/dsh declares no dsh executable')
+  if (typeof bin !== 'string' || bin === '') throw new Error('@mutantcat/alpha declares no alpha executable')
   return resolve(dirname(fileURLToPath(dshManifestUrl)), bin)
 }
 
 /**
- * Resolve and version-check the built dsh executable installed with this SDK.
+ * Resolve and version-check the built alpha executable installed with this SDK.
  * @returns the absolute built executable path, whether or not it exists in a source checkout.
  */
 export function installedDshBin(): string {
   return resolveDshBinFromManifests(
-    import.meta.resolve('@mutantcat/dsh/package.json'),
+    import.meta.resolve('@mutantcat/alpha/package.json'),
     new URL('../package.json', import.meta.url).href,
   )
 }
 
 /**
- * Resolve the Node launch for one same-version dsh package.
- * @param dshManifestUrl - resolved URL of the dsh package manifest.
+ * Resolve the Node launch for one same-version alpha package.
+ * @param dshManifestUrl - resolved URL of the alpha package manifest.
  * @param clientManifestUrl - resolved URL of the SDK client manifest.
  * @param sourceLoaderUrl - optional absolute tsx loader URL for deterministic tests.
  * @returns built output, or the source entry plus its compatibility patch and tsx environment.
@@ -97,7 +97,7 @@ export function resolveDshNodeLaunchFromManifests(
   const sourceTsconfig = resolve(packageDir, 'tsconfig.json')
   if (!existsSync(sourceBin) || !existsSync(sourcePatch) || !existsSync(sourceTsconfig)) {
     throw new Error(
-      `@mutantcat/dsh is missing its built executable ${bin} and complete source launch files ${sourceBin}, ${sourcePatch}, ${sourceTsconfig}`,
+      `@mutantcat/alpha is missing its built executable ${bin} and complete source launch files ${sourceBin}, ${sourcePatch}, ${sourceTsconfig}`,
     )
   }
   const loader = sourceLoaderUrl ?? import.meta.resolve('tsx/esm')
@@ -109,18 +109,18 @@ export function resolveDshNodeLaunchFromManifests(
 }
 
 /**
- * Resolve the installed dsh package to a built or source Node launch.
+ * Resolve the installed alpha package to a built or source Node launch.
  * @returns the launch descriptor for the current checkout or installed package.
  */
 function installedDshNodeLaunch(): DshNodeLaunch {
   return resolveDshNodeLaunchFromManifests(
-    import.meta.resolve('@mutantcat/dsh/package.json'),
+    import.meta.resolve('@mutantcat/alpha/package.json'),
     new URL('../package.json', import.meta.url).href,
   )
 }
 
 /**
- * Resolve caller-relative filesystem inputs and construct canonical dsh argv.
+ * Resolve caller-relative filesystem inputs and construct canonical alpha argv.
  * @param options - public SDK launch options.
  * @param callerCwd - parent-process directory used for lexical resolution.
  * @returns one generic subprocess spec for the JSON-RPC transport.
@@ -147,7 +147,7 @@ export function resolveDshLaunch(
       ...dshLaunch.environment,
       ...dshHome === undefined ? {} : { DSH_HOME: dshHome },
     }),
-    description: `dsh profile ${JSON.stringify(profile)}`,
+    description: `alpha profile ${JSON.stringify(profile)}`,
     initializeTimeoutMs: options.initializeTimeoutMs ?? DEFAULT_INITIALIZE_TIMEOUT_MS,
     ...options.requestTimeoutMs === undefined ? {} : { requestTimeoutMs: options.requestTimeoutMs },
     ...options.shutdownTimeoutMs === undefined ? {} : { shutdownTimeoutMs: options.shutdownTimeoutMs },

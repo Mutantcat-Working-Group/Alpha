@@ -101,7 +101,7 @@ async function waitForStartup(
   let settled = false
   const finish = (): void => {
     if (settled || url === undefined) return
-    if (!stderrText.includes('dsh: warning: 6 entries did not activate')) return
+    if (!stderrText.includes('alpha: warning: 6 entries did not activate')) return
     if (!stderrText.includes('web async apply failure')) return
     if (!stderrText.includes('webProbeMissingService')) return
     settled = true
@@ -110,7 +110,7 @@ async function waitForStartup(
   }
   stdout.on('data', (chunk: string) => {
     stdoutText += chunk
-    url ??= /dsh web: (http:\/\/[^\s]+)/u.exec(stdoutText)?.[1]
+    url ??= /alpha web: (http:\/\/[^\s]+)/u.exec(stdoutText)?.[1]
     finish()
   })
   stderr.on('data', (chunk: string) => {
@@ -147,7 +147,6 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
         DEEPSEEK_API_KEY: 'keyless-web-best-effort-no-call',
         DSH_AGENTS_HOME: join(fixture.root, '.agents'),
         DSH_HOME: fixture.home,
-        DSH_TELEMETRY_DISABLED: '1',
         NODE_NO_WARNINGS: '1',
       },
       input: '',
@@ -226,7 +225,6 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
           DEEPSEEK_API_KEY: 'keyless-web-required-no-call',
           DSH_AGENTS_HOME: join(fixture.root, '.agents'),
           DSH_HOME: fixture.home,
-          DSH_TELEMETRY_DISABLED: '1',
           NODE_NO_WARNINGS: '1',
         },
         input: '',
@@ -237,7 +235,7 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
       expect(result.timedOut).toBe(false)
       expect(result.signal).toBeUndefined()
       expect(result.exitCode).toBe(1)
-      expect(result.stdout).not.toContain('dsh web: http://')
+      expect(result.stdout).not.toContain('alpha web: http://')
       expect(result.stderr).toContain('startup failed:')
       expect(result.stderr).toContain(`${id} (required)`)
       expect(result.stderr).toContain(diagnostic)
@@ -279,7 +277,6 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
           DEEPSEEK_API_KEY: 'keyless-web-required-bind-no-call',
           DSH_AGENTS_HOME: join(root, '.agents'),
           DSH_HOME: home,
-          DSH_TELEMETRY_DISABLED: '1',
           NODE_NO_WARNINGS: '1',
         },
         input: '',
@@ -290,9 +287,9 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
       expect(result.timedOut).toBe(false)
       expect(result.signal).toBeUndefined()
       expect(result.exitCode).toBe(1)
-      expect(result.stdout).not.toContain('dsh web: http://')
+      expect(result.stdout).not.toContain('alpha web: http://')
       expect(result.stderr).toContain('startup failed:')
-      expect(result.stderr).toContain('dsh: startup failed: 2 required plugins did not activate')
+      expect(result.stderr).toContain('alpha: startup failed: 2 required plugins did not activate')
       expect(result.stderr).toContain('Failed plugins (1):')
       expect(result.stderr).toContain('  webserver (required)\n    Package: @mutantcat/dsh-host-webserver')
       expect(result.stderr).toContain('Plugins waiting for services (')
@@ -303,7 +300,7 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
       expect(summary).not.toMatch(/dsh: warning:|\[cause\]|at boot \(|at runCli \(|Node\.js v/u)
       let report: string
       if (logsBlocked) {
-        expect(result.stderr).toContain('dsh: warning: could not write startup diagnostics:')
+        expect(result.stderr).toContain('alpha: warning: could not write startup diagnostics:')
         expect(result.stderr).not.toMatch(/Full diagnostics: [^\r\n]/u)
         report = result.stderr.split('Full diagnostics:\n')[1]!
         expect(readFileSync(join(home, 'logs'), 'utf8')).toBe('blocked')
@@ -360,7 +357,6 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
           DEEPSEEK_API_KEY: 'keyless-web-detached-no-call',
           DSH_AGENTS_HOME: join(fixture.root, '.agents'),
           DSH_HOME: fixture.home,
-          DSH_TELEMETRY_DISABLED: '1',
           NODE_NO_WARNINGS: '1',
         },
         input: '',

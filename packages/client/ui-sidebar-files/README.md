@@ -1,5 +1,5 @@
 ---
-description: "The right Sidebar's file-tree tab type for the dsh web client: the session workspace root listed one level at a time over the wire, opening files into the Sidebar by resource address."
+description: "The right Sidebar's file-tree tab type for the alpha web client: the session workspace root listed one level at a time over the wire, opening files into the Sidebar by resource address."
 kind: "package-reference"
 ---
 

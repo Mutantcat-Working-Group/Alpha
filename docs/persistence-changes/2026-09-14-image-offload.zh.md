@@ -88,7 +88,7 @@ changes:
 <a id="verification"></a>
 ## 验证
 
-Session 和图片省略测试覆盖事件校验、不可变消息投影、缺少处理器、恢复和重试。所选的 1,144 项测试和两项 TypeScript 图片快照通过。Python advanced SDK 录制已通过构建后的 dsh profile 刷新，包含独立的 image/offload 事件。
+Session 和图片省略测试覆盖事件校验、不可变消息投影、缺少处理器、恢复和重试。所选的 1,144 项测试和两项 TypeScript 图片快照通过。Python advanced SDK 录制已通过构建后的 alpha profile 刷新，包含独立的 image/offload 事件。
 
 <a id="dev-note"></a>
 ## 开发备注

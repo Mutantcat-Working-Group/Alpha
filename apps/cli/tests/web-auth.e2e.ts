@@ -1,4 +1,4 @@
-/** Real `dsh web` authentication against a temporary Harness home. */
+/** Real `alpha web` authentication against a temporary Harness home. */
 
 import type { ChildProcess } from 'node:child_process'
 import { spawn } from 'node:child_process'
@@ -56,7 +56,6 @@ function cleanEnvironment(root: string, dshHome: string): NodeJS.ProcessEnv {
     ...env,
     DSH_AGENTS_HOME: join(root, '.agents'),
     DSH_HOME: dshHome,
-    DSH_TELEMETRY_DISABLED: '1',
     NODE_NO_WARNINGS: '1',
     SSH_CONNECTION: '',
     SSH_TTY: '',
@@ -87,11 +86,11 @@ async function startWeb(root: string, dshHome: string, port: number): Promise<Ru
       reject(error)
     }
     const timer = setTimeout(() => {
-      fail(new Error(`dsh web did not become ready:\n${redact(output)}`))
+      fail(new Error(`alpha web did not become ready:\n${redact(output)}`))
     }, 90_000)
     const append = (chunk: Buffer | string): void => {
       output = `${output}${String(chunk)}`.slice(-100_000)
-      const match = /dsh web: (http:\/\/[^\s]+)/u.exec(output)
+      const match = /alpha web: (http:\/\/[^\s]+)/u.exec(output)
       if (settled || match?.[1] === undefined) return
       settled = true
       clearTimeout(timer)
@@ -103,7 +102,7 @@ async function startWeb(root: string, dshHome: string, port: number): Promise<Ru
       fail(error)
     })
     child.once('exit', (code) => {
-      fail(new Error(`dsh web exited before readiness (${String(code)}):\n${redact(output)}`))
+      fail(new Error(`alpha web exited before readiness (${String(code)}):\n${redact(output)}`))
     })
   })
   return { child, launchUrl, output: () => output }
@@ -151,7 +150,7 @@ function describeSettings(port: number, host: string, cookie?: string): Promise<
   })
 }
 
-describe('dsh web authentication through the real CLI', () => {
+describe('alpha web authentication through the real CLI', () => {
   it('rejects a forged loopback Host and preserves the browser cookie across restart', { timeout: 180_000 }, async () => {
     const root = await mkdtemp(join(tmpdir(), 'dsh-web-auth-real-cli-'))
     const dshHome = join(root, '.dsh')

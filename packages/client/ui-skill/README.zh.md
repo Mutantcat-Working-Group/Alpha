@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 skill 引用与专属 skill 工具行：/ 触发的 skill source 与 skill 调用卡片。"
+description: "alpha Web 客户端的 skill 引用与专属 skill 工具行：/ 触发的 skill source 与 skill 调用卡片。"
 kind: "package-reference"
 ---
 

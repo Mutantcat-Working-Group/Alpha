@@ -84,8 +84,8 @@ export interface AcpConfig {
 }
 
 export const Config: Schema<AcpConfig> = Schema.object({
-  provider: Schema.string(),
-  model: Schema.string(),
+  provider: Schema.string().required(false),
+  model: Schema.string().required(false),
   sessionListPageSize: Schema.natural().min(1).default(DEFAULT_SESSION_LIST_PAGE_SIZE),
 })
 

@@ -69,7 +69,7 @@ describe('npm resolution benchmark', () => {
       devDependencies: { ignored: '^1.0.0' },
     })
     writeJson(root, 'apps/cli/package.json', {
-      name: '@mutantcat/dsh',
+      name: '@mutantcat/alpha',
       version: '0.1.0',
       dependencies: { '@mutantcat/dsh-child': 'workspace:^', external: '^2.0.0' },
       devDependencies: { ignored: 'workspace:^' },
@@ -82,8 +82,8 @@ describe('npm resolution benchmark', () => {
     const index = buildRegistryIndex(root)
 
     expect(index.get('external')?.get('2.0.0')).toMatchObject({ dependencies: { child: '^1.0.0' } })
-    expect(index.get('@mutantcat/dsh')?.get('0.1.0')).toEqual({
-      name: '@mutantcat/dsh',
+    expect(index.get('@mutantcat/alpha')?.get('0.1.0')).toEqual({
+      name: '@mutantcat/alpha',
       version: '0.1.0',
       dependencies: { '@mutantcat/dsh-child': '^0.1.0', external: '^2.0.0' },
     })
@@ -91,8 +91,8 @@ describe('npm resolution benchmark', () => {
 
   it('runs npm against the local registry without requesting an archive', async () => {
     const index: RegistryIndex = new Map([[
-      '@mutantcat/dsh',
-      new Map([['0.1.0', { name: '@mutantcat/dsh', version: '0.1.0' }]]),
+      '@mutantcat/alpha',
+      new Map([['0.1.0', { name: '@mutantcat/alpha', version: '0.1.0' }]]),
     ]])
     const result = await benchmarkNpmResolution(index, '0.1.0', 10_000)
 
@@ -104,22 +104,22 @@ describe('npm resolution benchmark', () => {
 
   it('returns npm placement for two aliased package versions without requesting archives', async () => {
     const index: RegistryIndex = new Map([[
-      '@mutantcat/dsh',
+      '@mutantcat/alpha',
       new Map([
-        ['0.1.0', { name: '@mutantcat/dsh', version: '0.1.0' }],
-        ['0.2.0', { name: '@mutantcat/dsh', version: '0.2.0' }],
+        ['0.1.0', { name: '@mutantcat/alpha', version: '0.1.0' }],
+        ['0.2.0', { name: '@mutantcat/alpha', version: '0.2.0' }],
       ]),
     ]])
 
     const result = await resolveNpmPackageLock(index, {
-      '@mutantcat/dsh': '0.2.0',
-      'dsh-previous': 'npm:@mutantcat/dsh@0.1.0',
+      '@mutantcat/alpha': '0.2.0',
+      'dsh-previous': 'npm:@mutantcat/alpha@0.1.0',
     }, 10_000)
 
     expect(result.archiveRequests).toBe(0)
-    expect(result.packageLock.packages['node_modules/@mutantcat/dsh']?.version).toBe('0.2.0')
+    expect(result.packageLock.packages['node_modules/@mutantcat/alpha']?.version).toBe('0.2.0')
     expect(result.packageLock.packages['node_modules/dsh-previous']).toMatchObject({
-      name: '@mutantcat/dsh',
+      name: '@mutantcat/alpha',
       version: '0.1.0',
     })
   })
@@ -139,8 +139,8 @@ describe('npm resolution benchmark', () => {
     process.env.npm_config_omit = 'peer'
     try {
       const index: RegistryIndex = new Map([
-        ['@mutantcat/dsh', new Map([['0.1.0', {
-          name: '@mutantcat/dsh',
+        ['@mutantcat/alpha', new Map([['0.1.0', {
+          name: '@mutantcat/alpha',
           version: '0.1.0',
           peerDependencies: { '@mutantcat/dsh-peer': '1.0.0' },
         }]])],
@@ -150,7 +150,7 @@ describe('npm resolution benchmark', () => {
         }]])],
       ])
 
-      const result = await resolveNpmPackageLock(index, { '@mutantcat/dsh': '0.1.0' }, 10_000)
+      const result = await resolveNpmPackageLock(index, { '@mutantcat/alpha': '0.1.0' }, 10_000)
 
       expect(result.archiveRequests).toBe(0)
       expect(result.packageLock.packages['node_modules/@mutantcat/dsh-peer']?.version).toBe('1.0.0')

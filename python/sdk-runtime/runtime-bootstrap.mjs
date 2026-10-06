@@ -28,7 +28,7 @@ if (aclRunner !== undefined && process.argv[2] === aclRunner) {
   Reflect.deleteProperty(process.env, 'DSH_PTC_RUNTIME_NODE')
   await import('@mutantcat/dsh-ptc-runtime-node/process')
 } else if (selection === undefined) {
-  const { runCli } = await import('@mutantcat/dsh/lib/bin.js')
+  const { runCli } = await import('@mutantcat/alpha/lib/bin.js')
   await runCli()
 } else {
   Reflect.deleteProperty(process.env, selectorName)

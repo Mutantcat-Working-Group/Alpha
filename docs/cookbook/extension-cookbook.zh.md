@@ -95,7 +95,7 @@ export function apply(ctx: Context) {
 
 ## 可运行的组装示例
 
-交付应用通过 `packages/bundle/*/cordis.patch.yml` 提供 profile 层，产品 `dsh` 启动器通过具名 profile 负责 Web、ACP、SDK 与一次性 headless 执行。可选的用户 overlay 位于 `apps/cli/config/examples/`；profile 集成测试位于 `apps/cli/tests/profiles/`，包专属 Loader 组合则留在对应包的测试目录中。
+交付应用通过 `packages/bundle/*/cordis.patch.yml` 提供 profile 层，产品 `alpha` 启动器通过具名 profile 负责 Web、ACP、SDK 与一次性 headless 执行。可选的用户 overlay 位于 `apps/cli/config/examples/`；profile 集成测试位于 `apps/cli/tests/profiles/`，包专属 Loader 组合则留在对应包的测试目录中。
 
 <a id="the-feature--mechanism-map"></a>
 

@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的右侧 Sidebar：每会话一个停靠面、两种呈现形态、导航控制器 ctx.sidebarRight、tab 类型注册表 ctx.sidebarRightTabs 与 Tab 域。"
+description: "alpha Web 客户端的右侧 Sidebar：每会话一个停靠面、两种呈现形态、导航控制器 ctx.sidebarRight、tab 类型注册表 ctx.sidebarRightTabs 与 Tab 域。"
 kind: "package-reference"
 ---
 

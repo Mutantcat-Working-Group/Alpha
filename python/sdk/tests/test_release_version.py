@@ -138,7 +138,7 @@ def test_stage_runtime_copies_platform_payload(
     pyproject = (destination / "pyproject.toml").read_text()
     assert 'license = "MIT"' in pyproject
     assert 'license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]' in pyproject
-    assert 'dsh = "deepseek_harness_runtime:main"' in pyproject
+    assert 'alpha = "deepseek_harness_runtime:main"' in pyproject
     assert (destination / "platforms.json").read_bytes() == (
         ROOT / "python" / "sdk-runtime" / "platforms.json"
     ).read_bytes()

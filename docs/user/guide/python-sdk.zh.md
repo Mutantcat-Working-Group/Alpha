@@ -2,7 +2,7 @@
 
 [English](python-sdk.md) | 中文
 
-本教程安装已发布的 Python SDK，运行随附的独立极简 profile，并说明如何从自己的程序自定义同一个 `dsh` profile。
+本教程安装已发布的 Python SDK，运行随附的独立极简 profile，并说明如何从自己的程序自定义同一个 `alpha` profile。
 
 ## 前置条件
 
@@ -39,7 +39,7 @@ python -m pip install deepseek-harness-sdk
 
 :::
 
-安装内容包含匹配的原生运行时 wheel 与 `dsh` 命令。普通 SDK 运行不需要系统 Node.js。需要构建产物的仓库贡献者应使用 [Python 贡献者工作流](../../../python/development.zh.md)。
+安装内容包含匹配的原生运行时 wheel 与 `alpha` 命令。普通 SDK 运行不需要系统 Node.js。需要构建产物的仓库贡献者应使用 [Python 贡献者工作流](../../../python/development.zh.md)。
 
 ## 运行检入示例
 
@@ -118,11 +118,11 @@ with DeepSeekHarness(
 print(result.final_response)
 ```
 
-SDK 会延迟启动内置的 `dsh --profile sdk-minimal` 进程，并复用到上下文管理器退出。Profile、其持久 patch、home patch 与任何有序 `patches` tuple 共同组成应用配置。不存在独立 Python 运行时 bin 或完整配置选项。
+SDK 会延迟启动内置的 `alpha --profile sdk-minimal` 进程，并复用到上下文管理器退出。Profile、其持久 patch、home patch 与任何有序 `patches` tuple 共同组成应用配置。不存在独立 Python 运行时 bin 或完整配置选项。
 
 ## 安装或定义插件
 
-需要在该 home 中持久保存依赖与 bundle 层时，使用 `dsh plugin`：
+需要在该 home 中持久保存依赖与 bundle 层时，使用 `alpha plugin`：
 
 <div>
 <a id="linux-与-macos-3"></a>
@@ -133,14 +133,14 @@ SDK 会延迟启动内置的 `dsh --profile sdk-minimal` 进程，并复用到�
 
 ```sh [Linux/macOS]
 export DSH_HOME=/absolute/path/to/example-dsh-home
-dsh --profile sdk-minimal --dump-default-config >/dev/null
-dsh plugin --profile sdk-minimal add file:/absolute/path/to/my-plugin-bundle
+alpha --profile sdk-minimal --dump-default-config >/dev/null
+alpha plugin --profile sdk-minimal add file:/absolute/path/to/my-plugin-bundle
 ```
 
 ```powershell [Windows PowerShell]
 $env:DSH_HOME = "C:\work\example-dsh-home"
-dsh --profile sdk-minimal --dump-default-config | Out-Null
-dsh plugin --profile sdk-minimal add file:C:/work/my-plugin-bundle
+alpha --profile sdk-minimal --dump-default-config | Out-Null
+alpha plugin --profile sdk-minimal add file:C:/work/my-plugin-bundle
 ```
 
 :::
@@ -179,8 +179,8 @@ dsh plugin --profile sdk-minimal add file:C:/work/my-plugin-bundle
 
 该 profile 的唯一组合包会在空根之上插入完整配置树，且不包含 `dsh-base`，因此基础 profile 以后新增的工具不会隐式出现。它包含 SDK 协议、一个由环境配置的 DeepSeek 适配器、本地执行与持久化；文件系统工具、settings、托管凭据、OTel 遥测、Web 工具、subagent、本地指令发现和 compaction 均不存在。[DeepSeek 会话日志贡献器](../../../packages/session/session-log-deepseek/README.zh.md)默认随 DeepSeek 请求上传完整的未接受日志后缀；在 profile patch 中设置 `session-log-deepseek.enabled: false` 可将其关闭。它固定使用 `danger-full-access`，因此按平台选择的持久 shell 可以修改运行时可见的任何路径；应使用一次性 checkout 或容器。
 
-已安装 wheel 仍会打包完整 `web` profile 与前端产物。如果 Python SDK 部署还需要浏览器应用，请针对显式 `DSH_HOME` 运行 `dsh web`；`web` 是独立 CLI 应用，不能为 Python SDK client 提供服务。
+已安装 wheel 仍会打包完整 `web` profile 与前端产物。如果 Python SDK 部署还需要浏览器应用，请针对显式 `DSH_HOME` 运行 `alpha web`；`web` 是独立 CLI 应用，不能为 Python SDK client 提供服务。
 
 需要隔离 profile、插件、凭据、设置与会话时，应使用新的 home。独立工作应使用新的 session id；只有继续同一段持久对话和会话资源时，才同时复用 harness、home 与 id。
 
-[组合包参考](../../../packages/bundle/sdk-minimal/README.zh.md)定义确切配置树，[示例参考](../../../python/sdk/examples/README.zh.md)定义可运行程序。[Python SDK 参考](../../../python/sdk/README.zh.md)介绍生命周期、结果、通知与底层行为；[dsh CLI 参考](../../../apps/cli/reference/README.zh.md)介绍 profile 分层。
+[组合包参考](../../../packages/bundle/sdk-minimal/README.zh.md)定义确切配置树，[示例参考](../../../python/sdk/examples/README.zh.md)定义可运行程序。[Python SDK 参考](../../../python/sdk/README.zh.md)介绍生命周期、结果、通知与底层行为；[alpha CLI 参考](../../../apps/cli/reference/README.zh.md)介绍 profile 分层。

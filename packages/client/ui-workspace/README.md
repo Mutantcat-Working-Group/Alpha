@@ -1,5 +1,5 @@
 ---
-description: "Shared Workspace browser and picker plugin for the dsh web client: grouped or flat session rows, add/rename/reorder, search, fork, archive, and the directory-flow picking hole."
+description: "Shared Workspace browser and picker plugin for the alpha web client: grouped or flat session rows, add/rename/reorder, search, fork, archive, and the directory-flow picking hole."
 kind: "package-reference"
 ---
 

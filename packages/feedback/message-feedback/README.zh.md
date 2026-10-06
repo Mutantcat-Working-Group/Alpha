@@ -93,7 +93,7 @@ kind: "package-reference"
 - **删除保留历史：**delete 移除当前反馈，不会从仅追加日志中清除更早的评分或备注；它不是隐私擦除操作。
 - **写入所有权：**另一个进程持有 Session 写句柄时，冷会话修改会 reject。服务不会唤醒该所有者，也不协调跨进程 Remote 调用。
 - **受信任调用方：**请求不包含经过认证的 actor 或审计身份。部署方必须保护 Host 网关。
-- **遥测导出：**对于所有用户和提供方，包括 `deepseek-official`，随附 OTel 后端在 `FEEDBACK_ONLY` 模式下仅在新的显式文本反馈、评分、备注或分类编辑、撤回后释放完整权威日志前缀。前缀包含上下文和原样备注；后续记录等待下一次反馈，`DISABLED` 阻止捕获。部署方负责脱敏；见 [OTel 导出策略](../../session/session-telemetry-otel/README.zh.md)。
+- **遥测导出：**Alpha 随附的 profile 都不挂载导出器，反馈只留在收集它的那台机器上。部署方自行追加 [OTel 行](../../session/session-telemetry-otel/README.zh.md) 并填入自己的 `exporter.url` 后，`FEEDBACK_ONLY` 模式才会在出现新的显式文本反馈、评分、备注或分类编辑、撤回时释放完整权威日志前缀——对所有用户与提供方一视同仁。前缀包含上下文和原样备注；后续记录等待下一次反馈，`DISABLED` 阻止捕获。脱敏由部署方负责。
 - **扫描成本：**每次访问已有 Session 的 `list`、`put` 或 `delete` 都会扫描完整事件日志来推导当前反馈；冷会话操作还会从持久化存储读取完整日志。工作量随 Session 历史总量增长，而不只是反馈条目数。
 - **保留量：**`maxNoteBytes` 只限制单条备注，不限制日志总大小或变更次数。
 

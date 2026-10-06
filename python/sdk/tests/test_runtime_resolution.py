@@ -141,10 +141,10 @@ def test_runtime_requires_complete_office_sidecar(
         runtime.bundled_runtime_path()
 
 
-def test_node_mode_runs_the_deployed_dsh_cli(
+def test_node_mode_runs_the_deployed_alpha_cli(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    bin_js = tmp_path / "runtime" / "node" / "node_modules" / "@mutantcat" / "dsh" / "lib" / "bin.js"
+    bin_js = tmp_path / "runtime" / "node" / "node_modules" / "@mutantcat" / "alpha" / "lib" / "bin.js"
     bin_js.parent.mkdir(parents=True)
     bin_js.touch()
     monkeypatch.setattr(runtime, "bundled_package_dir", lambda: tmp_path)
@@ -153,7 +153,7 @@ def test_node_mode_runs_the_deployed_dsh_cli(
     assert resolve_bundled_launch_args("node") == ("/node", str(bin_js))
 
 
-def test_python_dsh_command_requires_explicit_home(
+def test_python_alpha_command_requires_explicit_home(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.delenv("DSH_HOME", raising=False)
@@ -165,13 +165,13 @@ def test_python_dsh_command_requires_explicit_home(
     assert "explicit DSH_HOME" in capsys.readouterr().err
 
 
-def test_python_dsh_command_executes_the_bundled_cli(
+def test_python_alpha_command_executes_the_bundled_cli(
     monkeypatch: pytest.MonkeyPatch
 ) -> None:
     called: dict[str, object] = {}
     monkeypatch.setenv("DSH_HOME", "/explicit/home")
     monkeypatch.setattr(runtime, "resolve_bundled_launch_args", lambda: ("/runtime",))
-    monkeypatch.setattr(runtime, "sys", SimpleNamespace(platform="linux", argv=["dsh", "plugin", "--profile", "sdk", "list"]))
+    monkeypatch.setattr(runtime, "sys", SimpleNamespace(platform="linux", argv=["alpha", "plugin", "--profile", "sdk", "list"]))
 
     def execvpe(file: str, args: tuple[str, ...], env: dict[str, str]) -> None:
         called.update(file=file, args=args, home=env.get("DSH_HOME"))
@@ -190,7 +190,7 @@ def test_python_dsh_command_executes_the_bundled_cli(
 @pytest.mark.parametrize("returncode", [0, 37, 513])
 def test_windows_console_waits_and_forwards_runtime_status(monkeypatch: pytest.MonkeyPatch, returncode: int) -> None:
     monkeypatch.setenv("DSH_HOME", "/explicit/home")
-    monkeypatch.setattr(runtime, "sys", SimpleNamespace(platform="win32", argv=["dsh", "plugin", "argument with spaces", "中文"]))
+    monkeypatch.setattr(runtime, "sys", SimpleNamespace(platform="win32", argv=["alpha", "plugin", "argument with spaces", "中文"]))
     monkeypatch.setattr(runtime, "resolve_bundled_launch_args", lambda: ("runtime.exe",))
     called = []
 
@@ -224,7 +224,7 @@ def test_windows_console_branch_preserves_real_child_io_and_completion(tmp_path:
     )
     driver = (
         "import deepseek_harness_runtime as runtime; from types import SimpleNamespace; "
-        f"runtime.sys = SimpleNamespace(platform='win32', argv=['dsh', 'argument with spaces', '中文']); "
+        f"runtime.sys = SimpleNamespace(platform='win32', argv=['alpha', 'argument with spaces', '中文']); "
         f"runtime.resolve_bundled_launch_args = lambda: ({sys.executable!r}, {str(child)!r}); runtime.main()"
     )
     result = subprocess.run([sys.executable, "-c", driver], capture_output=True, text=True, encoding="utf-8",

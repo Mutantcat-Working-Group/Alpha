@@ -60,7 +60,7 @@ const standardReleaseMemberDirectory = /^(?:packages\/(?!experimental\/)[^/]+\/[
 const desktopApplicationDirectory = 'apps/desktop'
 const localArtifactDirs = new Set(['node_modules'])
 const appPackageFiles: Readonly<Record<string, readonly string[]>> = {
-  '@mutantcat/dsh': ['lib/*.js', 'lib/types/*.d.ts'],
+  '@mutantcat/alpha': ['lib/*.js', 'lib/types/*.d.ts'],
   '@mutantcat/dsh-desktop-host': [
     'lib/index.js',
   ],
@@ -328,7 +328,7 @@ function isReleaseMemberDirectory(dir: string): boolean {
  */
 export function checkAlphaFamilyVersion(manifest: PackageManifest, expected: string | undefined): string | undefined {
   const name = manifest.name
-  if (name !== '@mutantcat/dsh' && name?.startsWith('@mutantcat/dsh-') !== true) return undefined
+  if (name !== '@mutantcat/alpha' && name?.startsWith('@mutantcat/dsh-') !== true) return undefined
   if (manifest.version !== expected) {
     return `${name}: package.json version must match root version ${expected ?? '(missing)'}`
   }
@@ -521,7 +521,7 @@ export function checkExperimentalDependencyIsolation(
   const errors: string[] = []
   for (const { dir, manifest } of manifests) {
     if (!standardReleaseMemberDirectory.test(dir) && dir !== 'python/sdk-runtime') continue
-    const offered = manifest.name === '@mutantcat/dsh' ? new Set(optionalBundles) : new Set<string>()
+    const offered = manifest.name === '@mutantcat/alpha' ? new Set(optionalBundles) : new Set<string>()
     for (const section of runtimeDependencySections) {
       for (const name of Object.keys(manifest[section] ?? {})) {
         if (!experimentalNames.has(name)) continue

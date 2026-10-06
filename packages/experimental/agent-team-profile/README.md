@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-experimental-agent-team-profile` is a published experimental profile layer that enables [Agent Teams](../agent-team/README.md) over `@mutantcat/dsh-base`. Its patch inserts the Team domain and Team-scoped tools and disables ordinary subagent delegation and the overlapping global continuable-child controls. Workflow remains available with fresh children. The dsh installation ships it as an optional bundle that no shipped profile enables; switch it on from the Web sidebar's Plugins page, or add it explicitly to an initialized profile.
+`dsh-experimental-agent-team-profile` is a published experimental profile layer that enables [Agent Teams](../agent-team/README.md) over `@mutantcat/dsh-base`. Its patch inserts the Team domain and Team-scoped tools and disables ordinary subagent delegation and the overlapping global continuable-child controls. Workflow remains available with fresh children. The alpha installation ships it as an optional bundle that no shipped profile enables; switch it on from the Web sidebar's Plugins page, or add it explicitly to an initialized profile.
 
 ## Table of Contents
 
@@ -30,11 +30,11 @@ English | [中文](README.zh.md)
 Add the package to an initialized profile, then run a task that asks the Lead to delegate work:
 
 ```sh
-dsh plugin --profile headless add @mutantcat/dsh-experimental-agent-team-profile
-dsh --profile headless "Use Agent Teams to split this task between two teammates, wait, and summarize."
+alpha plugin --profile headless add @mutantcat/dsh-experimental-agent-team-profile
+alpha --profile headless "Use Agent Teams to split this task between two teammates, wait, and summarize."
 ```
 
-The profile must already contain `@mutantcat/dsh-base`, whose Subagent services and provider rows this layer consumes. Removing the package with `dsh plugin --profile <name> remove @mutantcat/dsh-experimental-agent-team-profile` removes the bundle from the profile's ordered layer list.
+The profile must already contain `@mutantcat/dsh-base`, whose Subagent services and provider rows this layer consumes. Removing the package with `alpha plugin --profile <name> remove @mutantcat/dsh-experimental-agent-team-profile` removes the bundle from the profile's ordered layer list.
 
 ### What you get
 
