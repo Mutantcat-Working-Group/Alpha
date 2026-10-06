@@ -34,7 +34,7 @@ dependencies = [
 
 [[package]]
 name = "alpha-desktop"
-version = "1.0.20261007"
+version = "1.0.20261008"
 dependencies = [
  "serde",
  "serde_json",
