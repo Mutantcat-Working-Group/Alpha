@@ -66,7 +66,7 @@ export type ApiSessionAgentResult =
   | { readonly error: ApiSessionAgentError }
 
 type InstalledSelection = ModelSelectionRef & {
-  current: AgentModelSelection
+  current: AgentModelSelection | undefined
   consume(provider: string, model: string, reasoningEffort: string | undefined): boolean
 }
 
@@ -292,10 +292,10 @@ export class ApiSessionAgentController {
       : agentModelSelection(projectionState.pending)
     const defaultModel = this.ctx.agentDefaultModel
     const selection: InstalledSelection = {
-      get current(): AgentModelSelection {
+      get current(): AgentModelSelection | undefined {
         if (picked !== undefined) return picked
         const loggedHeader = agent.session.requestHeader()
-        if (loggedHeader === undefined) return defaultModel.currentSelection()
+        if (loggedHeader === undefined) return defaultModel.currentSelection() ?? undefined
         const logged = loggedHeader.config
         return {
           provider: logged.provider,
@@ -494,9 +494,13 @@ export class ApiSessionAgentController {
     })).agent
   }
 
-  private agentOptions(): AgentOptions {
-    const { provider, model } = this.ctx.agentDefaultModel.currentSelection()
-    return { provider, model }
+  /**
+   * Agent options derived from the deployment default model.
+   * @returns the default provider/model pair, or an empty object when no default is configured.
+   */
+  agentOptions(): AgentOptions {
+    const selection = this.ctx.agentDefaultModel.currentSelection()
+    return selection === null ? {} : { provider: selection.provider, model: selection.model }
   }
 
   private installSelection(agent: Agent): void {

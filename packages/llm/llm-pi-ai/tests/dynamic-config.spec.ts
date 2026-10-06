@@ -8,7 +8,6 @@ import { credentialRef } from '@mutantcat/dsh-credentials'
 import { LocalCredentialProvider } from '@mutantcat/dsh-credentials-local'
 import { FileSettingsProvider } from '@mutantcat/dsh-settings-file'
 import * as LlmPiAi from '@mutantcat/dsh-llm-pi-ai'
-import AuthorizationService from '@mutantcat/dsh-authorization'
 import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
@@ -40,7 +39,7 @@ async function home(): Promise<string> {
 async function boot(
   dir: string,
   config: LlmPiAi.Config,
-  options: { authorization?: boolean; watchSettings?: boolean } = {},
+  options: { watchSettings?: boolean } = {},
 ): Promise<Context> {
   const ctx = new Context()
   cleanups.push(async () => {
@@ -49,26 +48,17 @@ async function boot(
   await ctx.plugin(LlmRuntime)
   await ctx.plugin(FileSettingsProvider, { path: join(dir, 'settings.yaml'), watch: options.watchSettings ?? false })
   await ctx.plugin(LocalCredentialProvider, { path: join(dir, '.credentials.yaml'), watch: false })
-  if (options.authorization === true) await ctx.plugin(AuthorizationService)
   await ctx.plugin(LlmPiAi, config)
   return ctx
 }
 
-describe('login flows in a real composition', () => {
-  it('offers a sign-in for a provider no route names, once the seam is mounted', async () => {
-    const ctx = await boot(await home(), {}, { authorization: true })
-
-    // Zero routes configured: signing in is what makes a route worth adding,
-    // so the offer cannot wait for a profile to name the provider.
-    const codex = ctx.authorization.describe(LlmPiAi.recordKeyFor('openai-codex'))
-    expect(codex?.methods.map(method => method.id)).toEqual(['oauth'])
-  })
-
-  it('mounts without the seam, and simply offers no sign-in', async () => {
+describe('the dormant mount in a real composition', () => {
+  it('offers every catalog provider as configurable before any route exists', async () => {
     const ctx = await boot(await home(), {})
 
-    // A headless or ACP composition has no surface to sign in from; everything
-    // else this plugin does still works.
+    // Zero routes configured: every provider the user can configure is
+    // addressable from the Models page, keyed by the credential reference it
+    // will resolve. No sign-in surface takes part in that.
     expect(ctx.get('authorization')).toBeUndefined()
     expect(ctx.llm.listConfigurableProviders().length).toBeGreaterThan(0)
   })

@@ -100,11 +100,6 @@ export const en = {
   welcomeBody: 'Alpha is an open AI code editor built on a plugin-first architecture. Desktop, Web, and CLI share one agent kernel and session format, and the installer bundles Python, Node.js, and pnpm runtimes so data processing, Office document work, and scripts run out of the box.\n\nTasks, tool calls, and model inputs are written to a replayable session log for auditing and reproduction. Welcome to Alpha.',
   welcomeContinue: 'Continue',
   welcomeError: 'The acknowledgement could not be saved. Please try again.',
-  onboardingTitle: 'Add an API key to get started',
-  onboardingDescription: 'Configure the DeepSeek provider to start building.',
-  onboardingLater: 'Configure later',
-  onboardingSave: 'Save and continue',
-  onboardingSaving: 'Saving…',
   keyRequired: 'Enter an API key to continue.',
 }
 
@@ -211,10 +206,5 @@ export const zh: { [Key in keyof typeof en]: string } = {
   welcomeBody: 'Alpha 是一款开源 AI 代码编辑器，采用一切皆插件架构。桌面端、Web 端与 CLI 共用同一个 agent 内核和会话格式，安装包内置 Python、Node.js 与 pnpm，开箱即可执行数据处理、Office 文档读写和脚本任务。\n\n任务、工具调用和模型输入都会写入可回放的会话日志，便于审计、复现与排查。欢迎使用 Alpha。',
   welcomeContinue: '继续',
   welcomeError: '暂时无法保存确认状态，请重试。',
-  onboardingTitle: '添加一个 API Key 开始使用',
-  onboardingDescription: '配置 DeepSeek 模型，即可开始使用。',
-  onboardingLater: '稍后配置',
-  onboardingSave: '保存并继续',
-  onboardingSaving: '保存中…',
   keyRequired: '请输入 API 密钥后继续。',
 }

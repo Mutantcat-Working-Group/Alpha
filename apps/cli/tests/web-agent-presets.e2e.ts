@@ -73,7 +73,7 @@ async function bootWeb(
     // Fixed Session IDs must stay inside this boot's temporary profile root.
     { id: 'session-persistence-jsonl', config: { root: join(dirname(settingsFile), 'sessions') } },
     // Host rows with side effects outside this process: a bound port, a served
-    // asset tree, a telemetry exporter. `api-gateway` and `directory-picker`
+    // asset tree. `api-gateway` and `directory-picker`
     // stay ENABLED on purpose — the api-proxy is the host row that injects
     // `subagents`, `workspace`, and the rest of the agent plane, so disabling
     // it would hide exactly the breakage this file exists to catch: a service
@@ -87,7 +87,6 @@ async function bootWeb(
     // and the URL prompt line — surface glue, not anything that decides an
     // agent's capabilities, which is all this file asserts.
     { id: 'web-runtime', disabled: true },
-    { id: 'session-telemetry-otel', disabled: true },
     // A deployment-level skill on the host registry's GLOBAL layer — the same
     // registration shape a repository plugin's skill root uses. The layered
     // skills test below proves it reaches preset-composed agents.
@@ -126,7 +125,7 @@ async function bootWeb(
   const profileDir = join(home, 'profiles', 'spec')
   await mkdir(profileDir, { recursive: true })
   if (profileBundles === undefined) initProfile(profileDir, ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'])
-  // Product Bundles are installed into the Profile, not the dsh app. Model
+  // Product Bundles are installed into the Profile, not the alpha app. Model
   // pnpm's package link for only the selected products; their own production
   // dependencies resolve from the linked workspace packages, while shared
   // peers still resolve through the installation fallback above.
@@ -163,7 +162,7 @@ async function bootWeb(
     bootCtx.provide('profileContext', { name: 'spec', dir: profileDir, patchPath: profile.patchPath,
       installAnchor: INSTALL_ANCHOR, home, cwd: home,
       startedBundles: profileBundles ?? ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app'],
-      overlays: overrides, telemetryDisabledEnv: '1' })
+      overlays: overrides })
     await bootCtx.plugin(PluginPackages, { generation: resolution })
     bootCtx.provide('connection', {
       fetch: { register: () => () => {} },

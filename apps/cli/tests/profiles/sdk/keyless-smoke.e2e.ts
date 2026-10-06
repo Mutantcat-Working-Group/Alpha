@@ -59,7 +59,7 @@ function waitForLine(
   })
 }
 
-describe('Python SDK dsh profile keyless smoke', () => {
+describe('Python SDK alpha profile keyless smoke', () => {
   it.each([
     { label: 'reports max-token turns with the default mapping config', envValue: undefined, editorEnabled: false },
     { label: 'reports max-token turns with mapping enabled through env', envValue: 'true', editorEnabled: false },
@@ -101,7 +101,6 @@ describe('Python SDK dsh profile keyless smoke', () => {
         ...launch.env,
         DSH_HOME: join(root, '.dsh'),
         DSH_PERMISSION_MODE: 'danger-full-access',
-        DSH_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: 'keyless-smoke-no-call',
         DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
         ...(envValue === undefined ? {} : { DSH_MAX_TOKENS_AS_SUCCESS: envValue }),
@@ -347,7 +346,7 @@ describe('Python SDK dsh profile keyless smoke', () => {
       ...launch.args, '--profile', 'sdk', '--patch', patch,
     ], {
       cwd: repoRoot,
-      env: { ...launch.env, DSH_HOME: home, DSH_TELEMETRY_DISABLED: '1', DEEPSEEK_API_KEY: 'keyless-no-call' },
+      env: { ...launch.env, DSH_HOME: home, DEEPSEEK_API_KEY: 'keyless-no-call' },
       stdin: 'pipe',
       stripFinalNewline: false,
       timeout: 25_000,

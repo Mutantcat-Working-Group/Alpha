@@ -1242,8 +1242,8 @@ describe('configurable-provider directory', () => {
 
     // `openai-codex` is the one installed provider that authenticates through
     // OAuth alone. It is offered like any other because the collection now
-    // carries a durable credential store and a login flow writes into it, so
-    // the route has a posture that works rather than only one that fails.
+    // carries a durable credential store, so the route has a posture that
+    // works rather than only one that fails.
     expect(offered).toContain('openai-codex')
     expect(offered).toContain('anthropic')
     expect(offered).toContain('openai')

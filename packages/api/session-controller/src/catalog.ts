@@ -15,7 +15,7 @@ import type {
  */
 export async function buildModelCatalog(
   ctx: Context,
-  defaultSelection: ModelSelection = ctx.agentDefaultModel.currentSelection(),
+  defaultSelection: ModelSelection | null = ctx.agentDefaultModel.currentSelection(),
 ): Promise<ModelCatalog> {
   const providers = ctx.llm.listProviders()
   const catalog = await Promise.all(providers.map(async (provider) => {
@@ -58,7 +58,7 @@ export async function buildModelCatalog(
     }
   }))
   return {
-    default: { ...defaultSelection },
+    default: defaultSelection === null ? null : { ...defaultSelection },
     routableProviders: providers.map(provider => provider.id),
     groups: catalog.flatMap(item => item.kind === 'group' ? [item.group] : [])
       .filter(group => group.models.length > 0),

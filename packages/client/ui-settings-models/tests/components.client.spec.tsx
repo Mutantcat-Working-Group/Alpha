@@ -550,7 +550,7 @@ describe('ModelsSection', () => {
     expect(screen.queryByRole('status')).toBeNull()
   })
 
-  it('reuses the provider editor as a required credential-only onboarding form', async () => {
+  it('renders the provider editor as a required credential-only form', async () => {
     let finishSet: ((response: { ok: true; value: undefined }) => void) | undefined
     const set = vi.fn(() => new Promise<{ ok: true; value: undefined }>((resolve) => {
       finishSet = resolve
@@ -572,18 +572,18 @@ describe('ModelsSection', () => {
       credentialOnly
       credentialRequired
       autoFocusCredential
-      cancelLabelKey="onboardingLater"
-      submitLabelKey="onboardingSave"
-      submitBusyLabelKey="onboardingSaving"
+      cancelLabelKey="cancel"
+      submitLabelKey="apply"
+      submitBusyLabelKey="applying"
       onClose={onClose}
     />)
 
     const key = screen.getByLabelText<HTMLInputElement>(en.keyInput)
-    const save = screen.getByText<HTMLButtonElement>(en.onboardingSave)
+    const save = screen.getByText<HTMLButtonElement>(en.apply)
     expect(document.activeElement).toBe(key)
     expect(key.required).toBe(true)
     expect(save.disabled).toBe(true)
-    expect(screen.getByText(en.onboardingLater)).toBeTruthy()
+    expect(screen.getByText(en.cancel)).toBeTruthy()
     expect(screen.queryByText(en.customized)).toBeNull()
     expect(screen.queryByLabelText(en.baseUrl)).toBeNull()
 
@@ -597,7 +597,7 @@ describe('ModelsSection', () => {
     expect(save.disabled).toBe(false)
     fireEvent.click(save)
 
-    expect(await screen.findByText(en.onboardingSaving)).toBeTruthy()
+    expect(await screen.findByText(en.applying)).toBeTruthy()
     expect(set).toHaveBeenCalledWith('DEEPSEEK_API_KEY', 'sk-onboarding')
     expect(mutate).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()

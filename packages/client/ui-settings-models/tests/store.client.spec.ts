@@ -4,7 +4,8 @@ import type { RpcResponse } from '@mutantcat/dsh-api-remotes/client'
 import { RemoteError } from '@mutantcat/dsh-client-test-runtime'
 import { SettingsDescribeMirror } from '@mutantcat/dsh-client-ui-settings/src/client/settings-mirror.ts'
 import { settingsSchema } from './settings-schema.client.ts'
-import { joinProviderDirectory, ModelsSettingsStore } from '../src/client/store.ts'
+import { joinProviderDirectory, ModelsSettingsStore, providerUsable } from '../src/client/store.ts'
+import type { ProviderRow } from '../src/client/store.ts'
 
 it.each([false, true])('retains configuration diagnostics when the route is active: %s', (active) => {
   expect(joinProviderDirectory(active ? [{ id: 'openai', name: 'openai' }] : [], [{
@@ -327,5 +328,37 @@ describe('edge joins', () => {
     await first
     // The stale empty directory never overwrote the newer join.
     expect(store.store.getSnapshot().rows).toHaveLength(4)
+  })
+})
+
+const missingCredential = { configured: false, writable: true } as const
+
+function declaredRow(overrides: Partial<ProviderRow> = {}): ProviderRow {
+  return {
+    entry: {
+      provider: 'hfai',
+      displayName: 'HFAI',
+      settingsNs: 'llm-pi-ai',
+      settingsPath: ['providers', 'hfai'],
+      active: true,
+    },
+    configured: true,
+    removable: true,
+    apiKeyEnv: 'HFAI_API_KEY',
+    credential: { configured: true, source: 'file', writable: true },
+    ...overrides,
+  }
+}
+
+describe('providerUsable', () => {
+  it('requires a registered route and a stored key for every named reference', () => {
+    expect(providerUsable(declaredRow())).toBe(true)
+    expect(providerUsable(declaredRow({ entry: { ...declaredRow().entry, active: false } }))).toBe(false)
+    expect(providerUsable(declaredRow({ credential: missingCredential }))).toBe(false)
+    expect(providerUsable(declaredRow({ credential: undefined }))).toBe(false)
+  })
+
+  it('treats a reference-free registered route as provider-native authentication', () => {
+    expect(providerUsable(declaredRow({ apiKeyEnv: undefined, credential: undefined }))).toBe(true)
   })
 })

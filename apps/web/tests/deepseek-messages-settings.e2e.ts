@@ -95,7 +95,7 @@ describe.skipIf(webSnapshotMode() === 'record')('web e2e: DeepSeek Messages opt-
     await page.getByRole('menuitem', { name: /模型/ }).click()
     await page.getByRole('menuitemradio', { name: 'Messages Flash', exact: true }).click()
     await expect.poll(() => input.isEnabled()).toBe(true)
-    await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection().provider).toBe('deepseek-official')
+    await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection()?.provider).toBe('deepseek-official')
     const settings = await readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8')
     expect(settings).toContain('provider: deepseek-official')
     expect(tripwire.pageErrors).toEqual([])

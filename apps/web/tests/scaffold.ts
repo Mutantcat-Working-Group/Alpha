@@ -11,7 +11,7 @@
 // rewrites goldens). A first-run option keeps the real adapter mounted while
 // masking its credential, without making a model call.
 //
-// Composition divergences from `dsh web`, all deliberate, all via include
+// Composition divergences from `alpha web`, all deliberate, all via include
 // patches after the shipped bundle layers, over the SAME tree (never a
 // second yml): temp persistenceRoot; host-level skill roots confined to the
 // temp workspace while project skill discovery remains real; agent-instructions
@@ -383,26 +383,16 @@ export interface LaunchOptions {
    */
   toolsMode?: 'native' | 'ptc' | 'both'
   /**
-   * Keep the shipped DeepSeek adapter mounted while masking the process
-   * environment's DEEPSEEK_API_KEY for this scaffold lifetime. This is the
-   * keyless first-run configuration lane; the default disables the adapter.
+   * Insert the direct DeepSeek adapter and keep it mounted while masking the
+   * process environment's DEEPSEEK_API_KEY for this scaffold lifetime. This
+   * is the keyless first-run configuration lane; the default inserts no
+   * adapter row at all.
    */
   deepSeekMissingCredential?: boolean
   /** Record or replay a Messages scenario; older scenarios explicitly retain their recorded Chat Completions route. */
   deepSeekMessages?: boolean
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
-  /**
-   * Patch the shipped DeepSeek search row to a deterministic endpoint and
-   * credential reference. Browser search scenarios keep the real provider and
-   * credentials seam while avoiding external search traffic and ambient keys.
-   */
-  deepSeekSearch?: {
-    /** Anthropic-compatible base URL; the provider appends `/messages`. */
-    baseURL: string
-    /** Credential reference resolved by the shipped search provider. */
-    apiKeyEnv: string
-  }
   /**
    * Replace the roster row the scaffold pins by default (no configured roots,
    * default `standard` — the plugin's own shipped presets). Supply this only
@@ -416,15 +406,6 @@ export interface LaunchOptions {
     /** The preset a session that names none is composed from. */
     default: string
   }
-  /**
-   * Patch the telemetry exporter URL while preserving the shipped enabled
-   * setting. A scenario-owned loopback collector contains all fixture uploads.
-   */
-  telemetryUrl?: string
-  /** Mode when telemetryUrl is supplied; defaults to FEEDBACK_ONLY without enabling a disabled row. */
-  telemetryMode?: 'FEEDBACK_ONLY'
-  /** SDK batch cadence for a scenario-owned collector; omitted to retain the SDK default. */
-  telemetryScheduledDelayMillis?: number
   /**
    * Browse through a trusted non-loopback hostname that the browser resolves
    * to loopback (for example `*.localhost`). The test server stays bound to
@@ -550,7 +531,6 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
   const overlayPatches: PatchOptions[] = [
     // Without HMR the profile applies configuration changes at its next start.
     ...options.profile?.hmr === false ? [{ id: 'hmr', disabled: true }] : [],
-    { id: 'session-log-deepseek', config: { enabled: false } },
     // The historical Messages fixture retains its recorded route during replay;
     // live configuration uses the shared DeepSeek route. Explicit overlays win.
     ...messages
@@ -598,23 +578,6 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     // workspace, keeping the composition untouched.
     { id: 'agent-instructions', disabled: true },
     { id: 'session-title-llm', disabled: true },
-    // Fixture sessions must never leave the process: the shipped row defaults
-    // to the production OTLP endpoint (or whatever DSH_TELEMETRY_OTLP_URL
-    // names in the ambient environment). A scenario with a local collector
-    // preserves the shipped disabled setting instead of overriding it.
-    options.telemetryUrl === undefined
-      ? { id: 'session-telemetry-otel', disabled: true }
-      : {
-        id: 'session-telemetry-otel',
-        config: {
-          mode: options.telemetryMode ?? 'FEEDBACK_ONLY',
-          exporter: { url: options.telemetryUrl },
-          ...(options.telemetryScheduledDelayMillis === undefined ? {} : {
-            processor: { scheduledDelayMillis: options.telemetryScheduledDelayMillis },
-          }),
-          shutdownTimeoutMillis: 1_000,
-        },
-      },
     // Use an ephemeral port while preserving the shipped compression policy;
     // a patch replaces the row's complete config.
     {
@@ -656,19 +619,20 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       // be able to change a golden, whatever roots a scenario asks for.
       : [{ id: 'agent-presets', config: { ...options.agentPresets, includeUserRoot: false } }],
     ...options.toolsMode === undefined ? [] : [{ id: 'tools', config: { mode: options.toolsMode } }],
-    ...options.deepSeekSearch === undefined
-      ? []
-      : [{
-        id: 'web-search-deepseek',
-        config: {
-          apiKeyEnv: options.deepSeekSearch.apiKeyEnv,
-          baseURL: options.deepSeekSearch.baseURL,
-        },
+    // The direct DeepSeek adapter, inserted by this scaffold rather than
+    // inherited: no shipped bundle mounts a provider, so record mode and the
+    // keyless first-run lane bring their own route while every other scenario
+    // leaves the row disabled behind replay's published route set. A patch
+    // replaces a matched row's whole config, so adding a row the bundles
+    // deliberately no longer carry takes an insert.
+    ...maskDeepSeekCredential && !messages ? [] : [{
+      insert: [{
+        id: 'llm-deepseek',
+        name: '@mutantcat/dsh-llm-deepseek',
+        disabled: mode !== 'record' && !maskDeepSeekCredential,
+        config: messages ? {} : { protocol: 'chat-completions' },
       }],
-    ...maskDeepSeekCredential && !messages ? [] : [
-      { id: 'llm-deepseek', disabled: mode !== 'record' && !maskDeepSeekCredential,
-        config: messages ? {} : { protocol: 'chat-completions' } },
-    ],
+    }],
   ]
   const patches: PatchOptions[] = [...basePatches, ...surfacePatches, ...overlayPatches]
 
@@ -695,7 +659,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         throw new Error(`web scaffold extra install anchor has no package name: ${anchor}`)
       }
       const packageDir = dirname(anchor)
-      // A real profile already has each bundle installed by `dsh plugin add`.
+      // A real profile already has each bundle installed by `alpha plugin add`.
       // Reproduce that link so a private bundle can import its own plugin.
       const installedLink = join(profileDir, 'node_modules', manifest.name)
       await mkdir(dirname(installedLink), { recursive: true })
@@ -726,7 +690,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     let profileContext: ProfileContext | undefined
     if (options.profile !== undefined) {
       // A real profile: the shipped web bundles plus each fixture package,
-      // installed the way `dsh plugin add` leaves them.
+      // installed the way `alpha plugin add` leaves them.
       const dependencies: Record<string, string> = {}
       const bundles = ['@mutantcat/dsh-base', '@mutantcat/dsh-web-app']
       for (const entry of options.profile.packages) {
@@ -738,13 +702,13 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         await symlink(entry.dir, link, 'junction')
       }
       initProfile(profileDir, bundles)
-      const manifest = readProfileManifest('dsh', profileDir)
+      const manifest = readProfileManifest('alpha', profileDir)
       manifest.dependencies = dependencies
       await writeFile(join(profileDir, 'package.json'), JSON.stringify(manifest, null, 2) + '\n')
       profileContext = {
         name: 'scaffold', dir: profileDir, patchPath: profile.patchPath, installAnchor: INSTALL_ANCHOR,
         cwd: workspaceCwd, home: harnessHome, startedBundles: bundles,
-        overlays: overlayPatches, telemetryDisabledEnv: undefined,
+        overlays: overlayPatches,
       }
       // HMR gates file-driven reloads on application readiness, which the
       // launcher commits after boot; this direct harness is ready at once.
@@ -783,7 +747,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       // The launcher's own mount, so the manager's reloads find the root Include
       // and compose the same layers the profile files name; bare names still
       // resolve through the resolution generation above, as in the direct mount.
-      await mountRootInclude(ctx, rootConfig, readProfilePatches('dsh', profileContext))
+      await mountRootInclude(ctx, rootConfig, readProfilePatches('alpha', profileContext))
     }
     await ctx.loader.await()
     await auditStartupEntries(ctx, 'web e2e scaffold')
@@ -845,7 +809,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         ...(options.paceMs === undefined ? {} : { paceMs: options.paceMs }),
       })
     } else if (mode !== 'record' && options.deepSeekMissingCredential !== true) {
-      // No fixture and no shipped adapter would leave the tree with ZERO
+      // No fixture and no inserted adapter would leave the tree with ZERO
       // provider routes — a state no product composition has, and one the
       // composer refuses to type into. Register the same routes
       // a fixture would, with streaming that still fails loud: the scenario

@@ -80,7 +80,7 @@ describe('AgentDefaultModelConfig', () => {
   it('falls back to the composition entry when the settings provider detaches', async () => {
     const bench = await boot()
     await bench.defaultModel.saveSelection({ provider: 'acme-gateway', model: 'acme-large' })
-    expect(bench.defaultModel.currentSelection().provider).toBe('acme-gateway')
+    expect(bench.defaultModel.currentSelection()).toMatchObject({ provider: 'acme-gateway' })
     await bench.settingsFiber.dispose()
     expect(bench.defaultModel.currentSelection()).toEqual({
       provider: 'deepseek-official', model: 'deepseek-v4-flash',

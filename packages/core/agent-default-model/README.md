@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-agent-default-model` gives newly created agents a shared default provider and model when their sessions do not specify one. Use it to choose the starting model once for all supported agent entry points, including `dsh --profile headless`. When settings are available, users can override the configured selection, including reasoning effort, and saved changes apply to subsequent reads. The default is process-wide; per-session model selection remains the responsibility of the entry point that creates the agent.
+`dsh-agent-default-model` gives newly created agents a shared default provider and model when their sessions do not specify one. Use it to choose the starting model once for all supported agent entry points, including `alpha --profile headless`. When settings are available, users can override the configured selection, including reasoning effort, and saved changes apply to subsequent reads. The default is process-wide; per-session model selection remains the responsibility of the entry point that creates the agent.
 
 ## Table of Contents
 
@@ -29,25 +29,25 @@ Mount this package wherever agents are created without an explicit model route. 
 
 ### Configure the default
 
-The composition entry is the base of the default: it requires a provider and model and stays usable without any settings provider.
+The composition entry is the base of the default. Both fields are optional, so a deployment can ship with no default at all: a composition that mounts neither leaves fresh agents without a route, and the entry point that creates them fails loud or asks for a selection. The entry stays usable without any settings provider.
 
 ```yaml
 - name: '@mutantcat/dsh-agent-default-model'
   config:
-    provider: deepseek
-    model: deepseek-chat
+    provider: anthropic
+    model: claude-sonnet-4-5
 ```
 
 | Field | Default | Meaning |
 |---|---|---|
-| `provider` | required | Registered provider route for fresh agents |
-| `model` | required | Provider-owned model id for fresh agents |
+| `provider` | none | Registered provider route for fresh agents; absent means no default |
+| `model` | none | Provider-owned model id for fresh agents; absent means no default |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-agent-default-model) is the exhaustive source for every accepted field. `reasoningEffort` is deliberately not a config field: it belongs to the settings layer, so a complete saved selection can clear an effort when the next selected model has none, while a composition value would be inherited again.
 
 ### Read and change the default
 
-`currentSelection()` returns a detached `{ provider, model, reasoningEffort? }` for a newly created agent; `saveSelection()` stores the complete selection for later agents.
+`currentSelection()` returns a detached `{ provider, model, reasoningEffort? }` for a newly created agent, or `null` when neither field is configured; `saveSelection()` stores the complete selection for later agents.
 
 ```text
 const selection = ctx.agentDefaultModel.currentSelection()

@@ -20,33 +20,38 @@ declare module '@mutantcat/cordis' {
 /** Settings namespace carrying the default model selection for future Agents. */
 export const AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE = 'agent-default-model'
 
-/** Stored and composed default model selection. */
+/**
+ * Stored and composed default model selection. Every field is optional so a
+ * deployment can ship with no default at all: entry points must then fail loud
+ * or ask for a selection instead of silently talking to a preset provider.
+ */
 export interface AgentDefaultModelSettings {
   /** Registered provider route. */
-  provider: string
+  provider?: string
   /** Provider-owned model id. */
-  model: string
+  model?: string
   /** Adapter-owned reasoning effort, or provider/default behavior when absent. */
   reasoningEffort?: string
 }
 
 /** Schema of the default Agent model settings section. */
 export const AGENT_DEFAULT_MODEL_SETTINGS_SCHEMA: z<AgentDefaultModelSettings> = z.object({
-  provider: z.string().required(),
-  model: z.string().required(),
-  reasoningEffort: z.string(),
+  provider: z.string().required(false),
+  model: z.string().required(false),
+  reasoningEffort: z.string().required(false),
 })
 
 /** Composition entry for the default model selection. */
 export interface Config {
   /** Registered provider route. */
-  provider: string
+  provider?: string
   /** Provider-owned model id. */
-  model: string
+  model?: string
 }
 
 /** Project stored settings onto the Agent-facing selection type. */
-function selection(settings: AgentDefaultModelSettings): ModelSelection {
+function selection(settings: AgentDefaultModelSettings): ModelSelection | null {
+  if (settings.provider === undefined || settings.model === undefined) return null
   return {
     provider: settings.provider,
     model: settings.model,
@@ -63,15 +68,18 @@ function selection(settings: AgentDefaultModelSettings): ModelSelection {
  */
 export class AgentDefaultModelConfig extends Service {
   static Config: z<Config> = z.object({
-    provider: z.string().required(),
-    model: z.string().required(),
+    provider: z.string().required(false),
+    model: z.string().required(false),
   })
 
   private source: () => AgentDefaultModelSettings
 
   constructor(ctx: Context, config: Config) {
     super(ctx, 'agentDefaultModel')
-    const entry: AgentDefaultModelSettings = { provider: config.provider, model: config.model }
+    const entry: AgentDefaultModelSettings = {
+      ...config.provider === undefined ? {} : { provider: config.provider },
+      ...config.model === undefined ? {} : { model: config.model },
+    }
     this.source = () => entry
     ctx.inject(['settings'], (settingsCtx) => {
       settingsCtx.settings.installSection(ctx, AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE, AGENT_DEFAULT_MODEL_SETTINGS_SCHEMA, entry, {
@@ -85,9 +93,10 @@ export class AgentDefaultModelConfig extends Service {
 
   /**
    * Read the current default model selection.
-   * @returns a detached provider, model, and optional reasoning selection.
+   * @returns a detached provider, model, and optional reasoning selection, or
+   * null when the deployment and the user's settings provide no default.
    */
-  currentSelection(): ModelSelection {
+  currentSelection(): ModelSelection | null {
     return selection(this.source())
   }
 

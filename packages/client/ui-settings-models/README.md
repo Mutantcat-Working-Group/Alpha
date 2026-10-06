@@ -1,5 +1,5 @@
 ---
-description: "Models settings and product-onboarding plugin for the dsh web client: provider rows, API-key management, model lists, and the DeepSeek first-run dialogs."
+description: "Models settings and product-onboarding plugin for the alpha web client: provider rows, API-key management, model lists, and the welcome notice."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-client-ui-settings-models` is the Models settings page of the dsh web client: users configure API keys (stored write-only under the profile's credential reference), edit each provider's model list, and hand-declare custom pi-ai routes, with provider rows and one editor card at a time. The page joins the provider directory, the settings document, and the credential descriptions into one shared snapshot, so a row's state stays consistent across all three. It also walks first-run users through two ordered dialogs — a versioned welcome notice and the conditional official-DeepSeek credential step.
+`dsh-client-ui-settings-models` is the Models settings page of the alpha web client: users configure API keys (stored write-only under the profile's credential reference), edit each provider's model list, and hand-declare custom pi-ai routes, with provider rows and one editor card at a time. The page joins the provider directory, the settings document, and the credential descriptions into one shared snapshot, so a row's state stays consistent across all three. No shipped profile preselects a provider, so a fresh install starts here with an empty list and a versioned welcome notice; adding the first provider and its key is the whole setup.
 
 ## Table of Contents
 
@@ -45,9 +45,9 @@ Expand **Customized settings → Model options** to edit each model. Both provid
 
 The add flow is a card carrying the dormant-directory provider select — a bare-mounted `llm-pi-ai` offers its whole installed catalog before any route exists. **Add a custom provider** declares a route pi-ai does not ship; the create card asks for a unique **Provider ID**, an endpoint, a protocol, and at least one uniquely-identified model, because nothing can default those. The endpoint must be a parseable HTTP or HTTPS URL; localhost, IPv4 and IPv6 literals, and custom ports remain valid. A syntax error blocks both discovery and creation at the field, while a request failure remains a separate provider error. **Fetch available models** asks the `llm/discoverModels` Remote about the endpoint the form shows, so adding a provider is one pass instead of save-then-return; the reply opens a searchable picker rather than being written, and nothing is written until **Add selected**. Each selected candidate copies its id, display name, context window, output-token cap, and disclosed input types into the editable row when disclosed, while an existing row retains its user-tuned values. Search matches model ids and optional display names without clearing hidden selections. **Select all** adds the visible results, while **Deselect all** clears the entire selection so hidden results cannot be adopted accidentally. A row is deletable only when the user layer alone carries it (removal restores the composition base), and its confirmation dialog names the provider.
 
-### First-run dialogs
+### First-run notice
 
-After the versioned notice step completes, the DeepSeek step projects first-run readiness from the same joined snapshot. ANY provider the user can already reach ends it without rendering; only a user with none is asked for the official DeepSeek key. Configure later completes only this coordinator pass, and an absent adapter, inactive route, failed join, read-only deployment, or unusable capability completes the step without rendering — Models remains the diagnostic surface.
+A fresh install opens one versioned welcome dialog and nothing else. Alpha mounts no provider of its own, so the notice hands the user straight to the add-provider controls below rather than asking for a particular vendor's key. Acknowledging records `welcomeNoticeVersion` in the `ui-onboarding` settings section; raising `WELCOME_NOTICE_VERSION` shows the dialog again. A read-only deployment, a failed settings join, or an unusable capability leaves the page usable without the notice — Models remains the diagnostic surface either way.
 
 ### Extension slots
 
@@ -73,7 +73,7 @@ Each settings write carries the card's current `revision`, so a concurrent write
 
 ### Onboarding coordinator
 
-The notice step owns its exact copy in `src/client/locales.ts` and its acknowledgement version in `src/onboarding-copy.ts`; on loopback it compares and writes `ui-onboarding.welcomeNoticeVersion` through the existing settings API, and only an explicit Continue records the current version. A non-loopback browser cannot use that Host-only namespace, so acknowledgement is process-local and the notice returns after reload. The DeepSeek step targets `deepseek-official` in `llm-deepseek` and renders the existing `ProviderEditor` in credential-only mode inside the shared onboarding modal; `credentials.set` stays the only secret write, and no provider settings are changed.
+The notice step owns its exact copy in `src/client/locales.ts` and its acknowledgement version in `src/onboarding-copy.ts`; on loopback it compares and writes `ui-onboarding.welcomeNoticeVersion` through the existing settings API, and only an explicit Continue records the current version. A non-loopback browser cannot use that Host-only namespace, so acknowledgement is process-local and the notice returns after reload. The welcome step is the only step the coordinator ships: the deployment starts with no provider and no key, and this page is where the user declares both. Keys are entered in the shared credential modal through `credentials.set`, which stays the only secret write and changes no provider settings.
 
 </details>
 

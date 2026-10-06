@@ -20,7 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /** Published-entry acceptance for argument errors, profile lifecycle, and boot-free config dumps. */
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
-// The dsh built bin cold-starts slowly on the contended self-hosted Windows pool; the
+// The alpha built bin cold-starts slowly on the contended self-hosted Windows pool; the
 // execa deadline, its error text, the outer vitest case budget, and waitForFile all
 // share this value so a widening cannot leave a stale 25s diagnostic behind.
 const SPAWN_TIMEOUT_MS = 60_000
@@ -50,7 +50,7 @@ async function runBuiltBin(
     ...cwd === undefined ? {} : { cwd },
   })
   if (result.timedOut) {
-    throw new Error(`dsh built bin did not exit within ${SPAWN_TIMEOUT_MS / 1_000}s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+    throw new Error(`alpha built bin did not exit within ${SPAWN_TIMEOUT_MS / 1_000}s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
   }
   return { stdout: result.stdout, code: result.exitCode ?? -1, stderr: result.stderr }
 }
@@ -58,7 +58,7 @@ async function runBuiltBin(
 async function waitForFile(file: string): Promise<void> {
   const deadline = Date.now() + SPAWN_TIMEOUT_MS
   while (!existsSync(file)) {
-    if (Date.now() >= deadline) throw new Error(`dsh profile lifecycle marker did not appear: ${file}`)
+    if (Date.now() >= deadline) throw new Error(`alpha profile lifecycle marker did not appear: ${file}`)
     await new Promise(resolve => setTimeout(resolve, 20))
   }
 }
@@ -349,8 +349,8 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
     const help = await runBuiltBin(['--help'])
     expect(help.code).toBe(0)
     await expect(help.stdout).toMatchFileSnapshot('./expected/launcher-help.txt')
-    expect(help.stdout).toContain('dsh --profile web')
-    expect(help.stdout).toContain('dsh plugin --profile')
+    expect(help.stdout).toContain('alpha --profile web')
+    expect(help.stdout).toContain('alpha plugin --profile')
     expect(help.stdout).not.toMatch(/^\s+(?:tui|meta|upgrade)\b/mu)
     for (const removed of [['--config', 'x.yml'], ['-p', 'task'], ['web', '--profile', 'tui']]) {
       const result = await runBuiltBin(removed)
@@ -363,50 +363,44 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
     try {
       const web = await runBuiltBin(['--profile', 'web', '--help'], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
       })
       expect(web.code).toBe(0)
       expect(web.stderr).toBe('')
-      expect(web.stdout).toContain('Usage: dsh --profile web')
+      expect(web.stdout).toContain('Usage: alpha --profile web')
       expect(web.stdout).toContain('--port <port>')
-      expect(web.stdout).not.toContain('dsh web: http://')
+      expect(web.stdout).not.toContain('alpha web: http://')
 
       const wildcardHost = await runBuiltBin(['web', '--host', '0.0.0.0'], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
       })
       expect(wildcardHost.code).toBe(1)
       expect(wildcardHost.stdout).toBe('')
       expect(wildcardHost.stderr).toContain('--host 0.0.0.0 is intentionally not supported yet for safety: it would expose remote code execution to the network; use 127.0.0.1 instead')
-      expect(wildcardHost.stderr).not.toContain('dsh web: http://')
+      expect(wildcardHost.stderr).not.toContain('alpha web: http://')
 
       const headlessHelp = await runBuiltBin(['headless', '--help'], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
       })
       expect(headlessHelp.code).toBe(0)
       expect(headlessHelp.stderr).toBe('')
-      expect(headlessHelp.stdout).toContain('Usage: dsh --profile headless')
+      expect(headlessHelp.stdout).toContain('Usage: alpha --profile headless')
 
       const sdkHelp = await runBuiltBin(['sdk', '--help'], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
       })
       expect(sdkHelp.code).toBe(0)
       expect(sdkHelp.stderr).toBe('')
-      expect(sdkHelp.stdout).toContain('Usage: dsh --profile sdk')
+      expect(sdkHelp.stdout).toContain('Usage: alpha --profile sdk')
 
       const acpHelp = await runBuiltBin(['acp', '--help'], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
       })
       expect(acpHelp.code).toBe(0)
       expect(acpHelp.stderr).toBe('')
-      expect(acpHelp.stdout).toContain('Usage: dsh --profile acp')
+      expect(acpHelp.stdout).toContain('Usage: alpha --profile acp')
 
       const missingTask = await runBuiltBin(['--profile', 'headless'], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
       })
       expect(missingTask.code).toBe(1)
       expect(missingTask.stderr).toContain('a task is required')
@@ -427,7 +421,6 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
     try {
       const result = await runBuiltBin(['--profile', 'sdk', '--patch', patch], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: 'built-sdk-startup-failure-no-call',
       }, home)
       expect(result.code).toBe(0)
@@ -460,7 +453,6 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
       env: {
         ...process.env,
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: 'built-sdk-profile-no-call',
       },
       extendEnv: false,
@@ -526,7 +518,6 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
       env: {
         ...process.env,
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: apiKey,
         DEEPSEEK_BASE_URL: server.baseURL,
         DSH_PERMISSION_MODE: 'danger-full-access',
@@ -607,13 +598,12 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
     try {
       const result = await runBuiltBin(['--profile', 'headless', 'answer', 'from', 'the', 'published', 'entry'], {
         DSH_HOME: home,
-        DSH_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: apiKey,
         DEEPSEEK_BASE_URL: server.baseURL,
       })
       expect(result.code, result.stderr).toBe(0)
       expect(result.stdout).toBe('published headless profile reached the mock')
-      expect(result.stderr).toBe('dsh: reasoning:\nInspecting the published entry.')
+      expect(result.stderr).toBe('alpha: reasoning:\nInspecting the published entry.')
       expect(server.requests.length).toBeGreaterThan(0)
       expect(server.requests.every(request => request.path === '/chat/completions')).toBe(true)
       expect(JSON.stringify(server.requests.map(request => request.body))).toContain('answer from the published entry')
@@ -636,7 +626,7 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
 
   it.skipIf(process.platform === 'win32')('runs through an installed-style symlink', async () => {
     const installation = mkdtempSync(join(tmpdir(), 'dsh-bin-link-'))
-    const installedBin = join(installation, 'dsh')
+    const installedBin = join(installation, 'alpha')
     symlinkSync(dshBin, installedBin)
     try {
       const result = await execa(process.execPath, [installedBin, '--version'], {
@@ -659,7 +649,7 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
       const result = await runBuiltBin(['nope'], { DSH_HOME: home })
       expect(result.code).toBe(1)
       expect(result.stderr).toContain('profile "nope" does not exist')
-      expect(result.stderr).toContain('dsh plugin --profile nope add')
+      expect(result.stderr).toContain('alpha plugin --profile nope add')
     } finally {
       rmSync(home, { recursive: true, force: true })
     }
@@ -670,11 +660,11 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
     try {
       const created = await runBuiltBin(
         ['rescue', '--from-default-profile', 'web', '--help'],
-        { DSH_HOME: home, DSH_TELEMETRY_DISABLED: '1' },
+        { DSH_HOME: home },
       )
       expect(created.code).toBe(0)
       expect(created.stderr).toBe('')
-      expect(created.stdout).toContain('Usage: dsh --profile web')
+      expect(created.stdout).toContain('Usage: alpha --profile web')
 
       const dir = join(home, 'profiles', 'rescue')
       const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as {
@@ -690,7 +680,7 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
 
       const repeated = await runBuiltBin(
         ['rescue', '--from-default-profile', 'web', '--help'],
-        { DSH_HOME: home, DSH_TELEMETRY_DISABLED: '1' },
+        { DSH_HOME: home },
       )
       expect(repeated.code).toBe(1)
       expect(repeated.stdout).toBe('')
@@ -699,11 +689,11 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
 
       const reopened = await runBuiltBin(
         ['rescue', '--help'],
-        { DSH_HOME: home, DSH_TELEMETRY_DISABLED: '1' },
+        { DSH_HOME: home },
       )
       expect(reopened.code).toBe(0)
       expect(reopened.stderr).toBe('')
-      expect(reopened.stdout).toContain('Usage: dsh --profile web')
+      expect(reopened.stdout).toContain('Usage: alpha --profile web')
     } finally {
       rmSync(home, { recursive: true, force: true })
     }
@@ -714,7 +704,7 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
     try {
       const failed = await runBuiltBin(
         ['--profile', 'rescue', '--from-default-profile', 'web', '--port', 'not-a-number'],
-        { DSH_HOME: home, DSH_TELEMETRY_DISABLED: '1' },
+        { DSH_HOME: home },
       )
       expect(failed.code).toBe(1)
       expect(failed.stderr).toContain('--port must be a number')
@@ -722,11 +712,11 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
 
       const retried = await runBuiltBin(
         ['rescue', '--help'],
-        { DSH_HOME: home, DSH_TELEMETRY_DISABLED: '1' },
+        { DSH_HOME: home },
       )
       expect(retried.code).toBe(0)
       expect(retried.stderr).toBe('')
-      expect(retried.stdout).toContain('Usage: dsh --profile web')
+      expect(retried.stdout).toContain('Usage: alpha --profile web')
     } finally {
       rmSync(home, { recursive: true, force: true })
     }
@@ -749,7 +739,6 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
         ['--profile', 'environment-probe'],
         {
           DSH_HOME: home,
-          DSH_TELEMETRY_DISABLED: '1',
           DEEPSEEK_API_KEY: undefined,
           DEEPSEEK_BASE_URL: server.baseURL,
         },
@@ -780,11 +769,10 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
         DSH_HOME: home,
         DSH_BROWSER_OPEN_TEST_EXIT_ON_READY: '1',
         DEEPSEEK_API_KEY: 'keyless-invalid-config',
-        DSH_TELEMETRY_DISABLED: '1',
         NODE_OPTIONS: `--import=${webReadyExitHook}`,
       })
       expect(result.code, result.stderr).toBe(0)
-      expect(result.stdout).toMatch(/^dsh web: http:\/\/127\.0\.0\.1:\d+\/\?token=[A-Za-z0-9_-]+$/u)
+      expect(result.stdout).toMatch(/^alpha web: http:\/\/127\.0\.0\.1:\d+\/\?token=[A-Za-z0-9_-]+$/u)
       expect(result.stderr).toContain('llm-pi-ai')
     } finally {
       rmSync(home, { recursive: true, force: true })
@@ -1055,7 +1043,7 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
   }, SPAWN_TIMEOUT_MS + 30_000)
 
   it('anchors a relative add spec to the invoking directory, not the profile', async () => {
-    // `dsh plugin --profile x add .` from a plugin checkout must install THAT
+    // `alpha plugin --profile x add .` from a plugin checkout must install THAT
     // checkout — pnpm's cwd is the profile directory, so an un-anchored `.`
     // would self-link the profile.
     const home = mkdtempSync(join(tmpdir(), 'dsh-plugin-anchor-'))

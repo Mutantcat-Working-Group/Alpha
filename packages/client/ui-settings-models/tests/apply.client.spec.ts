@@ -13,7 +13,6 @@ import {
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
 } from '../src/onboarding-copy.ts'
 import { ModelsSection } from '../src/client/ModelsSection.tsx'
-import { DeepSeekOnboardingDialog } from '../src/client/DeepSeekOnboardingDialog.tsx'
 import { WelcomeNotice } from '../src/client/WelcomeNotice.tsx'
 import { apply as hostApply } from '../src/index.ts'
 
@@ -92,19 +91,11 @@ describe('ui-settings-models apply', () => {
     expect(injected.hooks.snapshot).toBe(injected.controller.store)
     expect(typeof injected.operations.writeSettings).toBe('function')
     const onboarding = before.slots.entries('settings.onboarding')
-    expect(onboarding).toHaveLength(2)
+    expect(onboarding).toHaveLength(1)
     expect(onboarding.find(entry => entry.options.id === 'welcome-notice')).toMatchObject({
       component: WelcomeNotice,
       options: { id: 'welcome-notice', order: -100 },
     })
-    const deepSeek = onboarding.find(entry => entry.options.id === 'deepseek-official')!
-    expect(deepSeek.component).toBe(DeepSeekOnboardingDialog)
-    expect(deepSeek.options).toMatchObject({ id: 'deepseek-official', order: 0 })
-    const deepSeekInjected = (
-      deepSeek.inject as unknown as () => import('../src/client/DeepSeekOnboardingDialog.tsx').DeepSeekOnboardingInjected
-    )()
-    expect(deepSeekInjected.hooks.models).toBe(injected.controller.store)
-    expect(typeof deepSeekInjected.operations.storeCredential).toBe('function')
 
     const after = await bench()
     await after.ctx.plugin({ inject: [...inject], apply }).await()
@@ -240,15 +231,15 @@ describe('pushed invalidations', () => {
     expect(loads).toHaveLength(1)
   })
 
-  it('routes pushed credential invalidation into the shared onboarding join', async () => {
+  it('routes pushed credential invalidation into the shared models join', async () => {
     const b = await bench()
     declare(b.slots)
     await b.ctx.plugin({ inject: [...inject], apply }).await()
-    const entry = b.slots.entries('settings.onboarding')
-      .find(candidate => candidate.options.id === 'deepseek-official')!
+    const entry = b.slots.entries('settings.section')
+      .find(candidate => candidate.options.id === 'models')!
     const injected = (
       entry.inject as unknown as
-      () => import('../src/client/DeepSeekOnboardingDialog.tsx').DeepSeekOnboardingInjected
+      () => import('../src/client/ModelsSection.tsx').ModelsSectionInjected
     )()
     injected.controller.store.update((state) => { state.status = 'ready' })
     const load = vi.spyOn(injected.controller, 'load').mockResolvedValue()

@@ -254,7 +254,6 @@ export class SessionCommandController {
     const childId = brandString<SessionId>(`session-${randomUUID()}`)
     const composition = await this.agents.composeAgent(this.agents.presetForObservation(source))
     try {
-      const { provider, model } = this.ctx.agentDefaultModel.currentSelection()
       await this.ctx.agents.create({
         sessionId: childId,
         seed: source.events.slice(0, cut),
@@ -267,7 +266,7 @@ export class SessionCommandController {
             ? {}
             : { agentPreset: composition.agentPreset }),
         },
-        agentOptions: { provider, model },
+        agentOptions: this.agents.agentOptions(),
         setup: composition.setup,
       })
     } catch (error) {
@@ -317,6 +316,13 @@ export class SessionCommandController {
     const agent = await this.resolveAgent(request.sessionId)
     if (hasPromptRequest(agent, request.requestId)) return { accepted: true }
     const selection = this.agents.selectionFor(agent).current
+    if (selection === undefined) {
+      throw new RemoteError(
+        'session/model-unavailable',
+        'no model is configured; choose a provider and model in Settings before sending a message',
+        { provider: '', model: '' },
+      )
+    }
     if (!routeServed(this.ctx, selection.provider)) {
       throw new RemoteError(
         'session/model-unavailable',
@@ -334,6 +340,13 @@ export class SessionCommandController {
       try {
         if (hasImage) {
           const current = this.agents.selectionFor(agent).current
+          if (current === undefined) {
+            throw new RemoteError(
+              'session/model-unavailable',
+              'no model is configured; choose a provider and model in Settings before sending a message',
+              { provider: '', model: '' },
+            )
+          }
           const model = await this.ctx.llm.resolveModelInfo(current.provider, current.model)
           if (model.inputModalities !== undefined && !model.inputModalities.includes('image')) {
             throw new RemoteError(

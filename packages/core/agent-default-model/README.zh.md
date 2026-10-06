@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-agent-default-model` 在会话未指定模型时，为新创建的 agent 提供共享的默认提供方与模型。使用它可以为所有受支持的 agent 入口统一选择起始模型，其中包括 `dsh --profile headless`。设置可用时，用户可以覆盖已配置的选择（包括推理（reasoning）强度），保存的更改会在后续读取中生效。该默认值作用于整个进程；按会话选择模型仍由创建 agent 的入口负责。
+`dsh-agent-default-model` 在会话未指定模型时，为新创建的 agent 提供共享的默认提供方与模型。使用它可以为所有受支持的 agent 入口统一选择起始模型，其中包括 `alpha --profile headless`。设置可用时，用户可以覆盖已配置的选择（包括推理（reasoning）强度），保存的更改会在后续读取中生效。该默认值作用于整个进程；按会话选择模型仍由创建 agent 的入口负责。
 
 ## 目录
 
@@ -29,25 +29,25 @@ kind: "package-reference"
 
 ### 配置默认值
 
-组合配置项是默认值的基础：它要求提供方与模型，并且不依赖任何设置提供方也能使用。
+组合配置项是默认值的基础。两个字段都是可选的，因此部署可以完全不带默认值：组合中两个字段都没有时，新创建的 agent 没有模型路由，创建它们的入口会明确报错或要求先选择模型。该配置项不依赖任何设置提供方也能使用。
 
 ```yaml
 - name: '@mutantcat/dsh-agent-default-model'
   config:
-    provider: deepseek
-    model: deepseek-chat
+    provider: anthropic
+    model: claude-sonnet-4-5
 ```
 
 | 字段 | 默认值 | 含义 |
 |---|---|---|
-| `provider` | 必填 | 新 agent 使用的已注册提供方路由 |
-| `model` | 必填 | 新 agent 使用的、由提供方持有的模型 id |
+| `provider` | 无 | 新 agent 使用的已注册提供方路由；缺失表示没有默认值 |
+| `model` | 无 | 新 agent 使用的、由提供方持有的模型 id；缺失表示没有默认值 |
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-agent-default-model)是所有受支持字段的完整参考。`reasoningEffort` 刻意不是配置字段：它属于设置层，因此完整保存的选择可以在下一个选定的模型没有推理强度时清除旧值，而组合配置值会再次被继承。
 
 ### 读取与更改默认值
 
-`currentSelection()` 为新创建的 agent 返回一份独立的 `{ provider, model, reasoningEffort? }`；`saveSelection()` 为后续 agent 保存完整选择。
+`currentSelection()` 为新创建的 agent 返回一份独立的 `{ provider, model, reasoningEffort? }`；两个字段都没有配置时返回 `null`。`saveSelection()` 为后续 agent 保存完整选择。
 
 ```text
 const selection = ctx.agentDefaultModel.currentSelection()

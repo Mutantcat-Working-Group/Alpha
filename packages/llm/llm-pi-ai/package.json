@@ -29,7 +29,6 @@
   "peerDependencies": {
     "@mutantcat/cordis": "workspace:^",
     "@mutantcat/dsh-attachment": "workspace:^",
-    "@mutantcat/dsh-authorization": "workspace:^",
     "@mutantcat/dsh-credentials": "workspace:^",
     "@mutantcat/dsh-fs": "workspace:^",
     "@mutantcat/dsh-launch-environment": "workspace:^",
@@ -46,7 +45,6 @@
   "devDependencies": {
     "@mutantcat/cordis": "workspace:^",
     "@mutantcat/dsh-attachment": "workspace:^",
-    "@mutantcat/dsh-authorization": "workspace:^",
     "@mutantcat/dsh-credentials": "workspace:^",
     "@mutantcat/dsh-fs": "workspace:^",
     "@mutantcat/dsh-launch-environment": "workspace:^",

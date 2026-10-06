@@ -1,8 +1,8 @@
 /**
  * Models settings and product-onboarding plugin, browser half. It registers
- * the Models page plus the ordered welcome and official-DeepSeek
- * onboarding dialogs, whose UI shares this package's modal wrapper. The Host
- * settings and credential contracts stay behind their existing wire APIs.
+ * the Models page plus the welcome dialog, whose UI shares this package's
+ * modal wrapper. The Host settings and credential contracts stay behind their
+ * existing wire APIs.
  * Export discipline:
  * packages/client/AGENTS.md.
  */
@@ -17,8 +17,6 @@ import type {} from '@mutantcat/dsh-client-ui-renderer/client'
 import type {} from '@mutantcat/dsh-api-remotes/client'
 import { ModelsSection } from './ModelsSection.tsx'
 import type { ModelsSectionInjected } from './ModelsSection.tsx'
-import { DeepSeekOnboardingDialog } from './DeepSeekOnboardingDialog.tsx'
-import type { DeepSeekOnboardingInjected } from './DeepSeekOnboardingDialog.tsx'
 import { WelcomeNotice } from './WelcomeNotice.tsx'
 import type { WelcomeNoticeInjected } from './WelcomeNotice.tsx'
 import { decodeWelcomeSection, WelcomeNoticeStore } from './welcome-store.ts'
@@ -90,13 +88,6 @@ export function apply(ctx: ClientContext): void {
     schema,
     t,
   })
-  const deepSeekOnboardingInjected = (): DeepSeekOnboardingInjected => ({
-    controller,
-    hooks: { models: controller.store },
-    operations,
-    schema,
-    t,
-  })
   // The scope's own memory mode is what keeps a remote browser process-local,
   // so the store needs no isLoopback branch of its own.
   const welcomeController = new WelcomeNoticeStore(ctx.settingsScope.bind({
@@ -145,10 +136,4 @@ export function apply(ctx: ClientContext): void {
     order: -100,
     inject: welcomeInjected,
   }, WelcomeNotice))
-  ctx.slots.inject('settings.onboarding', () => ctx.slots.register({
-    name: 'settings.onboarding',
-    id: 'deepseek-official',
-    order: 0,
-    inject: deepSeekOnboardingInjected,
-  }, DeepSeekOnboardingDialog))
 }
