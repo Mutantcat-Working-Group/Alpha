@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-typert-generator",
   "description": "TypeScript project analyzer and model-driven Typert artifact generator",
-  "version": "1.0.20261007",
+  "version": "1.0.20261008",
   "publishConfig": {
     "access": "public"
   },

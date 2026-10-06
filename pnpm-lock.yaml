@@ -1649,9 +1649,6 @@ importers:
       '@mutantcat/dsh-credentials-local':
         specifier: workspace:^
         version: link:../../credentials/credentials-local
-      '@mutantcat/dsh-deepseek-llm-api-extensions':
-        specifier: workspace:^
-        version: link:../../llm/deepseek-llm-api-extensions
       '@mutantcat/dsh-fs-local':
         specifier: workspace:^
         version: link:../../fs/fs-local
@@ -1676,9 +1673,6 @@ importers:
       '@mutantcat/dsh-llm':
         specifier: workspace:^
         version: link:../../llm/llm
-      '@mutantcat/dsh-llm-deepseek':
-        specifier: workspace:^
-        version: link:../../llm/llm-deepseek
       '@mutantcat/dsh-llm-pi-ai':
         specifier: workspace:^
         version: link:../../llm/llm-pi-ai
@@ -1697,9 +1691,6 @@ importers:
       '@mutantcat/dsh-plugin-manager':
         specifier: workspace:^
         version: link:../../boot/plugin-manager
-      '@mutantcat/dsh-plugin-package-inventory-deepseek':
-        specifier: workspace:^
-        version: link:../../llm/plugin-package-inventory-deepseek
       '@mutantcat/dsh-ptc-runtime-node':
         specifier: workspace:^
         version: link:../../ptc-runtime/ptc-runtime-node
@@ -1721,9 +1712,6 @@ importers:
       '@mutantcat/dsh-session-checkpoint-policy':
         specifier: workspace:^
         version: link:../../session/session-checkpoint-policy
-      '@mutantcat/dsh-session-log-deepseek':
-        specifier: workspace:^
-        version: link:../../session/session-log-deepseek
       '@mutantcat/dsh-session-persistence-jsonl':
         specifier: workspace:^
         version: link:../../session/session-persistence-jsonl
@@ -1736,9 +1724,6 @@ importers:
       '@mutantcat/dsh-session-query-sqlite':
         specifier: workspace:^
         version: link:../../session-query/session-query-sqlite
-      '@mutantcat/dsh-session-telemetry-otel':
-        specifier: workspace:^
-        version: link:../../session/session-telemetry-otel
       '@mutantcat/dsh-session-title':
         specifier: workspace:^
         version: link:../../session/session-title
@@ -1859,9 +1844,6 @@ importers:
       '@mutantcat/dsh-web-fetch-http':
         specifier: workspace:^
         version: link:../../web/web-fetch-http
-      '@mutantcat/dsh-web-search-deepseek':
-        specifier: workspace:^
-        version: link:../../web/web-search-deepseek
       '@mutantcat/dsh-workflow-ptc':
         specifier: workspace:^
         version: link:../../workflow/workflow-ptc
@@ -8367,9 +8349,6 @@ importers:
       '@mutantcat/dsh-attachment':
         specifier: workspace:^
         version: link:../../attachment/attachment
-      '@mutantcat/dsh-authorization':
-        specifier: workspace:^
-        version: link:../../credentials/authorization
       '@mutantcat/dsh-credentials':
         specifier: workspace:^
         version: link:../../credentials/credentials

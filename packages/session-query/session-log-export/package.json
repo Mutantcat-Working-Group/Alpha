@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-log-export",
   "description": "Web Session-log export command and shared download dialog",
-  "version": "1.0.20261007",
+  "version": "1.0.20261008",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-skill-badge",
   "description": "Bundled Alpha badge skill provider",
-  "version": "1.0.20261007",
+  "version": "1.0.20261008",
   "publishConfig": {
     "access": "public"
   },

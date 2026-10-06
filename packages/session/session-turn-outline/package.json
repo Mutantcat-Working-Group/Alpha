@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-turn-outline",
   "description": "Whole-log turn outline projection (turnOutline) for the Alpha",
-  "version": "1.0.20261007",
+  "version": "1.0.20261008",
   "publishConfig": {
     "access": "public"
   },
