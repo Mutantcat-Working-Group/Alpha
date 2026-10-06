@@ -91,7 +91,7 @@ interface GuardedLine {
  * token. Every one is a staging or fixture path for the engine's own files.
  */
 const EXTERNAL_ENGINE_LINES: readonly GuardedLine[] = [
-  { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 161, reason: 'stages the engine prebuilds.json beside the runtime' },
+  { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 155, reason: 'stages the engine prebuilds.json beside the runtime' },
   { file: 'apps/desktop/scripts/prepare-dsh.ts', line: 171, reason: 'stages the engine prebuilds.json beside the runtime' },
   { file: 'python/sdk/tests/test_release_version.py', line: 124, reason: 'reads an engine asset from the packed office tree' },
   { file: 'python/sdk/tests/test_runtime_resolution.py', line: 259, reason: 'selects a foreign engine platform directory' },
@@ -114,6 +114,7 @@ const LEGACY_COMPAT_LINES: readonly GuardedLine[] = [
   { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 48, reason: 'asserts the legacy twin a hand-written alias earns' },
   { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 49, reason: 'asserts the legacy twin beside a hand-written invariant alias' },
   { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 50, reason: 'asserts the legacy twin a generated alias earns' },
+  { file: 'scripts/verify-default-product-isolation.ts', line: 135, reason: 'tolerates the external engine packages, which stay in the legacy scope on the registry' },
 ]
 
 /** Every line the substitution skips. */
@@ -134,7 +135,7 @@ interface PostCondition {
 
 const POSTCONDITIONS: readonly PostCondition[] = [
   // The root workspace identity and the vendored framework both move.
-  { file: 'package.json', text: '"name": "@mutantcat/dsh-root"', count: 1 },
+  { file: 'package.json', text: '"name": "@mutantcat/alpha-root"', count: 1 },
   { file: 'vendor/cordis/package.json', text: '"name": "@mutantcat/cordis"', count: 1 },
   { file: 'vendor/loader/package.json', text: '"name": "@mutantcat/cordis-plugin-loader"', count: 1 },
   // The rescope that maintains the vendored set now targets the new scope.

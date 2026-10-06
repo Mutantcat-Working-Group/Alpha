@@ -29,7 +29,7 @@ const DEPENDENCY_SECTIONS = [
   'peerDependencies',
 ] as const
 const RELEASE_MANIFEST_NAME = 'manifest.json'
-const RELEASE_ENTRY_PACKAGE = '@mutantcat/dsh'
+const RELEASE_ENTRY_PACKAGE = '@mutantcat/alpha'
 const LATEST_DIST_TAG = 'latest'
 const POSIX_WEB_PROBE = String.raw`
 import errno, os, pty, select, signal, sys, time
@@ -57,7 +57,7 @@ while time.monotonic() < deadline:
             output.extend(chunk)
 
     snapshot = bytes(output)
-    if not termination_sent and b"dsh web: http://127.0.0.1:" in snapshot:
+    if not termination_sent and b"alpha web: http://127.0.0.1:" in snapshot:
         ready_seen = True
         os.kill(pid, signal.SIGTERM)
         termination_sent = True
@@ -72,11 +72,11 @@ if status is None:
     _, status = os.waitpid(pid, 0)
 sys.stdout.buffer.write(output)
 if not ready_seen:
-    sys.stderr.write("installed dsh web did not reach its ready URL\n")
+    sys.stderr.write("installed alpha web did not reach its ready URL\n")
     sys.exit(124)
 actual_exit = os.waitstatus_to_exitcode(status)
 if actual_exit != 0:
-    sys.stderr.write(f"installed dsh web exited {actual_exit}, expected 0\n")
+    sys.stderr.write(f"installed alpha web exited {actual_exit}, expected 0\n")
     sys.exit(125)
 `
 
@@ -258,7 +258,7 @@ class WorkspacePackageSet {
       if (!name.startsWith('@mutantcat/')) {
         throw new Error(`${manifestPath} must name an @mutantcat package`)
       }
-      if (name === '@mutantcat/dsh-root') {
+      if (name === '@mutantcat/alpha-root') {
         throw new Error(`${manifestPath} unexpectedly selected the workspace root`)
       }
       if (names.has(name)) throw new Error(`duplicate package name: ${name}`)
@@ -417,7 +417,7 @@ class ReleaseBundle {
   }
 }
 
-/** Installs one complete bundle outside the workspace and probes the shipped dsh entry. */
+/** Installs one complete bundle outside the workspace and probes the shipped alpha entry. */
 class InstalledBundleSmoke {
   constructor(
     private readonly bundle: ReleaseBundle,
@@ -449,8 +449,8 @@ class InstalledBundleSmoke {
         `--registry=${this.bundle.manifest.registry}`,
       ], consumerRoot, npmClientEnvironment())
 
-      const bin = resolve(consumerRoot, 'node_modules/@mutantcat/dsh/lib/bin.js')
-      assertPathWithin(consumerRoot, bin, 'installed dsh bin')
+      const bin = resolve(consumerRoot, 'node_modules/@mutantcat/alpha/lib/bin.js')
+      assertPathWithin(consumerRoot, bin, 'installed alpha bin')
       const environment = installedArtifactEnvironment(consumerRoot)
       const version = this.runner.capture(
         process.execPath,
@@ -460,12 +460,12 @@ class InstalledBundleSmoke {
       )
       if (version !== this.bundle.manifest.version) {
         throw new Error(
-          `installed dsh --version returned ${JSON.stringify(version)}; `
+          `installed alpha --version returned ${JSON.stringify(version)}; `
           + `expected ${this.bundle.manifest.version}`,
         )
       }
       this.probeWeb(bin, consumerRoot, environment)
-      console.log('publish-npm-baseline: installed dsh entry and Web startup probes passed')
+      console.log('publish-npm-baseline: installed alpha entry and Web startup probes passed')
     } finally {
       rmSync(consumerRoot, { recursive: true, force: true })
     }
@@ -473,7 +473,7 @@ class InstalledBundleSmoke {
 
   private probeWeb(bin: string, consumerRoot: string, environment: NodeJS.ProcessEnv): void {
     if (process.platform === 'win32') {
-      throw new Error('installed dsh Web probe requires a POSIX host with python3')
+      throw new Error('installed alpha Web probe requires a POSIX host with python3')
     }
     const result = this.runner.result(
       'python3',
@@ -800,7 +800,7 @@ function parsePackedPackage(value: unknown, index: number): PackedPackage {
   if (origin !== 'harness' && origin !== 'vendor') {
     throw new Error(`invalid package origin in release manifest: ${JSON.stringify(origin)}`)
   }
-  if (origin === 'harness' && (!name.startsWith('@mutantcat/') || name === '@mutantcat/dsh-root')) {
+  if (origin === 'harness' && (!name.startsWith('@mutantcat/') || name === '@mutantcat/alpha-root')) {
     throw new Error(`invalid package name in release manifest: ${name}`)
   }
   return {
