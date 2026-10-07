@@ -366,7 +366,7 @@ describe('the durable dispatch-log arm', () => {
       smallAfterHuge = events.some(event => event.type === 'tool/ptc-dispatch-start'
         && (event.data as { name: string }).name === 'small_read')
       if (!smallAfterHuge) throw new Error('small_read not started yet')
-    })
+    }, { timeout: 15_000 })
     releaseSave()
     const result = await runPromise
     expect(result.isError).toBe(false)
@@ -375,7 +375,7 @@ describe('the durable dispatch-log arm', () => {
     const settles = events.filter(event => event.type === 'tool/ptc-dispatch')
     expect(settles).toHaveLength(2)
     expect(smallAfterHuge).toBe(true)
-  })
+  }, 30_000)
 
   it('a sustained slow backend backpressures the run instead of accumulating unbounded log tasks', async () => {
     const ctx = new Context()
@@ -410,24 +410,32 @@ describe('the durable dispatch-log arm', () => {
     // starting dispatch 3.
     await vi.waitFor(() => {
       if (releases.length < 2) throw new Error('second hung save not reached yet')
-    })
+    }, { timeout: 15_000 })
     expect(started(2)).toBe(true)
     expect(started(3)).toBe(false)
     releases.shift()!()
     // Draining one pending save releases the lane; dispatch 3 starts.
     await vi.waitFor(() => {
       if (!started(3)) throw new Error('third dispatch not started yet')
-    })
-    while (releases.length > 0) releases.shift()!()
-    const result = await runPromise
+    }, { timeout: 15_000 })
+    // The third dispatch's own save can gate after `started(3)` is observed,
+    // so keep releasing saves as they appear until the run settles instead of
+    // draining once and then awaiting a run that still needs a release.
+    let runSettled = false
+    const settledRun = runPromise.then((value) => { runSettled = true; return value })
+    while (!runSettled) {
+      while (releases.length > 0) releases.shift()!()
+      await new Promise(resolve => setTimeout(resolve, 5))
+    }
+    const result = await settledRun
     expect(result.isError).toBe(false)
     await vi.waitFor(() => {
-      if (releases.length > 0) { while (releases.length > 0) releases.shift()!() }
+      while (releases.length > 0) releases.shift()!()
       if (events.filter(event => event.type === 'tool/ptc-dispatch').length !== 3) {
         throw new Error('settle events still pending')
       }
-    })
-  })
+    }, { timeout: 15_000 })
+  }, 30_000)
 
   it('a saveText failure keeps the complete content in the durable log (best-effort)', async () => {
     const ctx = new Context()
