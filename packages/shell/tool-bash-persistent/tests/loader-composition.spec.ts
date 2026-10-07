@@ -179,7 +179,7 @@ suite('persistent Bash through a real cordis.yml Loader composition', () => {
     // stdin_read readiness is what returns the replacement shell's prompt
     // instead of spinning until the tool deadline.
     const execed = text(await execute('exec-replacement', 'exec bash --noprofile --norc -i'))
-    expect(execed).toBe('dsh> ')
+    expect(execed).toBe('alpha> ')
 
     const exited = text(await execute('exit', 'exit'))
     expect(exited).toContain('next bash call starts from the workspace')

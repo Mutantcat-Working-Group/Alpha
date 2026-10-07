@@ -170,7 +170,7 @@ describe('LocalPtySession readiness and output', () => {
       await vi.advanceTimersByTimeAsync(20)
       await pending
       expect(snapshot).not.toHaveBeenCalled()
-      expect(session.read({})).toMatchObject({ text: 'x'.repeat(59) + 'alpha> ', truncated: true })
+      expect(session.read({})).toMatchObject({ text: 'x'.repeat(57) + 'alpha> ', truncated: true })
       expect(snapshot).toHaveBeenCalledTimes(1)
     } finally {
       snapshot.mockRestore()
@@ -195,7 +195,7 @@ describe('LocalPtySession readiness and output', () => {
     terminal.emitData('6n')
     await vi.advanceTimersByTimeAsync(20)
 
-    expect(terminal.writes).toContain('\x1b[1;6R')
+    expect(terminal.writes).toContain('\x1b[1;8R')
     expect(initialized).toBe(false)
     responseGate.resolve(undefined)
     await vi.advanceTimersByTimeAsync(10)
@@ -221,7 +221,7 @@ describe('LocalPtySession readiness and output', () => {
     const responseGate = Promise.withResolvers<undefined>()
     terminal.write = async (data) => {
       terminal.writes.push(data)
-      if (data === '\x1b[1;6R') await responseGate.promise
+      if (data === '\x1b[1;8R') await responseGate.promise
     }
 
     const operation = session.startSend({ text: 'caller input', submit: true })
@@ -231,7 +231,7 @@ describe('LocalPtySession readiness and output', () => {
     firstInspection.resolve({ processGroupId: 456, inputWaiting: true })
     await Promise.resolve()
 
-    expect(terminal.writes).toEqual(['\x1b[1;6R'])
+    expect(terminal.writes).toEqual(['\x1b[1;8R'])
     responseGate.resolve(undefined)
     await vi.advanceTimersByTimeAsync(0)
     expect(inspections).toBe(2)
@@ -240,7 +240,7 @@ describe('LocalPtySession readiness and output', () => {
     secondInspection.resolve({ processGroupId: 456, inputWaiting: true })
     await vi.advanceTimersByTimeAsync(0)
     expect(inspections).toBe(3)
-    expect(terminal.writes).toEqual(['\x1b[1;6R', '\x1b[1;6R', 'caller input\r'])
+    expect(terminal.writes).toEqual(['\x1b[1;8R', '\x1b[1;8R', 'caller input\r'])
 
     terminal.emitData('\x1b]133;D;0\x07alpha> ')
     await vi.advanceTimersByTimeAsync(10)
@@ -256,17 +256,17 @@ describe('LocalPtySession readiness and output', () => {
     const responseGate = Promise.withResolvers<undefined>()
     terminal.write = async (data) => {
       terminal.writes.push(data)
-      if (data === '\x1b[1;6R') await responseGate.promise
+      if (data === '\x1b[1;8R') await responseGate.promise
     }
     terminal.emitData('\x1b[6n')
     await vi.advanceTimersByTimeAsync(0)
 
     const operation = session.startSend({ text: 'caller input', submit: true })
     await Promise.resolve()
-    expect(terminal.writes).toEqual(['\x1b[1;6R'])
+    expect(terminal.writes).toEqual(['\x1b[1;8R'])
     responseGate.resolve(undefined)
     await vi.advanceTimersByTimeAsync(0)
-    expect(terminal.writes).toEqual(['\x1b[1;6R', 'caller input\r'])
+    expect(terminal.writes).toEqual(['\x1b[1;8R', 'caller input\r'])
 
     terminal.emitData('\x1b]133;D;0\x07alpha> ')
     await vi.advanceTimersByTimeAsync(10)
@@ -370,7 +370,7 @@ describe('LocalPtySession readiness and output', () => {
     expect(() => session.startSend({ text: 'successor', submit: true })).toThrow('active send')
     responseGate.resolve(undefined)
     await expect(operation.done).rejects.toThrow('pre-write inspection failed with reply pending')
-    expect(terminal.writes).toEqual(['\x1b[1;6R'])
+    expect(terminal.writes).toEqual(['\x1b[1;8R'])
   })
 
   it('retains a timed-out send until its terminal-protocol response settles', async () => {
