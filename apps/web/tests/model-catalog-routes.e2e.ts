@@ -23,7 +23,7 @@ describe('web e2e: a route the Models page writes reaches the composer catalog',
   })
 
   it('registers a settings-declared route and lists its models', async () => {
-    const before = await scaffold.ctx.llm.listProviders()
+    const before = scaffold.ctx.llm.listProviders()
     expect(before.map(provider => provider.id)).not.toContain(ROUTE)
 
     // Exactly what the Custom provider card writes: one path op setting the
@@ -42,7 +42,7 @@ describe('web e2e: a route the Models page writes reaches the composer catalog',
     ], undefined)
     expect(view.user).toMatchObject({ providers: { [ROUTE]: { baseURL: 'https://gateway.acme.example/v1' } } })
 
-    await expect.poll(async () => (await scaffold.ctx.llm.listProviders()).map(p => p.id), { timeout: 10_000 })
+    await expect.poll(async () => scaffold.ctx.llm.listProviders().map(p => p.id), { timeout: 10_000 })
       .toContain(ROUTE)
     expect((await scaffold.ctx.llm.listModels(ROUTE)).map(model => model.id)).toEqual([MODEL])
 
