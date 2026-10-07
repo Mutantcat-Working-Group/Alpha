@@ -25,13 +25,41 @@ env:
   # Cloudflare Pages project receiving the upload. Its preview deployments are
   # the surface the Access application protects; the project's production branch
   # is deliberately a name no deployment uses, so no unprotected URL exists.
-  CF_PROJECT: dsh-build-preview
+  CF_PROJECT: alpha-build-preview
   # CI runs must never report to the production telemetry endpoint baked into
   # apps/cli/cordis.yml (AppCLIEntry disables the row when set).
   DSH_TELEMETRY_DISABLED: '1'
 
 jobs:
+  # Deploying and verifying a preview needs four Cloudflare credentials. The
+  # secrets context is unavailable in a job condition, so this lane reads them
+  # in a cheap job and reports the upload as skipped rather than failing on a
+  # token nobody configured.
+  credentials:
+    runs-on: ubuntu-24.04
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Check preview credentials
+        id: check
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID CF_ACCESS_CLIENT_ID CF_ACCESS_CLIENT_SECRET; do
+            if [ -z "${!name}" ]; then
+              echo "missing $name; skipping the preview upload"
+              echo 'ready=false' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+
   preview:
+    needs: credentials
+    if: ${{ needs.credentials.outputs.ready == 'true' }}
     runs-on: ubuntu-24.04
     name: cloudflare pages preview
     steps:
@@ -75,7 +103,7 @@ jobs:
 
       - name: Build the preview page and pack the VFS image
         env:
-          DSH_CLIENT_TITLE: DSH preview pr-${{ github.event.pull_request.number }}
+          DSH_CLIENT_TITLE: Alpha preview pr-${{ github.event.pull_request.number }}
         run: pnpm --filter @mutantcat/dsh-web-frontend run build:preview
 
       # Sourcemaps carry complete sources and stay off the deployment platform.
@@ -155,7 +183,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          marker='<!-- dsh-preview-url -->'
+          marker='<!-- alpha-preview-url -->'
           existing=$(gh pr view "$PR" --json comments \
             --jq "[.comments[] | select(.body | contains(\"$marker\")) | .url] | first // empty")
           if [ -n "$existing" ]; then
