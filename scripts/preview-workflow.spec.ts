@@ -8,15 +8,21 @@ const workflow = yaml.load(readFileSync(resolve(import.meta.dirname, '../.github
   permissions: unknown
   concurrency: unknown
   env: Record<string, string>
-  jobs: Record<string, {
-    'runs-on'?: string
-    needs?: unknown
-    if?: string
-    outputs?: Record<string, string>
-    steps: Array<{ name?: string; uses?: string; run?: string; with?: Record<string, unknown>; env?: Record<string, string> }>
-  }>
+  jobs: { credentials: PreviewJob; preview: PreviewJob }
+}
+type PreviewJob = {
+  'runs-on'?: string
+  needs?: unknown
+  if?: string
+  outputs?: Record<string, string>
+  steps: Array<{ name?: string; uses?: string; run?: string; with?: Record<string, unknown>; env?: Record<string, string> }>
 }
 const preview = workflow.jobs.preview
+
+function credentialNamesReadByScript(run: string | undefined) {
+  const guard = /for name in ([^;]+);/.exec(run ?? '')?.[1]
+  return guard?.match(/[A-Z_]+/g) ?? []
+}
 
 describe('PR preview workflow', () => {
   it('keeps every PR author on the selected GitHub-hosted runner', () => {
@@ -37,9 +43,8 @@ describe('PR preview workflow', () => {
       CF_ACCESS_CLIENT_ID: '${{ secrets.CF_ACCESS_CLIENT_ID }}',
       CF_ACCESS_CLIENT_SECRET: '${{ secrets.CF_ACCESS_CLIENT_SECRET }}',
     })
-    // A declared credential that the script never reads would pass silently.
-    const guarded = /for name in ([^;]+);/.exec(check.run!)![1].trim().split(/\s+/)
-    expect(guarded).toEqual(Object.keys(check.env ?? {}))
+    // A declared credential the script never reads would pass silently.
+    expect(credentialNamesReadByScript(check.run)).toEqual(Object.keys(check.env ?? {}))
     expect(check.run).toContain('${!name}')
     expect(check.run).toContain("echo 'ready=false'")
     expect(credentials.outputs).toEqual({ ready: '${{ steps.check.outputs.ready }}' })
