@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session",
   "description": "Event-sourced session store for the Alpha",
-  "version": "1.0.20261009",
+  "version": "1.0.20261010",
   "publishConfig": {
     "access": "public"
   },

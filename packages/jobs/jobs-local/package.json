@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-jobs-local",
   "description": "Process-local implementation of the Alpha background job registry seam",
-  "version": "1.0.20261009",
+  "version": "1.0.20261010",
   "publishConfig": {
     "access": "public"
   },

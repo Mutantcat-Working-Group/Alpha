@@ -46,7 +46,7 @@ export const DEEPSEEK_DEFAULT_MAX_TOKENS = 4096
 export const DEEPSEEK_DEFAULT_MAX_USES = 5
 
 /** Attribution header sent on every request. Bump with the package version. */
-const USER_AGENT = 'alpha/1.0.20261009'
+const USER_AGENT = 'alpha/1.0.20261010'
 
 /**
  * Exact secret-free DeepSeek Messages request recorded immediately before one

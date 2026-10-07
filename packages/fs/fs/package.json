@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-fs",
   "description": "Abstract filesystem capability seam (ctx.fs) for the Alpha — vocabulary types, the FileSystem service (text IO + optional version-guarded atomic mutations), and the fs/* policy event vocabulary",
-  "version": "1.0.20261009",
+  "version": "1.0.20261010",
   "publishConfig": {
     "access": "public"
   },
