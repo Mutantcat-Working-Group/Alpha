@@ -15,6 +15,7 @@ interface HarnessOptions {
   failDetach?: boolean
   failDispose?: boolean
   abortAt?: 'workspace' | 'agent'
+  noDefault?: boolean
 }
 
 interface SessionHarness {
@@ -89,6 +90,7 @@ function harness(options: HarnessOptions = {}): SessionHarness {
     agentDefaultModel: {
       currentSelection() {
         calls.push('default-model')
+        if (options.noDefault) return null
         return { provider: 'default-provider', model: 'default-model', reasoningEffort: 'high' }
       },
     },
@@ -229,6 +231,12 @@ describe('webhook Session creation', () => {
     await expect(modelRequestListener(withoutCap)(undefined, async () => ({
       provider: 'p', model: 'm', reasoningEffort: ReasoningEffortId('inherited'),
     }))).resolves.toEqual({ provider: 'p', model: 'm' })
+  })
+
+  it('rejects a rule result without a model when no default model is configured', async () => {
+    const test = harness({ noDefault: true })
+    await expect(create(test)).rejects.toThrow(/names no model and no default model is configured/)
+    expect(test.calls).toEqual(['default-model'])
   })
 
   it('preserves default reasoning until the first request header is durable', async () => {

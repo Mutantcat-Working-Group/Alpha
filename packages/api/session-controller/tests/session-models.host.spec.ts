@@ -647,6 +647,93 @@ describe('Web session model selection', () => {
     await ctx.fiber.dispose()
   })
 
+  it('answers with no usable model when the deployment configures no default', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    const remote = createSessionTestRemote(ctx, {
+      defaultModelSelection: () => null,
+      cwd: '/tmp',
+    })
+
+    const refused = await remote.prompt(promptRequest({
+      sessionId,
+      mode: 'queue' as const,
+      content: [{ type: 'text' as const, text: 'hi' }],
+    }))
+    expect(refused).toMatchObject({
+      ok: false,
+      error: {
+        code: 'session/model-unavailable',
+        message: 'no model is configured; choose a provider and model in Settings before sending a message',
+        details: { provider: '', model: '' },
+      },
+    })
+    const controller = new ApiSessionAgentController(ctx)
+    expect(controller.selectionFor(agent).current).toBeUndefined()
+    expect(controller.agentOptions()).toEqual({})
+    expect((await buildModelCatalog(ctx)).default).toBeNull()
+    await ctx.fiber.dispose()
+  })
+
+  it('rejects an image prompt whose model disappears between admission scheduling and admission', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    let defaultSelection: { provider: string; model: string } | null = {
+      provider: 'deepseek-official',
+      model: 'deepseek-chat',
+    }
+    let enterAdmission: () => void = () => {}
+    const admissionEntered = new Promise<void>((resolve) => { enterAdmission = resolve })
+    let releaseAdmission: () => void = () => {}
+    const admissionReleased = new Promise<void>((resolve) => { releaseAdmission = resolve })
+    // The first prompt parks inside admission, so this stub has to exist
+    // before the remote installs its default attachments service.
+    ctx.provide('attachments', {
+      admitPromptContent: async (content: readonly { type: string }[]) => {
+        enterAdmission()
+        await admissionReleased
+        return content
+      },
+    } as never)
+    const remote = createSessionTestRemote(ctx, {
+      defaultModelSelection: () => defaultSelection,
+      cwd: '/tmp',
+    })
+    const followup = vi.fn()
+    Object.assign(agent, { followup })
+    // Every prompt that clears the route check asks the registry once, so the
+    // call count observes where each prompt reached.
+    const listProviders = vi.spyOn(ctx.llm, 'listProviders')
+
+    const parked = remote.prompt(promptRequest({
+      sessionId,
+      mode: 'queue' as const,
+      content: [{ type: 'image' as const, mediaType: 'image/png' as const, data: 'AQ==' }],
+    }))
+    await admissionEntered
+    const queued = remote.prompt(promptRequest({
+      sessionId,
+      mode: 'queue' as const,
+      content: [{ type: 'image' as const, mediaType: 'image/png' as const, data: 'Ag==' }],
+    }))
+    // The second prompt cleared the route check and now waits behind the
+    // first inside the admission chain.
+    await vi.waitFor(() => { expect(listProviders).toHaveBeenCalledTimes(2) })
+    defaultSelection = null
+    releaseAdmission()
+
+    expect(await parked).toEqual({ ok: true, value: { accepted: true } })
+    expect(await queued).toMatchObject({
+      ok: false,
+      error: {
+        code: 'session/model-unavailable',
+        message: 'no model is configured; choose a provider and model in Settings before sending a message',
+        details: { provider: '', model: '' },
+      },
+    })
+    expect(listProviders).toHaveBeenCalledTimes(2)
+    expect(followup).toHaveBeenCalledTimes(1)
+    await ctx.fiber.dispose()
+  })
+
   it('maps image admission failures and accepts image-capable selections', async () => {
     const { ctx, agent, sessionId } = await harness()
     registerTextOnly(ctx)

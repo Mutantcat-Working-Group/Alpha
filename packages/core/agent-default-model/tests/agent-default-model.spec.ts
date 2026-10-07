@@ -25,7 +25,10 @@ class MemorySettings extends SettingsProvider {
   }
 }
 
-async function boot(): Promise<{
+async function boot(entry: { provider?: string; model?: string } = {
+  provider: 'deepseek-official',
+  model: 'deepseek-v4-flash',
+}): Promise<{
   ctx: Context
   settingsFiber: Context['fiber']
   defaultModel: AgentDefaultModelConfig
@@ -33,10 +36,7 @@ async function boot(): Promise<{
   const ctx = new Context()
   const settingsFiber = ctx.plugin(MemorySettings)
   await settingsFiber.await()
-  await ctx.plugin(AgentDefaultModelConfig, {
-    provider: 'deepseek-official',
-    model: 'deepseek-v4-flash',
-  })
+  await ctx.plugin(AgentDefaultModelConfig, entry)
   return { ctx, settingsFiber, defaultModel: ctx.agentDefaultModel }
 }
 
@@ -94,5 +94,17 @@ describe('AgentDefaultModelConfig', () => {
     await ctx.agentDefaultModel.saveSelection({ provider: 'other', model: 'other' })
     expect(ctx.agentDefaultModel.currentSelection()).toEqual({ provider: 'p', model: 'm' })
     await ctx.fiber.dispose()
+  })
+
+  it('resolves no selection when the entry names neither a provider nor a model', async () => {
+    const bench = await boot({})
+    expect(bench.defaultModel.currentSelection()).toBeNull()
+    await bench.ctx.fiber.dispose()
+  })
+
+  it('resolves no selection when the entry names a provider without a model', async () => {
+    const bench = await boot({ provider: 'deepseek-official' })
+    expect(bench.defaultModel.currentSelection()).toBeNull()
+    await bench.ctx.fiber.dispose()
   })
 })

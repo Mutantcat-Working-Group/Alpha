@@ -1039,6 +1039,23 @@ describe('headless runner', () => {
     await ctx.fiber.dispose()
   })
 
+  it('fails loud when no default model is configured', async () => {
+    const ctx = new Context()
+    let err = ''
+    internals.stdout = { write: () => true }
+    internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
+    const exited = new Promise<number>((resolve) => {
+      ctx.provide('appExit', resolve)
+    })
+    ctx.provide('agentDefaultModel', { currentSelection: () => null } as never)
+    ctx.provide('sessions', { flush: () => Promise.resolve(true) } as never)
+    ctx.provide('agents', {} as never)
+    apply(ctx, { task: 't' })
+    expect(await exited).toBe(1)
+    expect(err).toBe('alpha: headless-runner: no model is configured; add a provider and default model to settings before running a task\n')
+    await ctx.fiber.dispose()
+  })
+
   it('fails loud without the launcher-provided exit request', () => {
     const ctx = new Context()
     expect(() => { apply(ctx, { task: 't' }) }).toThrow('must provide ctx.appExit')

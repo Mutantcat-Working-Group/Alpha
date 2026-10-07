@@ -86,7 +86,7 @@ export interface TestSessionRemote {
 
 /** Dependencies and policy supplied by a Session Controller unit harness. */
 export interface TestSessionRemoteDefaults {
-  readonly defaultModelSelection: () => AgentModelSelection
+  readonly defaultModelSelection: () => AgentModelSelection | null
   readonly cwd: string
   readonly nativeOpen?: boolean
   readonly saveDefaultModelSelection?: (selection: AgentModelSelection) => void | Promise<void>
@@ -247,7 +247,7 @@ function installControllers(
     ctx.provide('llm', {
       listProviders: () => {
         const selection = defaults.defaultModelSelection()
-        return [{ id: selection.provider, name: selection.provider }]
+        return selection === null ? [] : [{ id: selection.provider, name: selection.provider }]
       },
     } as never)
   }
