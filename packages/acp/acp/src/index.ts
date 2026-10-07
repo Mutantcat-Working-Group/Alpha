@@ -46,6 +46,7 @@ import {
   type Stream,
 } from '@agentclientprotocol/sdk'
 import type { ModelSelection } from '@mutantcat/dsh-agent'
+import type {} from '@mutantcat/dsh-agent-default-model'
 import type { SessionId } from '@mutantcat/dsh-session'
 import type {} from '@mutantcat/dsh-session-persistence'
 // Side-effect type import: declaration-merges the approval waterfall answered below.
@@ -59,7 +60,7 @@ const DEFAULT_SESSION_LIST_PAGE_SIZE = 100
 
 export const name = 'acp'
 /** Core services required by the standard automation controls. */
-export const inject = ['agents', 'llm', 'sessionPersistence', 'sessions']
+export const inject = ['agents', 'llm', 'sessionPersistence', 'sessions', 'agentDefaultModel']
 
 /** Preserve invalid-parameter detail in the SDK wire error message. */
 function invalidParams(detail: string): RequestError {
@@ -99,11 +100,26 @@ export function apply(ctx: Context, config: AcpConfig): void {
   // injected service during apply rather than reading it lazily in a callback.
   const persistence = ctx.sessionPersistence
   const logger = ctx.logger
+  const agentDefaultModel = ctx.agentDefaultModel
   const sessionListPageSize = resolveSessionListPageSize(config.sessionListPageSize)
   const sessions = new Map<SessionId, AcpSession>()
   const activating = new Set<SessionId>()
   let closed = false
   let imagePromptEnabled = false
+
+  /**
+   * Resolve the default model selection for sessions this bridge creates. A
+   * deployment that configures both provider and model pins that pair;
+   * otherwise the saved user default applies, and a deployment configuring
+   * neither starts sessions unselected so the loop fails loud.
+   * @returns the resolved default selection, or undefined when none exists.
+   */
+  const deploymentSelection = (): ModelSelection | undefined => {
+    if (config.provider !== undefined && config.model !== undefined) {
+      return { provider: config.provider, model: config.model }
+    }
+    return agentDefaultModel.currentSelection() ?? undefined
+  }
 
   /** Return the bridge-owned record for an agent, rejecting same-id impostors. */
   const ownedRecord = (agent: Parameters<AcpSession['owns']>[0]): AcpSession | undefined => {
@@ -202,13 +218,14 @@ export function apply(ctx: Context, config: AcpConfig): void {
       // deployment that configures a roster has to join one here first
       // (@mutantcat/dsh-agent-presets README, "Composing a child agent").
       let record: AcpSession
+      const selection = deploymentSelection()
       try {
         record = await AcpSession.create(ctx, {
           sessionId,
           cwd: params.cwd,
           mcpServers: params.mcpServers,
-          agentOptions: agentOptions(config),
-          fallbackSelection: initialSelection(config),
+          agentOptions: agentOptions(selection),
+          fallbackSelection: selection,
           signal,
           notify,
         })
@@ -253,13 +270,14 @@ export function apply(ctx: Context, config: AcpConfig): void {
           throw invalidParams(`session cwd does not match: ${params.cwd}`)
         }
         let record: AcpSession
+        const selection = deploymentSelection()
         try {
           record = await AcpSession.resume(ctx, {
             sessionId,
             cwd: params.cwd,
             mcpServers: params.mcpServers ?? [],
-            agentOptions: agentOptions(config),
-            fallbackSelection: initialSelection(config),
+            agentOptions: agentOptions(selection),
+            fallbackSelection: selection,
             signal,
             notify,
           })
@@ -437,22 +455,12 @@ export function apply(ctx: Context, config: AcpConfig): void {
 }
 
 /**
- * Build per-agent options from plugin config without assigning absent optional fields.
- * @param config - ACP provider/model configuration.
- * @returns the configured fields only.
+ * Project a session's default selection onto Agent-facing options.
+ * @param selection - resolved default selection, or undefined when none exists.
+ * @returns the provider/model fields present in the selection.
  */
-function agentOptions(config: AcpConfig): { provider?: string; model?: string } {
-  return {
-    ...config.provider !== undefined ? { provider: config.provider } : {},
-    ...config.model !== undefined ? { model: config.model } : {},
-  }
-}
-
-/** Initial session selection when both deployment fields are present. */
-function initialSelection(config: AcpConfig): ModelSelection | undefined {
-  return config.provider === undefined || config.model === undefined
-    ? undefined
-    : { provider: config.provider, model: config.model }
+function agentOptions(selection: ModelSelection | undefined): { provider?: string; model?: string } {
+  return selection === undefined ? {} : { provider: selection.provider, model: selection.model }
 }
 
 interface SessionListCursor {

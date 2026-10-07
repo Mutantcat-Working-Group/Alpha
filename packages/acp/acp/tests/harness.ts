@@ -19,6 +19,7 @@ import {
   type Stream,
 } from '@agentclientprotocol/sdk'
 import AttachmentStore, { AttachmentError, AttachmentId } from '@mutantcat/dsh-attachment'
+import AgentDefaultModelConfig from '@mutantcat/dsh-agent-default-model'
 import type { ImageAttachmentLimits, ImageAttachmentRef, SaveImageAttachment, StoredImageAttachment } from '@mutantcat/dsh-attachment'
 import { type GenerateOptions, LlmAdapter, ReasoningEffortId, type LlmResolvedModelInfo, type StreamChunk } from '@mutantcat/dsh-llm'
 import AgentLoop from '@mutantcat/dsh-agent-loop'
@@ -221,6 +222,8 @@ type AcpConfigOverrides = { [K in keyof AcpConfig]?: AcpConfig[K] | undefined }
 export async function makeBridgeHarness(options: {
   script?: (StreamChunk[] | 'hang')[]
   config?: AcpConfigOverrides
+  /** Composition default standing in for a saved user default; omit for none. */
+  defaultModel?: { provider?: string; model?: string }
   persona?: string
   imageCapable?: boolean
   attachments?: boolean
@@ -233,6 +236,7 @@ export async function makeBridgeHarness(options: {
   await mountAgentLoopTestDependencies(ctx, { systemPrompt: { personaPrefix: options.persona ?? '' } })
   await ctx.plugin(JsonlSessionPersistence, { root: persistenceRoot, compression: 'none' })
   await ctx.plugin(TokenMeter)
+  await ctx.plugin(AgentDefaultModelConfig, options.defaultModel ?? {})
   if (options.attachments !== false) await ctx.plugin(MemoryAttachmentStore)
   const loopFiber = await ctx.plugin(AgentLoop, { agents: [] })
   const primaryAdapter = ctx.llm.registerAdapter(['mock'], adapter)
