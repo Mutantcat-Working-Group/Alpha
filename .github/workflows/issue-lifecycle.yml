@@ -35,7 +35,8 @@ jobs:
     name: Issue lifecycle
     if: >-
       (github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested') &&
-      (github.event_name != 'pull_request' || github.event.action != 'edited' || github.event.changes.body != null)
+      (github.event_name != 'pull_request' || github.event.action != 'edited' || github.event.changes.body != null) &&
+      vars.DSH_ISSUE_APP_CLIENT_ID != ''
     runs-on: ubuntu-latest
     steps:
       - name: Check out trusted policy

@@ -891,11 +891,14 @@ test('performs no lifecycle requests for removed signals or title-only edits', a
   assert.deepEqual(fixture.requests, [])
 })
 
-test('keeps trusted preflight before token minting and required policy unconditional', () => {
+test('keeps trusted preflight before token minting and gates the policy on an enabled Issue tracker', () => {
   const source = readFileSync(new URL('../workflows/issue-policy.yml', import.meta.url), 'utf8')
   const job = source.slice(source.indexOf('  policy:'))
   assert.ok(job.includes('    name: Issue policy'))
-  assert.ok(!job.slice(0, job.indexOf('    steps:')).includes('    if:'))
+  // Only the tracker gate may skip the job; no condition may bypass the validation itself.
+  const beforeSteps = job.slice(0, job.indexOf('    steps:'))
+  assert.ok(beforeSteps.includes('    if: ${{ github.event.repository.has_issues }}'))
+  assert.ok(!beforeSteps.includes("steps.preflight.outputs"))
   assert.ok(source.includes('types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review, review_requested]'))
   const steps = job.split('      - name: ').slice(1)
   assert.equal(steps.length, 4)
@@ -968,6 +971,7 @@ test('allocates lifecycle runners only for relevant reviews and PR body edits', 
   assert.ok(beforeSteps.includes('    if: >-'))
   assert.ok(beforeSteps.includes("(github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested') &&"))
   assert.ok(beforeSteps.includes("(github.event_name != 'pull_request' || github.event.action != 'edited' || github.event.changes.body != null)"))
+  assert.ok(beforeSteps.includes("vars.DSH_ISSUE_APP_CLIENT_ID != ''"))
   assert.ok(source.includes('ref: ${{ github.event.repository.default_branch }}'))
   assert.ok(source.includes('persist-credentials: false'))
 })

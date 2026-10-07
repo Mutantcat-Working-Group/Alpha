@@ -14,6 +14,9 @@ permissions:
 jobs:
   policy:
     name: Issue policy
+    # The policy checks pull requests against same-repository Issues, so a repository
+    # with the Issue tracker disabled can never satisfy it; skip instead of failing.
+    if: ${{ github.event.repository.has_issues }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out trusted policy
