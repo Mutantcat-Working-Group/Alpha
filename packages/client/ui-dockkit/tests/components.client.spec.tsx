@@ -399,6 +399,30 @@ describe('DockSurface', () => {
     expect(observer.disconnect).toHaveBeenCalledTimes(1)
   })
 
+  // A host without ResizeObserver (an embedded webview on an old engine) still
+  // reads the room once at mount; it simply never re-reads it on resize.
+  it('reads the room once and skips resize observing when the host has no ResizeObserver', () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    const controller = seededController()
+    controller.setExpanded(true)
+    const onRoom = vi.fn()
+    const { unmount } = render(
+      <DockSurface
+        state={controller.getSnapshot().state}
+        canSplit
+        intents={controller}
+        labels={TEST_LABELS}
+        renderTab={tab => <p>{tab.contentId}</p>}
+        onRoom={onRoom}
+      />,
+    )
+    expect(onRoom).toHaveBeenCalled()
+    expect(document.querySelector('[data-dockkit-surface]')).not.toBeNull()
+    // The strip's own observer guard runs in the same pass.
+    expect(document.querySelector('[data-dockkit-strip]')).not.toBeNull()
+    unmount()
+  })
+
   // The room reading must not flip with the hidden control's own footprint:
   // hiding the width-blocked control widens the fill by the control plus the
   // strip's gap, and a reading that counted the control would fit again, show

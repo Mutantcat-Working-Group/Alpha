@@ -14,6 +14,7 @@ const usePanelInfo: GlobalStandardProps['usePanelInfo'] = selector => selector({
 
 /** Stateless schema service for scope construction in this jsdom fixture. */
 const schemaService = new SettingsSchemaService(new Context())
+import { OnboardingModal } from '../src/client/OnboardingModal.tsx'
 import { WelcomeNotice } from '../src/client/WelcomeNotice.tsx'
 import type { WelcomeNoticeProps } from '../src/client/WelcomeNotice.tsx'
 import { decodeWelcomeSection, WelcomeNoticeStore } from '../src/client/welcome-store.ts'
@@ -165,5 +166,22 @@ describe('WelcomeNotice', () => {
     })
     expect((await screen.findByRole('alert')).textContent).toBe(zh.welcomeError)
     expect(h.complete).not.toHaveBeenCalled()
+  })
+
+  it('blocks on a step whose title is not focused, and mounts before the app root exists', () => {
+    // No `#root` here: the shell portaling the modal may not be mounted yet.
+    expect(document.getElementById('root')).toBeNull()
+    render(
+      <OnboardingModal title={WELCOME_NOTICE_COPY.zh.title}>
+        <p>{WELCOME_NOTICE_COPY.zh.continueLabel}</p>
+      </OnboardingModal>,
+    )
+    const title = screen.getByRole('heading', { name: WELCOME_NOTICE_COPY.zh.title })
+    expect(title.hasAttribute('tabindex')).toBe(false)
+    expect(document.activeElement).not.toBe(title)
+    expect(screen.getByText(WELCOME_NOTICE_COPY.zh.continueLabel)).toBeTruthy()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.getByRole('dialog', { name: WELCOME_NOTICE_COPY.zh.title })).toBeTruthy()
   })
 })

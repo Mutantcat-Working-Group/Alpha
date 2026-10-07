@@ -559,7 +559,7 @@ describe('a long card description', () => {
   })
 
   it('renders where the runtime has no ResizeObserver', () => {
-    vi.unstubAllGlobals()
+    vi.stubGlobal('ResizeObserver', undefined)
     clamp(true)
 
     expect(() => {

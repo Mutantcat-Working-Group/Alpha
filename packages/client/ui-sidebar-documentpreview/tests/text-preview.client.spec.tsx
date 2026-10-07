@@ -196,6 +196,19 @@ describe('TextPreview — pages', () => {
     }
   })
 
+  it('draws the header and its lines where the environment has no ResizeObserver', async () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    const h = harness({ 1: page(1, ['one'], true) })
+    const view = render(<TextPreview {...h.props()} />)
+    await settle()
+    // jsdom lays nothing out, so the path reads unclipped without an observer watching it.
+    const path = view.container.querySelector('[data-textpreview-path]')
+    expect(path?.textContent).toBe(ABSOLUTE_PATH)
+    expect(path?.hasAttribute('data-textpreview-path-clipped')).toBe(false)
+    expect(lines(view.container)).toEqual(['one\n'])
+    view.unmount()
+  })
+
   it('reads the first page on first mount and draws its lines, offering the next', async () => {
     const h = harness({ 1: page(1, ['one', 'two', 'three'], false) })
     const view = render(<TextPreview {...h.props()} />)

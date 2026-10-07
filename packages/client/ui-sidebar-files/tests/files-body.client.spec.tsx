@@ -29,7 +29,10 @@ const ROOT_LEVEL: DirLevel = {
   truncated: false,
 }
 
-afterEach(() => { cleanup() })
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 
 /** Row labels in document order. */
 function names(root: HTMLElement): string[] {
@@ -113,6 +116,17 @@ describe('FilesBody', () => {
         else Object.defineProperty(HTMLElement.prototype, name, descriptor)
       }
     }
+  })
+
+  it('draws the root header where the environment has no ResizeObserver', async () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    const { view, script } = mountBody()
+    await act(() => script.settle({ ok: true, value: ROOT_LEVEL }))
+    // jsdom lays nothing out, so the path reads unclipped without an observer watching it.
+    const path = view.container.querySelector('[data-files-path]')
+    expect(path?.getAttribute('title')).toBe(ROOT)
+    expect(path?.hasAttribute('data-files-path-clipped')).toBe(false)
+    expect(names(view.container)).toEqual([`${ROOT}/src`, `${ROOT}/.env`, `${ROOT}/pipe`, `${ROOT}/README.md`])
   })
 
   it('a directory click lists that level once and marks it expanded; a second click collapses without asking again', async () => {

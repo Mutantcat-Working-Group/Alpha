@@ -63,6 +63,35 @@ describe('TestClient (jsdom)', () => {
     expect(globals.EventSource).toBeUndefined()
   })
 
+  it('installs the inert ResizeObserver shim when the environment lacks one', async () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    onTestFinished(() => { vi.unstubAllGlobals() })
+    const applied: string[] = []
+    const probe: ClientPluginModule = {
+      apply(ctx) {
+        // A layout plugin observes an element through the shim installed for jsdom.
+        const observer = new (globalThis as unknown as {
+          ResizeObserver: new (callback: () => void) => { observe(target: Element): void; disconnect(): void }
+        }).ResizeObserver(() => {})
+        ctx.effect(() => () => { applied.push('disposed') })
+        observer.observe(document.createElement('div'))
+        observer.disconnect()
+        applied.push('applied')
+      },
+    }
+    const roster = ClientRoster.of([
+      { name: MODULES, inject: [], immediately: true },
+      { name: PARALLEL_PROBE, inject: [], immediately: false },
+    ])
+    const client = await started({ roster, provide: { [PARALLEL_PROBE]: probe } }, { awaitConnected: false })
+    expect(globals.ResizeObserver).toBeDefined()
+    expect(applied).toEqual(['applied'])
+    await client.dispose()
+    expect(applied).toEqual(['applied', 'disposed'])
+    // The shim owned the global, so dispose removes exactly what it installed.
+    expect(globals.ResizeObserver).toBeUndefined()
+  })
+
   it('boots separate client instances against their own mocks and keeps shared shims until the last dispose', async () => {
     const mockA = RemoteMock.create().load(remoteDefaultResponses).unary('session/rename', ok({ title: 'a', seq: 1 }))
     const mockB = RemoteMock.create().load(remoteDefaultResponses).unary('session/rename', ok({ title: 'b', seq: 1 }))
