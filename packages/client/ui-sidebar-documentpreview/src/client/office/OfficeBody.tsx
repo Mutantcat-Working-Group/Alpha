@@ -3,11 +3,10 @@ import { useEffect, type ReactNode } from 'react'
 import type { PropsLocale, PropsRenderSlots, PropsStore, SlotHookFactory } from '@mutantcat/dsh-client-ui-slots'
 import type { RemoteFailure } from '@mutantcat/dsh-api-remotes/client'
 import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
-import { Button, FileTypeIcon, classifyFileType } from '@mutantcat/dsh-client-ui-primitives'
-import { pathPartsOf } from '@mutantcat/dsh-util-workspace-path'
 import type { UseSidebarRightTabInfo } from '@mutantcat/dsh-client-ui-sidebar-right/client'
 import type { DocumentBodyOwner, DocumentPreviewProps } from '../document/contract.ts'
-import { hostFileOf } from '../rpc.ts'
+import { ReadFailureView } from '../document/ReadFailureView.tsx'
+import { readRevision } from '../document/read-revision.ts'
 import { LoadingIndicator } from '../LoadingIndicator.tsx'
 import type { ReadOfficeDocument } from './cache.ts'
 import type { OfficeStore } from './store.ts'
@@ -60,14 +59,10 @@ export function OfficeBody(props: OfficeBodyProps): ReactNode {
     const controller = new AbortController()
     const signal = AbortSignal.any([controller.signal, tab.signal])
     actions.loading(tab.id, revision)
-    void read(hostFileOf(resourceAddress), signal).then((result) => {
-      if (signal.aborted) return
-      if (result.ok) actions.complete(tab.id, revision, result.value)
-      else actions.failed(tab.id, revision, { code: result.error.code, message: describeFailure(result.error) })
-    }, (error: unknown) => {
-      if (!signal.aborted) actions.failed(tab.id, revision, {
-        code: 'gateway/internal', message: describeFailure({ message: error instanceof Error ? error.message : String(error) }),
-      })
+    void readRevision(read, resourceAddress, signal, {
+      complete: (value) => { actions.complete(tab.id, revision, value) },
+      failed: (failure) => { actions.failed(tab.id, revision, failure) },
+      describeFailure,
     })
     return () => { controller.abort() }
   }, [revision, resourceAddress, tab.id, tab.signal, read, actions, describeFailure, settled])
@@ -75,12 +70,8 @@ export function OfficeBody(props: OfficeBodyProps): ReactNode {
   useEffect(() => { if (file !== undefined) request?.loaded(file.version) }, [file, request?.loaded])
   if (request === undefined) return null
   if (view?.failure !== undefined) {
-    const { name } = pathPartsOf(resourceAddress)
-    return <div className={common.empty} data-textpreview-failed={view.failure.code}>
-      <FileTypeIcon kind={classifyFileType(name)} size={36} />
-      <p className={common.emptyLine}>{view.failure.message}</p>
-      <Button size="sm" onClick={request.reload}>{t('retry')}</Button>
-    </div>
+    return <ReadFailureView marker="textpreview" resourceAddress={resourceAddress}
+      failure={view.failure} reload={request.reload} retry={t('retry')} />
   }
   if (file === undefined) return <LoadingIndicator className={common.statusLine} label={t('loading')} />
   return <div className={css.body}>

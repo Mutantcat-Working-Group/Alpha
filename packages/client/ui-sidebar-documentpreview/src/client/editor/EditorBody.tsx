@@ -23,9 +23,9 @@ import type { PropsLocale, PropsStore } from '@mutantcat/dsh-client-ui-slots'
 import type { RemoteFailure } from '@mutantcat/dsh-api-remotes/client'
 import type { TranslateNS } from '@mutantcat/dsh-client-locale/client'
 import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
-import { Button, FileTypeIcon, classifyFileType } from '@mutantcat/dsh-client-ui-primitives'
-import { pathPartsOf } from '@mutantcat/dsh-util-workspace-path'
 import type { DocumentPreviewProps } from '../document/contract.ts'
+import { ReadFailureView } from '../document/ReadFailureView.tsx'
+import { readRevision } from '../document/read-revision.ts'
 import { hostFileOf } from '../rpc.ts'
 import type { WriteWorkspaceFile } from '../rpc.ts'
 import { LoadingIndicator } from '../LoadingIndicator.tsx'
@@ -147,16 +147,10 @@ export function EditorBody(props: EditorBodyProps): ReactNode {
     const controller = new AbortController()
     const signal = AbortSignal.any([controller.signal, tab.signal])
     actions.loading(tab.id, revision)
-    void read(hostFileOf(resourceAddress), signal).then((result) => {
-      if (signal.aborted) return
-      if (result.ok) actions.complete(tab.id, revision, result.value.text, result.value.version)
-      else actions.failed(tab.id, revision, { code: result.error.code, message: describeFailure(result.error) })
-    }, (error: unknown) => {
-      if (signal.aborted) return
-      actions.failed(tab.id, revision, {
-        code: 'gateway/internal',
-        message: describeFailure({ message: error instanceof Error ? error.message : String(error) }),
-      })
+    void readRevision(read, resourceAddress, signal, {
+      complete: (value) => { actions.complete(tab.id, revision, value.text, value.version) },
+      failed: (failure) => { actions.failed(tab.id, revision, failure) },
+      describeFailure,
     })
     return () => { controller.abort() }
   }, [revision, resourceAddress, tab.id, tab.signal, read, actions, describeFailure, settled, editable])
@@ -246,12 +240,8 @@ export function EditorBody(props: EditorBodyProps): ReactNode {
   }, [props.wrap])
   if (request === undefined) return null
   if (view?.failure !== undefined) {
-    const { name } = pathPartsOf(resourceAddress)
-    return <div className={common.empty} data-editor-failed={view.failure.code}>
-      <FileTypeIcon kind={classifyFileType(name)} size={36} />
-      <p className={common.emptyLine}>{view.failure.message}</p>
-      <Button size="sm" onClick={request.reload}>{t('retry')}</Button>
-    </div>
+    return <ReadFailureView marker="editor" resourceAddress={resourceAddress}
+      failure={view.failure} reload={request.reload} retry={t('retry')} />
   }
   if (content === undefined) return <LoadingIndicator className={common.statusLine} label={t('loading')} />
   return (
