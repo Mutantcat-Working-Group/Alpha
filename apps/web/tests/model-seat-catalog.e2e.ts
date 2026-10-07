@@ -1,12 +1,13 @@
 // Browser e2e, zh: the composer seat and the Models settings page read one
-// Host catalog. A route the page declares has to reach the seat under the
-// names the page wrote — the provider by its display name, the model by its
-// own — and picking it there has to land as the live selection, written back
-// as the Agent default later sessions start from. A seat stuck on the
-// deployment's own route while the page shows the new one is the regression
-// this pins down. Zero model calls: the declare is settings traffic and the
-// catalog read is what the seat renders from, so a stray stream would fail
-// loud because the adapter registry is empty.
+// Host catalog. With no provider configured the seat reads its neutral
+// `选择模型` label and the model pane reports the empty catalog, never a stale
+// route left over from an earlier configuration. A route the page declares
+// then has to reach the seat under the names the page wrote — the provider by
+// its display name, the model by its own — and picking it there has to land as
+// the live selection, written back as the Agent default later sessions start
+// from. Zero model calls: the declare is settings traffic and the catalog read
+// is what the seat renders from, so a stray stream would fail loud because the
+// adapter registry is empty.
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { Browser, Page } from 'playwright'
@@ -21,8 +22,6 @@ const ROUTE_NAME = 'Acme Gateway'
 const MODEL = 'acme-large'
 const MODEL_NAME = 'Acme Large'
 const BASE_URL = 'https://gateway.acme.example/v1'
-/** The first-run DeepSeek step, a modal that blocks everything behind it. */
-const SETUP_STEP = '添加一个 API Key 开始使用'
 
 describe('web e2e: a provider the Models page declares reaches the composer seat', () => {
   let scaffold: WebScaffold
@@ -40,8 +39,9 @@ describe('web e2e: a provider the Models page declares reaches the composer seat
   }
 
   beforeAll(async () => {
-    // The official DeepSeek adapter stays mounted with no credential, so the
-    // route under test is added beside it rather than replacing it.
+    // No provider is mounted: the scaffold withholds the direct adapter and
+    // leaves the shipped Agent default unset, so the catalog starts empty and
+    // the route under test is the only one the scenario declares.
     scaffold = await launchWebScaffold({ deepSeekMissingCredential: true })
     browser = await chromium.launch()
     // The scenario asserts the shipped Chinese copy, so the browser asks for it.
@@ -49,10 +49,6 @@ describe('web e2e: a provider the Models page declares reaches the composer seat
     tripwire = watchConsole(page)
     await page.goto(scaffold.authenticatedUrl, { waitUntil: 'load' })
     await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
-    const setupStep = page.getByRole('dialog', { name: SETUP_STEP })
-    await setupStep.waitFor({ timeout: 15_000 })
-    await setupStep.getByRole('button', { name: '稍后配置' }).click()
-    await setupStep.waitFor({ state: 'detached', timeout: 15_000 })
     // The seat only exists once a workspace is connected.
     await connectFreshWorkspaceZh(page, scaffold.workspaceCwd)
   }, 120_000)
@@ -62,24 +58,24 @@ describe('web e2e: a provider the Models page declares reaches the composer seat
     await scaffold?.close()
   })
 
-  it('offers the mounted route on the seat under its model names', async () => {
-    onTestFailed(() => saveFailureShot(page, 'web-e2e-model-seat-mounted'))
+  it('reads neutral while nothing is configured, then names the declared route', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-model-seat-empty'))
     const trigger = seat()
     await trigger.waitFor({ timeout: 15_000 })
-    // The seat names the model, not the route/model pair: the deployment
-    // default resolves through the mounted catalog, whose flash entry is
-    // spelled `DeepSeek-V41-Flash`.
+    // No durable selection resolves, so the seat names no provider at all —
+    // the raw id from an earlier configuration must not survive here.
     await expect.poll(async () => (await trigger.textContent()) ?? '', { timeout: 15_000 })
-      .toContain('DeepSeek-V41-Flash')
+      .toContain('选择模型')
 
     await openModelPane()
-    const options = page.getByRole('menuitemradio')
-    await expect.poll(async () => options.count(), { timeout: 15_000 }).toBeGreaterThan(1)
-    expect(await options.filter({ hasText: 'DeepSeek-V41-Flash' }).count()).toBe(1)
-    expect(await options.filter({ hasText: 'DeepSeek-V4-Pro' }).count()).toBe(1)
-    // The group heading is the provider's own name; a raw route key here would
-    // read as a second, undocumented selector.
-    expect(await page.getByRole('group', { name: 'DeepSeek' }).count()).toBe(1)
+    // An empty catalog is a stated fact, not a blank pane: the model list
+    // names the gap and points at the settings page that fills it.
+    await expect.poll(
+      async () => page.getByText('没有可用的模型。').count(),
+      { timeout: 15_000 },
+    ).toBe(1)
+    expect(await page.getByText('请到「设置 → 模型」添加提供方，然后重试。').count()).toBe(1)
+    expect(await page.getByRole('menuitemradio').count()).toBe(0)
 
     // Escape leaves a drilled pane before it closes the card, so the first
     // keystroke only returns to the root pane.

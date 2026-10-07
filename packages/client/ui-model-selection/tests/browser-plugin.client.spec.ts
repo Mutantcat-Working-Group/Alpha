@@ -67,7 +67,7 @@ const GROUPS = [{
 /** Boot the plugin over fake faces + a stateful fake host (current moves on selectModel). */
 async function bench(locale: 'zh' | 'en' = 'zh') {
   const ctx = new Context()
-  let defaultSelection: ModelSelection = { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
+  let defaultSelection: ModelSelection | null = { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
   let selected = defaultSelection
   const calls = { models: 0, select: 0 }
   const projections = new Map<SessionId, SnapshotStore<ModelSelectionProjection | undefined>>()
@@ -183,7 +183,7 @@ async function bench(locale: 'zh' | 'en' = 'zh') {
     rejectSelection: () => {
       selectionFailure = new RemoteError('session/writer-held', 'writer held', { sessionId: sid('owned') })
     },
-    setHostCurrent: (selection: ModelSelection) => { defaultSelection = selection },
+    setHostCurrent: (selection: ModelSelection | null) => { defaultSelection = selection },
     setProjected: (id: SessionId, value: ModelSelectionProjection) => { projections.get(id)?.set(value) },
     address: (id: SessionId) => { addressed.add(id) },
     setRoutable: (next: boolean) => { routable = next },
@@ -391,11 +391,54 @@ describe('ui-model-selection dual entry', () => {
     // a selection, the composer stays usable. Blocking here would break a
     // supported configuration (a narrowed `models` list over a live route).
     b.setHostCurrent({ provider: 'deepseek-official', model: 'unlisted' })
+    b.remote.emit('settings/document-updated', ['llm-deepseek', 1])
+    await vi.waitFor(() => {
+      const snapshot = face.directory.getSnapshot()
+      expect(snapshot.groups.flatMap(group => group.models.map(model => model.id))).not.toContain('unlisted')
+      expect(snapshot.current).toEqual({ provider: 'deepseek-official', model: 'unlisted' })
+      expect(snapshot.routable).toBe(true)
+    })
+    expect(b.blockOf('s1')).toBeUndefined()
+  })
+
+  it('drops a stale projected selection whose provider no adapter serves', async () => {
+    const b = await bench()
+    b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
     face.load()
-    await Promise.resolve()
-    await Promise.resolve()
-    const snapshot = face.directory.getSnapshot()
-    expect(snapshot.groups.flatMap(group => group.models.map(model => model.id))).not.toContain('unlisted')
+    await vi.waitFor(() => { expect(face.directory.getSnapshot().current).not.toBeNull() })
+
+    // A route left over from an earlier configuration must not render as the
+    // current model, yet the session stays unroutable so the composer blocks.
+    b.setProjected(sid('s1'), {
+      lastUsed: null,
+      next: { provider: 'retired-provider', model: 'retired-model' },
+    })
+    expect(face.directory.getSnapshot()).toMatchObject({ current: null, routable: false })
+    expect(b.blockOf('s1')?.reason).toBe(zh['blocked.composer'])
+  })
+
+  it('drops a stale deployment default whose provider no adapter serves', async () => {
+    const b = await bench()
+    b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
+    b.setHostCurrent({ provider: 'retired-provider', model: 'retired-model' })
+    b.remote.emit('settings/document-updated', ['llm-deepseek', 1])
+    await vi.waitFor(() => {
+      expect(face.directory.getSnapshot()).toMatchObject({ current: null, routable: false })
+    })
+    expect(b.blockOf('s1')?.reason).toBe(zh['blocked.composer'])
+  })
+
+  it('reports no durable selection at all as unknown, not blocked', async () => {
+    const b = await bench()
+    b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
+    b.setHostCurrent(null)
+    b.remote.emit('settings/document-updated', ['llm-deepseek', 1])
+    await vi.waitFor(() => {
+      expect(face.directory.getSnapshot()).toMatchObject({ current: null, routable: null })
+    })
     expect(b.blockOf('s1')).toBeUndefined()
   })
 

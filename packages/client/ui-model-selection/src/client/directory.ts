@@ -15,16 +15,22 @@ import type { ModelCatalogDirectory } from './catalog.ts'
 
 /** Directory snapshot both entries render from. */
 export interface ModelDirectoryState {
-  /** Effective selection: durable next-request projection, then Host default. */
+  /**
+   * Effective selection: the durable next-request projection, then the Host
+   * default, accepted only while an adapter still serves its provider. null
+   * when neither resolves, or when the resolved provider is no longer
+   * routable, so a stale route never renders as the current model.
+   */
   current: ModelSelection | null
   /**
-   * Whether an adapter serves the current selection's provider, as the host reports
-   * it — null before the first load, which is NOT the same as blocked. Read
-   * this rather than "current matches no group": catalog membership is
-   * advisory, so a route serving a model it stopped advertising is missing
-   * from the groups yet perfectly usable.
-   * null also when nothing is selected, because an absent selection is not an
-   * unroutable one.
+   * Whether an adapter serves the session's durable route, as the host reports
+   * it — null before the first load, which is NOT the same as blocked, and null
+   * when the session holds no durable selection at all. Read this rather than
+   * "current matches no group": catalog membership is advisory, so a route
+   * serving a model it stopped advertising is missing from the groups yet
+   * perfectly usable. A durable selection whose provider no adapter serves
+   * reports false — the composer blocks — even though `current` falls back to
+   * null so the seat shows its neutral label instead of the stale id.
    */
   routable: boolean | null
   /** Successfully loaded provider groups (last good load). */
@@ -165,13 +171,18 @@ export class ModelDirectory {
       })
       return
     }
-    const current = projected.next ?? catalog.value.default
+    // The durable selection is authoritative only while its provider is still
+    // served. A route left over from an earlier configuration must not surface
+    // as the current model — the seat would name a provider the user never
+    // configured — yet it still marks the session unroutable so the composer
+    // keeps its select-a-model block instead of accepting a doomed send.
+    const routableProviders = new Set(catalog.value.routableProviders)
+    const durable = projected.next ?? catalog.value.default
+    const current = durable !== null && routableProviders.has(durable.provider) ? durable : null
     this.resolved = true
     this.store.set({
       current,
-      routable: current === null
-        ? null
-        : catalog.value.routableProviders.includes(current.provider),
+      routable: durable === null ? null : current !== null,
       groups: catalog.value.groups,
       failures: catalog.value.failures,
       status: this.store.getSnapshot().status === 'selecting'
