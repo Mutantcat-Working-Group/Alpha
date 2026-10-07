@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-workflow",
   "description": "Workflow capability seam: ctx.workflowEngine service, run vocabulary, and workflow/* events",
-  "version": "1.0.20261008",
+  "version": "1.0.20261009",
   "publishConfig": {
     "access": "public"
   },

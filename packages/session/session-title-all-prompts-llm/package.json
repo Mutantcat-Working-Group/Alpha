@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-title-all-prompts-llm",
   "description": "All-user-messages LLM provider plugin for Alpha session titles",
-  "version": "1.0.20261008",
+  "version": "1.0.20261009",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-auto-review",
   "description": "Per-tool LLM authorization review for the Alpha Auto permission preset",
-  "version": "1.0.20261008",
+  "version": "1.0.20261009",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",

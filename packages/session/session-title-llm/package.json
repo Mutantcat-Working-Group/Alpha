@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-title-llm",
   "description": "Shared LLM generation policy for Alpha session-title providers",
-  "version": "1.0.20261008",
+  "version": "1.0.20261009",
   "publishConfig": {
     "access": "public"
   },
