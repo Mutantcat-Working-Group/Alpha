@@ -4,7 +4,6 @@ import { spawn } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createRequire } from 'node:module'
 import { createServer } from 'node:net'
 import { expect, it } from 'vitest'
 import { claimHostLock } from '../src/host-lock.ts'
@@ -118,8 +117,10 @@ it('waits for a former host to release the engine port', async () => {
     const started = Date.now()
     await claimHostLock(dir, former.port)
     const waited = Date.now() - started
-    // The port-owner wait ends with the graceful close; a process-only wait would burn the full grace.
-    expect(waited).toBeGreaterThanOrEqual(800)
+    // POSIX SIGTERM runs the former host's graceful close; Windows SIGTERM stops it
+    // without running the close, so only POSIX waits out the close.
+    if (process.platform !== 'win32') expect(waited).toBeGreaterThanOrEqual(800)
+    // Neither platform burns the full grace: the wait ends with the close, or with the immediate stop.
     expect(waited).toBeLessThan(4000)
     expect(readPidFile(dir)).toBe(String(process.pid))
     await former.exited
@@ -132,8 +133,8 @@ it('forces a former host that survives SIGTERM', async () => {
     writeFileSync(join(dir, PID_FILENAME), `${String(former.pid)}\n`)
     const started = Date.now()
     await claimHostLock(dir, former.port)
-    // The graceful grace passes first, then the forced stop and its short re-poll.
-    expect(Date.now() - started).toBeGreaterThanOrEqual(5000)
+    // POSIX passes the graceful grace before the forced stop; Windows SIGTERM already terminates without running the refusing handler.
+    if (process.platform !== 'win32') expect(Date.now() - started).toBeGreaterThanOrEqual(5000)
     expect(readPidFile(dir)).toBe(String(process.pid))
     await former.exited
   })
@@ -141,9 +142,8 @@ it('forces a former host that survives SIGTERM', async () => {
 
 it('clears the pidfile when the claiming process exits', async () => {
   await withProjectDir(async (dir) => {
-    const require = createRequire(import.meta.url)
     const child = spawn(process.execPath, [
-      '--import', require.resolve('tsx/esm'),
+      '--import', import.meta.resolve('tsx/esm'),
       '-e', `import { claimHostLock } from ${JSON.stringify(hostLockModule)}; await claimHostLock(${JSON.stringify(dir)}, 39761)`,
     ], { stdio: 'ignore' })
     const code = await new Promise<number | null>((resolve) => { child.once('exit', resolve) })

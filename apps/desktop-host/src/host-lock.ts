@@ -76,6 +76,8 @@ async function settle(): Promise<void> {
  * profile handoff, so the graceful wait ends long before the forced kill. The port is
  * the ownership signal: a former host whose parent died before reaping it stays a
  * zombie entry, and a zombie holds no listener.
+ * Windows SIGTERM terminates the former host without running its handler, so the wait
+ * there ends at the first poll.
  * @param pid - Process id recorded when that host claimed the project directory.
  * @param port - Fixed engine port the former host served.
  * @returns True once the process or the port is gone; false when both outlived the force.
