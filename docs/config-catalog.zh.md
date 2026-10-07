@@ -15,7 +15,7 @@
 
 ## `@mutantcat/dsh-acp`
 
-需要：`agents` · `llm` · `sessionPersistence` · `sessions`
+需要：`agents` · `llm` · `sessionPersistence` · `sessions` · `agentDefaultModel`
 
 ```ts config-catalog
 /** Plugin config: the provider/model selection used for each ACP-created agent. */
@@ -33,7 +33,7 @@ export interface AcpConfig {
 
 Depends on: `Stream` (`@agentclientprotocol/sdk`)
 
-来源：[`packages/acp/acp/src/index.ts:75`](../packages/acp/acp/src/index.ts)
+来源：[`packages/acp/acp/src/index.ts:76`](../packages/acp/acp/src/index.ts)
 
 <a id="mutantcatdsh-agent-default-model"></a>
 
