@@ -13,7 +13,7 @@ A `Requires:` line lists the service keys the plugin `inject`s: its `cordis.yml`
 
 ## `@mutantcat/dsh-acp`
 
-Requires: `agents` · `llm` · `sessionPersistence` · `sessions`
+Requires: `agents` · `llm` · `sessionPersistence` · `sessions` · `agentDefaultModel`
 
 ```ts config-catalog
 /** Plugin config: the provider/model selection used for each ACP-created agent. */
@@ -31,7 +31,7 @@ export interface AcpConfig {
 
 Depends on: `Stream` (`@agentclientprotocol/sdk`)
 
-Source: [`packages/acp/acp/src/index.ts:75`](../packages/acp/acp/src/index.ts)
+Source: [`packages/acp/acp/src/index.ts:76`](../packages/acp/acp/src/index.ts)
 
 <a id="mutantcatdsh-agent-default-model"></a>
 
