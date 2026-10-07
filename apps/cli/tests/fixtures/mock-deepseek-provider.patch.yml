@@ -1,0 +1,16 @@
+# Keyless provider overlay for the built-bin e2e cases. Base no longer mounts
+# a DeepSeek provider, so a case that needs one inserts it here and points it
+# at the mock LLM server through DEEPSEEK_BASE_URL.
+- insert:
+    - id: llm-deepseek
+      name: '@mutantcat/dsh-llm-deepseek'
+      config:
+        protocol: chat-completions
+        apiKeyEnv: DEEPSEEK_API_KEY
+        baseURL: !!js process.env.DEEPSEEK_BASE_URL
+        thinking: disabled
+        models:
+          - id: deepseek-v4-flash
+            contextWindow: 65536
+            maxTokens: 4096
+            inputModalities: [text]
