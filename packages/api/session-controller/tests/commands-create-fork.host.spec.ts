@@ -24,6 +24,7 @@ function controllerAgents(overrides: object = {}): ApiSessionAgentController {
     composeAgent: () => Promise.resolve({ setup: () => {} }),
     presetForSession: () => undefined,
     presetForObservation: () => undefined,
+    agentOptions: () => ({ provider: 'fixture', model: 'fixture-model' }),
     ...overrides,
   } as unknown as ApiSessionAgentController
 }

@@ -31,7 +31,7 @@ async function waitForFile(file: string): Promise<void> {
 
 /** Run one assertion against a private Harness home and remove it afterwards. */
 function withHome(assertion: (home: string) => void): void {
-  const home = mkdtempSync(join(tmpdir(), 'dsh-profile-from-default-'))
+  const home = mkdtempSync(join(tmpdir(), 'alpha-profile-from-default-'))
   try {
     assertion(home)
   } finally {
@@ -48,7 +48,7 @@ describe('initializeProfileFromDefault', () => {
         const dir = resolveProfileDir('custom', home)
         const manifest = readProfileManifest('test', dir)
         expect(manifest).toEqual({
-          name: 'dsh-profile-custom',
+          name: 'alpha-profile-custom',
           private: true,
           dependencies: {},
           dsh: { profile: { bundles: [...template.bundles] } },
@@ -134,7 +134,7 @@ describe('initializeProfileFromDefault', () => {
   })
 
   it('allows only one of two synchronized processes to create the target', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'dsh-profile-from-default-race-'))
+    const home = mkdtempSync(join(tmpdir(), 'alpha-profile-from-default-race-'))
     const gate = join(home, 'start')
     const ready = [join(home, 'ready-1'), join(home, 'ready-2')]
     const children = ready.map(marker => execa(

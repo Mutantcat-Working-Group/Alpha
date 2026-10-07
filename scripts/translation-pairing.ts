@@ -332,7 +332,7 @@ export function parseTranslationMarkdown(content: string): Nodes {
   return fromMarkdown(content, { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] })
 }
 
-const PUBLIC_REPOSITORY_BLOB_ROOT = 'https://github.com/Mutantcat-Working-Group/Alpha/blob/master/'
+const PUBLIC_REPOSITORY_BLOB_ROOT = 'https://github.com/Mutantcat-Working-Group/Alpha/blob/main/'
 
 /** Return the accepted relative and public-repository links to one counterpart. */
 export function languageSwitcherTargets(counterpart: string): string[] {

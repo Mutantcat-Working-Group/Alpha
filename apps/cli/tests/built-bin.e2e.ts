@@ -77,7 +77,7 @@ interface ProfileLifecycleFixture {
  * booting the entire product tree.
  */
 function createProfileLifecycleFixture(): ProfileLifecycleFixture {
-  const home = mkdtempSync(join(tmpdir(), 'dsh-profile-lifecycle-'))
+  const home = mkdtempSync(join(tmpdir(), 'alpha-profile-lifecycle-'))
   const ready = join(home, 'ready')
   const settled = join(home, 'settled')
   const disposed = join(home, 'disposed')
@@ -134,7 +134,7 @@ function createProfileLifecycleFixture(): ProfileLifecycleFixture {
   const profileDir = join(home, 'profiles', 'lifecycle')
   mkdirSync(join(profileDir, 'node_modules'), { recursive: true })
   writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-    name: 'dsh-profile-lifecycle',
+    name: 'alpha-profile-lifecycle',
     private: true,
     dependencies: {},
     dsh: { profile: { bundles: ['dsh-lifecycle-bundle'] } },
@@ -208,7 +208,7 @@ function createEnvironmentProbeProfile(home: string, project: string): void {
   const profileDir = join(home, 'profiles', 'environment-probe')
   mkdirSync(profileDir, { recursive: true })
   writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-    name: 'dsh-profile-environment-probe',
+    name: 'alpha-profile-environment-probe',
     private: true,
     dependencies: {},
     dsh: { profile: { bundles: ['@mutantcat/dsh-base'] } },
@@ -238,7 +238,7 @@ interface StartupFixture {
  * fallback, exactly as an installed out-of-tree bundle does.
  */
 function createStartupFixture(): StartupFixture {
-  const home = mkdtempSync(join(tmpdir(), 'dsh-profile-startup-'))
+  const home = mkdtempSync(join(tmpdir(), 'alpha-profile-startup-'))
   const profileDir = join(home, 'profiles', 'startup')
   // Written straight into the installed location: a row module resolves its
   // own imports from where it is installed, and only inside the profile does
@@ -310,7 +310,7 @@ function createStartupFixture(): StartupFixture {
     dsh: { bundle: { patch: './cordis.patch.yml' } },
   }, undefined, 2))
   writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-    name: 'dsh-profile-startup',
+    name: 'alpha-profile-startup',
     private: true,
     dependencies: {},
     dsh: { profile: { bundles: ['dsh-startup-bundle'] } },
@@ -1142,7 +1142,7 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
       const installed = join(profileDir, 'node_modules', 'late-bundle')
       mkdirSync(installed, { recursive: true })
       writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-        name: 'dsh-profile-up',
+        name: 'alpha-profile-up',
         private: true,
         dependencies: { 'late-bundle': 'file:./late-bundle' },
         dsh: { profile: { bundles: ['@mutantcat/dsh-base'] } },

@@ -29,7 +29,7 @@ export interface ProfileContext {
 
 declare module '@mutantcat/cordis' {
   interface Context {
-    /** Present only in a profile launched by dsh. */
+    /** Present only in a profile launched by alpha. */
     profileContext: ProfileContext
   }
 }

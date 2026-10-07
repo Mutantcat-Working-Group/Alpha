@@ -39,7 +39,7 @@ describe('runProfile with an application-owned profile', () => {
       (['composition', 'boot', 'watch', 'cleanup', 'tree-cleanup', 'both-cleanups'] as const)
         .map(stage => ({ resolutionMode, stage }))),
   )('releases startup resources after a $stage failure in $resolutionMode mode', async ({ resolutionMode, stage }) => {
-    const home = mkdtempSync(join(tmpdir(), 'dsh-profile-startup-failure-'))
+    const home = mkdtempSync(join(tmpdir(), 'alpha-profile-startup-failure-'))
     homes.push(home)
     mkdirSync(join(home, 'runtime'))
     writeFileSync(join(home, 'runtime/package.json'), '{"name":"test-runtime","version":"1.0.0"}')

@@ -113,12 +113,12 @@ describe('npm resolution benchmark', () => {
 
     const result = await resolveNpmPackageLock(index, {
       '@mutantcat/alpha': '0.2.0',
-      'dsh-previous': 'npm:@mutantcat/alpha@0.1.0',
+      'alpha-previous': 'npm:@mutantcat/alpha@0.1.0',
     }, 10_000)
 
     expect(result.archiveRequests).toBe(0)
     expect(result.packageLock.packages['node_modules/@mutantcat/alpha']?.version).toBe('0.2.0')
-    expect(result.packageLock.packages['node_modules/dsh-previous']).toMatchObject({
+    expect(result.packageLock.packages['node_modules/alpha-previous']).toMatchObject({
       name: '@mutantcat/alpha',
       version: '0.1.0',
     })

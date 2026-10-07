@@ -16,7 +16,7 @@ function writeManifest(dir: string, value: unknown): void {
 }
 
 function fixture(): ProfilePluginLocation {
-  const root = mkdtempSync(join(tmpdir(), 'dsh-profile-plugins-'))
+  const root = mkdtempSync(join(tmpdir(), 'alpha-profile-plugins-'))
   roots.push(root)
   const profileDir = join(root, 'profile')
   const installAnchor = join(root, 'runtime', 'package.json')

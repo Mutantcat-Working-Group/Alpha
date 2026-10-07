@@ -70,7 +70,7 @@ async function runHeadlessPtySmoke(): Promise<string> {
     const profileDir = join(home, 'profiles', 'headless')
     await mkdir(profileDir, { recursive: true })
     await writeFile(join(profileDir, 'package.json'), JSON.stringify({
-      name: 'dsh-profile-headless',
+      name: 'alpha-profile-headless',
       private: true,
       dependencies: {},
       dsh: { profile: { bundles: ['@mutantcat/dsh-base', '@mutantcat/dsh-headless'] } },

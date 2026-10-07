@@ -140,7 +140,7 @@ function fixture(name = 'resolution-lib'): {
   profile: Profile
 } {
   // macOS exposes tmpdir through /var while Node returns resolved module paths through /private/var.
-  const root = realpathSync(mkdtempSync(join(tmpdir(), 'dsh-profile-generation-')))
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'alpha-profile-generation-')))
   roots.push(root)
   const installDir = join(root, 'install')
   const installed = join(installDir, 'node_modules', name)
@@ -1044,7 +1044,7 @@ describe('profile resolution generation', { concurrent: false }, () => {
   })
 
   it('continues after a canonicalized profiles directory from the matching parent tree', async () => {
-    const root = realpathSync(mkdtempSync(join(tmpdir(), 'dsh-profile-generation-symlink-')))
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'alpha-profile-generation-symlink-')))
     roots.push(root)
     const carrier = join(root, 'carrier')
     const profilesDir = join(root, 'home', 'profiles')

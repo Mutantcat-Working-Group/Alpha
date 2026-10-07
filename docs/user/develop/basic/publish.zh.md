@@ -84,7 +84,7 @@ alpha plugin --profile demo add ./hello-plugin
 
 ```json
 {
-  "name": "dsh-profile-demo",
+  "name": "alpha-profile-demo",
   "private": true,
   "dependencies": {
     "dsh-hello-plugin": "link:/path/to/hello-plugin"

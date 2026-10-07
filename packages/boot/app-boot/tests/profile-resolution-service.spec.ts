@@ -49,7 +49,7 @@ function generation(
 
 describe('profile package metadata service', () => {
   it('resolves module URLs and package metadata through the current generation', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'dsh-profile-package-service-'))
+    const root = mkdtempSync(join(tmpdir(), 'alpha-profile-package-service-'))
     roots.push(root)
     const profilesDir = join(root, 'profiles')
     const profileDir = join(profilesDir, 'test')

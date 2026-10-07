@@ -28,7 +28,7 @@ import { scrubbedParentEnv } from '@mutantcat/dsh-subprocess'
 
 /** Resolved spawn spec for an SDK runtime child process (no defaults — see Config). */
 export interface SdkRunSpec {
-  /** Explicit dsh CLI module; omission resolves the SDK client's same-version dependency. */
+  /** Explicit alpha CLI module; omission resolves the SDK client's same-version dependency. */
   dshBin?: string
   /** Named child profile. */
   profile: string

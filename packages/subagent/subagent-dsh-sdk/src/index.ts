@@ -34,7 +34,7 @@ export const inject = ['subagents']
 export interface Config {
   /** Provider name on `ctx.subagents` (default `dsh-sdk`). */
   providerName: string
-  /** Explicit dsh CLI module, resolved and checked at plugin load; omission uses the SDK dependency. */
+  /** Explicit alpha CLI module, resolved and checked at plugin load; omission uses the SDK dependency. */
   dshBin?: string
   /** Named child profile (default `sdk`). */
   profile: string

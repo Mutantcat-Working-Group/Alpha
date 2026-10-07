@@ -2,7 +2,7 @@ name: CI master
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
     inputs:
       suite:
@@ -14,7 +14,7 @@ on:
           - larger-runner-benchmark
           - consolidated-runner-benchmark
 
-# New master pushes and manual runs replace obsolete checks in this workflow/ref.
+# New main pushes and manual runs replace obsolete checks in this workflow/ref.
 # Standby drills share cancellation; use completed runs as readiness evidence.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -32,7 +32,7 @@ env:
 jobs:
   # These native runtime carriers are post-merge checks; release keeps all targets.
   python-runtime:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: python runtime / macOS and Linux ARM64
     uses: ./.github/workflows/build-exe-for-python-sdk.yml
     with:
@@ -43,7 +43,7 @@ jobs:
 
   # Wine runs once here, independently of the native serial standby aggregates.
   windows:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: windows node 24 / wine
     timeout-minutes: 15
@@ -135,7 +135,7 @@ jobs:
   # paths).
   serial-linux-selfhosted:
     if: >-
-      github.event_name == 'push' && github.ref == 'refs/heads/master'
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
       && vars.DSH_CI_FAILOVER_LINUX == 'selfhosted'
     name: serial / linux (self-hosted standby)
     runs-on: [self-hosted, linux, x64, vm-backup]
@@ -235,7 +235,7 @@ jobs:
   # with self-hosted paths).
   serial-windows:
     if: >-
-      github.event_name == 'push' && github.ref == 'refs/heads/master'
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
       && vars.DSH_CI_FAILOVER_WINDOWS == 'selfhosted'
     name: serial / windows (self-hosted standby)
     runs-on: [self-hosted, dsh-win-ci, windows]

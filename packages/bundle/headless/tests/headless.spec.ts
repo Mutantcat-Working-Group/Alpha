@@ -493,7 +493,7 @@ describe('headless runner', () => {
     expect(result).toMatchObject({
       code: 1,
       out: '',
-      err: `dsh: headless summary cannot read seq 0 below captured length ${String(capturedLength)}\n`,
+      err: `alpha: headless summary cannot read seq 0 below captured length ${String(capturedLength)}\n`,
     })
     await test.ctx.fiber.dispose()
   })

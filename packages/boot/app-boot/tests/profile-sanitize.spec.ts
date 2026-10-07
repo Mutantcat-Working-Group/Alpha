@@ -19,7 +19,7 @@ afterEach(() => {
 })
 
 function fixture() {
-  const root = mkdtempSync(join(tmpdir(), 'dsh-profile-sanitize-'))
+  const root = mkdtempSync(join(tmpdir(), 'alpha-profile-sanitize-'))
   roots.push(root)
   const dir = join(root, 'profiles', 'web')
   const bundles = PROFILE_TEMPLATES.web!.bundles

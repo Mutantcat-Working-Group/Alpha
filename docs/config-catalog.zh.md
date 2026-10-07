@@ -43,13 +43,13 @@ Depends on: `Stream` (`@agentclientprotocol/sdk`)
 /** Composition entry for the default model selection. */
 export interface Config {
   /** Registered provider route. */
-  provider: string
+  provider?: string
   /** Provider-owned model id. */
-  model: string
+  model?: string
 }
 ```
 
-来源：[`packages/core/agent-default-model/src/index.ts:41`](../packages/core/agent-default-model/src/index.ts)
+来源：[`packages/core/agent-default-model/src/index.ts:45`](../packages/core/agent-default-model/src/index.ts)
 
 <a id="mutantcatdsh-agent-instructions"></a>
 

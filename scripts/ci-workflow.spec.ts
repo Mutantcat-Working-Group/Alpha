@@ -265,7 +265,7 @@ describe('CI workflow', () => {
 
     // serial-windows: master-only standby, self-hosted, non-blocking, lives in ci-master.
     expect(serialWindows.if).toBe(
-      "github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.DSH_CI_FAILOVER_WINDOWS == 'selfhosted'",
+      "github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DSH_CI_FAILOVER_WINDOWS == 'selfhosted'",
     )
     expect(serialWindows['runs-on']).toEqual(['self-hosted', 'dsh-win-ci', 'windows'])
     expect(serialWindows.name).toBe('serial / windows (self-hosted standby)')
@@ -481,8 +481,8 @@ describe('CI workflow', () => {
     })
     expect(prWorkflow.concurrency).toEqual(workflow.concurrency)
 
-    // The exact event sets are what keep master-only jobs out of the PR check
-    // panel: ci-master triggers only on push(master) + workflow_dispatch and
+    // The exact event sets are what keep main-only jobs out of the PR check
+    // panel: ci-master triggers only on push(main) + workflow_dispatch and
     // never on pull_request; ci.yml is exactly pull_request-only. Assert the
     // full sets so losing the wrong event, or gaining an extra one, fails.
     if (!isRecord(workflow.on) || !isRecord(prWorkflow.on)) {
@@ -503,7 +503,7 @@ describe('CI workflow', () => {
       expect(job.concurrency).toBeUndefined()
       // Standby drills remain post-merge work, but share run cancellation.
       expect(job.if).toBe(
-        `github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.${variable} == 'selfhosted'`,
+        `github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.${variable} == 'selfhosted'`,
       )
     }
     // The Linux drill bounds a pool that accepts and then stalls.
@@ -1158,12 +1158,12 @@ describe('Documentation site publication', () => {
     // Complete history: the release scripts read tags.
     expect(checkout).toMatchObject({ with: { 'fetch-depth': 0 } })
 
-    // Projected source links stay on the public repository's master. That
-    // repository advances only to each release commit, so its master never
+    // Projected source links stay on the public repository's main. That
+    // repository advances only to each release commit, so its main never
     // carries unreleased work, while it retains only the most recent tags:
     // following the dispatched tag would leave every source link on a deploy
     // from an older tag unresolvable.
-    expect(workflow.env.DOCS_REPOSITORY_REF).toBe('master')
+    expect(workflow.env.DOCS_REPOSITORY_REF).toBe('main')
 
     // The environment owns the deployment tag policy and the required reviewers.
     expect(deploy.environment).toMatchObject({ name: 'github-pages' })

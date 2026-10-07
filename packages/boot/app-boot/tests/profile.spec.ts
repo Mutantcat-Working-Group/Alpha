@@ -37,7 +37,7 @@ afterAll(() => {
 })
 
 const tmp = (): string => {
-  const dir = mkdtempSync(join(tmpdir(), 'dsh-profile-'))
+  const dir = mkdtempSync(join(tmpdir(), 'alpha-profile-'))
   tempRoots.push(dir)
   return dir
 }
@@ -191,18 +191,17 @@ it('composes current files from profile data and retains launch overlay preceden
     startedBundles: ['base'],
     overlays: [{ id: 'managed', disabled: false }],
   }
-  expect(composeEntries([readProfilePatches('test', context)])[0]?.disabled).toBe(true)
-  const enabled = context
-  expect(composeEntries([readProfilePatches('test', enabled)])[0]?.disabled).toBe(false)
-  const patches = readProfilePatches('test', enabled)
+  expect(composeEntries([readProfilePatches('test', context)])[0]?.disabled).toBe(false)
+  const patches = readProfilePatches('test', context)
   patches.at(-1)!.disabled = true
   expect(context.overlays[0]?.disabled).toBe(false)
+  const withoutOverlays = { ...context, overlays: [] }
   writeFileSync(join(home, PROFILE_PATCH_FILENAME), '- id: managed\n  disabled: true\n')
-  expect(composeEntries([readProfilePatches('test', { ...enabled, overlays: [] })])[0]?.disabled).toBe(true)
+  expect(composeEntries([readProfilePatches('test', withoutOverlays)])[0]?.disabled).toBe(true)
   writeFileSync(join(home, PROFILE_PATCH_FILENAME), '[]\n')
-  expect(composeEntries([readProfilePatches('test', { ...enabled, overlays: [] })])[0]?.disabled).toBe(true)
+  expect(composeEntries([readProfilePatches('test', withoutOverlays)])[0]?.disabled).toBe(true)
   writeFileSync(patchPath, '- id: managed\n  disabled: false\n')
-  expect(composeEntries([readProfilePatches('test', { ...enabled, overlays: [] })])[0]?.disabled).toBe(false)
+  expect(composeEntries([readProfilePatches('test', withoutOverlays)])[0]?.disabled).toBe(false)
 })
 
 describe('initProfile', () => {
@@ -1026,7 +1025,7 @@ describe('healProfilesModuleFallback', () => {
         mkdirSync(proxy, { recursive: true })
         writeFileSync(join(proxy, 'package.json'), metadata)
         await expect(healProfilesModuleFallback({ installAnchor: anchor, home })).rejects.toThrow(
-          'exists and is not a dsh-managed module proxy',
+          'exists and is not an alpha-managed module proxy',
         )
       }
     } finally {

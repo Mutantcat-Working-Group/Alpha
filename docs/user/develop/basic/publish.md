@@ -84,7 +84,7 @@ The first use initializes the profile (with `@mutantcat/dsh-base` as its first b
 
 ```json
 {
-  "name": "dsh-profile-demo",
+  "name": "alpha-profile-demo",
   "private": true,
   "dependencies": {
     "dsh-hello-plugin": "link:/path/to/hello-plugin"

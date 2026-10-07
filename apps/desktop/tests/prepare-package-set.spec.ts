@@ -38,8 +38,8 @@ describe('desktop package-set selection', () => {
       ['@mutantcat/unused', packed('@mutantcat/unused')],
     ])
     expect(selectDesktopPackageClosure(available).map(entry => entry.manifest.name)).toEqual([
-      '@mutantcat/cordis',
       '@mutantcat/alpha',
+      '@mutantcat/cordis',
       '@mutantcat/dsh-base',
       '@mutantcat/dsh-desktop-host',
       '@mutantcat/platform-package',

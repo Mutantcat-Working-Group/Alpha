@@ -50,8 +50,8 @@ describe('dsh-base bundle', () => {
     // preselected provider states it in a later layer.
     expect(rows.find(row => row.id === 'agent-default-model')).toMatchObject({
       name: '@mutantcat/dsh-agent-default-model',
-      config: undefined,
     })
+    expect(rows.find(row => row.id === 'agent-default-model')?.config).toBeUndefined()
     expect(rows.find(row => row.id === 'hmr')).toMatchObject({
       config: { root: [] },
     })

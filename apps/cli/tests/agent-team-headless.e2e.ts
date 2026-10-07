@@ -25,7 +25,7 @@ describe('dsh run with Agent Teams enabled', () => {
       const profileDir = join(home, 'profiles', 'headless')
       await mkdir(profileDir, { recursive: true })
       await writeFile(join(profileDir, 'package.json'), JSON.stringify({
-        name: 'dsh-profile-headless',
+        name: 'alpha-profile-headless',
         private: true,
         dependencies: {
           '@mutantcat/dsh-experimental-agent-team-profile': 'workspace:^',

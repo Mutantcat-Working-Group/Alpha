@@ -295,9 +295,9 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
       expect(result.stderr).toContain('Plugins waiting for services (')
       expect(result.stderr).toMatch(/connection \(required\) +webRuntime/u)
       expect(result.stderr).toContain('at Server.setupListenHandle')
-      const summary = result.stderr.split(/\n\n(?:Full diagnostics:|dsh: warning:)/u)[0]!
+      const summary = result.stderr.split(/\n\n(?:Full diagnostics:|alpha: warning:)/u)[0]!
       expect(summary.match(/EADDRINUSE/gu)).toHaveLength(1)
-      expect(summary).not.toMatch(/dsh: warning:|\[cause\]|at boot \(|at runCli \(|Node\.js v/u)
+      expect(summary).not.toMatch(/alpha: warning:|\[cause\]|at boot \(|at runCli \(|Node\.js v/u)
       let report: string
       if (logsBlocked) {
         expect(result.stderr).toContain('alpha: warning: could not write startup diagnostics:')
@@ -312,7 +312,7 @@ describe.skipIf(!builtArtifactsExist)('dsh Web profile best-effort startup', () 
       }
       expect(report).toContain("profile: 'web'")
       expect(report).toContain('nodeVersion:')
-      expect(report).toContain('dshVersion:')
+      expect(report).toContain('alphaVersion:')
       expect(report).toContain('configurationPath:')
       expect(report).toContain("code: 'EADDRINUSE'")
       expect(report).toContain(`port: ${String(address.port)}`)
