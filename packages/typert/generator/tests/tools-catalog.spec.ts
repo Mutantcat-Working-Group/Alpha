@@ -16,8 +16,13 @@ afterEach(() => {
   for (const root of temporaryRoots.splice(0)) rmSync(root, { recursive: true, force: true })
 })
 
-describe('model-driven dsh-tools generation', () => {
-  it('round-trips the complete service and event structure through the runtime registry', { timeout: 30_000 }, async () => {
+// The case analyzes the workspace through the TypeScript compiler, so the suite
+// is bound by type resolution rather than by its assertions. The value matches
+// DSH_COVERAGE_TEST_TIMEOUT_MS, which the Windows coverage lane passes as
+// --testTimeout: a smaller describe value lowers the budget the lane grants
+// every case in this file.
+describe('model-driven dsh-tools generation', { timeout: 90_000 }, () => {
+  it('round-trips the complete service and event structure through the runtime registry', async () => {
     const workspace = new WorkspaceAnalyzer({
       root: workspaceRoot,
       faces: ['host'],

@@ -482,6 +482,68 @@ describe('LocalPtySession readiness and output', () => {
     internal.closeEmulator()
   })
 
+  it('drains pending protocol work before a new send writes its input', async () => {
+    vi.useFakeTimers()
+    const terminal = new FakeTerminal()
+    const session = new LocalPtySession(terminal, config())
+    await initialize(session, terminal)
+    const writes: Array<{ data: string; done: () => void }> = []
+    const internal = session as unknown as {
+      emulator: { write(data: string, callback?: () => void): void }
+      closeEmulator(): void
+    }
+    internal.emulator.write = (data, callback) => {
+      writes.push({ data, done: callback ?? (() => {}) })
+    }
+
+    // A reply query the emulator has not parsed yet keeps protocol work pending.
+    terminal.emitData('\x1b[6n')
+    const operation = session.startSend({ text: 'echo hi', submit: true })
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(writes.map(write => write.data)).toEqual(['\x1b[6n'])
+    expect(terminal.writes).toEqual([])
+
+    writes[0]!.done()
+    await vi.advanceTimersByTimeAsync(80)
+    expect(terminal.writes).toEqual(['echo hi\r'])
+    expect((await operation.done).waitReason).toBe('inferred_idle')
+    internal.closeEmulator()
+  })
+
+  it('re-inspects the foreground when protocol work arrives during the pre-write inspection', async () => {
+    vi.useFakeTimers()
+    const terminal = new FakeTerminal()
+    const session = new LocalPtySession(terminal, config({ timeoutMs: 500 }))
+    await initialize(session, terminal)
+
+    const base = terminal.inspectForeground.bind(terminal)
+    const settled = Promise.withResolvers<{ processGroupId: number; inputWaiting: boolean }>()
+    let inspections = 0
+    terminal.inspectForeground = async () => {
+      inspections += 1
+      if (inspections <= 2) {
+        // Each of the first two samples sees fresh protocol reply work, so the
+        // send has to sample again once the queues are quiet.
+        terminal.emitData('\x1b[6n')
+        return await base()
+      }
+      return await settled.promise
+    }
+
+    const operation = session.startSend({ text: 'echo hi', submit: true })
+    await vi.advanceTimersByTimeAsync(20)
+    expect(inspections).toBeGreaterThanOrEqual(2)
+    expect(terminal.writes).not.toContain('echo hi\r')
+
+    settled.resolve({ processGroupId: 456, inputWaiting: false })
+    await vi.advanceTimersByTimeAsync(1)
+    expect(inspections).toBe(3)
+    await vi.advanceTimersByTimeAsync(80)
+    expect(terminal.writes).toContain('echo hi\r')
+    expect((await operation.done).waitReason).toBe('inferred_idle')
+  })
+
   it('lets queued terminal output run before the first post-write readiness poll', async () => {
     vi.useFakeTimers()
     const terminal = new FakeTerminal()
