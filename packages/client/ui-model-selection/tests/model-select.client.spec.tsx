@@ -285,6 +285,65 @@ describe('ModelSelect reasoning effort', () => {
     }
   })
 
+  // WebKit keeps buttons unfocused on mousedown: pressing a row blurs the row
+  // that held the keyboard (the drill hands it there) and drops focus on the
+  // document body, with a null relatedTarget. Read as focus leaving, that tore
+  // the card down between mousedown and mouseup, the browser synthesized no
+  // click, and every row went inert on macOS while Chromium never noticed.
+  it('survives the focus drop a press causes on WebKit and still selects the pressed row', async () => {
+    const groups = [{
+      id: 'deepseek-official',
+      name: 'DeepSeek',
+      models: [
+        { id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash', reasoning },
+        { id: 'deepseek-v4-pro', name: 'DeepSeek-V4-Pro' },
+      ],
+    }]
+    const directory = createSnapshotStore<ModelDirectoryState>(state({ groups }))
+    const select = vi.fn().mockResolvedValue({ ok: true, value: undefined })
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={directory}
+      load={vi.fn()}
+      select={select}
+      t={t}
+    />)
+
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /模型/ }))
+    const row = screen.getByRole('menuitemradio', { name: /DeepSeek-V4-Pro/ })
+    expect(document.activeElement).toBe(screen.getByRole('menuitemradio', { name: /DeepSeek-V4-Flash/ }))
+    fireEvent.mouseDown(row)
+    fireEvent.focusOut(row, { relatedTarget: null })
+    fireEvent.mouseUp(row)
+    // The card is still here for the click the press is part of.
+    expect(screen.getByRole('menu')).toBeTruthy()
+    fireEvent.click(row)
+    await waitFor(() => {
+      expect(select).toHaveBeenCalledWith({ provider: 'deepseek-official', model: 'deepseek-v4-pro' })
+    })
+  })
+
+  it('still closes when focus moves onto a control outside the card', () => {
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={createSnapshotStore(state())}
+      load={vi.fn()}
+      select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      t={t}
+    />)
+
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    expect(screen.getByRole('menu')).toBeTruthy()
+    const outside = document.createElement('button')
+    document.body.appendChild(outside)
+    fireEvent.focusOut(screen.getByRole('menu'), { relatedTarget: outside })
+    expect(screen.queryByRole('menu')).toBeNull()
+    outside.remove()
+  })
+
   it('renders no Agent-bound control for an addressed subagent session', () => {
     const load = vi.fn()
     render(<ModelSelect

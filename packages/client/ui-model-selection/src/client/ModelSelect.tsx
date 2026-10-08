@@ -268,10 +268,18 @@ export function ModelSelect(
   }
 
   const onBlur = (event: FocusEvent<HTMLDivElement>): void => {
-    if (event.relatedTarget instanceof Node && (
-      rootRef.current?.contains(event.relatedTarget) === true
-      || menuRef.current?.contains(event.relatedTarget) === true
-    )) return
+    const next = event.relatedTarget
+    // A press inside the card looks like focus leaving it on WebKit: focus
+    // does not move to the pressed row (WebKit keeps buttons unfocused on
+    // mousedown), it drops to the document body, so `relatedTarget` is null.
+    // Closing there tears the card down between mousedown and mouseup, and the
+    // browser never synthesizes the click — every row goes inert. Outside
+    // pointerdown owns pointer dismissals, so only a move onto a real control
+    // elsewhere, which is what the keyboard and another control taking focus
+    // produce, closes the card from here.
+    if (!(next instanceof HTMLElement)) return
+    if (rootRef.current?.contains(next) === true) return
+    if (menuRef.current?.contains(next) === true) return
     close()
   }
 
