@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-attachment",
   "description": "Durable immutable attachment storage seam for the Alpha",
-  "version": "1.0.20261012",
+  "version": "1.0.20261013",
   "publishConfig": {
     "access": "public"
   },

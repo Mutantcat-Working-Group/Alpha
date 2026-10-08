@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-ssh",
   "description": "Shared OpenSSH connection and versioned POSIX remote helper",
-  "version": "1.0.20261012",
+  "version": "1.0.20261013",
   "publishConfig": {
     "access": "public"
   },

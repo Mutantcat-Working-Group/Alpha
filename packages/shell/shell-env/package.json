@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-shell-env",
   "description": "Tool-independent managed DSH_* shell environment registry",
-  "version": "1.0.20261012",
+  "version": "1.0.20261013",
   "publishConfig": {
     "access": "public"
   },

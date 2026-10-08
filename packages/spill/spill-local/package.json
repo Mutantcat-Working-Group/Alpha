@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-spill-local",
   "description": "Local-filesystem implementation of the Alpha spill storage seam (private session-scoped files)",
-  "version": "1.0.20261012",
+  "version": "1.0.20261013",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-web-fetch-http",
   "description": "Anonymous public HTTP(S) fetch provider for the Alpha web capability seam (ctx.web)",
-  "version": "1.0.20261012",
+  "version": "1.0.20261013",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-workspace",
   "description": "Workspace picker plugin: one WorkspacePicker registered into the sidebar and empty-state workspace slots",
-  "version": "1.0.20261012",
+  "version": "1.0.20261013",
   "publishConfig": {
     "access": "public"
   },
