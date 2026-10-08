@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-settings",
   "description": "Abstract user-settings seam (ctx.settings) for the Alpha",
-  "version": "1.0.20261011",
+  "version": "1.0.20261012",
   "publishConfig": {
     "access": "public"
   },

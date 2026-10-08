@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-telemetry",
   "description": "SessionTelemetryBackend seam for the Alpha: session-event capture, projection, redaction, and handoff to a reporting backend",
-  "version": "1.0.20261011",
+  "version": "1.0.20261012",
   "publishConfig": {
     "access": "public"
   },

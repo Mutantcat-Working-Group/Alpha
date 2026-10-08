@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/alpha",
   "description": "Alpha CLI: profile launch, plugin management, and configuration inspection",
-  "version": "1.0.20261011",
+  "version": "1.0.20261012",
   "publishConfig": {
     "access": "public"
   },

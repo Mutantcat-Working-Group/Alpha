@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-webhook",
   "description": "Fire-and-forget webhook rule runtime that creates Workspace-backed Alpha Sessions",
-  "version": "1.0.20261011",
+  "version": "1.0.20261012",
   "publishConfig": {
     "access": "public"
   },

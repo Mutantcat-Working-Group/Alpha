@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-compaction-basic",
   "description": "Token-meter-driven compaction policy and LLM summarization backend for the Alpha",
-  "version": "1.0.20261011",
+  "version": "1.0.20261012",
   "publishConfig": {
     "access": "public"
   },
