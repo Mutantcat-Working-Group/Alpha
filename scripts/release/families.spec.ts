@@ -36,6 +36,18 @@ function buildFixture(environment: Record<string, string>): string {
   return root
 }
 
+/**
+ * Write the desktop shell files that restate the shared version, in the
+ * spelling each one uses.
+ * @param root - temporary repository root.
+ * @param version - version the shell currently declares.
+ */
+function writeDesktopShell(root: string, version: string): void {
+  write(join(root, 'apps/desktop/src-tauri/tauri.conf.json'), `{\n  "version": "${version}",\n  "productName": "Alpha"\n}\n`)
+  write(join(root, 'apps/desktop/src-tauri/Cargo.toml'), `[package]\nname = "alpha-desktop"\nversion = "${version}"\n\n[dependencies]\ntauri = { version = "2", features = [] }\n`)
+  write(join(root, 'apps/desktop/src-tauri/Cargo.lock'), `version = 3\n\n[[package]]\nname = "adler2"\nversion = "2.0.1"\n\n[[package]]\nname = "alpha-desktop"\nversion = "${version}"\n`)
+}
+
 afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
   vi.unstubAllEnvs()
@@ -102,6 +114,7 @@ describe('release families', () => {
     write(join(root, 'apps/desktop/package.json'), '{"version":"0.0.1","private":true}\n')
     write(join(root, 'packages/experimental/prototype/package.json'), '{"version":"0.0.1","private":true}\n')
     write(join(root, 'packages/core/unselected/package.json'), '{"version":"0.0.1"}\n')
+    writeDesktopShell(root, '0.0.1')
 
     const alpha = releaseFamily('alpha')
     const published = member('packages/core/published', '@mutantcat/dsh-published')
@@ -112,6 +125,29 @@ describe('release families', () => {
       { path: 'packages/core/published/package.json', tag: 'alpha-v0.0.2' },
       { path: 'apps/desktop/package.json', tag: undefined },
       { path: 'packages/experimental/prototype/package.json', tag: undefined },
+      { path: 'apps/desktop/src-tauri/tauri.conf.json', tag: undefined },
+      { path: 'apps/desktop/src-tauri/Cargo.toml', tag: undefined },
+      { path: 'apps/desktop/src-tauri/Cargo.lock', tag: undefined },
+    ])
+  })
+
+  it('restates the shared version in the desktop shell declarations', () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-release-desktop-version-'))
+    roots.push(root)
+    write(join(root, 'package.json'), '{"version":"0.0.1"}\n')
+    writeDesktopShell(root, '0.0.1')
+
+    const alpha = releaseFamily('alpha')
+    const published = member('packages/core/published', '@mutantcat/dsh-published')
+    const { planned } = planShared(alpha, root, [published], '0.0.2')
+
+    // The declaration is what a rewrite replaces, so it must name the Cargo
+    // package's own version rather than a dependency constraint.
+    expect(planned.filter(entry => entry.manifestPath.startsWith('apps/desktop/src-tauri/'))
+      .map(entry => [entry.manifestPath, entry.from, entry.declaration])).toEqual([
+      ['apps/desktop/src-tauri/tauri.conf.json', '0.0.1', '"version": "0.0.1"'],
+      ['apps/desktop/src-tauri/Cargo.toml', '0.0.1', 'version = "0.0.1"'],
+      ['apps/desktop/src-tauri/Cargo.lock', '0.0.1', '[[package]]\nname = "alpha-desktop"\nversion = "0.0.1"'],
     ])
   })
 
@@ -121,6 +157,7 @@ describe('release families', () => {
       const root = mkdtempSync(join(tmpdir(), 'dsh-release-prerelease-'))
       roots.push(root)
       write(join(root, 'package.json'), '{"version":"0.0.1"}\n')
+      writeDesktopShell(root, '0.0.1')
 
       const alpha = releaseFamily('alpha')
       const published = member('packages/core/published', '@mutantcat/dsh-published')

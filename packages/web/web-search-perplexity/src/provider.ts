@@ -6,6 +6,7 @@
  * @module @mutantcat/dsh-web-search-perplexity/provider
  */
 
+import { createRequire } from 'node:module'
 import { WebError } from '@mutantcat/dsh-web'
 import type {
   WebSearchProvider,
@@ -14,6 +15,8 @@ import type {
   WebSearchSource,
 } from '@mutantcat/dsh-web'
 import type { PerplexityError, PerplexityResponse, PerplexitySearchResult } from './types.ts'
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string }
 
 /** Stable id this provider registers under. */
 export const PERPLEXITY_PROVIDER_ID = 'perplexity'
@@ -30,8 +33,8 @@ export const PERPLEXITY_DEFAULT_MAX_TOKENS = 1024
 /** Recency filter values Perplexity accepts for `search_recency_filter`. */
 export type PerplexityRecency = 'day' | 'week' | 'month' | 'year'
 
-/** Attribution header sent on every request. Bump with the package version. */
-const USER_AGENT = 'alpha/1.0.20261010'
+/** Attribution header sent on every request, carrying the package's own version. */
+const USER_AGENT = `alpha/${version}`
 
 /** Resolved provider options (the plugin's `apply` supplies env-var and constant defaults). */
 export interface PerplexitySearchProviderOptions {

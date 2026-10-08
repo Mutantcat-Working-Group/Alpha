@@ -6,6 +6,7 @@
  * @module @mutantcat/dsh-web-search-exa/provider
  */
 
+import { createRequire } from 'node:module'
 import { WebError } from '@mutantcat/dsh-web'
 import type {
   WebSearchProvider,
@@ -14,6 +15,8 @@ import type {
   WebSearchSource,
 } from '@mutantcat/dsh-web'
 import type { ExaError, ExaResult, ExaSearchResponse } from './types.ts'
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string }
 
 /** Stable id this provider registers under. */
 export const EXA_PROVIDER_ID = 'exa'
@@ -27,8 +30,8 @@ export const EXA_DEFAULT_SEARCH_TYPE = 'auto'
 /** Default number of highlight sentences requested per result. */
 export const EXA_DEFAULT_HIGHLIGHTS_PER_RESULT = 1
 
-/** Attribution header sent on every request. Bump with the package version. */
-const USER_AGENT = 'alpha/1.0.20261010'
+/** Attribution header sent on every request, carrying the package's own version. */
+const USER_AGENT = `alpha/${version}`
 
 /** Resolved provider options (the plugin's `apply` supplies env-var and constant defaults). */
 export interface ExaSearchProviderOptions {

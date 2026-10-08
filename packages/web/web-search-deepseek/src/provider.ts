@@ -6,6 +6,7 @@
  * @module @mutantcat/dsh-web-search-deepseek/provider
  */
 
+import { createRequire } from 'node:module'
 import { WebError } from '@mutantcat/dsh-web'
 import type {
   WebSearchProvider,
@@ -22,6 +23,8 @@ import type {
   TextBlock,
   WebSearchToolResultBlock,
 } from './types.ts'
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string }
 
 /** Stable id this provider registers under. */
 export const DEEPSEEK_PROVIDER_ID = 'deepseek-official'
@@ -45,8 +48,8 @@ export const DEEPSEEK_DEFAULT_MAX_TOKENS = 4096
 /** Default maximum `web_search` server-tool uses per request. */
 export const DEEPSEEK_DEFAULT_MAX_USES = 5
 
-/** Attribution header sent on every request. Bump with the package version. */
-const USER_AGENT = 'alpha/1.0.20261010'
+/** Attribution header sent on every request, carrying the package's own version. */
+const USER_AGENT = `alpha/${version}`
 
 /**
  * Exact secret-free DeepSeek Messages request recorded immediately before one

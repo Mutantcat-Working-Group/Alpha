@@ -4,7 +4,8 @@
  * ([rationale](../../.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
  *
  * The Alpha family shares one version across its publishable members, private
- * package manifests, and the workspace root:
+ * package manifests, the workspace root, and the desktop shell's Tauri and
+ * Cargo declarations:
  * `major`, `minor`, `patch`, or an explicit `x.y.z` (including a prerelease such
  * as `0.0.1-rc.1`). The vendored family has one version line per package, but
  * every release advances and publishes the complete family so the next release
@@ -38,6 +39,42 @@ const RELEASE_TYPES = ['major', 'minor', 'patch'] as const
 /** The workspace root manifest, which carries the Alpha family's version. */
 const ROOT_MANIFEST = 'package.json'
 
+/**
+ * The version declaration a JSON manifest or the Tauri bundle config carries.
+ * @param version - the version the declaration states.
+ * @returns The exact text a rewrite replaces.
+ */
+function jsonVersionDeclaration(version: string): string {
+  return `"version": "${version}"`
+}
+
+/**
+ * A file outside the npm manifests that restates the shared Alpha version, and
+ * the declaration it carries that version in.
+ */
+interface SharedVersionFile {
+  /** Repository-relative path. */
+  readonly path: string
+  /** Matches the declaration holding the current version; capture 1 is the version. */
+  readonly pattern: RegExp
+}
+
+/**
+ * The desktop shell files that restate the shared version. Tauri names the
+ * installers and the DMG after the bundle version, so a release that advances
+ * the manifests alone publishes assets named for the previous version.
+ */
+const ALPHA_SHARED_VERSION_FILES: readonly SharedVersionFile[] = [
+  { path: 'apps/desktop/src-tauri/tauri.conf.json', pattern: /"version":\s*"([^"]+)"/ },
+  // The `[package]` version is the first unindented one; dependency tables
+  // declare theirs inline.
+  { path: 'apps/desktop/src-tauri/Cargo.toml', pattern: /^version = "([^"]+)"/m },
+  {
+    path: 'apps/desktop/src-tauri/Cargo.lock',
+    pattern: /\[\[package\]\]\r?\nname = "alpha-desktop"\r?\nversion = "([^"]+)"/,
+  },
+]
+
 /** One manifest the bump rewrites, and the tag its new version will carry. */
 interface PlannedVersion {
   readonly manifestPath: string
@@ -46,6 +83,8 @@ interface PlannedVersion {
   readonly to: string
   /** The tag this version publishes from, or undefined for a non-published manifest. */
   readonly tag: string | undefined
+  /** The exact text the file carries for `from`, which the rewrite replaces. */
+  readonly declaration: string
 }
 
 /** One private Alpha workspace whose version follows the publishable family. */
@@ -216,18 +255,18 @@ function lastTaggedVersion(family: ReleaseFamily, member: ReleaseMember): string
 }
 
 /**
- * Write a version into a manifest, preserving formatting and key order.
+ * Rewrite one planned version declaration in place, preserving formatting and
+ * key order, and failing when the file no longer carries what the plan read.
  * @param root - repository root.
- * @param manifestPath - repository-relative manifest path.
- * @param from - the version the manifest currently carries.
- * @param to - the target version.
+ * @param entry - the planned rewrite.
  */
-function writeVersion(root: string, manifestPath: string, from: string, to: string): void {
-  const path = join(root, manifestPath)
+function writePlannedVersion(root: string, entry: PlannedVersion): void {
+  const path = join(root, entry.manifestPath)
   const text = readFileSync(path, 'utf8')
-  const line = `"version": "${from}"`
-  if (!text.includes(line)) throw new Error(`${manifestPath}: cannot locate ${line}`)
-  writeFileSync(path, text.replace(line, `"version": "${to}"`))
+  if (!text.includes(entry.declaration)) {
+    throw new Error(`${entry.manifestPath}: cannot locate ${entry.declaration}`)
+  }
+  writeFileSync(path, text.replace(entry.declaration, entry.declaration.replace(entry.from, entry.to)))
 }
 
 /**
@@ -272,7 +311,7 @@ function privateAlphaVersions(root: string): PrivateAlphaVersion[] {
 
 /**
  * Plan the Alpha family's rewrite: one version for every publishable member,
- * private package, and the root.
+ * private package, the root, and the desktop shell.
  * @param family - the Alpha family.
  * @param root - repository root.
  * @param members - the family's members.
@@ -290,8 +329,16 @@ export function planShared(
   const version = nextSharedVersion(first.version, request)
   // The workspace root carries the family version too: the workspace constraint
   // requires every member's version to equal the root's.
+  const rootFrom = rootVersion(root)
   const planned: PlannedVersion[] = [
-    { manifestPath: ROOT_MANIFEST, label: ROOT_MANIFEST, from: rootVersion(root), to: version, tag: undefined },
+    {
+      manifestPath: ROOT_MANIFEST,
+      label: ROOT_MANIFEST,
+      from: rootFrom,
+      to: version,
+      tag: undefined,
+      declaration: jsonVersionDeclaration(rootFrom),
+    },
   ]
   for (const member of members) {
     planned.push({
@@ -300,6 +347,7 @@ export function planShared(
       from: member.version,
       to: version,
       tag: family.tagFor({ ...member, version }),
+      declaration: jsonVersionDeclaration(member.version),
     })
   }
   const publishableManifests = new Set(members.map(member => `${member.directory}/package.json`))
@@ -311,6 +359,23 @@ export function planShared(
       from: entry.version,
       to: version,
       tag: undefined,
+      declaration: jsonVersionDeclaration(entry.version),
+    })
+  }
+  for (const file of ALPHA_SHARED_VERSION_FILES) {
+    const text = readFileSync(join(root, file.path), 'utf8')
+    const match = file.pattern.exec(text)
+    const from = match?.[1]
+    if (match === null || from === undefined) {
+      throw new Error(`${file.path}: cannot locate the version declaration`)
+    }
+    planned.push({
+      manifestPath: file.path,
+      label: file.path,
+      from,
+      to: version,
+      tag: undefined,
+      declaration: match[0],
     })
   }
   return { planned, version }
@@ -339,6 +404,7 @@ function planPerPackage(
       from: member.version,
       to,
       tag: family.tagFor({ ...member, version: to }),
+      declaration: jsonVersionDeclaration(member.version),
     })
   }
   return planned
@@ -391,7 +457,7 @@ function main(): void {
 
   const dryRun = values['dry-run']
   if (!dryRun) {
-    for (const entry of planned) writeVersion(root, entry.manifestPath, entry.from, entry.to)
+    for (const entry of planned) writePlannedVersion(root, entry)
     capture('pnpm', ['install', '--lockfile-only'])
   }
 
