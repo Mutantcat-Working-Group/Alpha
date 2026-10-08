@@ -16,10 +16,11 @@ import type { ModelCatalogDirectory } from './catalog.ts'
 /** Directory snapshot both entries render from. */
 export interface ModelDirectoryState {
   /**
-   * Effective selection: the durable next-request projection, then the Host
-   * default, accepted only while an adapter still serves its provider. null
-   * when neither resolves, or when the resolved provider is no longer
-   * routable, so a stale route never renders as the current model.
+   * Effective selection: a selection the Host just accepted over the wire,
+   * then the durable next-request projection, then the Host default, accepted
+   * only while an adapter still serves its provider. null when none resolves,
+   * or when the resolved provider is no longer routable, so a stale route
+   * never renders as the current model.
    */
   current: ModelSelection | null
   /**
@@ -54,6 +55,13 @@ export class ModelDirectory {
   private generation = 0
   private disposed = false
   private resolved = false
+  /**
+   * Selection the Host accepted over the wire, shown before the durable
+   * projection reports it. The frame carrying the same value arrives later
+   * and, on a push stream that lags, may not arrive at all; this stands in
+   * until the projection catches up, then clears.
+   */
+  private confirmed: ModelSelection | null = null
   private readonly unsubscribeCatalog: () => void
   private readonly unsubscribeSelection: () => void
 
@@ -88,9 +96,12 @@ export class ModelDirectory {
   }
 
   /**
-   * Select the complete provider/model/reasoning selection. The durable
-   * projection frame updates the shared current; failures surface on the store
-   * and return with the operation so each entry can present its own failure.
+   * Select the complete provider/model/reasoning selection. The Host answers
+   * with the selection it normalized and installed. That value becomes the
+   * shared current immediately and is held until the durable projection
+   * reports it, so a switch shows the moment the call resolves rather than
+   * when the push stream catches up. Failures surface on the store and return
+   * with the operation so each entry can present its own failure.
    * @param selection - provider, provider-owned model id, and optional adapter-owned effort.
    * @returns the selection outcome, including the original Remote failure.
    */
@@ -116,6 +127,7 @@ export class ModelDirectory {
       })
       return result
     }
+    this.confirmed = { ...result.value.selected }
     this.store.update((s) => { s.status = 'ready'; s.error = null })
     this.syncInputs()
     return { ok: true, value: undefined }
@@ -127,6 +139,7 @@ export class ModelDirectory {
   resetConnected(): void {
     if (this.disposed) return
     ++this.generation
+    this.confirmed = null
     this.store.update((state) => {
       if (state.status === 'selecting') state.status = 'idle'
       state.error = null
@@ -151,7 +164,27 @@ export class ModelDirectory {
     if (this.disposed) return
     const catalog = this.catalog.store.getSnapshot()
     const projected = modelSelectionProjection(this.projected.getSnapshot())
+    // The durable projection is the record of what the Session will request; a
+    // wire confirmation stands in only until that record reports the same route.
+    if (this.confirmed !== null && projected !== undefined
+      && sameSelection(projected.next, this.confirmed)) {
+      this.confirmed = null
+    }
+    const confirmed = this.confirmed
     if (catalog.status !== 'ready' || catalog.value === null || projected === undefined) {
+      if (confirmed !== null) {
+        // The Host resolved the route before it answered, so a confirmation is
+        // routable without consulting a catalog that is still loading; it
+        // renders over the last good groups instead of waiting for the refresh.
+        this.resolved = true
+        this.store.update((state) => {
+          state.current = confirmed
+          state.routable = true
+          state.error = null
+          if (state.status !== 'selecting') state.status = 'ready'
+        })
+        return
+      }
       if (this.resolved) {
         if (catalog.status === 'error') {
           this.store.update((state) => {
@@ -176,18 +209,18 @@ export class ModelDirectory {
     // as the current model — the seat would name a provider the user never
     // configured — yet it still marks the session unroutable so the composer
     // keeps its select-a-model block instead of accepting a doomed send.
-    const routableProviders = new Set(catalog.value.routableProviders)
-    const durable = projected.next ?? catalog.value.default
+    const catalogValue = catalog.value
+    const routableProviders = new Set(catalogValue.routableProviders)
+    const durable = confirmed ?? projected.next ?? catalogValue.default
     const current = durable !== null && routableProviders.has(durable.provider) ? durable : null
+    const status = this.store.getSnapshot().status === 'selecting' ? 'selecting' : 'ready'
     this.resolved = true
     this.store.set({
       current,
       routable: durable === null ? null : current !== null,
-      groups: catalog.value.groups,
-      failures: catalog.value.failures,
-      status: this.store.getSnapshot().status === 'selecting'
-        ? 'selecting'
-        : 'ready',
+      groups: catalogValue.groups,
+      failures: catalogValue.failures,
+      status,
       error: null,
     })
   }
@@ -195,4 +228,17 @@ export class ModelDirectory {
 
 function modelSelectionProjection(value: unknown): ModelSelectionProjection | undefined {
   return value === undefined ? undefined : value as ModelSelectionProjection
+}
+
+/**
+ * Whether two selections name the same route and effort.
+ * @param left - first selection, or null for none.
+ * @param right - second selection, or null for none.
+ * @returns true when both are null, or both name the same provider, model, and effort.
+ */
+function sameSelection(left: ModelSelection | null, right: ModelSelection | null): boolean {
+  return left === right || (left !== null && right !== null
+    && left.provider === right.provider
+    && left.model === right.model
+    && left.reasoningEffort === right.reasoningEffort)
 }

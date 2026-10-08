@@ -75,6 +75,9 @@ async function bench(locale: 'zh' | 'en' = 'zh') {
   // block follows this, never catalog membership.
   let routable = true
   let selectionFailure: RemoteError<'session/writer-held'> | undefined
+  // The push stream's projection frame can lag or never arrive; the seat must
+  // still land the switch the Host accepted over the wire.
+  let silentProjection = false
   const sessionRemote = {
     modelCatalog: () => {
       calls.models += 1
@@ -98,7 +101,9 @@ async function bench(locale: 'zh' | 'en' = 'zh') {
           ? {}
           : { reasoningEffort: payload.reasoningEffort },
       }
-      projections.get(payload.sessionId)?.set({ lastUsed: null, next: selected })
+      if (!silentProjection) {
+        projections.get(payload.sessionId)?.set({ lastUsed: null, next: selected })
+      }
       return Promise.resolve({ ok: true as const, value: { selected } })
     },
   }
@@ -187,6 +192,7 @@ async function bench(locale: 'zh' | 'en' = 'zh') {
     setProjected: (id: SessionId, value: ModelSelectionProjection) => { projections.get(id)?.set(value) },
     address: (id: SessionId) => { addressed.add(id) },
     setRoutable: (next: boolean) => { routable = next },
+    silenceProjection: () => { silentProjection = true },
     blockOf: (key: string) => blocks.get(sid(key)),
   }
 }
@@ -416,6 +422,34 @@ describe('ui-model-selection dual entry', () => {
     })
     expect(face.directory.getSnapshot()).toMatchObject({ current: null, routable: false })
     expect(b.blockOf('s1')?.reason).toBe(zh['blocked.composer'])
+  })
+
+  it('lands a confirmed switch on the seat before the durable projection frame', async () => {
+    const b = await bench()
+    b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
+    b.setProjected(sid('s1'), {
+      lastUsed: null,
+      next: { provider: 'retired-provider', model: 'retired-model' },
+    })
+    face.load()
+    await vi.waitFor(() => {
+      expect(face.directory.getSnapshot()).toMatchObject({ current: null, routable: false })
+    })
+    expect(b.blockOf('s1')?.reason).toBe(zh['blocked.composer'])
+
+    // The Host accepts the switch but its projection push never lands. The
+    // wire answer alone has to reach the seat and unblock the composer, or a
+    // lagging stream leaves the click looking inert.
+    b.silenceProjection()
+    await expect(face.select({ provider: 'deepseek-official', model: 'deepseek-v4-pro' }))
+      .resolves.toEqual({ ok: true, value: undefined })
+    expect(face.directory.getSnapshot()).toMatchObject({
+      current: { provider: 'deepseek-official', model: 'deepseek-v4-pro' },
+      routable: true,
+      status: 'ready',
+    })
+    expect(b.blockOf('s1')).toBeUndefined()
   })
 
   it('drops a stale deployment default whose provider no adapter serves', async () => {
