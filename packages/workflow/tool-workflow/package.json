@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-tool-workflow",
   "description": "Model-facing workflow tool: run a JavaScript orchestration script over ctx.workflowEngine",
-  "version": "1.0.20261013",
+  "version": "1.0.20261014",
   "publishConfig": {
     "access": "public"
   },

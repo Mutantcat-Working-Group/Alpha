@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-ptc-runtime-python",
   "description": "CPython subprocess implementation of the Alpha PTC execution seam",
-  "version": "1.0.20261013",
+  "version": "1.0.20261014",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-launch-environment",
   "description": "Immutable Alpha launch environment that records which layer supplied each value",
-  "version": "1.0.20261013",
+  "version": "1.0.20261014",
   "publishConfig": {
     "access": "public"
   },
