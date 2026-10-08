@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-spill",
   "description": "Abstract spill storage seam (ctx.spillStore) for the Alpha — save oversized tool text and return a retrieval locator",
-  "version": "1.0.20261010",
+  "version": "1.0.20261011",
   "publishConfig": {
     "access": "public"
   },
