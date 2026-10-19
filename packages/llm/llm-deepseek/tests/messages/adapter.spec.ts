@@ -85,7 +85,7 @@ describe('direct Messages HTTP', () => {
       'deepseek-flash', 'deepseek-v4-pro',
     ])
     expect(await llm.resolveModel('deepseek-official', 'deepseek-flash')).toMatchObject({
-      name: 'DeepSeek-V41-Flash', inputModalities: ['text', 'image'], systemPromptUpdate: 'in-history',
+      name: 'DeepSeek-V4.1-Flash', inputModalities: ['text', 'image'], systemPromptUpdate: 'in-history',
     })
     expect(await llm.resolveModel('deepseek-official', MODEL)).toMatchObject({ id: MODEL })
     expect(llm.imageRequestPricing('deepseek-official', MODEL)).toBeDefined()

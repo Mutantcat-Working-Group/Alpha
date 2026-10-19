@@ -56,7 +56,7 @@ A request selects the route with `provider: deepseek-official`; the model id pas
 | `reasoningEffort` | `high` | Default effort: `off`, `low`, `high`, or `max` |
 | `maxTokens` | `256,000` | Per-request output cap; a model's own cap and explicit request values win |
 | `defaultContextWindow` | `1,000,000` | Capacity fallback for models without an exact value |
-| `models` | V41 Flash + V4 Pro | Advisory catalog shown by discovery consumers |
+| `models` | V4.1 Flash + V4 Pro | Advisory catalog shown by discovery consumers |
 | `streamIdleTimeoutMs` | `300,000` | Maximum provider idle time per outstanding stream read |
 | `maxRequestFilesBytes` | `128 MiB` | File-mode request-image byte budget; a request whose retained images exceed it fails with `IMAGE_OFFLOAD_REQUIRED` |
 | `maxInlineRequestImageBytes` | `20 MiB` | Independent base64 fallback high watermark |
