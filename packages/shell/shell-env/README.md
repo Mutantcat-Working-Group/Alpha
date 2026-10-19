@@ -54,11 +54,11 @@ Contributors must declare every key they return; returning an undeclared or non-
 
 ### Choosing the Harness home
 
-The single config field picks the home directory exposed as `DSH_HOME`; the default resolution order is the `dshHome` config, then ambient `$DSH_HOME`, then `~/.dsh`.
+The single config field picks the home directory exposed as `DSH_HOME`; the default resolution order is the `dshHome` config, then ambient `$DSH_HOME`, then `~/.alpha`.
 
 | Field | Default | Meaning |
 |---|---|---|
-| `dshHome` | `$DSH_HOME`, then `~/.dsh` | Absolute Harness home exposed as `DSH_HOME` |
+| `dshHome` | `$DSH_HOME`, then `~/.alpha` | Absolute Harness home exposed as `DSH_HOME` |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-shell-env) is the exhaustive source for every accepted field and its JSDoc.
 

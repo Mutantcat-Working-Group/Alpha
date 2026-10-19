@@ -46,7 +46,7 @@ it.each([false, true])('settles startup after parent IPC disconnect (boot failur
       return new Promise((resolve, reject) => process.once('disconnect', () => {
         if (${String(fail)}) { reject(new Error('fixture boot failure')); return; }
         resolve({ ctx: { plugin: async () => {}, effect: () => {}, on: () => {},
-          connection: { authenticatedUrl: value => value }, webServer: { port: 19387 } },
+          connection: { authenticatedUrl: value => value }, webServer: { port: 19388 } },
           shutdown: { shutdown: async () => writeFileSync(${JSON.stringify(join(root, 'stopped'))}, 'stopped') } });
       }));
     }

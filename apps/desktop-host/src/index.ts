@@ -1,7 +1,8 @@
 /** Launch the Desktop profile through the Web application and report its URL to the desktop shell. */
 
-/** Fixed engine port; the shell capability trusts only the loopback origin. */
-const ENGINE_PORT = 19387
+/** Fixed engine port; the shell capability trusts only the loopback origin. Kept distinct
+ * from the official DeepSeek Harness desktop (19387) so both applications can run at once. */
+const ENGINE_PORT = 19388
 /** Built-in bundles the desktop profile activates when its manifest is absent. */
 const WEB_PROFILE_BUNDLES = (PROFILE_TEMPLATES.web as ProfileTemplate).bundles
 

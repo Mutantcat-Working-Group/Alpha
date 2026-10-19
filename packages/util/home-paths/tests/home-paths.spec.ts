@@ -19,10 +19,10 @@ afterEach(() => {
 })
 
 describe('dsh path helpers', () => {
-  it('owns the shared default DSH home directory name', () => {
-    expect(DSH_HOME_DIR_NAME).toBe('.dsh')
-    expect(DEFAULT_DSH_HOME_DISPLAY).toBe('~/.dsh')
-    expect(defaultDshHome()).toBe(join(homedir(), '.dsh'))
+  it('owns the shared default Alpha home directory name', () => {
+    expect(DSH_HOME_DIR_NAME).toBe('.alpha')
+    expect(DEFAULT_DSH_HOME_DISPLAY).toBe('~/.alpha')
+    expect(defaultDshHome()).toBe(join(homedir(), '.alpha'))
   })
 
   it('expands tilde paths without changing non-tilde paths', () => {
@@ -53,14 +53,14 @@ describe('dsh path helpers', () => {
   })
 
   it('labels a resolved home by whether it is the default root', () => {
-    expect(dshHomeDisplay(resolve(defaultDshHome()))).toBe('~/.dsh')
+    expect(dshHomeDisplay(resolve(defaultDshHome()))).toBe('~/.alpha')
     expect(dshHomeDisplay('/some/other/root')).toBe('$DSH_HOME')
   })
 
   it.each([
-    [undefined, join(homedir(), '.dsh')],
-    ['', join(homedir(), '.dsh')],
-    ['   ', join(homedir(), '.dsh')],
+    [undefined, join(homedir(), '.alpha')],
+    ['', join(homedir(), '.alpha')],
+    ['   ', join(homedir(), '.alpha')],
     ['~/env-dsh', join(homedir(), 'env-dsh')],
     ['./relative-dsh', resolve('./relative-dsh')],
   ] as const)('resolves cache paths with DSH_HOME=%j', (home, expectedHome) => {

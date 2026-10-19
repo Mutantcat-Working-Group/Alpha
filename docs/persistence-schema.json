@@ -22163,7 +22163,7 @@
         "packages/web/web-search-deepseek/src/provider.ts#DeepSeekSearchLlmRequest"
       ],
       "sources": [
-        "packages/web/web-search-deepseek/src/provider.ts:55"
+        "packages/web/web-search-deepseek/src/provider.ts:58"
       ]
     },
     {
@@ -24100,7 +24100,7 @@
         "event:web/deepseek-search-llm-request.data.body.tools[0]"
       ],
       "sources": [
-        "packages/web/web-search-deepseek/src/provider.ts:71"
+        "packages/web/web-search-deepseek/src/provider.ts:74"
       ]
     },
     {
@@ -32617,7 +32617,7 @@
       ],
       "sources": [
         "packages/llm/llm/src/types.ts:61",
-        "packages/web/web-search-deepseek/src/provider.ts:66"
+        "packages/web/web-search-deepseek/src/provider.ts:69"
       ]
     },
     {
@@ -47026,7 +47026,7 @@
         "event:web/deepseek-search-llm-request.data.body"
       ],
       "sources": [
-        "packages/web/web-search-deepseek/src/provider.ts:61"
+        "packages/web/web-search-deepseek/src/provider.ts:64"
       ]
     },
     {
@@ -47521,7 +47521,7 @@
         "event:web/deepseek-search-llm-request.data.body.messages[0]"
       ],
       "sources": [
-        "packages/web/web-search-deepseek/src/provider.ts:64"
+        "packages/web/web-search-deepseek/src/provider.ts:67"
       ]
     },
     {

@@ -62,7 +62,7 @@ describe('ShellEnvRegistry', () => {
 
     vi.stubEnv('DSH_HOME', undefined)
     const fromDefault = new ShellEnvRegistry(new Context())
-    expect(fromDefault.collect(execution()).DSH_HOME).toBe(join(homedir(), '.dsh'))
+    expect(fromDefault.collect(execution()).DSH_HOME).toBe(join(homedir(), '.alpha'))
   })
 
   it('collects declared contributor variables and omits unavailable values', () => {

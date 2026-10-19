@@ -24,7 +24,7 @@ Host 在报告就绪前退出、就绪后引擎端口仍拒绝连接、或就绪
 
 ## 内置运行时载荷
 
-Desktop 内置独立的 Python、Node.js 和 pnpm 发行版。Python 包含 numpy、pandas、python-docx、python-pptx、openpyxl、Pillow、lxml 和 XlsxWriter 及其完整依赖。`load_workspace_dependencies` 工具在首次使用时离线安装该载荷到 `$DSH_HOME/dsh-runtimes/dsh-primary-runtime`（通常为 `~/.dsh/dsh-runtimes/dsh-primary-runtime`），返回解释器、pnpm 脚本和库的绝对路径，以及 `pythonDistributions`（内置发行版名称与版本）。版本报告不含用户自行安装的内容。除非用户或工作区指令另选环境，Office 任务优先使用这些库。执行 pnpm 脚本时使用返回的 Node 可执行文件。返回的 Node 库目录预留给内置库，不是 pnpm 的全局安装目录。
+Desktop 内置独立的 Python、Node.js 和 pnpm 发行版。Python 包含 numpy、pandas、python-docx、python-pptx、openpyxl、Pillow、lxml 和 XlsxWriter 及其完整依赖。`load_workspace_dependencies` 工具在首次使用时离线安装该载荷到 `$DSH_HOME/dsh-runtimes/dsh-primary-runtime`（通常为 `~/.alpha/dsh-runtimes/dsh-primary-runtime`），返回解释器、pnpm 脚本和库的绝对路径，以及 `pythonDistributions`（内置发行版名称与版本）。版本报告不含用户自行安装的内容。除非用户或工作区指令另选环境，Office 任务优先使用这些库。执行 pnpm 脚本时使用返回的 Node 可执行文件。返回的 Node 库目录预留给内置库，不是 pnpm 的全局安装目录。
 
 Desktop 默认注册 `office-docx`、`office-pptx` 和 `office-xlsx`。这些技能用内置 Python 库进行创建和定点编辑，然后重新打开文件并运行共享结构检查后才交付。PowerPoint 的创建与编辑使用 python-pptx。技能资源被放到可执行文件之外的 `runtime/office-skills`，以便 Python 读取检查器。可用的 `render_document` 工具可以补充目检；缺失它不影响撰写或交付。检查与限制见 [Office 技能包](../../packages/skill/skill-office/README.zh.md)。
 
