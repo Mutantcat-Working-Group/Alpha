@@ -1,6 +1,6 @@
 /** Protocol-independent model capabilities and reasoning choices. */
 import { ReasoningEffortId } from '@mutantcat/dsh-llm'
-import type { LlmModelInfo, LlmResolvedModelInfo } from '@mutantcat/dsh-llm'
+import type { LlmModelInfo, LlmResolvedModelInfo, ModelModality } from '@mutantcat/dsh-llm'
 import type { DeepSeekCatalogModel, DeepSeekConnectionOptions } from './types.ts'
 
 const OFF_REASONING_EFFORT = ReasoningEffortId('off')
@@ -40,15 +40,20 @@ const OFF_ONLY_REASONING_EFFORTS = [
 /** Advertise one catalog entry.
  * @param provider - registered provider id.
  * @param model - advisory catalog entry.
+ * @param defaultInput - modalities an entry that omits its own declaration takes.
  * @returns selector metadata.
  */
-export function catalogModelInfo(provider: string, model: DeepSeekCatalogModel): LlmModelInfo {
+export function catalogModelInfo(
+  provider: string,
+  model: DeepSeekCatalogModel,
+  defaultInput: readonly ModelModality[],
+): LlmModelInfo {
   return {
     provider,
     id: model.id,
     name: model.name ?? model.id,
     ...model.description === undefined ? {} : { description: model.description },
-    inputModalities: model.inputModalities ?? ['text'],
+    inputModalities: model.inputModalities ?? [...defaultInput],
   }
 }
 
@@ -67,12 +72,12 @@ export function modelInfo(
   const contextWindow = configured?.contextWindow
     ?? connection.defaultContextWindow
   return {
-    // An uncatalogued endpoint is safely treated as text-only. Declaring an
-    // unverified image capability would let the host persist input that the
-    // endpoint may reject on every later turn.
+    // An uncatalogued endpoint is not verified to accept images. The route's
+    // configured `defaultInput` is what answers for it, so a deployment whose
+    // models all accept images declares that once instead of listing every id.
     ...configured === undefined
-      ? { provider, id: model, name: model, inputModalities: ['text' as const] }
-      : catalogModelInfo(provider, configured),
+      ? { provider, id: model, name: model, inputModalities: [...connection.defaultInput] }
+      : catalogModelInfo(provider, configured, connection.defaultInput),
     context: { contextWindow },
     defaultMaxTokens: configured?.maxTokens ?? connection.maxTokens,
     ...configured?.systemPromptUpdate === undefined ? {} : { systemPromptUpdate: configured.systemPromptUpdate },

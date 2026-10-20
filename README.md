@@ -12,7 +12,7 @@
 - 安装包内置 Python、Node.js 和 pnpm 三套独立运行时，首次使用即可执行 Python 数据处理、Office 文档读写和 Node 脚本，不依赖用户机器上的系统环境。
 - 终端、SSH、子进程、沙箱、LSP、浏览器操作和计算机操作等能力都以插件形式提供，按需启停。
 - 会话全程落盘且可回放：任何进入模型请求的输入都能从会话日志中重建，便于审计和复现。
-- 应用 ID 为 `org.mutantcat.alpha`，数据目录沿用 `$DSH_HOME`，升级不丢失既有 profile。
+- 应用 ID 为 `org.mutantcat.alpha`，数据目录沿用 `$ALPHA_HOME`，升级不丢失既有 profile。
 - **发行方**：异猫工作群（mutantcat.org），GitHub：https://github.com/Mutantcat-Working-Group
 
 核心价值：

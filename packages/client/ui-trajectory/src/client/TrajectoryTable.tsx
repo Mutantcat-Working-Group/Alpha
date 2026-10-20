@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { isLlmFailureCode } from '@mutantcat/dsh-llm/error'
+import type { LlmFailureCode } from '@mutantcat/dsh-llm/error'
 import {
   CodeBlock,
   FileTypeIcon,
@@ -738,11 +740,28 @@ function statusLabel(state: RecordState, t: TrajectoryTranslate): string {
   return t('status.completed')
 }
 
+/** One dictionary key per {@link LlmFailureCode}; `satisfies` fails the build when a code lacks a key here. */
+const FAILURE_KEYS = {
+  AUTH: 'details.failure.auth',
+  INVALID_CREDENTIAL: 'details.failure.invalidCredential',
+  QUOTA: 'details.failure.quota',
+  RATE_LIMIT: 'details.failure.rateLimit',
+  CONTEXT_WINDOW_EXCEEDED: 'details.failure.contextWindowExceeded',
+  INVALID_REQUEST: 'details.failure.invalidRequest',
+  SERVER: 'details.failure.server',
+  TIMEOUT: 'details.failure.timeout',
+  TRANSPORT: 'details.failure.transport',
+  EMPTY_RESPONSE: 'details.failure.emptyResponse',
+  MALFORMED_RESPONSE: 'details.failure.malformedResponse',
+  UNKNOWN_MODEL: 'details.failure.unknownModel',
+  IMAGE_OFFLOAD_REQUIRED: 'details.failure.imageOffloadRequired',
+} as const satisfies Record<LlmFailureCode, TrajectoryKey>
+
 function requestErrorMessage(
   request: Pick<TrajectoryRequestNumber, 'error' | 'errorCode'>,
   t: TrajectoryTranslate,
 ): string | undefined {
-  if (request.errorCode === 'AUTH') return t('details.failure.auth')
+  if (isLlmFailureCode(request.errorCode)) return t(FAILURE_KEYS[request.errorCode])
   if (request.error === COMPACTION_INTERRUPTED_ERROR) return t('layout.compactionInterrupted')
   return request.error
 }

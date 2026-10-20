@@ -35,7 +35,7 @@ pnpm alpha web --patch apps/cli/config/examples/github-review/cordis.yml
 alpha web --patch /absolute/path/to/github-review/cordis.yml
 ```
 
-对于永久 profile，把 `github-ready-review-rule.mjs` 放在 `$DSH_HOME/profiles/web/cordis.patch.yml` 旁边，把 `cordis.yml` 中的行追加到该 patch，然后运行 `alpha web`。随附 CLI 已经包含两个 webhook 包；只需 overlay 即可激活它们。
+对于永久 profile，把 `github-ready-review-rule.mjs` 放在 `$ALPHA_HOME/profiles/web/cordis.patch.yml` 旁边，把 `cordis.yml` 中的行追加到该 patch，然后运行 `alpha web`。随附 CLI 已经包含两个 webhook 包；只需 overlay 即可激活它们。
 
 ## 暴露专用端点
 

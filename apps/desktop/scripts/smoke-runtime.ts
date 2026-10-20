@@ -16,7 +16,7 @@ import type { DesktopRuntimeDescriptor } from '../src/runtime-tree.ts'
 export async function smokeDesktopRuntime(root: string, node: string, runtime: DesktopRuntimeDescriptor): Promise<void> {
   const home = mkdtempSync(join(tmpdir(), 'dsh-desktop-smoke-'))
   const profile = join(home, 'profiles', 'desktop')
-  const host = new DesktopHostProcess(node, root, profile, undefined, { ...process.env, DSH_HOME: home })
+  const host = new DesktopHostProcess(node, root, profile, undefined, { ...process.env, ALPHA_HOME: home })
   try {
     createPluginProfile(profile)
     const pluginName = 'desktop-runtime-smoke-plugin'

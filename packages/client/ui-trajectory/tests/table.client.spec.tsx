@@ -964,6 +964,45 @@ describe('TrajectoryTable', () => {
     expect(screen.getByText('API key is invalid')).toBeTruthy()
   })
 
+  it.each([
+    ['RATE_LIMIT', '429 Too Many Requests', 'Too many requests; you are being rate limited. Retry shortly'],
+    ['HTTP_502', 'upstream connect error', 'upstream connect error'],
+  ])('renders failure code %s as its localized text or the provider message', (errorCode, error, expected) => {
+    const turns: readonly TrajectoryTurnModel[] = [{
+      turn: 1,
+      groups: [{
+        title: 'Step 1',
+        cells: [{
+          index: 1,
+          kind: 'message',
+          text: '',
+          requestOnly: true,
+          isError: true,
+          timeSeconds: 0.1,
+        }],
+      }],
+    }]
+    render(
+      <TrajectoryTable
+        turns={turns}
+        requestNumbers={[{
+          turn: 1,
+          step: 1,
+          seq: 1,
+          group: 'Step 1',
+          number: 1,
+          status: 'error',
+          error,
+          errorCode,
+        }]}
+        {...FOLD_PROPS}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Request #1' }))
+    expect(screen.getByText(expected)).toBeTruthy()
+  })
+
   it('shows the custom role tooltip only from the responsive icon', () => {
     const view = render(<TrajectoryTable turns={TURNS} {...FOLD_PROPS} />)
     const toolTag = view.container.querySelector<HTMLElement>('[data-role-kind="tool"]')

@@ -11,7 +11,7 @@
 安装机制建立在两个概念之上。二者都由一份 `package.json` 描述，但它们在 `dsh` 键下携带的 manifest（元数据清单）种类不同，回答的问题也不同：
 
 - **组合包**是附带一个配置层的 npm 包。它的 manifest 声明 `dsh.bundle`，回答的是"这个包贡献什么？"：一个插入或覆盖插件行的 patch 文件。
-- **profile** 是位于 `$DSH_HOME/profiles/<name>` 下、描述一份可启动组合的目录。它的 manifest 声明 `dsh.profile`，回答的是"这套配置由哪些组合包按什么顺序组成？"。
+- **profile** 是位于 `$ALPHA_HOME/profiles/<name>` 下、描述一份可启动组合的目录。它的 manifest 声明 `dsh.profile`，回答的是"这套配置由哪些组合包按什么顺序组成？"。
 
 组合包是你编写并分发的东西；profile 是用户用 `alpha --profile <name>` 启动的东西。没有东西同时是两者。
 
@@ -115,7 +115,7 @@ alpha --profile demo
 
 1. profile 的 `dsh.profile.bundles` 列表所列的各个组合包 patch，按列表顺序——先是 `@mutantcat/dsh-base`，然后是每个已安装组合包，按其加入顺序。
 2. profile 自己的 `cordis.patch.yml`。
-3. home 级的 `$DSH_HOME/cordis.patch.yml`——各 profile 共享的机器本地偏好。
+3. home 级的 `$ALPHA_HOME/cordis.patch.yml`——各 profile 共享的机器本地偏好。
 4. 每个 `--patch <path>` overlay，按 argv 顺序。
 
 应用参数不是另一层 patch。表层组合包可以通过下文所述的普通应用自有服务解析它们。

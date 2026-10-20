@@ -493,6 +493,12 @@ export class SessionCommandController {
         }
         break
       }
+      case 'raise':
+        // Order only moves inside the list the item already sits in: a
+        // next-step message raised past the boundary would change what
+        // boundary claims it, not when.
+        agent.inbox.raise(request.itemId)
+        break
       case 'steer':
         agent.inbox.remove(request.itemId)
         agent.steer(message)

@@ -24,7 +24,7 @@ function writeStderr(text: string): Promise<void> {
 }
 
 /**
- * Print the startup summary and save a private, uniquely named report under DSH_HOME/logs.
+ * Print the startup summary and save a private, uniquely named report under ALPHA_HOME/logs.
  * Failed writes print the complete report to stderr instead of claiming a saved path.
  * @param error - startup audit failure retaining plugin metadata and original errors.
  * @param context - resolved Harness home, application version, and selected profile.

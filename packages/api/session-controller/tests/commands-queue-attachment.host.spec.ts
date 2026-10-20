@@ -221,6 +221,36 @@ describe('Session queue commands', () => {
     await ctx.fiber.dispose()
   })
 
+  it('raises a queued item within its own pending list', async () => {
+    const { ctx, controller, agent, inbox } = await commandHarness()
+    const first = createUserMessage({ content: [{ type: 'text', text: 'first' }], source: { kind: 'user' } })
+    const second = createUserMessage({ content: [{ type: 'text', text: 'second' }], source: { kind: 'user' } })
+    const step = createUserMessage({ content: [{ type: 'text', text: 'step' }], source: { kind: 'user' } })
+    inbox.append('next-turn', first)
+    inbox.append('next-turn', second)
+    inbox.append('next-step', step)
+
+    await expectFailure(Promise.resolve().then(() => controller.updateQueue({
+      sessionId: agent.id, itemId: MessageId('missing'), action: { kind: 'raise' },
+    })), 'session/queue-item-not-found')
+    // The leading item has nothing to yield to, so the request still lands.
+    expect(await controller.updateQueue({
+      sessionId: agent.id, itemId: first.id, action: { kind: 'raise' },
+    })).toEqual({ accepted: true })
+    expect(inbox.nextTurn.map(entry => entry.id)).toEqual([first.id, second.id])
+
+    expect(await controller.updateQueue({
+      sessionId: agent.id, itemId: second.id, action: { kind: 'raise' },
+    })).toEqual({ accepted: true })
+    expect(inbox.nextTurn.map(entry => entry.id)).toEqual([second.id, first.id])
+    // Raising never crosses the step boundary: the step message keeps its list.
+    expect(await controller.updateQueue({
+      sessionId: agent.id, itemId: step.id, action: { kind: 'raise' },
+    })).toEqual({ accepted: true })
+    expect(inbox.nextStep.map(entry => entry.id)).toEqual([step.id])
+    await ctx.fiber.dispose()
+  })
+
   it.each(['continuable', 'seeded-continuable'] as const)(
     'mutates both inbox destinations of a live %s child while its parent is offline',
     async (childMode) => {

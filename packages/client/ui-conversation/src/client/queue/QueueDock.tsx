@@ -186,9 +186,12 @@ export function QueueDock({ useSession, useProjection, updateQueue, notify, load
           </button>
         )}
         <ul id={listId} className={css.list} hidden={!listVisible}>
-          {listVisible && queue.map((row) => {
+          {listVisible && queue.map((row, index) => {
             const attachments = queueAttachments(row.content)
             const text = textOf(row.content)
+            // Queue rows render ahead of the pending echoes, so row zero is the
+            // first message the next turn will claim.
+            const first = index === 0
             return (
               <li key={row.id} className={css.row}>
                 {/* Single-item strip has no count header, so the row itself carries the queue glyph. */}
@@ -301,6 +304,26 @@ export function QueueDock({ useSession, useProjection, updateQueue, notify, load
                             <IconTrashOutline16 size={14} />
                           </button>
                         </Tooltip>
+                        <Tooltip label={t('queue.raise')} side="bottom" delayMs={500} disabled={first}>
+                          <button
+                            type="button"
+                            className={css.action}
+                            aria-label={t('queue.raise')}
+                            // Disabled buttons fire no hover events, so the
+                            // boundary hint stays a native title.
+                            title={first ? t('queue.raise.first') : undefined}
+                            disabled={busy !== null || first}
+                            onClick={() => {
+                              void applyAction(
+                                row.id,
+                                { kind: 'raise' },
+                                t('queue.raiseFailed'),
+                              )
+                            }}
+                          >
+                            <IconChevronUpOutline14 />
+                          </button>
+                        </Tooltip>
                         <Tooltip label={t('queue.steer')} side="bottom" delayMs={500} disabled={!running}>
                           <button
                             type="button"
@@ -369,6 +392,15 @@ export function QueueDock({ useSession, useProjection, updateQueue, notify, load
                     disabled
                   >
                     <IconTrashOutline16 size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    className={css.action}
+                    aria-label={t('queue.raise')}
+                    title={t('queue.sending')}
+                    disabled
+                  >
+                    <IconChevronUpOutline14 />
                   </button>
                   <button
                     type="button"

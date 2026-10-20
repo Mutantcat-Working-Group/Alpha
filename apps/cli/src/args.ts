@@ -150,7 +150,7 @@ export function parseAlphaArgs(argv: readonly string[], version: string): AlphaI
     .passThroughOptions()
     .enablePositionalOptions()
     .argument('[args...]', 'arguments for the booted profile\'s app (see: alpha --profile <name> --help)')
-    .option('--profile <name>', 'the profile under $DSH_HOME/profiles to boot', selectProfile)
+    .option('--profile <name>', 'the profile under $ALPHA_HOME/profiles to boot', selectProfile)
     .option('--from-default-profile <name>', 'initialize a new custom profile from a shipped profile template')
     .option('--patch <path>', 'extra patch-list overlay applied after the profile layer (repeatable)', collect)
     .option('--dump-config', 'print the composed profile tree and exit')

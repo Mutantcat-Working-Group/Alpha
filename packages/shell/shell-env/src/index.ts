@@ -11,7 +11,7 @@
 import { Service, type Context } from '@mutantcat/cordis'
 import z from '@mutantcat/schemastery'
 import { DSH_ENV_PREFIX } from '@mutantcat/dsh-shell'
-import type { DshEnvironment, DshEnvironmentKey } from '@mutantcat/dsh-shell'
+import type { DshEnvironment, DshEnvironmentKey, ManagedEnvironmentKey } from '@mutantcat/dsh-shell'
 import { DSH_HOME_ENV, resolveDshHome } from '@mutantcat/dsh-home-paths'
 import type { ToolExecution } from '@mutantcat/dsh-tools'
 
@@ -26,7 +26,7 @@ export const inject: string[] = []
 
 /** Plugin config (all optional — the built-in facts resolve without defaults). */
 export interface Config {
-  /** Alpha home directory exposed as `DSH_HOME`; defaults to `$DSH_HOME` or `~/.alpha`. */
+  /** Alpha home directory exposed as `ALPHA_HOME`; defaults to `$ALPHA_HOME` or `~/.alpha`. */
   dshHome?: string
 }
 
@@ -69,7 +69,7 @@ export interface BashEnvVariableInfo extends BashEnvVariable {
 
 const DSH_SHELL_KEY = `${DSH_ENV_PREFIX}SHELL` as const
 const DSH_SESSION_ID_KEY = `${DSH_ENV_PREFIX}SESSION_ID` as const
-const RESERVED_BASH_ENV_KEYS = new Set<DshEnvironmentKey>([
+const RESERVED_BASH_ENV_KEYS = new Set<ManagedEnvironmentKey>([
   DSH_HOME_ENV,
   DSH_SHELL_KEY,
   DSH_SESSION_ID_KEY,
@@ -116,12 +116,15 @@ export class ShellEnvRegistry extends Service {
 
       const variables = Object.entries(contributor.variables) as [DshEnvironmentKey, BashEnvVariable][]
       for (const [key, variable] of variables) {
+        // A built-in key is checked before the namespace rule: the home key
+        // lives outside the `DSH_` prefix, so the prefix test alone would
+        // report it as malformed instead of reserved.
+        if (RESERVED_BASH_ENV_KEYS.has(key)) {
+          throw new Error(`bash env contributor "${contributor.name}" cannot own reserved key "${key}"`)
+        }
         if (!key.startsWith(DSH_ENV_PREFIX)
           || !BASH_ENV_KEY_SUFFIX.test(key.slice(DSH_ENV_PREFIX.length))) {
           throw new Error(`bash env contributor "${contributor.name}" declared invalid key "${key}"`)
-        }
-        if (RESERVED_BASH_ENV_KEYS.has(key)) {
-          throw new Error(`bash env contributor "${contributor.name}" cannot own reserved key "${key}"`)
         }
         if (variable.description.trim().length === 0) {
           throw new Error(`bash env contributor "${contributor.name}" must describe "${key}"`)
@@ -148,7 +151,7 @@ export class ShellEnvRegistry extends Service {
    * @returns an immutable environment overlay containing built-ins and current contributions.
    */
   collect(execution: ToolExecution): DshEnvironment {
-    const values: Record<DshEnvironmentKey, string> = {
+    const values: Record<ManagedEnvironmentKey, string> = {
       [DSH_HOME_ENV]: this.dshHome,
       [DSH_SHELL_KEY]: '1',
     }

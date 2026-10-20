@@ -45,7 +45,7 @@ export class DeepSeekMessagesAdapter extends LlmAdapter {
   override providerRetryPolicy(_provider: string) { return this.dependencies.connection().retryPolicy }
   override listModels(provider: string) {
     const connection = this.dependencies.connection()
-    return Promise.resolve(connection.models.map(model => catalogModelInfo(provider, model)))
+    return Promise.resolve(connection.models.map(model => catalogModelInfo(provider, model, connection.defaultInput)))
   }
   override resolveModel(provider: string, model: string) {
     return Promise.resolve(modelInfo(this.dependencies.connection(), provider, model))

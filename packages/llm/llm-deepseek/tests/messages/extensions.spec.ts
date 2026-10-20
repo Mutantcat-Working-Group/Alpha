@@ -27,7 +27,7 @@ afterEach(async () => {
 async function boot() {
   const home = await mkdtemp(join(tmpdir(), 'dsh-messages-extensions-'))
   cleanup.push(() => rm(home, { recursive: true, force: true }))
-  vi.stubEnv('DSH_HOME', home)
+  vi.stubEnv('ALPHA_HOME', home)
   vi.stubEnv('DEEPSEEK_API_KEY', 'test-key')
   const ctx = new Context()
   cleanup.push(() => ctx.fiber.dispose())

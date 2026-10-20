@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Alpha uses one anonymous identifier per harness home to correlate telemetry, feedback, and DeepSeek requests from the same installation without identifying the user. The random UUID is stored in `$DSH_HOME/.anonymous-user-id` (`$DSH_HOME` defaults to `~/.alpha`), persists across restarts, and is regenerated after you delete the file. Different harness homes use different identifiers, and the value contains no machine or account data. Built-in features create and attach it automatically; package consumers can reuse the same value for installation-scoped correlation, but cannot join records across homes.
+Alpha uses one anonymous identifier per harness home to correlate telemetry, feedback, and DeepSeek requests from the same installation without identifying the user. The random UUID is stored in `$ALPHA_HOME/.anonymous-user-id` (`$ALPHA_HOME` defaults to `~/.alpha`), persists across restarts, and is regenerated after you delete the file. Different harness homes use different identifiers, and the value contains no machine or account data. Built-in features create and attach it automatically; package consumers can reuse the same value for installation-scoped correlation, but cannot join records across homes.
 
 ## Table of Contents
 
@@ -37,7 +37,7 @@ Three things your installation sends out carry the same id, so records line up a
 
 ### Observing and resetting the id
 
-The id lives in `$DSH_HOME/.anonymous-user-id` (`$DSH_HOME` defaults to `~/.alpha`) as a plain UUID text file. Delete that file to get a fresh id at the next launch; the running process keeps its current id until it exits. Separate harness homes keep separate ids, and no machine or account detail ever goes into the value.
+The id lives in `$ALPHA_HOME/.anonymous-user-id` (`$ALPHA_HOME` defaults to `~/.alpha`) as a plain UUID text file. Delete that file to get a fresh id at the next launch; the running process keeps its current id until it exits. Separate harness homes keep separate ids, and no machine or account detail ever goes into the value.
 
 ### Using it in your own package
 
@@ -94,7 +94,7 @@ The file is a bare UUID line named by `ANONYMOUS_USER_ID_FILE_NAME`, validated a
 Read these pages when the package-level contract is not enough. They move from the identity group map to the home-path resolution this package builds on and the features that use the id.
 
 - [identity group map](../README.md) — the sibling packages and group scope.
-- [dsh-home-paths](../../util/home-paths/README.md) — owns `$DSH_HOME` and `~/.alpha` resolution.
+- [dsh-home-paths](../../util/home-paths/README.md) — owns `$ALPHA_HOME` and `~/.alpha` resolution.
 - [dsh-session-telemetry-otel](../../session/session-telemetry-otel/README.md) — reports the id as the OTel Resource `user.id`.
 - [dsh-command-feedback](../../feedback/command-feedback/README.md) — embeds the id in the feedback acknowledgement.
 - [dsh-llm-deepseek](../../llm/llm-deepseek/README.md) — sends `x-deepseek-harness-user-id` on provider requests.
@@ -120,7 +120,7 @@ These limits describe when the id is a poor fit or needs special attention. They
 
 - **No recovery after deletion** — losing the file mints a new anonymous identity by design; recovery would require stable derivation material that weakens anonymity.
 - **Best-effort concurrency** — a reader landing in the narrow interval between a concurrent process's exclusive create and completed write can use a different in-memory UUID for that run; later launches converge on the persisted value.
-- **No cross-home identity** — different `$DSH_HOME` values cannot be correlated.
+- **No cross-home identity** — different `$ALPHA_HOME` values cannot be correlated.
 - **Configured DeepSeek gateways receive the id** — `dsh-llm-deepseek` sends the stable header to its resolved `baseURL`, including deployment overrides, independently of telemetry sharing mode.
 - **Deleting the file does not reset the current process** — memoization keeps the run's id until the next launch.
 

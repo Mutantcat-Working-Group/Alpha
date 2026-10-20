@@ -42,7 +42,7 @@ kind: "package-reference"
 | 字段 | 默认值 | 含义 |
 |---|---|---|
 | `path` | `<harness home>/.credentials.yaml` | 凭据文件所在位置 |
-| `dshHome` | `$DSH_HOME` 或 `~/.alpha` | `path` 缺省时使用的 harness home |
+| `dshHome` | `$ALPHA_HOME` 或 `~/.alpha` | `path` 缺省时使用的 harness home |
 | `watch` | `true` | 文件在磁盘上变化时自动重载 |
 | `debounceMs` | `100` | 变化后等待这么久再重载，单位为毫秒 |
 
@@ -75,7 +75,7 @@ await ctx.credentials.unset(ref)                // remove
 | 你启动时的环境（`DEEPSEEK_API_KEY=… alpha`） | 否 | 一切 |
 | 存储文件 | 是（`set`/`unset`） | 两个 `.env` 文件 |
 | 项目的 `.env`（`<invocation cwd>/.env`） | 不在此处 | 主目录 `.env` |
-| 主目录的 `.env`（`$DSH_HOME/.env`） | 不在此处 | 无 |
+| 主目录的 `.env`（`$ALPHA_HOME/.env`） | 不在此处 | 无 |
 
 启动环境优先，因为按次覆盖——`DEEPSEEK_API_KEY=… alpha`、CI 机密、容器 `-e`——代表本次运行的明确意图；它无法从产品内部修改，因此被报告为只读，写入会被拒绝。其他一切来源都输给存储文件，这正是你保存的密钥会立即生效的原因，即使某个 `.env` 里还留着更旧的密钥；没有存储任何东西时，那两个 `.env` 层会参与解析。环境层是启动时拍摄的启动器[环境快照](../../util/launch-environment/README.zh.md)，因此启动之后才导出的变量不会被看到。
 

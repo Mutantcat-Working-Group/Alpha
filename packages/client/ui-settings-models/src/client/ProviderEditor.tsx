@@ -461,6 +461,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
                     ? defaultContextWindow
                     : undefined}
                   defaultMaxTokens={typeof defaultMaxTokens === 'number' ? defaultMaxTokens : undefined}
+                  defaultInput={Array.isArray(defaultInput) ? defaultInput : undefined}
                 />
               )
               : (

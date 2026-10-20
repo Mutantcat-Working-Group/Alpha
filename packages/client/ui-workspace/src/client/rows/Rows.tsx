@@ -171,7 +171,7 @@ export function ProjectRowItem({ group, containsCurrentDescendant = false, onTog
   ]
   const ownRow = (
     <div
-      className={clsx(css.projectRow, menuOpen && css.menuOpen)}
+      className={clsx(css.projectRow, menuOpen && css.menuOpen, drag !== undefined && css.draggable)}
       role="treeitem"
       aria-expanded={row.expanded}
       onClick={onToggle}

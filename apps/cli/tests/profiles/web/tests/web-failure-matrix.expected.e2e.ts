@@ -110,7 +110,7 @@ function fixture() {
 function start(f: ReturnType<typeof fixture>, extra: string[] = []) {
   const child = execa(process.execPath, [bin, '--profile', 'web', '--patch', f.watcher, ...extra, '--no-open', '--port', '0'], {
     cwd: f.root,
-    env: { ...process.env, DSH_HOME: f.home, DSH_AGENTS_HOME: join(f.root, '.agents'), DEEPSEEK_API_KEY: 'keyless-matrix-no-call', NODE_NO_WARNINGS: '1' },
+    env: { ...process.env, ALPHA_HOME: f.home, DSH_AGENTS_HOME: join(f.root, '.agents'), DEEPSEEK_API_KEY: 'keyless-matrix-no-call', NODE_NO_WARNINGS: '1' },
     input: '', reject: false, timeout: 110_000, killSignal: 'SIGKILL',
   })
   let stdout = ''

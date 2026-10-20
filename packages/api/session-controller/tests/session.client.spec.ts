@@ -111,6 +111,21 @@ describe('Session open', () => {
     expect(session.getSnapshot().openError).toMatchObject({ code: 'gateway/internal', message: 'socket died' })
   })
 
+  it('lands a non-Remote open failure in openState=error rather than leaving the window loading', async ({ mock, start }) => {
+    const session = await sessionBench(mock, start, SID)
+    const open = vi.spyOn(SessionEventStream.prototype, 'open')
+      .mockRejectedValue(new TypeError('carrier blew up'))
+    const reported = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(session.open()).resolves.toBeUndefined()
+
+    expect(session.getSnapshot().openState).toBe('error')
+    expect(session.getSnapshot().openError).toMatchObject({ code: 'gateway/internal', message: 'carrier blew up' })
+    expect(reported).toHaveBeenCalled()
+    open.mockRestore()
+    reported.mockRestore()
+  })
+
   it('stitches live frames landing right behind the opening snapshot, dropping the page overlap', async ({ mock, start }) => {
     const session = await sessionBench(mock, start, SID)
     const gate = Promise.withResolvers<SessionPage>()
@@ -882,6 +897,22 @@ describe('resync', () => {
     const session = await sessionBench(mock, start, SID)
     await session.resync()
     expect(mock.log.requests()).toEqual([])
+  })
+
+  it('resets the window state before the superseded stream finishes disposing', async ({ mock, start }) => {
+    const session = await sessionBench(mock, start, SID)
+    mock.stream(FOLLOW, followScript(history(plainTurn(SessionSeq(0), 0, 'a', 'b'))))
+    await session.open()
+    expect(session.getSnapshot().openState).toBe('open')
+
+    // The superseded stream's disposal settles later. Until it does the window
+    // must not keep claiming 'loading' for an open this resync invalidated.
+    const resyncing = session.resync()
+    expect(session.getSnapshot().openState).toBe('cold')
+
+    mock.stream(FOLLOW, followScript(history(plainTurn(SessionSeq(6), 1, 'c', 'd'))))
+    await resyncing
+    expect(session.getSnapshot().openState).toBe('open')
   })
 
   it('drops a stale in-flight open superseded by resync (generation guard)', async ({ mock, start }) => {

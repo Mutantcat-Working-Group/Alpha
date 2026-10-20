@@ -32,7 +32,7 @@ let testHome: string
 
 beforeEach(() => {
   testHome = mkdtempSync(join(tmpdir(), 'dsh-llm-deepseek-'))
-  vi.stubEnv('DSH_HOME', testHome)
+  vi.stubEnv('ALPHA_HOME', testHome)
 })
 
 afterEach(async () => {
@@ -1904,6 +1904,46 @@ describe('plugin registration and config', () => {
       })
   })
 
+  it('applies the route defaultInput to undeclared entries and unlisted models', async () => {
+    const ctx = new Context()
+    await ctx.plugin(LlmRuntime)
+    await ctx.plugin(LlmDeepSeek, {
+      protocol: 'chat-completions',
+      baseURL: 'http://127.0.0.1:1',
+      defaultInput: ['text', 'image'],
+      models: [
+        { id: 'inherits-route-default' },
+        { id: 'declares-own', inputModalities: ['text'] },
+      ],
+    })
+
+    // An entry that omits its declaration takes the route default, and so does
+    // an endpoint model the catalog does not list at all.
+    await expect(ctx.llm.resolveModelInfo('deepseek-official', 'inherits-route-default'))
+      .resolves.toMatchObject({ inputModalities: ['text', 'image'] })
+    await expect(ctx.llm.resolveModelInfo('deepseek-official', 'unlisted-endpoint-model'))
+      .resolves.toMatchObject({ inputModalities: ['text', 'image'] })
+    // An explicit declaration still wins over the route default.
+    await expect(ctx.llm.resolveModelInfo('deepseek-official', 'declares-own'))
+      .resolves.toMatchObject({ inputModalities: ['text'] })
+    // Discovery consumers read the same effective declaration.
+    await expect(ctx.llm.listModels('deepseek-official'))
+      .resolves.toMatchObject([
+        { id: 'inherits-route-default', inputModalities: ['text', 'image'] },
+        { id: 'declares-own', inputModalities: ['text'] },
+      ])
+  })
+
+  it('refuses a defaultInput that names no modality', async () => {
+    const ctx = new Context()
+    await ctx.plugin(LlmRuntime)
+    await expect(ctx.plugin(LlmDeepSeek, {
+      protocol: 'chat-completions',
+      baseURL: 'http://127.0.0.1:1',
+      defaultInput: [],
+    })).rejects.toThrow('llm-deepseek: defaultInput must name at least one modality')
+  })
+
   it('uses exact model capacity before the adapter-wide default', async () => {
     const ctx = new Context()
     await ctx.plugin(LlmRuntime)
@@ -1941,7 +1981,6 @@ describe('plugin registration and config', () => {
     [[{ id: 'm', name: '' }], /empty name/],
     [[{ id: 'm', contextWindow: 0 }], /contextWindow/],
     [[{ id: 'm', contextWindow: 1.5 }], /contextWindow/],
-    [[{ id: 'm', inputModalities: [] }], /inputModalities/],
     [[{ id: 'm', inputModalities: ['text', 'text'] }], /inputModalities must not contain duplicates/],
     [[{
       id: 'm',
@@ -1962,15 +2001,26 @@ describe('plugin registration and config', () => {
   })
 
   const invalidProgrammaticModalities: Array<[LlmDeepSeek.DeepSeekCatalogModel[], RegExp]> = [
-    [[{ id: 'm', inputModalities: [] }], /inputModalities must not be empty/],
     [[{
       id: 'm',
       inputModalities: ['audio'] as unknown as NonNullable<LlmDeepSeek.DeepSeekCatalogModel['inputModalities']>,
     }], /inputModalities must contain only "text" and "image"/],
+    [[{ id: 'm', inputModalities: ['text', 'text'] }], /inputModalities must not contain duplicates/],
   ]
 
   it.each(invalidProgrammaticModalities)('rejects programmatic modality config that bypasses the schema', (models, message) => {
     expect(() => resolveAdapterOptions({ models: [...models] })).toThrow(message)
+  })
+
+  it('reads an empty declared modality list as no declaration', () => {
+    // Schemastery materializes an absent key as an empty array, so the two are
+    // one case and both inherit the route default.
+    expect(resolveAdapterOptions({ models: [{ id: 'm', inputModalities: [] }] }).models[0]?.inputModalities)
+      .toEqual(['text'])
+    expect(resolveAdapterOptions({
+      models: [{ id: 'm', inputModalities: [] }],
+      defaultInput: ['text', 'image'],
+    }).models[0]?.inputModalities).toEqual(['text', 'image'])
   })
 
   it('rejects the removed imageDetail model setting through schema and direct construction', async () => {

@@ -53,7 +53,7 @@ async function agent(ctx: Context): Promise<Agent> {
 describe('/feedback real Loader composition through cordis.yml', () => {
   it('boots cordis.yml and records feedback without model-visible output', async () => {
     root = await mkdtemp(join(tmpdir(), 'dsh-command-feedback-loader-'))
-    vi.stubEnv('DSH_HOME', root)
+    vi.stubEnv('ALPHA_HOME', root)
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
       "- name: '@mutantcat/dsh-agent'",
@@ -90,7 +90,7 @@ describe('/feedback real Loader composition through cordis.yml', () => {
     expect(context.commands.list(owner).map(command => command.name)).toContain('feedback')
 
     const accepted = await context.commands.execute(owner, '/feedback the diff view is unreadable', [], signal)
-    const userId = getOrCreateAnonymousUserId({ env: { DSH_HOME: root } })
+    const userId = getOrCreateAnonymousUserId({ env: { ALPHA_HOME: root } })
     expect(accepted?.result).toEqual({
       kind: 'success',
       text: `Feedback recorded for session feedback-loader-agent\nAnonymous user: ${userId}.`,

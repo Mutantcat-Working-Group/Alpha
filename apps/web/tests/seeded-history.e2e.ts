@@ -710,8 +710,8 @@ describe('web e2e: seeded history renders through cold resume', () => {
 
   it.skipIf(MODE === 'record')('reports full feedback correlation ids in an expandable two-line row', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-seeded-feedback-row'))
-    const previousDshHome = process.env.DSH_HOME
-    process.env.DSH_HOME = scaffold.harnessHome
+    const previousDshHome = process.env.ALPHA_HOME
+    process.env.ALPHA_HOME = scaffold.harnessHome
     try {
       const input = page.locator('[data-composer-input]').first()
       await input.fill('/feedback the diff view is unreadable')
@@ -744,8 +744,8 @@ describe('web e2e: seeded history renders through cold resume', () => {
         .split(userId).join('{{userId}}')
       await compareOrRefreshGolden(FEEDBACK_ROW_EXPECTED, snapshot, MODE)
     } finally {
-      if (previousDshHome === undefined) delete process.env.DSH_HOME
-      else process.env.DSH_HOME = previousDshHome
+      if (previousDshHome === undefined) delete process.env.ALPHA_HOME
+      else process.env.ALPHA_HOME = previousDshHome
     }
   }, 60_000)
 

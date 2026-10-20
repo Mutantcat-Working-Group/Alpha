@@ -13,7 +13,7 @@ import { processAlive, signalProcess } from '../process-table.ts'
 export interface ProcessShimOptions {
   /** Virtual root reported by `cwd()`. */
   readonly cwd: string
-  /** Environment the tree reads; `DSH_HOME` belongs here. */
+  /** Environment the tree reads; `ALPHA_HOME` belongs here. */
   readonly env: Readonly<Record<string, string>>
   /** Argument vector reported to the tree. */
   readonly argv?: readonly string[]

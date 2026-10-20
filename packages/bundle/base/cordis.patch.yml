@@ -82,14 +82,14 @@
     - id: llm-retry
       name: '@mutantcat/dsh-llm-retry'
 
-    # User-settings document (`$DSH_HOME/settings.yaml`, hot-reloaded): a
+    # User-settings document (`$ALPHA_HOME/settings.yaml`, hot-reloaded): a
     # `llm-pi-ai:` section there declares provider profiles without a restart,
     # and is what the web Models page writes.
     - id: settings
       name: '@mutantcat/dsh-settings-file'
 
     # Credential sources: inherited environment over the managed
-    # `$DSH_HOME/.credentials.yaml`, with project and user `.env` fallbacks.
+    # `$ALPHA_HOME/.credentials.yaml`, with project and user `.env` fallbacks.
     # Adapters resolve references per request; the Models page writes only the
     # managed document, which is never materialized into the process environment.
     - id: credentials
@@ -387,7 +387,7 @@
     # default: the tool description restricts `ralph` to runs the human
     # explicitly asked for, and completion is a worker self-report, not an
     # independent evaluation. An overlay row restores it for a base-backed
-    # profile (`$DSH_HOME/cordis.patch.yml`, or a `--patch <file>`):
+    # profile (`$ALPHA_HOME/cordis.patch.yml`, or a `--patch <file>`):
     #   - id: tool-ralph
     #     disabled: false
     - id: tool-ralph

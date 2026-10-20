@@ -1,6 +1,6 @@
 // Web e2e scenario: generic file upload round trip. A real chromium picks a
 // file through the composer paperclip input; the upload RPC stores the exact
-// bytes below the scaffold's isolated DSH_HOME, the prompt cites the staged
+// bytes below the scaffold's isolated ALPHA_HOME, the prompt cites the staged
 // reference, request assembly projects the file block to handle text, and the
 // model (replayed or live) reads the saved copy with the REAL read tool. The
 // content-addressed store makes the saved path identical across record and

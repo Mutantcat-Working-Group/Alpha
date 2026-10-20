@@ -2,8 +2,11 @@ import { Fragment, memo, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { PendingSubmission } from '@mutantcat/dsh-api-session-controller/client'
 import type { MessageImageSource } from '@mutantcat/dsh-client-ui-conversation/client'
+import { isLlmFailureCode } from '@mutantcat/dsh-llm/error'
 import { fileExtension, FileTypeIcon, fileSizeText, JsonBlock, projectUserText, StateDot } from '@mutantcat/dsh-client-ui-primitives'
+import type { LlmFailureCode } from '@mutantcat/dsh-llm/error'
 import type { ChatNodeOwnerProps, ChatNodeViewProps, ChatViewSlotProps } from '../contract/slots.ts'
+import type { ChatKey } from '../locale.ts'
 import type { ModelRetryNode, TurnErrorNode, UserMessageNode } from '../contract/snapshot.ts'
 import { CompactionItem } from './CompactionItem.tsx'
 import { ContextInjectionRow } from './ContextInjectionRow.tsx'
@@ -47,12 +50,35 @@ interface RetryCountdown {
   seconds: number
 }
 
+/** One dictionary key per {@link LlmFailureCode}; `satisfies` fails the build when a code lacks a key here. */
+const FAILURE_KEYS = {
+  AUTH: 'message.failure.auth',
+  INVALID_CREDENTIAL: 'message.failure.invalidCredential',
+  QUOTA: 'message.failure.quota',
+  RATE_LIMIT: 'message.failure.rateLimit',
+  CONTEXT_WINDOW_EXCEEDED: 'message.failure.contextWindowExceeded',
+  INVALID_REQUEST: 'message.failure.invalidRequest',
+  SERVER: 'message.failure.server',
+  TIMEOUT: 'message.failure.timeout',
+  TRANSPORT: 'message.failure.transport',
+  EMPTY_RESPONSE: 'message.failure.emptyResponse',
+  MALFORMED_RESPONSE: 'message.failure.malformedResponse',
+  UNKNOWN_MODEL: 'message.failure.unknownModel',
+  IMAGE_OFFLOAD_REQUIRED: 'message.failure.imageOffloadRequired',
+} as const satisfies Record<LlmFailureCode, ChatKey>
+
+/**
+ * Localized text for a stable provider-neutral LLM failure code, or the
+ * provider's own message when the code is open-ended (`HTTP_<status>`) or
+ * outside the taxonomy — those have no fixed user-facing meaning.
+ */
 function failureMessage(
   message: string,
   code: unknown,
   t: ChatViewSlotProps['t'],
 ): string {
-  return code === 'AUTH' ? t('message.failure.auth') : message
+  if (!isLlmFailureCode(code)) return message
+  return t(FAILURE_KEYS[code])
 }
 
 function ModelRetryItem({ node, active, t }: {

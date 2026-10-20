@@ -13,7 +13,8 @@ function unsupportedInbox(): Agent['inbox'] {
   }
   return {
     nextTurn: [], nextStep: [], clear: rejectMutation, append: rejectMutation,
-    prepend: rejectMutation, replace: rejectMutation, remove: rejectMutation, splice: rejectMutation,
+    prepend: rejectMutation, replace: rejectMutation, remove: rejectMutation,
+    raise: rejectMutation, splice: rejectMutation,
   }
 }
 
@@ -224,6 +225,47 @@ describe('ReactLoopInbox', () => {
     expect(inserted).toEqual([original, nextStep, replacement, editedStep])
     expect(() => { agent.inbox.replace(editedStep.id, replacement) })
       .toThrow(`message "${replacement.id}" is already pending`)
+  })
+
+  it('raises one pending message within its own list', async () => {
+    const { ctx, session, agent } = await inboxAgent('raise-inbox')
+    const message = (text: string) => createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'user' },
+    })
+    const first = message('first')
+    const second = message('second')
+    const third = message('third')
+    const last = message('last')
+    const step = message('step')
+    agent.inbox.append('next-turn', first)
+    agent.inbox.append('next-turn', second)
+    agent.inbox.append('next-turn', third)
+    agent.inbox.append('next-turn', last)
+    agent.inbox.append('next-step', step)
+
+    // An unknown identity and a message already leading its list both leave
+    // the durable order untouched.
+    expect(agent.inbox.raise(message('missing').id)).toBe(false)
+    expect(agent.inbox.raise(first.id)).toBe(false)
+    expect(agent.inbox.nextTurn).toEqual([first, second, third, last])
+
+    // Repeated raises walk one message to the front, one position at a time.
+    expect(agent.inbox.raise(last.id)).toBe(true)
+    expect(agent.inbox.nextTurn).toEqual([first, second, last, third])
+    expect(agent.inbox.raise(last.id)).toBe(true)
+    expect(agent.inbox.nextTurn).toEqual([first, last, second, third])
+    expect(agent.inbox.raise(last.id)).toBe(true)
+    expect(agent.inbox.nextTurn).toEqual([last, first, second, third])
+    // Raising stays inside the list the message sits in, so a next-step
+    // message never jumps the boundary into the next turn.
+    expect(agent.inbox.raise(step.id)).toBe(false)
+    expect(agent.inbox.nextStep).toEqual([step])
+
+    // The reordered projection is what the fold reconstructs from the log.
+    const replayed = new ReactLoopInbox(ctx.sessionProjections, session, agentEvents(ctx, agent))
+    expect(replayed.nextTurn.map(entry => entry.id))
+      .toEqual([last.id, first.id, second.id, third.id])
   })
 
   it('normalizes splice coordinates, rejects duplicate identities, and reports missing removals', async () => {

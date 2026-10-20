@@ -32,7 +32,7 @@ The persistent PTY can modify any path available to the runtime process, so use 
 Use the runtime wheel's `alpha` command against the same explicit home for persistent profile changes:
 
 ```sh
-export DSH_HOME=/absolute/path/to/example-dsh-home
+export ALPHA_HOME=/absolute/path/to/example-dsh-home
 alpha plugin --profile sdk-minimal add file:/absolute/path/to/my-plugin-bundle
 ```
 

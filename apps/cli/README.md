@@ -8,7 +8,7 @@ The `alpha` command is the sole supported Node application launcher: profiles ar
 
 | Command | Purpose |
 |---|---|
-| `alpha <name>` / `alpha --profile <name>` | Boot the named profile under `$DSH_HOME/profiles/<name>`. |
+| `alpha <name>` / `alpha --profile <name>` | Boot the named profile under `$ALPHA_HOME/profiles/<name>`. |
 | `alpha --profile <name> --from-default-profile <template>` | Create a new custom profile from a shipped template, then boot it. |
 | `alpha --profile acp` | Serve automation clients over ACP stdio until disconnect. |
 | `alpha --profile headless "job"` | Run one fresh persisted session, print the final answer, and exit. |
@@ -38,7 +38,7 @@ A profile directory holds a `package.json` (out-of-tree plugin dependencies plus
 
 The tree composes over an empty root:
 - each bundle's patch in `dsh.profile.bundles` order
-- then the profile's `cordis.patch.yml`, then the home-level `$DSH_HOME/cordis.patch.yml`
+- then the profile's `cordis.patch.yml`, then the home-level `$ALPHA_HOME/cordis.patch.yml`
 - then `--patch` overlays
 
 Bundles named in `dsh.profile.bundles` resolve from the alpha installation first (`@mutantcat/dsh-base`, `@mutantcat/dsh-web-app`, `@mutantcat/dsh-headless`, `@mutantcat/dsh-sdk-app`, `@mutantcat/dsh-sdk-minimal`, `@mutantcat/dsh-acp-app`), then from the profile's own `node_modules`, where pnpm installs out-of-tree plugins.

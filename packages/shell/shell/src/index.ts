@@ -32,6 +32,7 @@ export type {
   CollectedOutput,
   DshEnvironment,
   DshEnvironmentKey,
+  ManagedEnvironmentKey,
 } from './types.ts'
 export { parseExitStatus } from './render.ts'
 export type { ParsedExitStatus } from './render.ts'

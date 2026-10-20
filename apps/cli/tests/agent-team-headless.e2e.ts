@@ -57,7 +57,7 @@ describe('dsh run with Agent Teams enabled', () => {
         configArgs: ['--profile', 'headless', '请先运行 workflow 检查，再使用 Agent Teams 把调研和实现拆给两个 teammate，等待完成后汇总。'],
         tsconfigPath,
         env: {
-          DSH_HOME: home,
+          ALPHA_HOME: home,
           DSH_AGENTS_HOME: join(cwd, '.agents'),
           DEEPSEEK_API_KEY: '',
           NODE_OPTIONS: [

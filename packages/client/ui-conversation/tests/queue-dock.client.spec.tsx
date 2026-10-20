@@ -384,14 +384,59 @@ describe('QueueDock', () => {
     fireEvent.click(getByRole('button', { name: '2 条排队消息' }))
     expect([...container.querySelectorAll('li')].map(item => item.textContent))
       .toEqual(['第一条排队消息', 'image'])
-    expect(container.querySelectorAll('button')).toHaveLength(7)
+    expect(container.querySelectorAll('button')).toHaveLength(9)
     expect(container.querySelectorAll('[aria-label="编辑排队消息"]')).toHaveLength(2)
     expect(container.querySelectorAll('[aria-label="删除排队消息"]')).toHaveLength(2)
+    expect(container.querySelectorAll('[aria-label="提升优先级"]')).toHaveLength(2)
     expect(container.querySelectorAll('[aria-label="插话发送"]')).toHaveLength(2)
     expect((container.querySelectorAll('[aria-label="编辑排队消息"]')[0] as HTMLButtonElement).disabled).toBe(false)
     expect((container.querySelectorAll('[aria-label="编辑排队消息"]')[1] as HTMLButtonElement).disabled).toBe(true)
     expect(container.querySelectorAll('[aria-label="编辑排队消息"]')[1]?.getAttribute('title'))
       .toBe('包含非文本内容，暂不支持编辑')
+  })
+
+  it('raises one queued row and disables the leading row', async () => {
+    const updateQueue = vi.fn(() => Promise.resolve())
+    const snap = snapshotWith([row('i-1', '第一条'), row('i-2', '第二条')])
+    const source = liveSession(snap)
+    const { container, getByRole } = render(
+      <QueueDock
+        {...kitFor(snap, { updateQueue })}
+        useSession={source.useSession}
+        useProjection={source.useProjection}
+      />,
+    )
+    fireEvent.click(getByRole('button', { name: '2 条排队消息' }))
+    const raise = () => container.querySelectorAll<HTMLButtonElement>('[aria-label="提升优先级"]')
+    // The leading row has nothing to yield to, so it carries the boundary hint.
+    expect(raise()[0]?.disabled).toBe(true)
+    expect(raise()[0]?.getAttribute('title')).toBe('已经是第一条排队消息')
+    expect(raise()[1]?.disabled).toBe(false)
+
+    fireEvent.click(raise()[1] as HTMLButtonElement)
+    await waitFor(() => {
+      expect(updateQueue).toHaveBeenCalledWith(expect.anything(), { kind: 'raise' })
+    })
+  })
+
+  it('reports a failed raise without disturbing the queue', async () => {
+    const updateQueue = vi.fn(() => Promise.reject(new Error('gone')))
+    const notify = vi.fn()
+    const snap = snapshotWith([row('i-1', '第一条'), row('i-2', '第二条')])
+    const source = liveSession(snap)
+    const { container, getByRole } = render(
+      <QueueDock
+        {...kitFor(snap, { updateQueue, notify })}
+        useSession={source.useSession}
+        useProjection={source.useProjection}
+      />,
+    )
+    fireEvent.click(getByRole('button', { name: '2 条排队消息' }))
+    fireEvent.click(container.querySelectorAll<HTMLButtonElement>('[aria-label="提升优先级"]')[1] as HTMLButtonElement)
+    await waitFor(() => {
+      expect(notify).toHaveBeenCalledWith('error', '提升优先级失败，请重试。')
+    })
+    expect(container.querySelectorAll('li')).toHaveLength(2)
   })
 
   it('renders queued image thumbnails from durable references beside the text preview', async () => {

@@ -144,7 +144,8 @@ export class ChatCompletionsAdapter extends LlmAdapter {
   }
 
   override listModels(provider: string): Promise<readonly LlmModelInfo[]> {
-    return Promise.resolve(this.config.options().models.map(model => catalogModelInfo(provider, model)))
+    const connection = this.config.options()
+    return Promise.resolve(connection.models.map(model => catalogModelInfo(provider, model, connection.defaultInput)))
   }
 
   override resolveModel(

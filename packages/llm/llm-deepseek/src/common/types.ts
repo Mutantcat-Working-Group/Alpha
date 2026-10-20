@@ -21,7 +21,7 @@ export interface DeepSeekCatalogModel {
   contextWindow?: number
   /** Per-request output cap for this model; omission falls back to the profile's {@link DeepSeekConnectionOptions.maxTokens}. */
   maxTokens?: number
-  /** Accepted request modalities; omission is text-only. */
+  /** Accepted request modalities; omission falls back to {@link DeepSeekConnectionOptions.defaultInput}. */
   inputModalities?: ModelModality[]
   /**
    * Total-pixel budget replacing the published token-grid projection for one
@@ -65,6 +65,13 @@ export interface DeepSeekConnectionOptions {
   defaultContextWindow: number
   /** Advisory models exposed to discovery consumers; requests remain unrestricted. */
   models: readonly DeepSeekCatalogModel[]
+  /**
+   * Accepted request modalities for a catalog entry that omits its own
+   * declaration, and for an endpoint model the catalog does not list. A
+   * deployment whose models all accept images sets this once instead of
+   * repeating the declaration on every entry.
+   */
+  defaultInput: readonly ModelModality[]
   /** Maximum provider idle time while one stream read is outstanding. */
   streamIdleTimeoutMs: number
   /** Maximum accumulated file-referenced image bytes in one request. */

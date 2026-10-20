@@ -5,7 +5,7 @@
  * `includeShippedRoot: false` is how a deployment supplying purely its own
  * presets — or an embedder using the roster as bare machinery — opts out.
  *
- * `$DSH_HOME` is repointed per test for the same reason as the user-root
+ * `$ALPHA_HOME` is repointed per test for the same reason as the user-root
  * suite: the derived writable root is resolved in the constructor.
  */
 
@@ -28,14 +28,14 @@ let home: string
 let previousHome: string | undefined
 
 beforeEach(async () => {
-  previousHome = process.env.DSH_HOME
+  previousHome = process.env.ALPHA_HOME
   home = await mkdtemp(join(tmpdir(), 'dsh-shipped-root-'))
-  process.env.DSH_HOME = home
+  process.env.ALPHA_HOME = home
 })
 
 afterEach(async () => {
-  if (previousHome === undefined) delete process.env.DSH_HOME
-  else process.env.DSH_HOME = previousHome
+  if (previousHome === undefined) delete process.env.ALPHA_HOME
+  else process.env.ALPHA_HOME = previousHome
   await rm(home, { recursive: true, force: true })
 })
 

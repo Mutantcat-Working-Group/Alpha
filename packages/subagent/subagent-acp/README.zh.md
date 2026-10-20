@@ -46,7 +46,7 @@ kind: "package-reference"
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-subagent-acp)是每个受支持字段及其 JSDoc 的穷尽式真源。
 
-Alpha 子进程使用产品启动器和一个显式的绝对路径 `DSH_HOME`。隔离的 home 可防止嵌套运行时发现启动者个人的 profile 或凭据；通用 ACP 提供方不会把这一要求强加给非 DSH agent。
+Alpha 子进程使用产品启动器和一个显式的绝对路径 `ALPHA_HOME`。隔离的 home 可防止嵌套运行时发现启动者个人的 profile 或凭据；通用 ACP 提供方不会把这一要求强加给非 DSH agent。
 
 ```yaml
 - id: subagent-acp
@@ -57,7 +57,7 @@ Alpha 子进程使用产品启动器和一个显式的绝对路径 `DSH_HOME`。
     args: ['--profile', 'acp', '--patch', '/absolute/path/to/acp.patch.yml']
     permission: reject
     env:
-      DSH_HOME: /absolute/path/to/isolated-child-home
+      ALPHA_HOME: /absolute/path/to/isolated-child-home
       DEEPSEEK_API_KEY: !!js process.env.DEEPSEEK_API_KEY
 ```
 

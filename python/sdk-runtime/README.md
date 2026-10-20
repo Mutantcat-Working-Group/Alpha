@@ -6,7 +6,7 @@ Platform runtime wheel for the Alpha Python SDK. It packages the normal `alpha` 
 
 ## Installed commands and artifacts
 
-The wheel installs a `alpha` console command and the `deepseek_harness_runtime` Python module. `alpha` forwards its arguments to the bundled executable and requires a non-empty `DSH_HOME`; it never falls back to `~/.dsh`.
+The wheel installs a `alpha` console command and the `deepseek_harness_runtime` Python module. `alpha` forwards its arguments to the bundled executable and requires a non-empty `ALPHA_HOME`; it never falls back to `~/.dsh`.
 
 Production executables are named `deepseek-harness-sdk-runtime-<platform>-<arch>` under the module's `runtime/` directory; Windows uses the `.exe` suffix. Linux and macOS wheels include a target-native `-rg` sidecar, Windows includes `-rg.exe`, and macOS also includes `-spawn-helper` for `node-pty`. Published targets are Linux x64, Linux arm64, macOS arm64, macOS x64, and Windows x64. The wheel tag and payload must match exactly; no Windows arm64 wheel is published.
 
@@ -21,13 +21,13 @@ Both carriers execute the same `alpha` grammar and shipped profiles, including t
 - `bundled_package_dir() -> Path` returns the installed module-data root and verifies its release metadata.
 - `bundled_runtime_path() -> Path` returns the current platform executable and verifies required sidecars.
 - `resolve_bundled_launch_args(mode=None) -> tuple[str, ...]` returns the executable argv by default. Explicit `mode="node"` or `DSH_RUNTIME_MODE=node` selects the repo-only Node carrier.
-- `main()` implements the installed `alpha` console command and rejects an absent or blank `DSH_HOME`. On Windows it waits for the bundled process with inherited standard streams and forwards its exit status; on POSIX it replaces the Python process.
+- `main()` implements the installed `alpha` console command and rejects an absent or blank `ALPHA_HOME`. On Windows it waits for the bundled process with inherited standard streams and forwards its exit status; on POSIX it replaces the Python process.
 
 Unsupported platforms and missing executables or sidecars raise `FileNotFoundError` with the build and installation routes. Unknown runtime modes raise `ValueError`.
 
 ## Packaged profile resolution
 
-`alpha` initializes shipped profiles under the explicit home, composes their bundle patches, and loads bundled plugins from the executable's virtual filesystem. Because operating-system symlinks cannot enter that filesystem, packaged launches maintain small real ESM proxy packages under `$DSH_HOME/profiles/node_modules`. Each proxy mirrors explicit runtime exports, records the original package identity, and re-exports the virtual module URL. Built-in rows and external plugin peers therefore share one Cordis/module instance. Native shared libraries and Windows ConPTY addons are packaged with native addons, while ripgrep and the macOS PTY helper remain executable sidecars.
+`alpha` initializes shipped profiles under the explicit home, composes their bundle patches, and loads bundled plugins from the executable's virtual filesystem. Because operating-system symlinks cannot enter that filesystem, packaged launches maintain small real ESM proxy packages under `$ALPHA_HOME/profiles/node_modules`. Each proxy mirrors explicit runtime exports, records the original package identity, and re-exports the virtual module URL. Built-in rows and external plugin peers therefore share one Cordis/module instance. Native shared libraries and Windows ConPTY addons are packaged with native addons, while ripgrep and the macOS PTY helper remain executable sidecars.
 
 The Python bootstrap resolves the Office kit from its adjacent directory so native helpers and URL Workers use real filesystem paths. The kit owns engine selection and validation; the Python bootstrap adds no runtime download or compilation.
 

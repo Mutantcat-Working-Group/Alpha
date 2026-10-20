@@ -12,7 +12,7 @@ python -m pip install deepseek-harness-sdk
 
 The Python SDK has no separate application entrypoint. It launches the bundled `alpha` CLI with `--profile sdk`; the selected profile owns the JSON-RPC server, agent composition, credentials, persistence, tools, and shutdown behavior.
 
-Every launch requires an explicit Harness home. Pass `dsh_home` or provide a non-empty `DSH_HOME` in the child environment. The SDK deliberately never discovers `~/.dsh`.
+Every launch requires an explicit Harness home. Pass `dsh_home` or provide a non-empty `ALPHA_HOME` in the child environment. The SDK deliberately never discovers `~/.dsh`.
 
 ```py
 from deepseek_harness import DeepSeekHarness
@@ -37,12 +37,12 @@ print(result.final_response)
 Persistent customization belongs to a `alpha` profile. Initialize the shipped SDK profile and install an external bundle with the runtime wheel's `alpha` command:
 
 ```sh
-export DSH_HOME=/absolute/path/to/isolated-dsh-home
+export ALPHA_HOME=/absolute/path/to/isolated-dsh-home
 alpha --profile sdk --dump-default-config >/dev/null
 alpha plugin --profile sdk add file:/absolute/path/to/my-plugin-bundle
 ```
 
-The `file:` form installs the local bundle into the profile package tree, where its peer imports reach the bundled installation fallback. The profile manifest records installed dependencies and ordered bundle layers; its `$DSH_HOME/profiles/sdk/cordis.patch.yml` is the persistent user patch. `alpha plugin` needs `pnpm` only when managing external packages. Running the SDK does not require system Node.js.
+The `file:` form installs the local bundle into the profile package tree, where its peer imports reach the bundled installation fallback. The profile manifest records installed dependencies and ordered bundle layers; its `$ALPHA_HOME/profiles/sdk/cordis.patch.yml` is the persistent user patch. `alpha plugin` needs `pnpm` only when managing external packages. Running the SDK does not require system Node.js.
 
 For an invocation-specific change, pass one or more patch files. They become absolute and are forwarded in order after the profile and home patch layers:
 

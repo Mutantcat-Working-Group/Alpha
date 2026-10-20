@@ -460,12 +460,15 @@ export class Session implements SessionFace {
     this.openGeneration++
     const events = this.events
     this.events = undefined
-    await events?.dispose()
+    // The window leaves 'loading' before the superseded stream finishes
+    // disposing: a consumer that opens during the disposal must not read a
+    // window whose own open this call already invalidated.
     this.openPromise = null
     this.openState = 'cold'
     this.openError = null
     this.baseSeq = SessionLogOffset(0)
     this.notifier.markDirty()
+    await events?.dispose()
     await this.open()
   }
 
@@ -604,10 +607,22 @@ export class Session implements SessionFace {
       this.openState = 'open'
     } catch (error) {
       if (generation !== this.openGeneration || this.events !== events) return
-      if (!isRemoteFailure(error)) throw error
+      if (!isRemoteFailure(error)) {
+        // A defect rather than a wire failure. Keep the diagnostic in the log
+        // and still land a terminal state, or the window waits forever on an
+        // open that cannot complete.
+        console.error('[session-controller] session open failed:', error)
+      }
       this.events = undefined
       this.openState = 'error'
-      this.openError = error
+      this.openError = isRemoteFailure(error)
+        ? error
+        : new RemoteError(
+          'gateway/internal',
+          error instanceof Error ? error.message : String(error),
+          {},
+          { cause: error },
+        )
     } finally {
       if (generation === this.openGeneration) this.notifier.markDirty()
     }

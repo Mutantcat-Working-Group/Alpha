@@ -70,7 +70,7 @@ Load the plugin alongside the skill registry; it requires `ctx.skills`.
 |---|---|---|
 | `providerName` | `filesystem` | Unique provider name registered on `ctx.skills` |
 | `includeDefaultRoots` | `true` | Include project and user roots around `customSkillDirs` |
-| `dshHome` | `$DSH_HOME` or `~/.alpha` | Harness config root; its `skills` subdirectory is scanned |
+| `dshHome` | `$ALPHA_HOME` or `~/.alpha` | Harness config root; its `skills` subdirectory is scanned |
 | `agentsHome` | `$DSH_AGENTS_HOME` or `~/.agents` | Shared agent config root scanned for compatible skills |
 | `codexHome` | `$CODEX_HOME` or `~/.codex` | Codex config root; its `skills` subdirectory is scanned |
 | `claudeHome` | `$CLAUDE_CONFIG_DIR` or `~/.claude` | Claude Code config root; its `skills` subdirectory is scanned |

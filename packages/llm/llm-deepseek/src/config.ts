@@ -14,6 +14,9 @@ const DEFAULT_API_KEY_ENV = 'DEEPSEEK_API_KEY'
 
 const MODEL_MODALITIES = ['text', 'image'] as const satisfies readonly ModelModality[]
 
+/** Modalities a catalog entry and an unlisted endpoint model fall back to. */
+const DEFAULT_INPUT = ['text'] as const satisfies readonly ModelModality[]
+
 /**
  * Plugin config, validated by the same-named schemastery schema and doubling
  * as the `llm-deepseek` settings-section shape. Every field is optional in
@@ -39,6 +42,12 @@ export interface Config {
   defaultContextWindow?: number
   /** Advisory models shown by discovery consumers; defaults to V4.1 Flash and V4 Pro. */
   models?: DeepSeekCatalogModel[]
+  /**
+   * Accepted request modalities for a catalog entry that omits its own
+   * declaration and for an unlisted endpoint model (default `text`). Set this
+   * once when every model the deployment serves accepts images.
+   */
+  defaultInput?: ModelModality[]
   /** Maximum provider idle time while one stream read is outstanding (default five minutes). */
   streamIdleTimeoutMs?: number
   /** Maximum accumulated file-referenced image bytes per chat request (default 128 MiB). */
@@ -71,7 +80,11 @@ const catalogModel: z<DeepSeekCatalogModel> = z.object({
   description: z.string(),
   contextWindow: z.number().step(1).min(1),
   maxTokens: z.number().step(1).min(1),
-  inputModalities: z.array(z.union(MODEL_MODALITIES)).min(1).default(['text']),
+  // No schema default and no minimum: schemastery materializes an absent key
+  // as an empty array, which is indistinguishable from a declared empty one.
+  // `resolveModels` reads either as "no declaration" and applies the route's
+  // `defaultInput`; a schema default here would answer before it is consulted.
+  inputModalities: z.array(z.union(MODEL_MODALITIES)),
   imagePixelBudget: z.union([z.number().step(1).min(1), 'low']),
   imageMaxBytes: z.number().step(1).min(1),
   systemPromptUpdate: z.const('in-history'),
@@ -86,6 +99,7 @@ export const Config: z<Config> = z.object({
   maxTokens: z.number().step(1).min(1).max(Number.MAX_SAFE_INTEGER).default(DEFAULT_MAX_TOKENS),
   defaultContextWindow: z.number().step(1).min(1).default(DEFAULT_CONTEXT_WINDOW),
   models: z.array(catalogModel).default(DEFAULT_MODELS),
+  defaultInput: z.array(z.union(MODEL_MODALITIES)).default([...DEFAULT_INPUT]),
   streamIdleTimeoutMs: z.number().min(Number.MIN_VALUE).max(MAX_TIMER_DELAY_MS).default(DEFAULT_STREAM_IDLE_TIMEOUT_MS),
   maxRequestFilesBytes: z.number().step(1).min(1).default(DEFAULT_MAX_REQUEST_FILES_BYTES),
   maxInlineRequestImageBytes: z.number().step(1).min(1).default(DEFAULT_MAX_INLINE_REQUEST_IMAGE_BYTES),
@@ -117,8 +131,16 @@ const BASE_URL_ENV = 'DEEPSEEK_BASE_URL'
  */
 export type ResolvedDeepSeekOptions = DeepSeekConnectionOptions
 
-/** Resolve, validate, and detach the advisory model catalog. */
-function resolveModels(models: readonly DeepSeekCatalogModel[] | undefined): DeepSeekCatalogModel[] {
+/**
+ * Resolve, validate, and detach the advisory model catalog.
+ * @param models - configured entries, or the shipped defaults when omitted.
+ * @param defaultInput - modalities an entry that omits its own declaration takes.
+ * @returns the detached catalog.
+ */
+function resolveModels(
+  models: readonly DeepSeekCatalogModel[] | undefined,
+  defaultInput: readonly ModelModality[],
+): DeepSeekCatalogModel[] {
   const seen = new Set<string>()
   return (models ?? DEFAULT_MODELS).map((model) => {
     if (Object.hasOwn(model, 'imageDetail')) {
@@ -140,10 +162,12 @@ function resolveModels(models: readonly DeepSeekCatalogModel[] | undefined): Dee
         `llm-deepseek: catalog model "${model.id}" maxTokens must be a positive integer`,
       )
     }
-    const inputModalities = model.inputModalities ?? ['text']
-    if (inputModalities.length === 0) {
-      throw new Error(`llm-deepseek: catalog model "${model.id}" inputModalities must not be empty`)
-    }
+    // An absent or empty declaration inherits the route default. Schemastery
+    // materializes an absent key as an empty array, so the two are one case.
+    const declared = model.inputModalities
+    const inputModalities = declared === undefined || declared.length === 0
+      ? [...defaultInput]
+      : [...declared]
     if (inputModalities.some(modality => !MODEL_MODALITIES.includes(modality))) {
       throw new Error(
         `llm-deepseek: catalog model "${model.id}" inputModalities must contain only "text" and "image"`,
@@ -289,6 +313,18 @@ export function resolveAdapterOptions(config: Config, environment?: LaunchEnviro
     || fileQuotaCleanupBatch > 1_000) {
     throw new Error('llm-deepseek: fileQuotaCleanupBatch must be an integer from 1 through 1000')
   }
+  // Detached from the configuration object: an empty list is always one
+  // someone typed, because the schema's default covers an absent key.
+  const defaultInput = [...config.defaultInput ?? DEFAULT_INPUT]
+  if (defaultInput.length === 0) {
+    throw new Error('llm-deepseek: defaultInput must name at least one modality')
+  }
+  if (defaultInput.some(modality => !MODEL_MODALITIES.includes(modality))) {
+    throw new Error('llm-deepseek: defaultInput must contain only "text" and "image"')
+  }
+  if (new Set(defaultInput).size !== defaultInput.length) {
+    throw new Error('llm-deepseek: defaultInput must not contain duplicates')
+  }
   const baseURL = config.baseURL ?? environment?.get(BASE_URL_ENV)?.value
     ?? (protocol === 'messages' ? MESSAGES_BASE_URL : PUBLIC_BASE_URL)
   if (protocol === 'messages') {
@@ -307,7 +343,8 @@ export function resolveAdapterOptions(config: Config, environment?: LaunchEnviro
     },
     maxTokens: config.maxTokens ?? DEFAULT_MAX_TOKENS,
     defaultContextWindow: config.defaultContextWindow ?? DEFAULT_CONTEXT_WINDOW,
-    models: resolveModels(config.models),
+    models: resolveModels(config.models, defaultInput),
+    defaultInput,
     streamIdleTimeoutMs,
     maxRequestFilesBytes,
     maxInlineRequestImageBytes,

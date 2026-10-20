@@ -24,7 +24,7 @@ Host 在报告就绪前退出、就绪后引擎端口仍拒绝连接、或就绪
 
 ## 内置运行时载荷
 
-Desktop 内置独立的 Python、Node.js 和 pnpm 发行版。Python 包含 numpy、pandas、python-docx、python-pptx、openpyxl、Pillow、lxml 和 XlsxWriter 及其完整依赖。`load_workspace_dependencies` 工具在首次使用时离线安装该载荷到 `$DSH_HOME/dsh-runtimes/dsh-primary-runtime`（通常为 `~/.alpha/dsh-runtimes/dsh-primary-runtime`），返回解释器、pnpm 脚本和库的绝对路径，以及 `pythonDistributions`（内置发行版名称与版本）。版本报告不含用户自行安装的内容。除非用户或工作区指令另选环境，Office 任务优先使用这些库。执行 pnpm 脚本时使用返回的 Node 可执行文件。返回的 Node 库目录预留给内置库，不是 pnpm 的全局安装目录。
+Desktop 内置独立的 Python、Node.js 和 pnpm 发行版。Python 包含 numpy、pandas、python-docx、python-pptx、openpyxl、Pillow、lxml 和 XlsxWriter 及其完整依赖。`load_workspace_dependencies` 工具在首次使用时离线安装该载荷到 `$ALPHA_HOME/dsh-runtimes/dsh-primary-runtime`（通常为 `~/.alpha/dsh-runtimes/dsh-primary-runtime`），返回解释器、pnpm 脚本和库的绝对路径，以及 `pythonDistributions`（内置发行版名称与版本）。版本报告不含用户自行安装的内容。除非用户或工作区指令另选环境，Office 任务优先使用这些库。执行 pnpm 脚本时使用返回的 Node 可执行文件。返回的 Node 库目录预留给内置库，不是 pnpm 的全局安装目录。
 
 Desktop 默认注册 `office-docx`、`office-pptx` 和 `office-xlsx`。这些技能用内置 Python 库进行创建和定点编辑，然后重新打开文件并运行共享结构检查后才交付。PowerPoint 的创建与编辑使用 python-pptx。技能资源被放到可执行文件之外的 `runtime/office-skills`，以便 Python 读取检查器。可用的 `render_document` 工具可以补充目检；缺失它不影响撰写或交付。检查与限制见 [Office 技能包](../../packages/skill/skill-office/README.zh.md)。
 
@@ -43,8 +43,9 @@ Desktop 默认注册 `office-docx`、`office-pptx` 和 `office-xlsx`。这些技
 | 发布身份 | 壳 API、Web 客户端、后端和插件图作为一个组合被验证；独立版本会产生未经测试的组合和含糊的更新判定。 | Alpha 与 `@mutantcat/alpha` 始终携带完全相同的版本。alpha 升级就是一次 Desktop 发布，即使壳代码未变。 |
 | 运行时 | 应用必须在没有系统 Node.js 或 pnpm 的情况下运行。 | Node sidecar 以 `--expose-internals` 运行 Host，所有包操作使用内置 pnpm。 |
 | 包来源 | 启动时安装核心依赖即使离线也要付出代价。 | staged 运行时携带完整的产品依赖树；profile 只安装外部插件。 |
-| 状态归属 | 共享可执行依赖图会让 CLI 和 Desktop 互相修改对方的 alpha、Cordis、插件或原生模块版本，而两个桌面进程可能争抢同一 profile。 | Alpha 在访问任何 profile 前获取进程级单实例锁，独占它的应用数据目录（同时是 profile 根目录）及其包管理器状态。CLI 与 Desktop 共享 `$DSH_HOME` 下的受支持产品数据，但从不共享可执行包、插件激活、lockfile 或 `node_modules`。 |
+| 状态归属 | 共享可执行依赖图会让 CLI 和 Desktop 互相修改对方的 alpha、Cordis、插件或原生模块版本，而两个桌面进程可能争抢同一 profile。 | Alpha 在访问任何 profile 前获取进程级单实例锁，独占它的应用数据目录（同时是 profile 根目录）及其包管理器状态。CLI 与 Desktop 共享 `$ALPHA_HOME` 下的受支持产品数据，但从不共享可执行包、插件激活、lockfile 或 `node_modules`。 |
 | 传输 | Web 服务和认证使用同一实现。 | 壳只加载内置 Web 资源作为加载页；引擎文档和认证 API 由 Host 提供。 |
+| 窗口拖放 | Tauri 默认替换 webview 自身的拖放处理器，这会抑制附件入口所依赖的 HTML5 拖放事件。 | `build_window()` 调用 `disable_drag_drop_handler()`，因此拖到窗口上的文件会到达页面的 document 级监听器与 composer 的附件入口。 |
 
 ## 安装归属
 
@@ -111,4 +112,4 @@ Windows NSIS 安装程序为当前用户安装。macOS DMG 携带上述 ad-hoc �
 
 - macOS 的 ad-hoc DMG 之外的产物均未签名：Gatekeeper 和 SmartScreen 会在首次运行时提示，不进行公证或发布者签名。
 - 跨操作系统产物验证只在 CI 进行；本地验证只覆盖构建主机自身的目标。
-- 桌面壳与 CLI alpha 共享 `$DSH_HOME` 下的会话、设置、凭据、工作区和存储，而可执行包、插件激活和 lockfile 保持独立。
+- 桌面壳与 CLI alpha 共享 `$ALPHA_HOME` 下的会话、设置、凭据、工作区和存储，而可执行包、插件激活和 lockfile 保持独立。

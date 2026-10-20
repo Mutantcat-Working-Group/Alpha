@@ -50,7 +50,7 @@ afterEach(async () => {
 describe('local request-image cache', () => {
   it('rebuilds a cleared cache without moving or losing durable attachments', async () => {
     const fallbackHome = await home()
-    vi.stubEnv('DSH_HOME', fallbackHome)
+    vi.stubEnv('ALPHA_HOME', fallbackHome)
     try {
       const dshHome = await home()
       const attachments = new LocalAttachmentStore(new Context(), { dshHome })

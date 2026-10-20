@@ -11,7 +11,9 @@ import type { SandboxEnforcement, SandboxExecutionPolicy, SandboxMode } from '@m
 import type { CollectedOutput, DshEnvironment } from '@mutantcat/dsh-subprocess'
 
 export { DSH_ENV_PREFIX } from '@mutantcat/dsh-subprocess'
-export type { CollectedOutput, DshEnvironment, DshEnvironmentKey } from '@mutantcat/dsh-subprocess'
+export type {
+  CollectedOutput, DshEnvironment, DshEnvironmentKey, ManagedEnvironmentKey,
+} from '@mutantcat/dsh-subprocess'
 
 /**
  * Sandbox facts for one run, present iff a sandboxing executor handled it.

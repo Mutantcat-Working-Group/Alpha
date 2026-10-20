@@ -33,7 +33,7 @@ afterEach(async () => {
 
 it('uploads freeform feedback and message put/edit/delete through the unchanged provider route', async () => {
   root = await mkdtemp(join(tmpdir(), 'dsh-feedback-upload-'))
-  vi.stubEnv('DSH_HOME', root)
+  vi.stubEnv('ALPHA_HOME', root)
   vi.stubEnv('DEEPSEEK_API_KEY', 'feedback-test-key')
   server = await startMockLlmServer({ sequence: ['invalid_request', 'success', 'success'] })
   const modules = new Map<string, unknown>([

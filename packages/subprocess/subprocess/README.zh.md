@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`ctx.subprocess` 可解析可执行文件、启动显式指定的子进程或真实终端会话、流式读取或有界收集输出，并终止完整的受管进程范围。每个组合配置一个 subprocess 实现，并根据命令运行位置选择本地或远程执行。每次请求都指定 argv、工作目录、stdio、环境覆盖、终止宽限期与取消信号，不会添加 shell 解释或隐藏的执行默认值。子进程环境会先移除环境中的凭据与 `DSH_*` 值，再应用显式覆盖；时限、拆卸策略与面向模型的渲染由调用方负责，收集的输出在进程退出后仍可读取。
+`ctx.subprocess` 可解析可执行文件、启动显式指定的子进程或真实终端会话、流式读取或有界收集输出，并终止完整的受管进程范围。每个组合配置一个 subprocess 实现，并根据命令运行位置选择本地或远程执行。每次请求都指定 argv、工作目录、stdio、环境覆盖、终止宽限期与取消信号，不会添加 shell 解释或隐藏的执行默认值。子进程环境会先移除环境中的凭据与受管命名空间的值，再应用显式覆盖；时限、拆卸策略与面向模型的渲染由调用方负责，收集的输出在进程退出后仍可读取。
 
 ## 目录
 
@@ -77,7 +77,7 @@ const output = handle.collected.stdout?.readFrom(0)
 
 ### 每个子进程起步时的环境
 
-子进程永远不会隐式继承 harness 的环境秘密：形似凭据的名称与环境中的 `DSH_*` 事实都会被清除，调用方显式的 `env` 在该清除之后合并。有意转发的凭据或当前的 `DSH_*` 部署事实仍会到达子进程；显式的 `undefined` 墓碑值则移除一个普通的环境项。
+子进程永远不会隐式继承 harness 的环境秘密：形似凭据的名称与环境中的 `DSH_*`、`ALPHA_*` 事实都会被清除，调用方显式的 `env` 在该清除之后合并。有意转发的凭据或当前的受管部署事实仍会到达子进程；显式的 `undefined` 墓碑值则移除一个普通的环境项。
 
 ### 可能出错的地方
 
@@ -102,7 +102,7 @@ const output = handle.collected.stdout?.readFrom(0)
 | 文件 | 职责 |
 |---|---|
 | [`src/index.ts`](src/index.ts) | 插件入口：抽象 `SubprocessRuntime`、`ctx.subprocess` 注册、共享的 `scrubbedParentEnv` 清除 |
-| [`src/types.ts`](src/types.ts) | 词汇：spawn spec、stdio 模式、句柄、读取器、结果、`DSH_*` 命名空间 |
+| [`src/types.ts`](src/types.ts) | 词汇：spawn spec、stdio 模式、句柄、读取器、结果、`DSH_*` 与 `ALPHA_*` 命名空间 |
 | — | 不发布运行时不变式伴生入口；这个无状态 Service Definition 负责 spawn spec 与句柄类型，观察则由 Service Providers 负责。 |
 
 ### 数据模型与流程

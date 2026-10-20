@@ -60,7 +60,7 @@ export interface Config {
 ```ts config-catalog
 /** User-facing workspace instruction loader configuration. */
 export interface Config {
-  /** Harness home containing the fixed user-global `AGENTS.md`; defaults to `$DSH_HOME` or `~/.alpha`. */
+  /** Harness home containing the fixed user-global `AGENTS.md`; defaults to `$ALPHA_HOME` or `~/.alpha`. */
   dshHome?: string
   /** Directory entries that identify the project root while walking upward from the session cwd. */
   projectRootMarkers?: string[]
@@ -311,7 +311,7 @@ export interface Config {
 ```ts config-catalog
 /** Local attachment backend configuration. */
 export interface Config {
-  /** Explicit harness home; omitted follows `DSH_HOME`, then `~/.alpha`. */
+  /** Explicit harness home; omitted follows `ALPHA_HOME`, then `~/.alpha`. */
   dshHome?: string
   /** Maximum encoded bytes accepted for one submitted image. Default: 20 MiB. */
   maxImageBytes?: number
@@ -562,7 +562,7 @@ export interface Config {
 export interface Config {
   /** Credentials document path; defaults to `.credentials.yaml` under the harness home. */
   path?: string
-  /** Harness home used when `path` is omitted; defaults to `$DSH_HOME` or `~/.alpha`. */
+  /** Harness home used when `path` is omitted; defaults to `$ALPHA_HOME` or `~/.alpha`. */
   dshHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
@@ -1177,6 +1177,12 @@ export interface Config {
   defaultContextWindow?: number
   /** Advisory models shown by discovery consumers; defaults to V4.1 Flash and V4 Pro. */
   models?: DeepSeekCatalogModel[]
+  /**
+   * Accepted request modalities for a catalog entry that omits its own
+   * declaration and for an unlisted endpoint model (default `text`). Set this
+   * once when every model the deployment serves accepts images.
+   */
+  defaultInput?: ModelModality[]
   /** Maximum provider idle time while one stream read is outstanding (default five minutes). */
   streamIdleTimeoutMs?: number
   /** Maximum accumulated file-referenced image bytes per chat request (default 128 MiB). */
@@ -1218,7 +1224,7 @@ export interface DeepSeekCatalogModel {
   contextWindow?: number
   /** Per-request output cap for this model; omission falls back to the profile's {@link DeepSeekConnectionOptions.maxTokens}. */
   maxTokens?: number
-  /** Accepted request modalities; omission is text-only. */
+  /** Accepted request modalities; omission falls back to {@link DeepSeekConnectionOptions.defaultInput}. */
   inputModalities?: ModelModality[]
   /**
    * Total-pixel budget replacing the published token-grid projection for one
@@ -2424,7 +2430,7 @@ Depends on: [`SessionTitleLlmConfig`](../packages/session/session-title-llm/src/
 export interface Config {
   /** Settings document path; defaults to `settings.yaml` under the harness home. */
   path?: string
-  /** Harness home used when `path` is omitted; defaults to `$DSH_HOME` or `~/.alpha`. */
+  /** Harness home used when `path` is omitted; defaults to `$ALPHA_HOME` or `~/.alpha`. */
   dshHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
@@ -2442,7 +2448,7 @@ export interface Config {
 ```ts config-catalog
 /** Plugin config (all optional — the built-in facts resolve without defaults). */
 export interface Config {
-  /** Alpha home directory exposed as `DSH_HOME`; defaults to `$DSH_HOME` or `~/.alpha`. */
+  /** Alpha home directory exposed as `ALPHA_HOME`; defaults to `$ALPHA_HOME` or `~/.alpha`. */
   dshHome?: string
 }
 ```
@@ -2476,7 +2482,7 @@ export interface Config {
   providerName?: string
   /** Whether project and user roots are included around custom roots. */
   includeDefaultRoots?: boolean
-  /** Alpha config root. Defaults to `$DSH_HOME` or `~/.alpha`. */
+  /** Alpha config root. Defaults to `$ALPHA_HOME` or `~/.alpha`. */
   dshHome?: string
   /** Shared agent config root. Defaults to `$DSH_AGENTS_HOME` or `~/.agents`. */
   agentsHome?: string

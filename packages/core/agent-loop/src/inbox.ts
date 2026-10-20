@@ -157,6 +157,24 @@ export class ReactLoopInbox implements InboxContract {
   }
 
   /**
+   * Move one pending message one position earlier in its own list.
+   * @param messageId - identity of the pending message to raise.
+   * @returns whether the message moved.
+   */
+  raise(messageId: MessageId): boolean {
+    const location = this.locate(messageId)
+    if (location === undefined || location.index === 0) return false
+    // One splice swaps the pair, so the log records the new order without an
+    // intermediate state where the message is pending twice or not at all.
+    // Slicing rather than indexing keeps the pair's element type exact.
+    const inbox = this.current()[location.target]
+    const raised = inbox.slice(location.index, location.index + 1)
+    const predecessor = inbox.slice(location.index - 1, location.index)
+    this.splice(location.target, location.index - 1, 2, [...raised, ...predecessor])
+    return true
+  }
+
+  /**
    * Apply standard splice semantics and durably record the normalized result.
    * @param target - pending list to mutate.
    * @param start - splice position.

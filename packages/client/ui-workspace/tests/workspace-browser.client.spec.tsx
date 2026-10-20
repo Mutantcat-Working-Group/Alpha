@@ -2,7 +2,8 @@
 import type { GlobalStandardProps } from '@mutantcat/dsh-client-ui-slots'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, createEvent, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { bindSnapshotSelector, makeTranslate } from '@mutantcat/dsh-client-test-runtime'
+import { bindSnapshotSelector, makeTranslate, RemoteError } from '@mutantcat/dsh-client-test-runtime'
+import { ClientWorkspaceModel, type WorkspaceRemote } from '@mutantcat/dsh-api-workspace-controller/client'
 import type { SessionListState, SessionSummary } from '@mutantcat/dsh-api-session-controller/client'
 import type {
   WorkspaceId, WorkspaceSnapshot, WorkspaceView,
@@ -1846,5 +1847,131 @@ describe('Workspace tree grouping', () => {
     fireEvent.dragEnd(alpha)
     expect(b.props.insertWorkspaceBefore).toHaveBeenCalledOnce()
     expect(b.props.insertWorkspaceBefore).toHaveBeenCalledWith(wid('alpha'), wid('gamma'))
+  })
+})
+
+/**
+ * A Workspace drag crosses four layers that no single spec covers together:
+ * the row's native dragstart, the browser's marker and commit, the live
+ * ClientWorkspaceModel projection, and the rendered row order. Each layer has
+ * its own suite with a stubbed neighbour, so this composition is the only
+ * place the drag the user performs is proved to reorder the list rather than
+ * merely to call a callback. The model publishes on a microtask, so every
+ * rendered-order expectation waits for that notification.
+ */
+describe('WorkspaceBrowser Workspace reorder composition', () => {
+  const labels = ['alpha', 'beta', 'gamma']
+
+  /** Derived from the public Remote face so no unexported request type is needed. */
+  type InsertBeforeRequest = Parameters<WorkspaceRemote['insertBefore']>[0]
+
+  /** Host insertBefore semantics over one mutable order, echoing the committed result. */
+  function hostRemote(initial: readonly WorkspaceId[]): {
+    remote: WorkspaceRemote
+    order: () => readonly WorkspaceId[]
+  } {
+    let order = [...initial]
+    const remote = {
+      create: () => Promise.resolve({ ok: true, value: { workspace: workspace('created', []), created: true } }),
+      rename: () => Promise.resolve({ ok: true, value: { workspace: workspace('renamed', []) } }),
+      delete: () => Promise.resolve({ ok: true, value: { deleted: true } }),
+      insertBefore: (request: InsertBeforeRequest) => {
+        const without = order.filter(id => id !== request.workspaceId)
+        const at = request.beforeWorkspaceId === undefined
+          ? without.length
+          : without.indexOf(request.beforeWorkspaceId)
+        order = [...without.slice(0, at), request.workspaceId, ...without.slice(at)]
+        return Promise.resolve({ ok: true, value: { workspaceIds: [...order] } })
+      },
+      insertSessionBefore: () => Promise.resolve({ ok: true, value: { workspace: workspace('member', []) } }),
+      archiveSession: () => Promise.resolve({ ok: true, value: { archivedSessionIds: [] } }),
+      unarchiveSession: () => Promise.resolve({ ok: true, value: { archivedSessionIds: [] } }),
+    }
+    return { remote: remote as unknown as WorkspaceRemote, order: () => order }
+  }
+
+  /** Rendered Workspace-row order; the fixture rows carry no other text. */
+  function rowOrder(): string[] {
+    return screen.getAllByRole('treeitem').map((row) => {
+      const text = row.textContent ?? ''
+      return labels.find(label => text.includes(label)) ?? ''
+    })
+  }
+
+  /** The group section element that owns the drop handlers for one row. */
+  function sectionOf(label: string): HTMLElement {
+    let section = screen.getByText(label).closest('[role="treeitem"]')?.parentElement as HTMLElement
+    while (section.parentElement?.getAttribute('role') !== 'tree') {
+      section = section.parentElement as HTMLElement
+    }
+    return section
+  }
+
+  /** Pin a section's rect so a drop above its midpoint lands before its row. */
+  function shortSection(section: HTMLElement): void {
+    section.getBoundingClientRect = () => ({
+      top: 0, bottom: 40, left: 0, right: 200, width: 200, height: 40, x: 0, y: 0, toJSON: () => ({}),
+    })
+  }
+
+  it('reorders the rendered Workspace rows through a real drag on the live model', async () => {
+    const ids = labels.map(wid)
+    const host = hostRemote(ids)
+    const model = new ClientWorkspaceModel(host.remote)
+    model.replaceBaseline({ items: ids.map(id => workspace(String(id), [])), archivedSessionIds: [] })
+
+    mount({
+      useWorkspaces: bindSnapshotSelector(model),
+      insertWorkspaceBefore: async (workspaceId, beforeWorkspaceId) => {
+        const result = await model.insertBefore(workspaceId, beforeWorkspaceId)
+        if (!result.ok) throw new Error(result.error.message)
+      },
+    })
+    expect(rowOrder()).toEqual(labels)
+
+    const source = screen.getByText('gamma').closest('[role="treeitem"]') as HTMLElement
+    const target = sectionOf('alpha')
+    shortSection(target)
+    fireEvent.dragStart(source, { dataTransfer: dragData() })
+    fireDrag(target, 'dragOver', 4)
+    fireDrag(target, 'drop', 4)
+    fireEvent.dragEnd(source)
+
+    // The optimistic projection reaches the rendered rows before the Host answers.
+    await waitFor(() => { expect(rowOrder()).toEqual(['gamma', 'alpha', 'beta']) })
+    // The Host echo settles on the same order, so the reconciliation rolls nothing back.
+    expect(host.order()).toEqual([wid('gamma'), wid('alpha'), wid('beta')])
+    await waitFor(() => { expect(rowOrder()).toEqual(['gamma', 'alpha', 'beta']) })
+  })
+
+  it('restores the previous order when the Host refuses the move', async () => {
+    const ids = labels.map(wid)
+    const refused = vi.fn(() => Promise.resolve({
+      ok: false,
+      error: new RemoteError('workspace/not-found', 'gone', { workspaceId: wid('gamma') }),
+    }))
+    const model = new ClientWorkspaceModel({
+      ...hostRemote(ids).remote,
+      insertBefore: refused,
+    } as unknown as WorkspaceRemote)
+    model.replaceBaseline({ items: ids.map(id => workspace(String(id), [])), archivedSessionIds: [] })
+
+    mount({
+      useWorkspaces: bindSnapshotSelector(model),
+      insertWorkspaceBefore: async (workspaceId, beforeWorkspaceId) => {
+        await model.insertBefore(workspaceId, beforeWorkspaceId)
+      },
+    })
+
+    const source = screen.getByText('gamma').closest('[role="treeitem"]') as HTMLElement
+    const target = sectionOf('alpha')
+    shortSection(target)
+    fireEvent.dragStart(source, { dataTransfer: dragData() })
+    fireDrag(target, 'drop', 4)
+    fireEvent.dragEnd(source)
+
+    // The refusal rolls the optimistic move back to the last Host-confirmed order.
+    await waitFor(() => { expect(refused).toHaveBeenCalledOnce() })
+    await waitFor(() => { expect(rowOrder()).toEqual(labels) })
   })
 })

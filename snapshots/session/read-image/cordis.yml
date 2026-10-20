@@ -1,5 +1,5 @@
 # Image-scenario overlay: adds the durable attachment store the read_image tool
-# commits through. The store resolves its root from $DSH_HOME, which the
+# commits through. The store resolves its root from $ALPHA_HOME, which the
 # snapshot harness scopes per run, so the patch itself carries no attachment
 # path. The default-model row selects the shipped vision model.
 - id: agent-default-model

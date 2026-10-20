@@ -664,7 +664,7 @@ async function verifyProviderCwdResume(
   expect(primary?.header.cwd).not.toBe(cwd)
   const otherHostCwd = await mkdtemp(join(tmpdir(), 'dsh-provider-resume-'))
   const env = {
-    DSH_HOME: join(cwd, '.dsh'),
+    ALPHA_HOME: join(cwd, '.dsh'),
     DSH_SNAPSHOT: 'replay',
     DSH_SNAPSHOT_FILE: fixture,
     DSH_SNAPSHOT_PROVIDER: model.provider,

@@ -6,7 +6,7 @@ Alpha Python SDK 的平台运行时 wheel 包。它把普通 `alpha` CLI（命�
 
 ## 安装命令与产物
 
-wheel 包会安装 `alpha` 控制台命令和 `deepseek_harness_runtime` Python 模块。`alpha` 将参数转发给内置可执行程序，并要求非空 `DSH_HOME`；它不会回退到 `~/.dsh`。
+wheel 包会安装 `alpha` 控制台命令和 `deepseek_harness_runtime` Python 模块。`alpha` 将参数转发给内置可执行程序，并要求非空 `ALPHA_HOME`；它不会回退到 `~/.dsh`。
 
 生产可执行程序位于模块的 `runtime/` 目录，命名为 `deepseek-harness-sdk-runtime-<platform>-<arch>`；Windows 使用 `.exe` 后缀。Linux 与 macOS wheel 包含目标平台原生的 `-rg` 伴随程序，Windows 包含 `-rg.exe`，macOS 还包含 `node-pty` 使用的 `-spawn-helper`。已发布目标是 Linux x64、Linux arm64、macOS arm64、macOS x64 与 Windows x64。wheel 包标签必须与载荷严格匹配；不发布 Windows arm64 wheel 包。
 
@@ -21,13 +21,13 @@ wheel 包会安装 `alpha` 控制台命令和 `deepseek_harness_runtime` Python 
 - `bundled_package_dir() -> Path` 返回已安装模块数据根目录，并校验发布元数据。
 - `bundled_runtime_path() -> Path` 返回当前平台可执行程序，并校验必需伴随文件。
 - `resolve_bundled_launch_args(mode=None) -> tuple[str, ...]` 默认返回可执行程序 argv。显式 `mode="node"` 或 `DSH_RUNTIME_MODE=node` 会选择仅限仓库使用的 Node 载体。
-- `main()` 实现已安装的 `alpha` 控制台命令，并拒绝缺失或空白的 `DSH_HOME`。在 Windows 上，它让打包进程继承标准流，等待其结束并转发退出状态；在 POSIX 上，它替换 Python 进程。
+- `main()` 实现已安装的 `alpha` 控制台命令，并拒绝缺失或空白的 `ALPHA_HOME`。在 Windows 上，它让打包进程继承标准流，等待其结束并转发退出状态；在 POSIX 上，它替换 Python 进程。
 
 不支持的平台以及缺失的可执行程序或伴随文件会抛出 `FileNotFoundError`，并指出构建与安装路径。未知运行时模式会抛出 `ValueError`。
 
 ## 打包后的 profile 解析
 
-`alpha` 在显式指定的主目录下初始化随附 profile、组合其 bundle patch，并从可执行程序的虚拟文件系统加载内置插件。操作系统符号链接无法进入该文件系统，因此打包运行会在 `$DSH_HOME/profiles/node_modules` 下维护小型真实 ESM 代理包。每个代理复现运行时的显式导出项、记录原包身份，并重新导出虚拟模块 URL。因此，内置配置项与外部插件 peer 会共享同一个 Cordis／模块实例。原生共享库与 Windows ConPTY addon 会同其他原生 addon 一起打包；ripgrep 与 macOS PTY helper 仍是可执行伴随程序。
+`alpha` 在显式指定的主目录下初始化随附 profile、组合其 bundle patch，并从可执行程序的虚拟文件系统加载内置插件。操作系统符号链接无法进入该文件系统，因此打包运行会在 `$ALPHA_HOME/profiles/node_modules` 下维护小型真实 ESM 代理包。每个代理复现运行时的显式导出项、记录原包身份，并重新导出虚拟模块 URL。因此，内置配置项与外部插件 peer 会共享同一个 Cordis／模块实例。原生共享库与 Windows ConPTY addon 会同其他原生 addon 一起打包；ripgrep 与 macOS PTY helper 仍是可执行伴随程序。
 
 Python bootstrap 从相邻目录解析 Office kit，让原生辅助程序与 URL Worker 使用真实文件系统路径。kit 负责引擎选择与校验；Python bootstrap 不增加运行时下载或编译。
 

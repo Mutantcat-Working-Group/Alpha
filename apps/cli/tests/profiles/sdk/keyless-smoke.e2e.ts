@@ -99,7 +99,7 @@ describe('Python SDK alpha profile keyless smoke', () => {
       cwd: repoRoot,
       env: {
         ...launch.env,
-        DSH_HOME: join(root, '.dsh'),
+        ALPHA_HOME: join(root, '.dsh'),
         DSH_PERMISSION_MODE: 'danger-full-access',
         DEEPSEEK_API_KEY: 'keyless-smoke-no-call',
         DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
@@ -247,7 +247,7 @@ describe('Python SDK alpha profile keyless smoke', () => {
       cwd: repoRoot,
       env: {
         ...launch.env,
-        DSH_HOME: join(root, '.dsh'),
+        ALPHA_HOME: join(root, '.dsh'),
         DSH_SYSTEM_PROMPT: 'Minimal allowlist prompt.',
         DEEPSEEK_API_KEY: 'keyless-smoke-no-call',
         DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
@@ -346,7 +346,7 @@ describe('Python SDK alpha profile keyless smoke', () => {
       ...launch.args, '--profile', 'sdk', '--patch', patch,
     ], {
       cwd: repoRoot,
-      env: { ...launch.env, DSH_HOME: home, DEEPSEEK_API_KEY: 'keyless-no-call' },
+      env: { ...launch.env, ALPHA_HOME: home, DEEPSEEK_API_KEY: 'keyless-no-call' },
       stdin: 'pipe',
       stripFinalNewline: false,
       timeout: 25_000,
@@ -387,7 +387,7 @@ describe('Python SDK alpha profile keyless smoke', () => {
         cwd: repoRoot,
         env: {
           ...launch.env,
-          DSH_HOME: join(root, '.dsh'),
+          ALPHA_HOME: join(root, '.dsh'),
           DEEPSEEK_API_KEY: 'keyless-smoke-no-call',
           DSH_MAX_TOKENS_AS_SUCCESS: 'sometimes',
         },

@@ -9,7 +9,7 @@ kind: "package-library"
 
 ## 概述
 
-`@mutantcat/dsh-home-paths` 让包作者能够解析统一的 Alpha 数据根目录，并由它派生子路径。显式路径优先于 `$DSH_HOME`，后者优先于 `~/.alpha`；空白环境变量会被忽略。其公开辅助函数可以在不暴露机器绝对路径的情况下显示根目录，仅展开单独或当前用户的波浪号形式，并规范化最终路径段尚不存在的监听目标。请把它作为库依赖直接使用，不要通过 `cordis.yml` 加载。
+`@mutantcat/dsh-home-paths` 让包作者能够解析统一的 Alpha 数据根目录，并由它派生子路径。显式路径优先于 `$ALPHA_HOME`，后者优先于 `~/.alpha`；空白环境变量会被忽略。其公开辅助函数可以在不暴露机器绝对路径的情况下显示根目录，仅展开单独或当前用户的波浪号形式，并规范化最终路径段尚不存在的监听目标。请把它作为库依赖直接使用，不要通过 `cordis.yml` 加载。
 
 ## 目录
 
@@ -31,18 +31,18 @@ kind: "package-library"
 ```ts
 import { resolveDshHome, dshHomePath, dshCachePath } from '@mutantcat/dsh-home-paths'
 
-const home = resolveDshHome()                // configured path, else $DSH_HOME, else ~/.alpha
+const home = resolveDshHome()                // configured path, else $ALPHA_HOME, else ~/.alpha
 const settings = dshHomePath('settings')     // join one child onto the resolved home
-const cache = dshCachePath('models')         // $DSH_HOME/cache/models, default ~/.alpha/cache/models
+const cache = dshCachePath('models')         // $ALPHA_HOME/cache/models, default ~/.alpha/cache/models
 ```
 
-显式配置的路径优先级最高，然后是 `$DSH_HOME`，最后是默认的 `~/.alpha`。空或仅含空白的 `$DSH_HOME` 视为未设置，因此空白的覆盖值绝不会把主目录解析到当前工作目录。
+显式配置的路径优先级最高，然后是 `$ALPHA_HOME`，最后是默认的 `~/.alpha`。空或仅含空白的 `$ALPHA_HOME` 视为未设置，因此空白的覆盖值绝不会把主目录解析到当前工作目录。
 
 `dshCachePath(...segments)` 从解析出的主目录下的 `cache` 目录派生路径。不传路径段时返回缓存目录本身。传入首个选项对象 `dshCachePath({ dshHome: home }, ...segments)` 可使用显式配置的主目录，遵循相同的优先级与波浪号展开规则。它返回绝对路径，不会创建目录。
 
 ### 展示主目录
 
-面向用户的路径请以符号形式渲染根目录，而不是机器路径：默认主目录显示为 `~/.alpha`，任何已配置的主目录显示为 `$DSH_HOME`。展示形式绝不会泄露机器的绝对路径。
+面向用户的路径请以符号形式渲染根目录，而不是机器路径：默认主目录显示为 `~/.alpha`，任何已配置的主目录显示为 `$ALPHA_HOME`。展示形式绝不会泄露机器的绝对路径。
 
 ### 展开用户路径
 
@@ -71,7 +71,7 @@ const cache = dshCachePath('models')         // $DSH_HOME/cache/models, default 
 
 ### 解析规则
 
-`resolveDshHome` 先读显式覆盖值，然后读 `$DSH_HOME`，最后回退到操作系统主目录拼接 `.dsh`。选中的值经过波浪号展开并规范化为绝对路径；`dshHomePath` 用 Node 的平台路径规则拼接子路径段。`dshHomeDisplay` 把解析出的路径与默认根目录比较并返回符号标签，因此已配置的主目录绝不泄露其绝对路径。
+`resolveDshHome` 先读显式覆盖值，然后读 `$ALPHA_HOME`，最后回退到操作系统主目录拼接 `.dsh`。选中的值经过波浪号展开并规范化为绝对路径；`dshHomePath` 用 Node 的平台路径规则拼接子路径段。`dshHomeDisplay` 把解析出的路径与默认根目录比较并返回符号标签，因此已配置的主目录绝不泄露其绝对路径。
 
 ### 规范化机制
 
@@ -87,7 +87,7 @@ const cache = dshCachePath('models')         // $DSH_HOME/cache/models, default 
 当你需要启动器或依赖统一主目录根的消费方时，阅读以下页面。
 
 - [boot 包](../../boot/app-boot/README.zh.md)——在任何插件挂载之前解析主目录的启动器。
-- [shell 环境](../../shell/shell-env/README.zh.md)——`DSH_HOME` 如何到达模型 shell 调用。
+- [shell 环境](../../shell/shell-env/README.zh.md)——`ALPHA_HOME` 如何到达模型 shell 调用。
 - [匿名用户 id](../../identity/anonymous-user-id/README.zh.md)——位于解析后主目录下的存储身份文件。
 
 -----

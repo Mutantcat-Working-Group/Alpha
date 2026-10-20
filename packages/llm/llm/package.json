@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-llm",
   "description": "Provider-neutral LLM service interface for the Alpha",
-  "version": "1.0.20261019",
+  "version": "1.0.20261020",
   "publishConfig": {
     "access": "public"
   },
@@ -25,6 +25,10 @@
     "./types": {
       "types": "./lib/types/types.d.ts",
       "default": "./lib/types/types.js"
+    },
+    "./error": {
+      "types": "./lib/types/error.d.ts",
+      "default": "./lib/types/error.js"
     },
     "./brand": {
       "types": "./lib/types/brand.d.ts",

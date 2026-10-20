@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`@mutantcat/dsh-home-paths` lets package authors resolve one Alpha data root and derive child paths from it. An explicit path wins over `$DSH_HOME`, which wins over `~/.alpha`; blank environment values are ignored. Its public helpers can render the root without revealing an absolute machine path, expand only bare or current-user tilde forms, and canonicalize watch targets whose final components do not yet exist. Use it as a direct library dependency, not through `cordis.yml`.
+`@mutantcat/dsh-home-paths` lets package authors resolve one Alpha data root and derive child paths from it. An explicit path wins over `$ALPHA_HOME`, which wins over `~/.alpha`; blank environment values are ignored. Its public helpers can render the root without revealing an absolute machine path, expand only bare or current-user tilde forms, and canonicalize watch targets whose final components do not yet exist. Use it as a direct library dependency, not through `cordis.yml`.
 
 ## Table of Contents
 
@@ -31,18 +31,18 @@ Use these helpers wherever a package must agree with the rest of the harness abo
 ```ts
 import { resolveDshHome, dshHomePath, dshCachePath } from '@mutantcat/dsh-home-paths'
 
-const home = resolveDshHome()                // configured path, else $DSH_HOME, else ~/.alpha
+const home = resolveDshHome()                // configured path, else $ALPHA_HOME, else ~/.alpha
 const settings = dshHomePath('settings')     // join one child onto the resolved home
-const cache = dshCachePath('models')         // $DSH_HOME/cache/models, default ~/.alpha/cache/models
+const cache = dshCachePath('models')         // $ALPHA_HOME/cache/models, default ~/.alpha/cache/models
 ```
 
-An explicit configured path has the highest precedence, then `$DSH_HOME`, then the default `~/.alpha`. An empty or whitespace-only `$DSH_HOME` is treated as unset, so a blank override never resolves the home to the current working directory.
+An explicit configured path has the highest precedence, then `$ALPHA_HOME`, then the default `~/.alpha`. An empty or whitespace-only `$ALPHA_HOME` is treated as unset, so a blank override never resolves the home to the current working directory.
 
 `dshCachePath(...segments)` derives paths from the resolved home's `cache` directory. With no segments it returns the cache directory itself. Pass an initial options object, `dshCachePath({ dshHome: home }, ...segments)`, to use an explicit configured home with the same precedence and tilde expansion. It returns an absolute path without creating directories.
 
 ### Displaying a home
 
-For user-facing paths, render the root symbolically rather than as a machine path: the default home displays as `~/.alpha` and any configured home displays as `$DSH_HOME`. The display form never leaks an absolute machine path.
+For user-facing paths, render the root symbolically rather than as a machine path: the default home displays as `~/.alpha` and any configured home displays as `$ALPHA_HOME`. The display form never leaks an absolute machine path.
 
 ### Expanding user paths
 
@@ -71,7 +71,7 @@ The package is built on one principle: all harness user data lives under one roo
 
 ### Resolution rules
 
-`resolveDshHome` reads the explicit override, then `$DSH_HOME`, then falls back to the operating-system home joined with `.dsh`. The chosen value is tilde-expanded and normalized to an absolute path; `dshHomePath` joins child segments with Node's platform path rules. `dshHomeDisplay` compares the resolved path against the default root and returns the symbolic label, so a configured home never leaks its absolute path.
+`resolveDshHome` reads the explicit override, then `$ALPHA_HOME`, then falls back to the operating-system home joined with `.dsh`. The chosen value is tilde-expanded and normalized to an absolute path; `dshHomePath` joins child segments with Node's platform path rules. `dshHomeDisplay` compares the resolved path against the default root and returns the symbolic label, so a configured home never leaks its absolute path.
 
 ### Canonicalization mechanics
 
@@ -87,7 +87,7 @@ The package is built on one principle: all harness user data lives under one roo
 Read these pages when you need the launcher or the consumers that depend on a single home root.
 
 - [Boot package](../../boot/app-boot/README.md) — the launcher that resolves the home before any plugin mounts.
-- [Shell environment](../../shell/shell-env/README.md) — how `DSH_HOME` reaches model shell calls.
+- [Shell environment](../../shell/shell-env/README.md) — how `ALPHA_HOME` reaches model shell calls.
 - [Anonymous user id](../../identity/anonymous-user-id/README.md) — a stored identity file under the resolved home.
 
 -----

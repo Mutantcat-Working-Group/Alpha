@@ -20,6 +20,16 @@
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
+/* Only rows whose drag props make them draggable advertise the gesture; the
+   ungrouped bucket and rows without a Workspace keep the plain pointer. */
+.draggable {
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
 .searchResultRow {
   display: flex;
   flex-direction: column;

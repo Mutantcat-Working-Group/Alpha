@@ -45,7 +45,7 @@ const endpoint = launchEnvironmentOf(ctx).get('DEEPSEEK_BASE_URL')?.value
 |---|---|
 | 继承的进程环境 | 启动 shell、CI 任务或容器传入的内容——本次运行的明确意图 |
 | `<invocation cwd>/.env` | harness 被启动于其中的项目；产品信任它配置自己的 agent（智能体） |
-| `$DSH_HOME/.env` | 用户自己的机器级默认值 |
+| `$ALPHA_HOME/.env` | 用户自己的机器级默认值 |
 
 变量名按平台自身的规则匹配：POSIX 上精确匹配，Windows 上不区分大小写。在 Windows 上做大小写敏感的查找会选错层——shell 里的 `deepseek_api_key` 与项目 `.env` 里的 `DEEPSEEK_API_KEY` 对操作系统而言是同一个变量。
 

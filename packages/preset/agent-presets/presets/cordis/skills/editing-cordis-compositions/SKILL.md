@@ -25,13 +25,13 @@ Two planes, and the choice is not about how "agent-related" something feels — 
 
 A preset is a directory holding one `agent.cordis.yml`, optionally beside a `preset.yml` carrying display metadata — `name` and `description` (and, for shipped presets, a roster `order`). Write the metadata too: a preset without it shows up in every picker as its bare directory name.
 
-Locally authored presets live one directory per preset under `${DSH_HOME:-$HOME/.dsh}/.agent-presets/`, and the shipped set sits beside the deployment's own config. Use those when the user asks where to look. For deployment overrides, read `${DSH_HOME:-$HOME/.dsh}/profiles/<profile>/cordis.patch.yml`, `${DSH_HOME:-$HOME/.dsh}/cordis.patch.yml`, and any launch `--patch` files for the `agent-presets` row's `roots` and `includeUserRoot`. Obtain the active profile and extra patch paths from the user when they are not in the task context; do not guess a different profile.
+Locally authored presets live one directory per preset under `${ALPHA_HOME:-$HOME/.alpha}/.agent-presets/`, and the shipped set sits beside the deployment's own config. Use those when the user asks where to look. For deployment overrides, read `${ALPHA_HOME:-$HOME/.alpha}/profiles/<profile>/cordis.patch.yml`, `${ALPHA_HOME:-$HOME/.alpha}/cordis.patch.yml`, and any launch `--patch` files for the `agent-presets` row's `roots` and `includeUserRoot`. Obtain the active profile and extra patch paths from the user when they are not in the task context; do not guess a different profile.
 
 ## Authoring a preset
 
 Use shell and file tools to locate the installed `@mutantcat/dsh-agent-presets` package under the active profile's `node_modules` or the deployment installation. Its `presets/<id>/` directory contains each shipped preset. If those files are unavailable, ask the user to copy the preset through the Web preset picker and provide the copied directory; runtime API inspection does not execute Remote methods.
 
-Copy the complete source directory, including skills and assets, into a new `${DSH_HOME:-$HOME/.dsh}/.agent-presets/<new-id>/` directory (or the explicitly configured writable root). Refuse an existing destination. Set `name` and `description` in `preset.yml` and remove the copied roster `order`. Never overwrite the installed source.
+Copy the complete source directory, including skills and assets, into a new `${ALPHA_HOME:-$HOME/.alpha}/.agent-presets/<new-id>/` directory (or the explicitly configured writable root). Refuse an existing destination. Set `name` and `description` in `preset.yml` and remove the copied roster `order`. Never overwrite the installed source.
 
 Edit the copy's `agent.cordis.yml` with the normal file tools. Writes outside the workspace follow the active filesystem approval policy. For profile-wide capabilities, author a workspace bundle and install it with `plugin_manager`; load `cordis-plugin-development` for packaging guidance.
 

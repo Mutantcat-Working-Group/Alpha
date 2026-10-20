@@ -50,7 +50,7 @@ The Python SDK follows the same application architecture. Its runtime wheel pack
 
 ## Desktop application
 
-The [Alpha desktop application](../apps/desktop/README.md) carries its exact alpha production runtime in bundled resources and owns the reserved `$DSH_HOME/profiles/desktop`. Shared profile helpers initialize its files, reconcile installed bundles, and resolve installation and bundle dependencies without replacing pnpm-owned packages. CLI and Desktop share product data, while executable packages, activation choices, and lockfiles remain separate. The public CLI cannot manage Desktop’s profile.
+The [Alpha desktop application](../apps/desktop/README.md) carries its exact alpha production runtime in bundled resources and owns the reserved `$ALPHA_HOME/profiles/desktop`. Shared profile helpers initialize its files, reconcile installed bundles, and resolve installation and bundle dependencies without replacing pnpm-owned packages. CLI and Desktop share product data, while executable packages, activation choices, and lockfiles remain separate. The public CLI cannot manage Desktop’s profile.
 
 Tauri starts the private Desktop Host as a bundled Node sidecar and speaks newline-delimited JSON over its stdout and stdin. The Host invokes the shared CLI profile runner and Web application. The window loads a packaged loader page, then navigates to the authenticated Host once it reports its engine URL. Web owns RPC and streams; that channel carries readiness, fatal errors, and shutdown. The served document carries its injection table; the carrier publishes only the stream origin. Desktop defaults to port `19387`; profile configuration can override it. Shell-owned UI runs plugin transactions through bundled pnpm with normal user and profile configuration.
 

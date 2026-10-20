@@ -53,7 +53,7 @@ export interface Config {
   providerName?: string
   /** Whether project and user roots are included around custom roots. */
   includeDefaultRoots?: boolean
-  /** Alpha config root. Defaults to `$DSH_HOME` or `~/.alpha`. */
+  /** Alpha config root. Defaults to `$ALPHA_HOME` or `~/.alpha`. */
   dshHome?: string
   /** Shared agent config root. Defaults to `$DSH_AGENTS_HOME` or `~/.agents`. */
   agentsHome?: string

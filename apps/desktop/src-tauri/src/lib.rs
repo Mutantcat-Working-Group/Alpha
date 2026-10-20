@@ -390,6 +390,10 @@ fn build_window(
     .title("Alpha")
     .inner_size(1280.0, 800.0)
     .min_inner_size(900.0, 600.0)
+    // Tauri replaces the webview's own drag-drop handler by default, which
+    // suppresses the HTML5 drag and drop events the attachment intake listens
+    // for. Disabling it hands file drops back to the page.
+    .disable_drag_drop_handler()
     .initialization_script(BOOT_BRIDGE)
     // A document loaded after the first navigation still needs the payload the shell holds,
     // because the initialization script alone only sees one carried into that document.

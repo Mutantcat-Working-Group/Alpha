@@ -132,20 +132,20 @@ Use `alpha plugin` for dependencies and bundle layers that should persist in thi
 ::: code-group
 
 ```sh [Linux/macOS]
-export DSH_HOME=/absolute/path/to/example-dsh-home
+export ALPHA_HOME=/absolute/path/to/example-dsh-home
 alpha --profile sdk-minimal --dump-default-config >/dev/null
 alpha plugin --profile sdk-minimal add file:/absolute/path/to/my-plugin-bundle
 ```
 
 ```powershell [Windows PowerShell]
-$env:DSH_HOME = "C:\work\example-dsh-home"
+$env:ALPHA_HOME = "C:\work\example-dsh-home"
 alpha --profile sdk-minimal --dump-default-config | Out-Null
 alpha plugin --profile sdk-minimal add file:C:/work/my-plugin-bundle
 ```
 
 :::
 
-The first command initializes the shipped standalone profile. The second forwards package management to `pnpm`, then records any installed package that exports a `dsh.bundle` layer. Install `pnpm` only for this management command; launching the installed SDK does not need it. Edit `$DSH_HOME/profiles/sdk-minimal/cordis.patch.yml` for persistent row changes, or pass patch files from Python for per-launch changes.
+The first command initializes the shipped standalone profile. The second forwards package management to `pnpm`, then records any installed package that exports a `dsh.bundle` layer. Install `pnpm` only for this management command; launching the installed SDK does not need it. Edit `$ALPHA_HOME/profiles/sdk-minimal/cordis.patch.yml` for persistent row changes, or pass patch files from Python for per-launch changes.
 
 Another `profile` is valid when it includes `@mutantcat/dsh-sdk-app` or another JSON-RPC server row. Missing server rows, unresolved plugins, and invalid patches fail during startup instead of falling back to another composition.
 
@@ -164,7 +164,7 @@ The bundled runtime includes `str_replace_editor`, but `sdk-minimal` omits it fr
       name: '@mutantcat/dsh-tool-str-replace-editor'
 ```
 
-Pass `patches=("/absolute/path/to/editor.patch.yml",)` when constructing `DeepSeekHarness(profile="sdk-minimal", ...)`, or put the patch in `$DSH_HOME/profiles/sdk-minimal/cordis.patch.yml` for persistent configuration. On the next runtime launch, model requests include `str_replace_editor` beside the persistent shell. The local filesystem provider uses the runtime working directory for relative paths; like the minimal shell, it does not confine access to that directory. For the standard `sdk` profile, insert only the editor row so it uses the existing filesystem provider and policies.
+Pass `patches=("/absolute/path/to/editor.patch.yml",)` when constructing `DeepSeekHarness(profile="sdk-minimal", ...)`, or put the patch in `$ALPHA_HOME/profiles/sdk-minimal/cordis.patch.yml` for persistent configuration. On the next runtime launch, model requests include `str_replace_editor` beside the persistent shell. The local filesystem provider uses the runtime working directory for relative paths; like the minimal shell, it does not confine access to that directory. For the standard `sdk` profile, insert only the editor row so it uses the existing filesystem provider and policies.
 
 ## Understand the minimal profile
 
@@ -179,7 +179,7 @@ Pass `patches=("/absolute/path/to/editor.patch.yml",)` when constructing `DeepSe
 
 The profile's sole bundle inserts the complete tree over an empty root and does not include `dsh-base`; later base-profile tools therefore cannot appear implicitly. It contains the SDK protocol, one environment-configured DeepSeek adapter, local execution, and persistence, while filesystem tools, settings, managed credentials, OTel telemetry, Web tools, subagents, local instruction discovery, and compaction are absent. The [DeepSeek session-log contributor](../../../packages/session/session-log-deepseek/README.md) uploads complete unaccepted log suffixes with DeepSeek requests by default; set `session-log-deepseek.enabled: false` in a profile patch to disable it. It pins `danger-full-access`, so the platform-selected persistent shell can modify any path visible to the runtime; use a disposable checkout or container.
 
-The installed wheel still packages the full `web` profile and frontend assets. Run `alpha web` against an explicit `DSH_HOME` when a Python SDK deployment also needs the browser application; `web` is a separate CLI application and cannot serve a Python SDK client.
+The installed wheel still packages the full `web` profile and frontend assets. Run `alpha web` against an explicit `ALPHA_HOME` when a Python SDK deployment also needs the browser application; `web` is a separate CLI application and cannot serve a Python SDK client.
 
 Use a fresh home when profiles, plugins, credentials, settings, and sessions must be isolated. Use a fresh session id for independent work; reuse a harness, home, and id only to continue the same durable conversation and session-owned resources.
 

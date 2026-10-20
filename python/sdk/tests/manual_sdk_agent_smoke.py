@@ -68,7 +68,7 @@ def run_smoke(repo_root: Path, keep_sessions: bool) -> None:
                 "sdk",
             ),
             env={
-                "DSH_HOME": str(dsh_home),
+                "ALPHA_HOME": str(dsh_home),
                 "DSH_PERMISSION_MODE": "danger-full-access",
                 "DSH_TELEMETRY_DISABLED": "1",
                 "DEEPSEEK_BASE_URL": base_url,

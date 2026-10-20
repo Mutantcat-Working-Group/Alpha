@@ -8,15 +8,39 @@
  */
 
 import type { Duplex, Readable, Writable } from 'node:stream'
+import type { DSH_HOME_ENV } from '@mutantcat/dsh-home-paths'
 
 /** Namespace prefix reserved for Alpha-managed child environment facts. */
 export const DSH_ENV_PREFIX = 'DSH_' as const
 
+/** Namespace prefix for Alpha-owned child environment facts outside the legacy `DSH_` namespace. */
+export const ALPHA_ENV_PREFIX = 'ALPHA_' as const
+
 /** One environment key inside the managed {@link DSH_ENV_PREFIX} namespace. */
 export type DshEnvironmentKey = `${typeof DSH_ENV_PREFIX}${string}`
 
-/** Trusted Alpha variables for one child-process execution. */
-export type DshEnvironment = Readonly<Record<DshEnvironmentKey, string>>
+/**
+ * The built-in home key, intersected with the {@link ALPHA_ENV_PREFIX} namespace
+ * so a rename outside that prefix stops compiling here instead of silently
+ * exempting the key from namespace-wide rules.
+ */
+export type AlphaNamespaceKey = typeof DSH_HOME_ENV & `${typeof ALPHA_ENV_PREFIX}${string}`
+
+/**
+ * One key a child process may receive in its managed environment: a
+ * {@link DshEnvironmentKey} contributed through the `DSH_` prefix, or the
+ * built-in home key, which Alpha owns outside that prefix.
+ */
+export type ManagedEnvironmentKey = DshEnvironmentKey | AlphaNamespaceKey
+
+/**
+ * Trusted Alpha variables for one child-process execution: contributor facts in
+ * the `DSH_` namespace, plus the built-in home key when the caller supplies the
+ * registry's overlay.
+ */
+export type DshEnvironment = Readonly<Record<DshEnvironmentKey, string>> & {
+  readonly [K in AlphaNamespaceKey]?: string
+}
 
 /** One captured stream: the (possibly truncated) text plus recovery info. */
 export interface CollectedOutput {
@@ -100,7 +124,7 @@ export interface SubprocessSpawnSpec {
    * Explicit environment entries merged onto the implementation's scrubbed
    * parent base (see `scrubbedParentEnv`), with no namespace validation. A
    * string is a deliberate caller opt-in, so a forwarded credential-shaped
-   * entry or current `DSH_*` fact survives the scrub; `undefined` is a
+   * entry or current managed fact survives the scrub; `undefined` is a
    * tombstone that removes an ordinary ambient entry from the child.
    */
   env?: NodeJS.ProcessEnv | undefined

@@ -136,7 +136,7 @@ const BOOTSTRAP_PREFIXES = ['DSH_', 'XDG_', 'DYLD_', 'BASH_FUNC_']
 /**
  * The bootstrap names the Harness-home `.env` alone may set. A proxy chooses the route every
  * request takes, so the invoking directory's file — which arrives with a clone — keeps refusing
- * them; the home file is the user's own, and `DSH_HOME` is itself bootstrap-only, so no `.env` can
+ * them; the home file is the user's own, and `ALPHA_HOME` is itself bootstrap-only, so no `.env` can
  * relocate this exemption. The CA and TLS names in the same group stay refused everywhere: they
  * change what is trusted, not where traffic goes.
  */

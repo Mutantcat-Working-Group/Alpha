@@ -170,3 +170,38 @@ export function isHarnessError(value: unknown): value is HarnessError {
  * the agent or summarizer retries with freshly derived input.
  */
 export const IMAGE_OFFLOAD_REQUIRED_CODE = 'IMAGE_OFFLOAD_REQUIRED'
+
+/**
+ * Stable provider-neutral failure codes a model request produces for a reason a
+ * user or the provider owns — the set a user-facing surface can describe
+ * without echoing provider prose. Open-ended codes (`HTTP_<status>`) and
+ * developer-time composition failures are deliberately absent: those keep their
+ * provider message as the only diagnostic, so a surface falls back to it.
+ */
+export const LLM_FAILURE_CODES = [
+  'AUTH',
+  'INVALID_CREDENTIAL',
+  'QUOTA',
+  'RATE_LIMIT',
+  'CONTEXT_WINDOW_EXCEEDED',
+  'INVALID_REQUEST',
+  'SERVER',
+  'TIMEOUT',
+  'TRANSPORT',
+  'EMPTY_RESPONSE',
+  'MALFORMED_RESPONSE',
+  'UNKNOWN_MODEL',
+  'IMAGE_OFFLOAD_REQUIRED',
+] as const satisfies readonly string[]
+
+/** One code from {@link LLM_FAILURE_CODES}. */
+export type LlmFailureCode = typeof LLM_FAILURE_CODES[number]
+
+/**
+ * Narrow a caught failure code to the user-facing taxonomy.
+ * @param value - the caught value (`unknown` in catch clauses).
+ * @returns true only for a code in {@link LLM_FAILURE_CODES}.
+ */
+export function isLlmFailureCode(value: unknown): value is LlmFailureCode {
+  return typeof value === 'string' && (LLM_FAILURE_CODES as readonly string[]).includes(value)
+}

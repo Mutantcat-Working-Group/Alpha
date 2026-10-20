@@ -16,7 +16,7 @@ Two runtime carriers coexist under ``runtime/``, both injected by the repo's
 
 Both carriers execute the same Alpha command grammar. The Python SDK selects the
 ``sdk`` profile and requires an explicit Harness home; the installed ``alpha``
-console command requires ``DSH_HOME`` for the same reason.
+console command requires ``ALPHA_HOME`` for the same reason.
 """
 
 from __future__ import annotations
@@ -173,10 +173,10 @@ def _node_launch_args() -> tuple[str, str]:
 
 
 def main() -> None:
-    """Launch the CLI with explicit DSH_HOME; wait on Windows, replace the process on POSIX."""
-    if not os.environ.get("DSH_HOME", "").strip():
+    """Launch the CLI with explicit ALPHA_HOME; wait on Windows, replace the process on POSIX."""
+    if not os.environ.get("ALPHA_HOME", "").strip():
         print(
-            "alpha: the Python runtime command requires an explicit DSH_HOME; "
+            "alpha: the Python runtime command requires an explicit ALPHA_HOME; "
             "it never uses ~/.dsh implicitly",
             file=sys.stderr,
         )

@@ -35,7 +35,7 @@ An installed Alpha uses the same overlay through an absolute path:
 alpha web --patch /absolute/path/to/github-review/cordis.yml
 ```
 
-For a permanent profile, place `github-ready-review-rule.mjs` beside `$DSH_HOME/profiles/web/cordis.patch.yml`, append the rows from `cordis.yml` to that patch, and start with `alpha web`. The shipped CLI already contains both webhook packages; the overlay alone activates them.
+For a permanent profile, place `github-ready-review-rule.mjs` beside `$ALPHA_HOME/profiles/web/cordis.patch.yml`, append the rows from `cordis.yml` to that patch, and start with `alpha web`. The shipped CLI already contains both webhook packages; the overlay alone activates them.
 
 ## Expose the dedicated endpoint
 

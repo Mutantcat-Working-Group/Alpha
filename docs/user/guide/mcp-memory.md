@@ -30,7 +30,7 @@ alpha web --patch "$PWD/apps/cli/config/examples/mcp-memory/memorix.cordis.yml"
 
 Replace the filename with `mcp-reference-memory.cordis.yml` or `engram.cordis.yml`. The path may point to a copied file anywhere on disk. No memory server is present in the shipped composition, so omitting `--patch` keeps all three disabled.
 
-To keep the selection across runs, merge the chosen file's single `insert` patch into a user patch layer — `$DSH_HOME/profiles/<name>/cordis.patch.yml` for one profile, or `$DSH_HOME/cordis.patch.yml` for every profile on the machine. Do not copy over an existing file: it may already contain unrelated user patches.
+To keep the selection across runs, merge the chosen file's single `insert` patch into a user patch layer — `$ALPHA_HOME/profiles/<name>/cordis.patch.yml` for one profile, or `$ALPHA_HOME/cordis.patch.yml` for every profile on the machine. Do not copy over an existing file: it may already contain unrelated user patches.
 
 ## Provider setup
 

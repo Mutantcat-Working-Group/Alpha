@@ -47,7 +47,7 @@ with DeepSeekHarness(dsh_home="/absolute/path/to/test-dsh-home") as harness:
     print(harness.run("say hi").final_response)
 ```
 
-Alternatively export a non-empty `DSH_HOME`. The SDK rejects a launch that would silently use `~/.dsh`.
+Alternatively export a non-empty `ALPHA_HOME`. The SDK rejects a launch that would silently use `~/.dsh`.
 
 ## Run against Node source
 

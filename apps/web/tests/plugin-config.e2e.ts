@@ -1,6 +1,6 @@
 // Web e2e scenario: the configuration pages on the Plugins page — the official
 // pages a deployment's exposed host-plane namespaces produce, one field edited
-// through the real wire down to `$DSH_HOME/settings.yaml`, the override badge
+// through the real wire down to `$ALPHA_HOME/settings.yaml`, the override badge
 // and reset that layering produces, and a community bundle's row configuration
 // registered by its own browser half. Zero model calls: everything is client
 // state plus the settings document and the profile on a blank frame, so there

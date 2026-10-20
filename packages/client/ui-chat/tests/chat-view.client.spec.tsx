@@ -1310,6 +1310,27 @@ describe('ChatView', () => {
     ])
   })
 
+  it('localizes a taxonomy failure code and keeps the provider message for an open-ended one', () => {
+    const h = makeHarness({
+      nodes: [
+        user(1, 'try'),
+        {
+          kind: 'turn-error', seq: 2, time: 2_000, turn: 1, step: 0,
+          code: 'RATE_LIMIT', message: '429 Too Many Requests',
+        },
+        {
+          kind: 'turn-error', seq: 3, time: 3_000, turn: 1, step: 0,
+          code: 'HTTP_502', message: 'upstream connect error',
+        },
+      ],
+    })
+    const view = render(<h.ChatView {...h.props} />)
+    expect(view.getAllByRole('status').map(status => status.textContent)).toEqual([
+      '本轮运行失败请求过于频繁，已被限流，请稍后重试RATE_LIMIT',
+      '本轮运行失败upstream connect errorHTTP_502',
+    ])
+  })
+
   it('renders the max-tokens notice with localized guidance, distinct from turn errors', () => {
     const h = makeHarness({ nodes: [user(1, 'try'), assistant(2, 'truncated'), turnMaxTokens(3)] })
     const view = render(<h.ChatView {...h.props} />)

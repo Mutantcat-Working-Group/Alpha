@@ -2,7 +2,7 @@
  * Profile discovery, initialization, and patch-layer composition for the
  * `alpha --profile` launcher family.
  *
- * A profile is a directory under `$DSH_HOME/profiles/<name>` holding a
+ * A profile is a directory under `$ALPHA_HOME/profiles/<name>` holding a
  * `package.json` (out-of-tree plugin dependencies plus the profile manifest
  * `dsh.profile` with its ordered `bundles` list) and a `cordis.patch.yml`
  * (the user's own patch layer, applied after every bundle layer). Bundles are
@@ -16,7 +16,7 @@
  * first from the alpha installation (the launcher's own package), then from the
  * profile directory. Pnpm-managed entries in the profile's `node_modules`
  * resolve first. Alpha-owned links add packages carried only by selected
- * bundles, while `$DSH_HOME/profiles/node_modules` supplies the installation
+ * bundles, while `$ALPHA_HOME/profiles/node_modules` supplies the installation
  * dependency closure through Node's ordinary parent-walk. Plain Node uses
  * symlinks for that shared fallback; packaged executables use ESM proxies so
  * external plugins retain the installation's module instances.
@@ -558,7 +558,7 @@ export interface ProfileModuleFallbackOptions {
 
 /**
  * Maintain module fallbacks for one profile launch. The shared
- * `$DSH_HOME/profiles/node_modules` mirrors the alpha installation dependency
+ * `$ALPHA_HOME/profiles/node_modules` mirrors the alpha installation dependency
  * closure. Plain Node writes symlinks; a packaged executable writes ESM
  * proxies under a cross-process lock because operating-system links cannot
  * enter pkg's virtual filesystem. Missing packages carried only by selected

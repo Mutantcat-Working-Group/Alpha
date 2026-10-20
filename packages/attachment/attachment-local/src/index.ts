@@ -1,4 +1,4 @@
-/** Local durable attachment backend rooted below `DSH_HOME`. @module @mutantcat/dsh-attachment-local */
+/** Local durable attachment backend rooted below `ALPHA_HOME`. @module @mutantcat/dsh-attachment-local */
 
 import { join } from 'node:path'
 import { Context } from '@mutantcat/cordis'
@@ -59,7 +59,7 @@ export const MAX_IMAGE_COMPRESSION_CONCURRENCY = 8
 
 /** Local attachment backend configuration. */
 export interface Config {
-  /** Explicit harness home; omitted follows `DSH_HOME`, then `~/.alpha`. */
+  /** Explicit harness home; omitted follows `ALPHA_HOME`, then `~/.alpha`. */
   dshHome?: string
   /** Maximum encoded bytes accepted for one submitted image. Default: 20 MiB. */
   maxImageBytes?: number

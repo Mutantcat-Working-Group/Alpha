@@ -1014,6 +1014,7 @@ describe('ModelsSection', () => {
       overridden={false}
       defaultContextWindow={undefined}
       defaultMaxTokens={undefined}
+      defaultInput={undefined}
       t={t}
       disabled={true}
       onChange={vi.fn()}
@@ -1025,6 +1026,43 @@ describe('ModelsSection', () => {
       .toBe(en.contextWindowPlaceholder)
     expect(screen.getByLabelText<HTMLInputElement>(`${en.maxTokens} 1`).placeholder)
       .toBe(en.maxTokensPlaceholder)
+  })
+
+  it('shows the route defaultInput on a row that declares none', () => {
+    render(<DeepSeekModelsEditor
+      models={[{}, { inputModalities: ['text'] }]}
+      overridden={false}
+      defaultContextWindow={undefined}
+      defaultMaxTokens={undefined}
+      defaultInput={['text', 'image']}
+      t={t}
+      disabled={true}
+      onChange={vi.fn()}
+      onReset={vi.fn()}
+    />)
+    expandRow(1)
+    expandRow(2)
+    // The row that declares nothing reads the route default, so a deployment
+    // whose models all accept images shows that once in the route config.
+    expect(screen.getAllByLabelText<HTMLInputElement>(en.modelInputImage)[0]?.checked).toBe(true)
+    // An explicit declaration still wins over the route default.
+    expect(screen.getAllByLabelText<HTMLInputElement>(en.modelInputImage)[1]?.checked).toBe(false)
+  })
+
+  it('falls back to text only when the route declares no defaultInput', () => {
+    render(<DeepSeekModelsEditor
+      models={[{}]}
+      overridden={false}
+      defaultContextWindow={undefined}
+      defaultMaxTokens={undefined}
+      defaultInput={undefined}
+      t={t}
+      disabled={true}
+      onChange={vi.fn()}
+      onReset={vi.fn()}
+    />)
+    expandRow(1)
+    expect(screen.getAllByLabelText<HTMLInputElement>(en.modelInputImage)[0]?.checked).toBe(false)
   })
 
   it('can empty and reset the model override, then clear optional fields without dropping hidden data', async () => {

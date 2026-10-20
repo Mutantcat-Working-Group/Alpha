@@ -12,7 +12,7 @@ python -m pip install deepseek-harness-sdk
 
 Python SDK 没有独立的应用入口。它以 `--profile sdk` 启动内置的 `alpha` CLI（命令行界面）；所选 profile 负责 JSON-RPC 服务器、agent（智能体）组合、凭据、持久化、工具和关闭流程。
 
-每次启动都必须显式指定 Harness home。请传入 `dsh_home`，或在子进程环境中提供非空的 `DSH_HOME`。SDK 刻意不会发现 `~/.dsh`。
+每次启动都必须显式指定 Harness home。请传入 `dsh_home`，或在子进程环境中提供非空的 `ALPHA_HOME`。SDK 刻意不会发现 `~/.dsh`。
 
 ```py
 from deepseek_harness import DeepSeekHarness
@@ -37,12 +37,12 @@ print(result.final_response)
 持久自定义属于 `alpha` profile。使用运行时 wheel 包提供的 `alpha` 命令初始化随附的 SDK profile，并安装外部 bundle：
 
 ```sh
-export DSH_HOME=/absolute/path/to/isolated-dsh-home
+export ALPHA_HOME=/absolute/path/to/isolated-dsh-home
 alpha --profile sdk --dump-default-config >/dev/null
 alpha plugin --profile sdk add file:/absolute/path/to/my-plugin-bundle
 ```
 
-`file:` 形式会把本地 bundle 安装到 profile 包树中，使其 peer import 可以到达内置安装后备。profile manifest（元数据清单）会记录已安装依赖与有序 bundle 层；`$DSH_HOME/profiles/sdk/cordis.patch.yml` 是持久用户 patch。只有管理外部包时，`alpha plugin` 才需要 `pnpm`。运行 SDK 不需要系统 Node.js。
+`file:` 形式会把本地 bundle 安装到 profile 包树中，使其 peer import 可以到达内置安装后备。profile manifest（元数据清单）会记录已安装依赖与有序 bundle 层；`$ALPHA_HOME/profiles/sdk/cordis.patch.yml` 是持久用户 patch。只有管理外部包时，`alpha plugin` 才需要 `pnpm`。运行 SDK 不需要系统 Node.js。
 
 对于单次调用的变更，可传入一个或多个 patch 文件。它们会转成绝对路径，并在 profile 层与 home patch 层之后按顺序传给 CLI：
 

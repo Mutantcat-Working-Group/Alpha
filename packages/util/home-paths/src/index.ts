@@ -17,7 +17,7 @@ export const DSH_HOME_DIR_NAME = '.alpha'
 export const DEFAULT_DSH_HOME_DISPLAY = `~/${DSH_HOME_DIR_NAME}`
 
 /** Environment variable that overrides the default Alpha home. */
-export const DSH_HOME_ENV = 'DSH_HOME'
+export const DSH_HOME_ENV = 'ALPHA_HOME'
 
 /**
  * Give a native filesystem watcher one canonical spelling of a path, even
@@ -78,12 +78,12 @@ export function expandHomePath(path: string): string {
 /**
  * Resolve the single-root Alpha home.
  *
- * Precedence, highest first: an explicit configured path, `$DSH_HOME`, then
+ * Precedence, highest first: an explicit configured path, `$ALPHA_HOME`, then
  * `~/.alpha`. The harness keeps all user data under one root. An empty or
- * whitespace-only `$DSH_HOME` is treated as unset, so a blank override never
+ * whitespace-only `$ALPHA_HOME` is treated as unset, so a blank override never
  * resolves the home to the current working directory.
  * @param configured - explicit harness-home override, which has highest precedence.
- * @param env - environment mapping used to read `DSH_HOME`.
+ * @param env - environment mapping used to read `ALPHA_HOME`.
  * @returns the normalized absolute harness home path.
  */
 export function resolveDshHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
@@ -116,9 +116,9 @@ export function dshCachePath(optionsOrSegment: { dshHome?: string } | string = {
  * Describe a resolved harness home symbolically for user-facing display.
  *
  * It never returns an absolute machine path: the default home is labelled
- * `~/.alpha`, and any configured home is labelled `$DSH_HOME`.
+ * `~/.alpha`, and any configured home is labelled `$ALPHA_HOME`.
  * @param resolvedHome - the absolute path returned by {@link resolveDshHome}.
- * @returns `~/.alpha` for the default home, otherwise `$DSH_HOME`.
+ * @returns `~/.alpha` for the default home, otherwise `$ALPHA_HOME`.
  */
 export function dshHomeDisplay(resolvedHome: string): string {
   return resolvedHome === resolve(defaultDshHome()) ? DEFAULT_DSH_HOME_DISPLAY : `$${DSH_HOME_ENV}`

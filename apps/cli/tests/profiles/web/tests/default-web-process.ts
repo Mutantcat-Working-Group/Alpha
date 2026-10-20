@@ -58,7 +58,7 @@ export async function withDefaultWeb(test: TestContext, inspect: (app: DefaultWe
         NODE_OPTIONS: undefined,
         NODE_PATH: undefined,
         TSX_TSCONFIG_PATH: undefined,
-        DSH_HOME: join(root, 'home'),
+        ALPHA_HOME: join(root, 'home'),
         DSH_AGENTS_HOME: join(root, '.agents'),
         DEEPSEEK_API_KEY: 'keyless-default-web-no-call',
         NODE_NO_WARNINGS: '1',

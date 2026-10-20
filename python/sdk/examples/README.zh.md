@@ -32,7 +32,7 @@ python python/sdk/examples/minimal.py \
 对同一个显式 home 使用运行时 wheel 包提供的 `alpha` 命令，以进行持久 profile 变更：
 
 ```sh
-export DSH_HOME=/absolute/path/to/example-dsh-home
+export ALPHA_HOME=/absolute/path/to/example-dsh-home
 alpha plugin --profile sdk-minimal add file:/absolute/path/to/my-plugin-bundle
 ```
 

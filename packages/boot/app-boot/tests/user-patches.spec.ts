@@ -35,7 +35,7 @@ const tmp = (): string => {
 
 describe('loadOptionalPatches', () => {
   afterEach(() => {
-    delete process.env.DSH_HOME
+    delete process.env.ALPHA_HOME
   })
 
   it('returns undefined when no user patch file exists', () => {

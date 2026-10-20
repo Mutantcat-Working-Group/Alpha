@@ -158,6 +158,8 @@ export type QueueAction =
     readonly content: readonly ContentBlock[]
   }
   | { readonly kind: 'remove' }
+  /** Move the item one position earlier within its own pending list. */
+  | { readonly kind: 'raise' }
   | { readonly kind: 'steer' }
 
 /** One Session list entry. */

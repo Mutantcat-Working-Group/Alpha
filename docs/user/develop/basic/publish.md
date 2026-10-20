@@ -11,7 +11,7 @@ To use a fresh source checkout instead, complete the [run-from-source section](.
 Installation is built on two concepts. Both are described by a `package.json`, but they carry different kinds of manifest under the `dsh` key, and they answer different questions:
 
 - A **bundle** is an npm package that ships a configuration layer. Its manifest declares `dsh.bundle`, answering "what does this package contribute?": a patch file that inserts or overrides plugin rows.
-- A **profile** is a directory under `$DSH_HOME/profiles/<name>` describing one runnable composition. Its manifest declares `dsh.profile`, answering "which bundles compose this setup, in what order?".
+- A **profile** is a directory under `$ALPHA_HOME/profiles/<name>` describing one runnable composition. Its manifest declares `dsh.profile`, answering "which bundles compose this setup, in what order?".
 
 A bundle is what you author and distribute; a profile is what a user boots with `alpha --profile <name>`. Nothing is both.
 
@@ -115,7 +115,7 @@ The effective configuration composes over an empty root by applying, in order:
 
 1. Each bundle patch named in the profile's `dsh.profile.bundles` list, in list order — `@mutantcat/dsh-base` first, then each installed bundle in the order it was added.
 2. The profile's own `cordis.patch.yml`.
-3. The home-level `$DSH_HOME/cordis.patch.yml` — machine-local preferences shared by every profile.
+3. The home-level `$ALPHA_HOME/cordis.patch.yml` — machine-local preferences shared by every profile.
 4. Each `--patch <path>` overlay, in argv order.
 
 App arguments are not another patch layer. A surface bundle can resolve them through an ordinary app-owned service, described below.

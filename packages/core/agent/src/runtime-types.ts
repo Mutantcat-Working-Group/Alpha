@@ -84,6 +84,15 @@ export interface Inbox {
   remove(messageId: MessageId): boolean
 
   /**
+   * Move one pending message one position earlier in its own list, so it is
+   * claimed before the message that preceded it. A message already first in
+   * its list is left where it is.
+   * @param messageId - identity of the pending message to raise.
+   * @returns whether the message moved.
+   */
+  raise(messageId: MessageId): boolean
+
+  /**
    * Apply standard splice semantics and durably record the normalized result.
    * @param target - pending list to mutate.
    * @param start - splice position.

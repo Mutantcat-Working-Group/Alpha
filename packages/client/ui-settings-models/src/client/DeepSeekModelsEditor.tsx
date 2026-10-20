@@ -131,6 +131,8 @@ export interface DeepSeekModelsEditorProps {
   defaultContextWindow: number | undefined
   /** Fallback output cap used when a row omits its exact value. */
   defaultMaxTokens: number | undefined
+  /** Route-level modalities a row without its own declaration inherits. */
+  defaultInput: readonly string[] | undefined
   /** Section copy. */
   t: (key: keyof typeof en) => string
   /** Disable every mutation. */
@@ -281,6 +283,7 @@ export function DeepSeekModelsEditor(props: DeepSeekModelsEditorProps): ReactNod
                 t={props.t}
                 contextWindow={capacityInput(model, index, 'contextWindow', props.defaultContextWindow)}
                 maxTokens={capacityInput(model, index, 'maxTokens', props.defaultMaxTokens)}
+                inputFallback={props.defaultInput}
                 onFieldChange={(field, value) => { update(index, field, value) }}
                 onIdBlur={(value) => {
                   const trimmed = value.trim()

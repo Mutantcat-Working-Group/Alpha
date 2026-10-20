@@ -12,7 +12,7 @@
 - The installers bundle independent Python, Node.js, and pnpm runtimes. Python data processing, Office document read/write, and Node scripts work on first use without anything from the user's system environment.
 - Terminal, SSH, subprocess, sandbox, LSP, browser, and computer interaction ship as plugins that start and stop on demand.
 - Sessions are written to disk end to end and replayable: every input that reaches a model request can be reconstructed from the session log, which keeps audits and reproductions possible.
-- The application ID is `org.mutantcat.alpha`, and data stays under `$DSH_HOME`, so upgrading keeps existing profiles.
+- The application ID is `org.mutantcat.alpha`, and data stays under `$ALPHA_HOME`, so upgrading keeps existing profiles.
 - **Publisher** Mutantcat Working Group (mutantcat.org) · GitHub: https://github.com/Mutantcat-Working-Group
 
 Core value:

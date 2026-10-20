@@ -67,9 +67,9 @@ function createAppReady(): { service: AppReady; commit(): void } {
 }
 
 /**
- * The home-level user patch layer (`$DSH_HOME/cordis.patch.yml`), applied
+ * The home-level user patch layer (`$ALPHA_HOME/cordis.patch.yml`), applied
  * over every profile's own layer. Resolved per call, not at module load:
- * `$DSH_HOME` may be set by the test or launcher after import.
+ * `$ALPHA_HOME` may be set by the test or launcher after import.
  * @returns the absolute patch-file path.
  */
 export function homePatchPath(): string {
@@ -186,7 +186,7 @@ interface ComposedProfile {
  * Load `name` and compose its effective patch stack: bundle layers in
  * `dsh.profile.bundles` order (a base-backed profile gets the base bundle's
  * platform-gated shell rows), the profile's user layer, the home-level user
- * layer (`$DSH_HOME/cordis.patch.yml` — machine-local preferences that apply
+ * layer (`$ALPHA_HOME/cordis.patch.yml` — machine-local preferences that apply
  * to every profile, so it outranks the per-profile layer), then `--patch`
  * overlays.
  * @param name - the profile name.

@@ -35,7 +35,7 @@ afterEach(async () => {
   await Promise.all(homes.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
 })
 
-/** A throwaway $DSH_HOME with an empty settings document. */
+/** A throwaway $ALPHA_HOME with an empty settings document. */
 async function home(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'dsh-pi-catalog-'))
   homes.push(dir)

@@ -46,7 +46,7 @@ it('configures MCP on a live profile, restores it on restart, and removes its to
   const start = async () => {
     const child = spawn(process.execPath, [join(repo, 'apps/cli/lib/bin.js'), '--profile', 'web', '--patch', patch,
       '--port', '0', '--no-open'], { cwd: join(root, 'workspace'),
-      env: { ...process.env, DSH_HOME: join(root, 'home'), DSH_AGENTS_HOME: join(root, 'agents'),
+      env: { ...process.env, ALPHA_HOME: join(root, 'home'), DSH_AGENTS_HOME: join(root, 'agents'),
         DEEPSEEK_API_KEY: 'keyless-no-model-calls' },
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     })
