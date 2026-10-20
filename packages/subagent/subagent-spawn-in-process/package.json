@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-subagent-spawn-in-process",
   "description": "In-process spawn subagent backend: runs a fresh child agent on ctx.agents",
-  "version": "0.2.1-rc.2",
+  "version": "1.0.20261020",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
     "directory": "packages/subagent/subagent-spawn-in-process"
   },
   "type": "module",
@@ -19,38 +19,37 @@
       "default": "./lib/index.js"
     },
     "./src/*": "./src/*",
-    "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json"
+    "./package.json": "./package.json"
   },
   "files": [
-    "locale/*.json",
     "lib/index.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@mutantcat/dsh-subagent": "workspace:*",
-    "@mutantcat/cordis": "workspace:~"
+    "@mutantcat/dsh-subagent": "workspace:^",
+    "@mutantcat/dsh-subagent-in-process-driver": "workspace:^",
+    "@mutantcat/cordis": "workspace:^"
   },
   "dependencies": {
-    "@mutantcat/schemastery": "workspace:~"
+    "@mutantcat/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@mutantcat/cordis-plugin-loader": "workspace:~",
-    "@mutantcat/dsh-agent": "workspace:*",
-    "@mutantcat/dsh-agent-loop": "workspace:*",
-    "@mutantcat/dsh-agent-loop-testkit": "workspace:*",
-    "@mutantcat/dsh-bash-local": "workspace:*",
-    "@mutantcat/dsh-subprocess-local": "workspace:*",
-    "@mutantcat/dsh-llm": "workspace:*",
-    "@mutantcat/dsh-llm-deepseek": "workspace:*",
-    "@mutantcat/dsh-llm-deepseek-api-key": "workspace:*",
-    "@mutantcat/dsh-session": "workspace:*",
-    "@mutantcat/dsh-subagent": "workspace:*",
-    "@mutantcat/dsh-tool-bash": "workspace:*",
-    "@mutantcat/dsh-tool-subagent": "workspace:*",
-    "@mutantcat/cordis": "workspace:~",
-    "@mutantcat/dsh-session-projection": "workspace:*",
-    "@mutantcat/dsh-session-persistence-jsonl": "workspace:*"
+    "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-agent": "workspace:^",
+    "@mutantcat/dsh-agent-loop": "workspace:^",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
+    "@mutantcat/dsh-bash-local": "workspace:^",
+    "@mutantcat/dsh-subprocess-local": "workspace:^",
+    "@mutantcat/dsh-invariants": "workspace:^",
+    "@mutantcat/dsh-llm": "workspace:^",
+    "@mutantcat/dsh-llm-deepseek": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@mutantcat/dsh-subagent": "workspace:^",
+    "@mutantcat/dsh-subagent-in-process-driver": "workspace:^",
+    "@mutantcat/dsh-tool-bash": "workspace:^",
+    "@mutantcat/dsh-tool-subagent": "workspace:^",
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-session-projection": "workspace:^"
   }
 }

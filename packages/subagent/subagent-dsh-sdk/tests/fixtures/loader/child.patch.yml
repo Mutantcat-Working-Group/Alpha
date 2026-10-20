@@ -1,7 +1,7 @@
 # SDK-profile patch for the child runtime in the cwd-inheritance proof.
 
 - id: llm-deepseek
-  name: '@mutantcat/dsh-llm-deepseek-api-key'
+  name: '@mutantcat/dsh-llm-deepseek'
   disabled: true
 
 - id: system-prompt

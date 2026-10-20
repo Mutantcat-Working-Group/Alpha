@@ -14,7 +14,6 @@ import {
   ReasoningEffortId, assistantStreamChunks, createUserMessage, freezeMessage,
 } from '@mutantcat/dsh-llm'
 import type { MessageSource } from '@mutantcat/dsh-llm'
-import { buildForkSeed } from '@mutantcat/dsh-session/fork'
 import { SessionLogOffset, SessionSeq } from '@mutantcat/dsh-session'
 import type { SessionEvent, SessionHeader, SessionId, UserMessage } from '@mutantcat/dsh-session'
 import { SessionQueryError, type SessionObservation } from '@mutantcat/dsh-session-query'
@@ -65,22 +64,6 @@ type PromptContentCandidate =
 
 function hasPromptContent(content: readonly PromptContentCandidate[]): boolean {
   return content.some(part => part.type !== 'text' || part.text.trim().length > 0)
-}
-
-/**
- * Resolve the omitted-`atSeq` default to the latest completed-turn prefix,
- * including standalone events before the next turn begins.
- */
-function latestCompletedPrefixBoundary(events: readonly SessionEvent[]): SessionSeq | undefined {
-  const lastTurnEnd = events.findLast(event => event.type === 'turn/end')
-  if (lastTurnEnd === undefined) return undefined
-  let boundary = lastTurnEnd.seq
-  for (const next of events.slice(boundary + 1)) {
-    if (next.type === 'turn/start' || (next.type === 'user/message' && next.surfaceOp === 'append')
-      || next.type === 'agent/inbox/spliced') break
-    boundary = next.seq
-  }
-  return boundary
 }
 
 /** Implements Session business commands delegated by the Session Controller Remote service. */
@@ -212,10 +195,8 @@ export class SessionCommandController {
   }
 
   /**
-   * Create a new ordinary Session from an exact event prefix. An explicit
-   * `atSeq` is the inclusive cut; an omitted value selects the latest
-   * completed-turn prefix. An open cut receives synthetic fork closers.
-   * @param request - source Session and optional exact event boundary.
+   * Create a new ordinary Session from one completed-turn prefix.
+   * @param request - source Session and optional event anchor.
    * @returns the new Session identity.
    */
   async fork(request: SessionForkRequest): Promise<SessionForkValue> {
@@ -242,17 +223,24 @@ export class SessionCommandController {
       )
     }
     using source = observed
-    const boundary = atSeq ?? latestCompletedPrefixBoundary(source.events)
-    if (boundary === undefined || source.events[boundary]?.seq !== boundary) {
+    const lastSeq = source.events.at(-1)?.seq ?? -1
+    const anchoredBoundary = atSeq === undefined
+      ? undefined
+      : source.events.find(event => event.type === 'turn/end' && event.seq >= atSeq)
+    const boundary = anchoredBoundary
+      ?? (atSeq === undefined || atSeq > lastSeq
+        ? source.events.findLast(event => event.type === 'turn/end')
+        : undefined)
+    if (boundary === undefined) {
       throw new RemoteError(
         'session/fork-unavailable',
-        request.atSeq === undefined
-          ? `session "${request.sessionId}" has no completed turn to fork from`
-          : `event ${String(request.atSeq)} does not exist in session "${request.sessionId}" (last seq: ${String(source.events.at(-1)?.seq ?? 'none')})`,
+        atSeq !== undefined && atSeq <= lastSeq
+          ? `session "${request.sessionId}" has not completed the turn containing event ${String(atSeq)}`
+          : `session "${request.sessionId}" has no completed turn to fork from`,
         { sessionId: request.sessionId },
       )
     }
-    const seed = buildForkSeed(source.events, boundary)
+    const cut = SessionLogOffset(boundary.seq + 1)
     let workspace: Workspace | undefined
     try {
       workspace = await this.forkWorkspace(source.header)
@@ -268,8 +256,8 @@ export class SessionCommandController {
     try {
       await this.ctx.agents.create({
         sessionId: childId,
-        seed,
-        inheritedEventCount: SessionLogOffset(boundary + 1),
+        seed: source.events.slice(0, cut),
+        inheritedEventCount: cut,
         meta: {
           ...(source.header.cwd === undefined ? {} : { cwd: source.header.cwd }),
           parentSession: source.header.id,
@@ -445,7 +433,6 @@ export class SessionCommandController {
    */
   async updateQueue(request: SessionUpdateQueueRequest): Promise<SessionUpdateQueueValue> {
     if (request.action.kind === 'edit') {
-      // oxlint-disable-next-line typescript/no-unnecessary-condition -- Remote callers can submit untyped JSON.
       if (request.action.content.some(block => block.type !== 'text')) {
         throw new RemoteError(
           'session/attachment-invalid',
@@ -636,16 +623,19 @@ function imageBlockIn(
   if (!Array.isArray(content)) return undefined
   for (const value of content) {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) continue
-    const block = value as { readonly type?: unknown; readonly attachment?: unknown }
+    const block = value as { readonly type?: unknown; readonly attachment?: unknown; readonly content?: unknown }
     if (block.type === 'image' && typeof block.attachment === 'object' && block.attachment !== null) {
       const ref = block.attachment as ImageAttachmentRef
       if (match(ref)) return ref
+    }
+    if (block.type === 'tool-result') {
+      const nested = imageBlockIn(block.content, match)
+      if (nested !== undefined) return nested
     }
   }
   return undefined
 }
 
-/** Read only first-party declared content fields; unknown event payloads stay opaque. */
 function imageInEvent(
   event: SessionEvent,
   match: (ref: ImageAttachmentRef) => boolean,
@@ -653,45 +643,21 @@ function imageInEvent(
   const data = event.data as {
     readonly content?: unknown
     readonly message?: { readonly content?: unknown }
-    readonly inserted: readonly { readonly content?: unknown }[]
-    readonly messages: readonly { readonly content?: unknown }[]
-    readonly summary?: unknown
-    readonly rawOutput?: unknown
+    readonly inserted?: readonly { readonly content?: unknown }[]
   }
-  // First-party event payloads can be present without their producer plugin mounted.
-  const type: string = event.type
-  switch (type) {
-    case 'user/message':
-    case 'tool/ptc-dispatch':
-      return imageBlockIn(data.content, match)
-    case 'system/message':
-    case 'developer/message':
-    case 'tool/result':
-    case 'team/message/queued':
-      return imageBlockIn(data.message?.content, match)
-    case 'agent/inbox/spliced':
-    case 'session/title-llm-request': {
-      const messages = type === 'agent/inbox/spliced' ? data.inserted : data.messages
-      for (const message of messages) {
-        const found = imageBlockIn(message.content, match)
-        if (found !== undefined) return found
-      }
-      return undefined
-    }
-    case 'compaction/summary':
-      return imageBlockIn(data.summary, match) ?? imageBlockIn(data.rawOutput, match)
-    case 'assistant/message': {
-      const found = imageBlockIn(data.message?.content, match)
-      if (found !== undefined) return found
-      break
-    }
-    case 'assistant/attempt': break
-    default: return undefined
-  }
-  const assistant = event as SessionEvent<'assistant/message' | 'assistant/attempt'>
-  for (const chunk of assistantStreamChunks(assistant.data.stream, 'block-end')) {
-    const found = imageBlockIn([chunk.block], match)
+  const direct = imageBlockIn(data.content, match)
+  if (direct !== undefined) return direct
+  const message = imageBlockIn(data.message?.content, match)
+  if (message !== undefined) return message
+  for (const inserted of data.inserted ?? []) {
+    const found = imageBlockIn(inserted.content, match)
     if (found !== undefined) return found
+  }
+  if (event.type === 'assistant/message' || event.type === 'assistant/attempt') {
+    for (const chunk of assistantStreamChunks(event.data.stream, 'block-end')) {
+      const found = imageBlockIn([chunk.block], match)
+      if (found !== undefined) return found
+    }
   }
   return undefined
 }

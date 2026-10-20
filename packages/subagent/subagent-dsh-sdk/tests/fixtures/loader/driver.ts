@@ -14,12 +14,7 @@ const ctx = await bootProductionProfile({
   overlayPaths: [resolveConfigPath(configPath, undefined)],
 })
 try {
-  const result = await runFixtureTurn(ctx, { task: 'delegate' })
-  const parent = ctx.agents.roots().find(agent => agent.id === result.sessionId)
-  if (parent === undefined) throw new Error('delegating parent is unavailable')
-  await ctx.subagents.waitForChildren(parent)
-  await parent.whenIdle()
-  await ctx.sessions.flush(parent.session)
+  await runFixtureTurn(ctx, { task: 'delegate' })
 } finally {
   await ctx.fiber.dispose()
 }

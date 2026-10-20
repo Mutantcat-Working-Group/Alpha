@@ -11,7 +11,7 @@ import type { JobOutcome } from '@mutantcat/dsh-jobs'
 import type { SubagentResult, SubagentRun } from './types.ts'
 
 /** Flatten a child's final output blocks to the task's final text. */
-function finalText(blocks: readonly ContentBlock[]): string {
+function finalText(blocks: ContentBlock[]): string {
   return blocks
     .filter((block): block is Extract<ContentBlock, { type: 'text' }> => block.type === 'text')
     .map(block => block.text)

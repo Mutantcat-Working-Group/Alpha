@@ -191,7 +191,7 @@ it('keeps every recorded session owned, pinned, redacted, and header-scrubbed', 
   }
 })
 
-it('keeps V3 replay input plus bounded declared historical migration coverage', async () => {
+it('keeps a current-writer majority plus bounded declared historical migration coverage', async () => {
   const owners = (await scenarios()).filter(scenario => scenario.manifest.session === undefined)
   const inventory = await Promise.all(owners.map(async scenario => ({
     key: scenario.key,
@@ -201,10 +201,8 @@ it('keeps V3 replay input plus bounded declared historical migration coverage', 
       : { retained: scenario.manifest.sessionFormat }),
   })))
 
-  const summary = assertSnapshotCorpusPolicy(inventory)
-  expect(summary.baselineRoles).toBeGreaterThan(0)
-  expect(summary).toMatchObject({
-    retainedRoles: 9,
-    retainedScenarios: 7,
+  expect(assertSnapshotCorpusPolicy(inventory)).toMatchObject({
+    retainedRoles: 10,
+    retainedScenarios: 8,
   })
 })

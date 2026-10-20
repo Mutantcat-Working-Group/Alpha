@@ -17,6 +17,7 @@ type CheckpointSource = Extract<MessageSource, { readonly kind: 'compact-checkpo
 function checkpointSource(compactionId: string): CheckpointSource {
   return { kind: 'compact-checkpoint', compactionId: compactionId as CheckpointSource['compactionId'] }
 }
+
 /** Append a production-shaped human prompt to the session surface. */
 function appendUserText(session: Session, text: string): SessionEvent {
   return session.append('user/message', createUserMessage({
@@ -775,7 +776,7 @@ describe('Session history raw journal', () => {
     })
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: '<context_checkpoint>summary</context_checkpoint>' }],
-      source: checkpointSource('journal-compaction'),
+      source: { kind: 'plugin', plugin: 'compact' },
     }), {
       surfaceOp: { op: 'replace', startSeq: shadowedStart, endSeq: shadowedEnd },
       sourceEventSeqs: [...shadowed, summary.seq],

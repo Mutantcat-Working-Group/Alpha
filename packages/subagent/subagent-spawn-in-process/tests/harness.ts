@@ -1,6 +1,3 @@
-import { mountWorkingDirectoryFixture } from '../../subagent/tests/working-directory-fixture.ts'
-import { join } from 'node:path'
-import * as JsonlSessionPersistence from '@mutantcat/dsh-session-persistence-jsonl'
 import { Context } from '@mutantcat/cordis'
 import type { Agent } from '@mutantcat/dsh-agent'
 import AgentLoop from '@mutantcat/dsh-agent-loop'
@@ -9,7 +6,7 @@ import { LocalBashExecutor } from '@mutantcat/dsh-bash-local'
 import * as BashEnvPlugin from '@mutantcat/dsh-shell-env'
 import LocalSubprocessRuntime from '@mutantcat/dsh-subprocess-local'
 import * as ToolBash from '@mutantcat/dsh-tool-bash'
-import * as LlmDeepSeek from '@mutantcat/dsh-llm-deepseek-api-key'
+import * as LlmDeepSeek from '@mutantcat/dsh-llm-deepseek'
 import SubagentRuntime from '@mutantcat/dsh-subagent'
 import * as Spawn from '../src/index.ts'
 import * as ToolSubagent from '@mutantcat/dsh-tool-subagent'
@@ -28,7 +25,6 @@ export async function spawnHarness(workdir: string): Promise<Context> {
   // delegation nudge lives in the e2e's user prompt and the subagent tool's
   // own description.
   await mountAgentLoopTestDependencies(ctx, {
-    workingDirectory: true,
     systemPrompt: { personaPrefix: 'You are a coding agent. Report only when the requested work is done.' },
   })
   await ctx.plugin(AgentLoop, { agents: [] })
@@ -37,8 +33,6 @@ export async function spawnHarness(workdir: string): Promise<Context> {
   await ctx.plugin(BashEnvPlugin)
   await ctx.plugin(LocalBashExecutor, { cwd: workdir, timeoutMs: 30_000 })
   await ctx.plugin(ToolBash)
-  await ctx.plugin(JsonlSessionPersistence, { root: join(workdir, '.sessions') })
-  await mountWorkingDirectoryFixture(ctx)
   await ctx.plugin(SubagentRuntime)
   await ctx.plugin(Spawn, { providerName: 'spawn' })
   // The model-facing subagent tool, bound to the spawn backend.
@@ -46,8 +40,13 @@ export async function spawnHarness(workdir: string): Promise<Context> {
   return ctx
 }
 
-export async function waitForIdle(ctx: Context, agent: Agent): Promise<void> {
-  do {
-    await agent.whenIdle()
-  } while (await ctx.subagents.waitForChildren(agent))
+export function waitForIdle(ctx: Context, agent: Agent): Promise<void> {
+  return new Promise((resolve) => {
+    const dispose = ctx.on('agent/status', ({ agent: subject, status }) => {
+      if (subject === agent && status === 'idle') {
+        dispose()
+        resolve()
+      }
+    })
+  })
 }

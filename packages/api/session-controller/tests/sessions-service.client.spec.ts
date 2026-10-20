@@ -915,12 +915,13 @@ describe('fork', () => {
     })
   })
 
-  it('sends the exact boundary seq verbatim: callers pass real event seqs', async ({ bench }) => {
+  it('floors a fractional anchor to the real event seq the wire accepts', async ({ bench }) => {
     const b = bench()
     await feedList(b, [{ id: 'source', cwd: '/work' }])
     b.mock.remote.session.fork.mockResolvedValue(ok({ sessionId: sid('child') }))
 
-    await expect(b.svc.fork({ sessionId: sid('source'), atSeq: 41 })).resolves.toBe('child')
+    // The frozen node of an interrupted turn carries turnEnd.seq - 0.9.
+    await expect(b.svc.fork({ sessionId: sid('source'), atSeq: 41.1 })).resolves.toBe('child')
 
     expect(b.mock.remote.session.fork).toHaveBeenCalledExactlyOnceWith({ sessionId: 'source', atSeq: 41 })
   })

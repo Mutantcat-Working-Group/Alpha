@@ -861,9 +861,7 @@ export class ContinuableActivationRegistry {
     }
     this.resident.delete(childId)
     activation.releaseSlot()
-    if (failure !== undefined) result = { output: [], stopReason: 'error' }
-    activation.result.resolve(result)
-    this.notifySettlement(activation, result, includeOutput)
+    this.notifySettlement(activation, activation.observer.terminal(failure))
     this.releaseOwnership(childId)
     activation.observer.settle(failure)
     if (failure !== undefined) throw failure

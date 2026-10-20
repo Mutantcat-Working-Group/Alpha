@@ -14,9 +14,7 @@ export type SubagentCatalogEntry =
   }
   & (
     | { readonly mode: 'one-shot'; readonly label?: string }
-    | { readonly mode: 'external'; readonly label?: string }
     | { readonly mode: 'continuable'; readonly label: string }
-    | { readonly mode: 'unknown'; readonly label?: string }
   )
 
 /** Durable active-turn timing for one descriptor-backed child session. */
@@ -30,11 +28,6 @@ export interface SubagentTimingProjection {
     /** Latest event time folded into this projection cut. */
     through: number
   }
-  /**
-   * Whether the latest closed turn after the child's own descriptor completed
-   * normally; absent while a turn is open or before one closes.
-   */
-  lastTurnCompleted?: boolean
 }
 
 /**
@@ -70,7 +63,7 @@ declare module '@mutantcat/dsh-session-projection/types' {
   interface SessionProjectionMap {
     /** Direct children in parent catalog event order, excluding fork-inherited facts. */
     subagentCatalog: SubagentCatalogEntry[]
-    /** Active-turn duration and latest closed-turn completion for a descriptor-backed subagent session. */
+    /** Active-turn duration for a descriptor-backed subagent session. */
     subagentTiming: SubagentTimingProjection
     /**
      * Identity of a descriptor-backed subagent session. `null` ⟺ no valid

@@ -5,7 +5,7 @@ import type {
 } from '@mutantcat/dsh-attachment'
 import type { Branded } from '@mutantcat/dsh-brand'
 import type { LlmAttemptId, MessageId } from '@mutantcat/dsh-llm/brand'
-import type { TextBlock } from '@mutantcat/dsh-llm'
+import type { ContentBlock } from '@mutantcat/dsh-llm'
 import type { SessionId, SessionSeqCursor } from '@mutantcat/dsh-session/types'
 import type { SessionProjectionMap } from '@mutantcat/dsh-session-projection/types'
 import type { JobId } from '@mutantcat/dsh-jobs/brand'
@@ -155,7 +155,7 @@ export type QueueAction =
   | {
     readonly kind: 'edit'
     /** Non-empty text-only replacement content. */
-    readonly content: readonly TextBlock[]
+    readonly content: readonly ContentBlock[]
   }
   | { readonly kind: 'remove' }
   /** Move the item one position earlier within its own pending list. */
@@ -304,7 +304,6 @@ export interface SessionRenameValue {
 /** Session fork request. */
 export interface SessionForkRequest {
   readonly sessionId: SessionId
-  /** Exact inclusive source event seq; omission selects the latest completed-turn prefix. */
   readonly atSeq?: number
 }
 
@@ -393,7 +392,7 @@ export type SessionAddress =
     readonly kind: 'subagent'
     readonly parentSessionId: SessionId
     readonly childSessionId: SessionId
-    readonly mode: 'one-shot' | 'continuable' | 'unknown'
+    readonly mode: 'one-shot' | 'continuable'
   }
 
 /** One raw Session event in the Remote journal. */

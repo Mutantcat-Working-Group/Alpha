@@ -34,7 +34,8 @@ export interface AcpRunSpec {
   args: string[]
   /**
    * Absolute working directory for the child process AND its ACP session
-   * `cwd`, selected before provider startup.
+   * `cwd`. The provider resolves it before this spec exists: config override,
+   * else the delegating parent session's workspace.
    */
   cwd: string
   /** How to auto-answer the child's permission prompts. */
@@ -417,7 +418,7 @@ export async function startAcpRun(request: SubagentStartRequest, spec: AcpRunSpe
   const flags = { cancelled: false }
   let latestPermission: AcpPermissionDecision | undefined
 
-  const clientApp = createAcpClientApp({ name: 'deepseek-harness-subagent-acp' })
+  const clientApp = createAcpClientApp({ name: 'alpha-subagent-acp' })
     .onNotification(methods.client.session.update, ({ params }) => {
       const update = params.update
       if (update.sessionUpdate === 'agent_message_chunk') {
@@ -475,7 +476,7 @@ export async function startAcpRun(request: SubagentStartRequest, spec: AcpRunSpe
   request.signal.addEventListener('abort', onAbort, { once: true })
 
   // Read at every return so a partial answer survives a later cancel/error.
-  const collectOutput = (): readonly ContentBlock[] => fold.collect() ?? []
+  const collectOutput = (): ContentBlock[] => fold.collect() ?? []
 
   // Establish the remote session before publishing a handle. Any failure owns
   // the still-private process and therefore reaps it before rejecting.

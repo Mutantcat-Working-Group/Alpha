@@ -192,63 +192,6 @@ export class SubagentContinuationManager {
   }
 
   /**
-   * Start an external backend under activation ownership.
-   * @param spec - task, provider, cancellation, and delivery policy.
-   * @returns the accepted activation and its result/disposal capabilities.
-   */
-  async startExternal(spec: SubagentActivationSpec): Promise<SubagentActivation> {
-    const parent = spec.request.parent
-    this.activations.assertAdmitting(parent)
-    const pendingId = brandString<SessionId>(randomUUID())
-    const releaseHold = this.activations.holdOwnership(parent, pendingId)
-    let activation: Activation | undefined
-    try {
-      activation = await this.activations.materialize({
-        childId: pendingId,
-        provider: spec.provider,
-        parent,
-        agentOptions: {},
-        composition: {},
-        signal: spec.signal,
-        delivery: spec.delivery,
-        external: signal => this.host.startExternal(spec.provider, {
-          ...spec.request, label: spec.label, signal,
-        }),
-      })
-      this.activations.assertAdmitting(parent)
-      this.activations.authorizeLineage(parent, activation.childId, activation.parent.id)
-      spec.signal.throwIfAborted()
-      const childId = activation.childId
-      parent.session.append('subagent/catalog', {
-        version: 0, childId, childCreatedAt: Date.now(), mode: 'one-shot', label: spec.label, external: true,
-      })
-      this.activations.announce(activation)
-      return this.receipt(activation)
-    } catch (error: unknown) {
-      if (activation !== undefined) {
-        try {
-          await this.activations.dispose(activation)
-        } catch (cleanupError: unknown) {
-          this.ctx.logger.warn(`subagent "${activation.childId}" admission rollback failed: ${(cleanupError as SubagentError).message}`)
-        }
-      }
-      throw error
-    } finally {
-      releaseHold()
-    }
-  }
-
-
-  /** Return capabilities bound to an exact activation instead of a future same-id instance. */
-  private receipt(activation: Activation): SubagentActivation {
-    return {
-      childId: activation.childId,
-      result: activation.result.promise,
-      dispose: () => this.activations.dispose(activation),
-    }
-  }
-
-  /**
    * Deliver one model-authored message to a direct continuable child or to the
    * sender's direct parent. A missing direct child cold-resumes through the
    * ordinary continuation lifecycle.

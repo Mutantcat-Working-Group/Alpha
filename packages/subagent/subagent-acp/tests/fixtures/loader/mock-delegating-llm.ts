@@ -2,18 +2,22 @@ import type { Context } from '@mutantcat/cordis'
 import type { GenerateOptions, StreamChunk } from '@mutantcat/dsh-llm'
 import { ToolCallId, LlmAdapter } from '@mutantcat/dsh-llm'
 
-/** Script one delegation, then acknowledge the receipt and the completion notice. */
+/**
+ * Test adapter for the `mock-delegate` model: the first request calls the
+ * `subagent` tool once, and the follow-up streams the tool result text back
+ * verbatim — so the ACP child's answer (the scripted mock server's cwd echo)
+ * reaches the REPL stdout for the driving e2e to assert.
+ */
 class MockDelegatingAdapter extends LlmAdapter {
   async * stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
-    const last = options.messages.at(-1)
-    const toolResultText = last?.role === 'tool'
-      ? last.content
-        .filter(block => block.type === 'text')
-        .map(block => block.text)
-        .join('')
-      : ''
+    const toolResultText = options.messages.at(-1)?.content
+      .filter(block => block.type === 'tool-result')
+      .flatMap(block => block.content)
+      .filter(block => block.type === 'text')
+      .map(block => block.text)
+      .join('') ?? ''
 
-    if (!options.messages.some(message => message.role === 'tool')) {
+    if (toolResultText.length === 0) {
       const args = JSON.stringify({ description: 'cwd probe', prompt: 'report your workspace' })
       yield { type: 'block-start', index: 0, blockType: 'tool-call' }
       yield { type: 'tool-call-delta', index: 0, id: ToolCallId('call-delegate'), name: 'subagent', argumentsDelta: args }

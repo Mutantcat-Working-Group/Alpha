@@ -1124,9 +1124,6 @@ importers:
       '@mutantcat/dsh-session':
         specifier: workspace:^
         version: link:../../core/session
-      '@mutantcat/dsh-session-format-catalog':
-        specifier: workspace:^
-        version: link:../../session/session-format-catalog
       '@mutantcat/dsh-session-persistence':
         specifier: workspace:^
         version: link:../../session/session-persistence
@@ -8340,31 +8337,6 @@ importers:
         specifier: workspace:^
         version: link:../../core/tools
 
-  packages/llm/llm-deepseek-api-key:
-    dependencies:
-      '@mutantcat/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@mutantcat/cordis':
-        specifier: workspace:~
-        version: link:../../../vendor/cordis
-      '@mutantcat/cordis-plugin-loader':
-        specifier: workspace:~
-        version: link:../../../vendor/loader
-      '@mutantcat/dsh-credentials':
-        specifier: workspace:*
-        version: link:../../credentials/credentials
-      '@mutantcat/dsh-launch-environment':
-        specifier: workspace:*
-        version: link:../../util/launch-environment
-      '@mutantcat/dsh-llm':
-        specifier: workspace:*
-        version: link:../llm
-      '@mutantcat/dsh-llm-deepseek':
-        specifier: workspace:*
-        version: link:../llm-deepseek
-
   packages/llm/llm-pi-ai:
     dependencies:
       '@earendil-works/pi-ai':
@@ -8781,119 +8753,6 @@ importers:
       '@mutantcat/dsh-user-questions':
         specifier: workspace:^
         version: link:../../interaction/user-questions
-
-  packages/preset/agent-preset:
-    dependencies:
-      '@mutantcat/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@mutantcat/cordis':
-        specifier: workspace:~
-        version: link:../../../vendor/cordis
-      '@mutantcat/cordis-plugin-include':
-        specifier: workspace:~
-        version: link:../../../vendor/include
-      '@mutantcat/cordis-plugin-loader':
-        specifier: workspace:~
-        version: link:../../../vendor/loader
-      '@mutantcat/dsh-agent-preset-registry':
-        specifier: workspace:*
-        version: link:../agent-preset-registry
-      '@mutantcat/dsh-compaction-tool-result-pruner':
-        specifier: workspace:*
-        version: link:../../compaction/compaction-tool-result-pruner
-      '@mutantcat/dsh-skill':
-        specifier: workspace:*
-        version: link:../../skill/skill
-      '@mutantcat/dsh-skill-filesystem':
-        specifier: workspace:*
-        version: link:../../skill/skill-filesystem
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
-      js-yaml:
-        specifier: ^4.3.2
-        version: 4.3.2
-
-  packages/preset/agent-preset-registry:
-    dependencies:
-      '@mutantcat/dsh-app-boot':
-        specifier: workspace:*
-        version: link:../../boot/app-boot
-      '@mutantcat/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-      js-yaml:
-        specifier: ^4.3.2
-        version: 4.3.2
-      zod:
-        specifier: 4.4.3
-        version: 4.4.3
-    devDependencies:
-      '@mutantcat/cordis':
-        specifier: workspace:~
-        version: link:../../../vendor/cordis
-      '@mutantcat/cordis-plugin-group':
-        specifier: workspace:~
-        version: link:../../../vendor/group
-      '@mutantcat/cordis-plugin-include':
-        specifier: workspace:~
-        version: link:../../../vendor/include
-      '@mutantcat/cordis-plugin-loader':
-        specifier: workspace:~
-        version: link:../../../vendor/loader
-      '@mutantcat/dsh-agent':
-        specifier: workspace:*
-        version: link:../../core/agent
-      '@mutantcat/dsh-agent-loop':
-        specifier: workspace:*
-        version: link:../../core/agent-loop
-      '@mutantcat/dsh-agent-preset':
-        specifier: workspace:*
-        version: link:../agent-preset
-      '@mutantcat/dsh-atomic-write':
-        specifier: workspace:*
-        version: link:../../util/atomic-write
-      '@mutantcat/dsh-hmr':
-        specifier: workspace:*
-        version: link:../../boot/hmr
-      '@mutantcat/dsh-llm':
-        specifier: workspace:*
-        version: link:../../llm/llm
-      '@mutantcat/dsh-sandbox':
-        specifier: workspace:*
-        version: link:../../sandbox/sandbox
-      '@mutantcat/dsh-sandbox-policy':
-        specifier: workspace:*
-        version: link:../../sandbox/sandbox-policy
-      '@mutantcat/dsh-scope':
-        specifier: workspace:*
-        version: link:../../core/scope
-      '@mutantcat/dsh-session':
-        specifier: workspace:*
-        version: link:../../core/session
-      '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
-        version: link:../../session/session-projection
-      '@mutantcat/dsh-settings':
-        specifier: workspace:*
-        version: link:../../settings/settings
-      '@mutantcat/dsh-system-prompt':
-        specifier: workspace:*
-        version: link:../../core/system-prompt
-      '@mutantcat/dsh-tools':
-        specifier: workspace:*
-        version: link:../../core/tools
-      '@mutantcat/dsh-typert-protocol':
-        specifier: workspace:*
-        version: link:../../typert/protocol
-      '@mutantcat/dsh-user-approval':
-        specifier: workspace:*
-        version: link:../../interaction/user-approval
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
 
   packages/preset/agent-presets:
     dependencies:
@@ -10059,88 +9918,6 @@ importers:
         specifier: workspace:^
         version: link:../session-projection
 
-  packages/session/tool-working-directory:
-    devDependencies:
-      '@mutantcat/cordis':
-        specifier: workspace:~
-        version: link:../../../vendor/cordis
-      '@mutantcat/dsh-agent-loop':
-        specifier: workspace:*
-        version: link:../../core/agent-loop
-      '@mutantcat/dsh-agent-loop-testkit':
-        specifier: workspace:*
-        version: link:../../test-support/agent-loop-testkit
-      '@mutantcat/dsh-fs-local':
-        specifier: workspace:*
-        version: link:../../fs/fs-local
-      '@mutantcat/dsh-llm':
-        specifier: workspace:*
-        version: link:../../llm/llm
-      '@mutantcat/dsh-session':
-        specifier: workspace:*
-        version: link:../../core/session
-      '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
-        version: link:../session-projection
-      '@mutantcat/dsh-system-prompt':
-        specifier: workspace:*
-        version: link:../../core/system-prompt
-      '@mutantcat/dsh-tools':
-        specifier: workspace:*
-        version: link:../../core/tools
-      '@mutantcat/dsh-working-directory':
-        specifier: workspace:*
-        version: link:../working-directory
-
-  packages/session/working-directory:
-    dependencies:
-      '@mutantcat/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-    devDependencies:
-      '@mutantcat/cordis':
-        specifier: workspace:~
-        version: link:../../../vendor/cordis
-      '@mutantcat/dsh-agent':
-        specifier: workspace:*
-        version: link:../../core/agent
-      '@mutantcat/dsh-agent-loop-testkit':
-        specifier: workspace:*
-        version: link:../../test-support/agent-loop-testkit
-      '@mutantcat/dsh-fs':
-        specifier: workspace:*
-        version: link:../../fs/fs
-      '@mutantcat/dsh-fs-local':
-        specifier: workspace:*
-        version: link:../../fs/fs-local
-      '@mutantcat/dsh-llm':
-        specifier: workspace:*
-        version: link:../../llm/llm
-      '@mutantcat/dsh-sandbox-policy':
-        specifier: workspace:*
-        version: link:../../sandbox/sandbox-policy
-      '@mutantcat/dsh-session':
-        specifier: workspace:*
-        version: link:../../core/session
-      '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
-        version: link:../session-projection
-      '@mutantcat/dsh-system-prompt':
-        specifier: workspace:*
-        version: link:../../core/system-prompt
-      '@mutantcat/dsh-tool-working-directory':
-        specifier: workspace:*
-        version: link:../tool-working-directory
-      '@mutantcat/dsh-tools':
-        specifier: workspace:*
-        version: link:../../core/tools
-      '@mutantcat/dsh-user-approval':
-        specifier: workspace:*
-        version: link:../../interaction/user-approval
-
   packages/settings/settings:
     dependencies:
       '@mutantcat/dsh-util-values':
@@ -10961,102 +10738,99 @@ importers:
   packages/subagent/subagent:
     dependencies:
       '@mutantcat/dsh-brand':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/brand
       '@mutantcat/dsh-chunked-list':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/chunked-list
       '@mutantcat/dsh-util-values':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/values
       '@mutantcat/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
       zod:
-        specifier: 4.4.3
+        specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
       '@mutantcat/cordis':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/cordis
-      '@mutantcat/cordis-plugin-include':
-        specifier: workspace:~
-        version: link:../../../vendor/include
-      '@mutantcat/cordis-plugin-loader':
-        specifier: workspace:~
-        version: link:../../../vendor/loader
       '@mutantcat/dsh-agent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/agent
-      '@mutantcat/dsh-agent-loop':
-        specifier: workspace:*
-        version: link:../../core/agent-loop
-      '@mutantcat/dsh-agent-loop-testkit':
-        specifier: workspace:*
-        version: link:../../test-support/agent-loop-testkit
-      '@mutantcat/dsh-agent-preset-registry':
-        specifier: workspace:*
-        version: link:../../preset/agent-preset-registry
+      '@mutantcat/dsh-agent-presets':
+        specifier: workspace:^
+        version: link:../../preset/agent-presets
       '@mutantcat/dsh-attachment':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../attachment/attachment
-      '@mutantcat/dsh-fs-sandbox':
-        specifier: workspace:*
-        version: link:../../fs/fs-sandbox
+      '@mutantcat/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@mutantcat/dsh-jobs':
+        specifier: workspace:^
+        version: link:../../jobs/jobs
       '@mutantcat/dsh-llm':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../llm/llm
       '@mutantcat/dsh-permission-presets':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../interaction/permission-presets
       '@mutantcat/dsh-sandbox':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../sandbox/sandbox
       '@mutantcat/dsh-sandbox-policy':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../sandbox/sandbox-policy
+      '@mutantcat/dsh-schedule':
+        specifier: workspace:^
+        version: link:../../schedule/schedule
       '@mutantcat/dsh-scope':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/scope
       '@mutantcat/dsh-session':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/session
       '@mutantcat/dsh-session-persistence':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-persistence
-      '@mutantcat/dsh-session-persistence-jsonl':
-        specifier: workspace:*
-        version: link:../../session/session-persistence-jsonl
       '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-projection
+      '@mutantcat/dsh-session-projection-cache':
+        specifier: workspace:^
+        version: link:../../session/session-projection-cache
       '@mutantcat/dsh-session-query':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session-query/session-query
+      '@mutantcat/dsh-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
+      '@mutantcat/dsh-storage':
+        specifier: workspace:^
+        version: link:../../storage/storage
+      '@mutantcat/dsh-storage-domain':
+        specifier: workspace:^
+        version: link:../../storage/storage-domain
+      '@mutantcat/dsh-storage-json':
+        specifier: workspace:^
+        version: link:../../storage/storage-json
       '@mutantcat/dsh-system-prompt':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/system-prompt
-      '@mutantcat/dsh-tool-fs':
-        specifier: workspace:*
-        version: link:../../fs/tool-fs
       '@mutantcat/dsh-tools':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/tools
       '@mutantcat/dsh-typert-protocol':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../typert/protocol
       '@mutantcat/dsh-user-approval':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../interaction/user-approval
       '@mutantcat/dsh-util-time':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/time
-      '@mutantcat/dsh-working-directory':
-        specifier: workspace:*
-        version: link:../../session/working-directory
-      '@mutantcat/dsh-workspace':
-        specifier: workspace:*
-        version: link:../../workspace/workspace
 
   packages/subagent/subagent-acp:
     dependencies:
@@ -11064,56 +10838,56 @@ importers:
         specifier: 1.4.0
         version: 1.4.0(zod@4.4.3)
       '@mutantcat/dsh-brand':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/brand
       '@mutantcat/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
     devDependencies:
       '@mutantcat/cordis':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/cordis
       '@mutantcat/cordis-plugin-loader':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/loader
       '@mutantcat/dsh-agent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/agent
       '@mutantcat/dsh-app-boot':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../boot/app-boot
       '@mutantcat/dsh-llm':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../llm/llm
       '@mutantcat/dsh-loader-smoke':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../test-support/loader-smoke
       '@mutantcat/dsh-session':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/session
       '@mutantcat/dsh-session-checkpoint-policy':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-checkpoint-policy
       '@mutantcat/dsh-session-persistence-jsonl':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-persistence-jsonl
       '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-projection
       '@mutantcat/dsh-subagent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../subagent
       '@mutantcat/dsh-subprocess':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../subprocess/subprocess
       '@mutantcat/dsh-subprocess-local':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../subprocess/subprocess-local
       '@mutantcat/dsh-timeout':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/timeout
       '@mutantcat/dsh-tool-subagent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../tool-subagent
 
   packages/subagent/subagent-claude-code:
@@ -11259,71 +11033,68 @@ importers:
   packages/subagent/subagent-dsh-sdk:
     dependencies:
       '@mutantcat/dsh-brand':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/brand
       '@mutantcat/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
     devDependencies:
       '@mutantcat/cordis':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/cordis
       '@mutantcat/cordis-plugin-loader':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/loader
       '@mutantcat/dsh-agent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/agent
       '@mutantcat/dsh-agent-instructions':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../context/agent-instructions
       '@mutantcat/dsh-app-boot':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../boot/app-boot
       '@mutantcat/dsh-llm':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../llm/llm
       '@mutantcat/dsh-llm-deepseek':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../llm/llm-deepseek
-      '@mutantcat/dsh-llm-deepseek-api-key':
-        specifier: workspace:*
-        version: link:../../llm/llm-deepseek-api-key
       '@mutantcat/dsh-loader-smoke':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../test-support/loader-smoke
       '@mutantcat/dsh-sdk-client':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../sdk/client
       '@mutantcat/dsh-sdk-protocol':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../sdk/protocol
       '@mutantcat/dsh-session':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/session
       '@mutantcat/dsh-session-checkpoint-policy':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-checkpoint-policy
       '@mutantcat/dsh-session-persistence-jsonl':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-persistence-jsonl
       '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-projection
       '@mutantcat/dsh-skill-filesystem':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../skill/skill-filesystem
       '@mutantcat/dsh-subagent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../subagent
       '@mutantcat/dsh-subprocess':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../subprocess/subprocess
       '@mutantcat/dsh-system-prompt':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/system-prompt
       '@mutantcat/dsh-tool-subagent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../tool-subagent
 
   packages/subagent/subagent-fork-in-process:
@@ -11437,52 +11208,52 @@ importers:
         version: link:../../../vendor/schemastery
     devDependencies:
       '@mutantcat/cordis':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/cordis
       '@mutantcat/cordis-plugin-loader':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/loader
       '@mutantcat/dsh-agent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/agent
       '@mutantcat/dsh-agent-loop':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/agent-loop
       '@mutantcat/dsh-agent-loop-testkit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../test-support/agent-loop-testkit
       '@mutantcat/dsh-bash-local':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../shell/bash-local
+      '@mutantcat/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
       '@mutantcat/dsh-llm':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../llm/llm
       '@mutantcat/dsh-llm-deepseek':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../llm/llm-deepseek
-      '@mutantcat/dsh-llm-deepseek-api-key':
-        specifier: workspace:*
-        version: link:../../llm/llm-deepseek-api-key
       '@mutantcat/dsh-session':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/session
-      '@mutantcat/dsh-session-persistence-jsonl':
-        specifier: workspace:*
-        version: link:../../session/session-persistence-jsonl
       '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-projection
       '@mutantcat/dsh-subagent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../subagent
+      '@mutantcat/dsh-subagent-in-process-driver':
+        specifier: workspace:^
+        version: link:../subagent-in-process-driver
       '@mutantcat/dsh-subprocess-local':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../subprocess/subprocess-local
       '@mutantcat/dsh-tool-bash':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../shell/tool-bash
       '@mutantcat/dsh-tool-subagent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../tool-subagent
 
   packages/subagent/tool-subagent:
@@ -11552,53 +11323,53 @@ importers:
   packages/subagent/tool-subagent-control:
     dependencies:
       '@mutantcat/dsh-brand':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/brand
       '@mutantcat/dsh-util-values':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../util/values
     devDependencies:
       '@mutantcat/cordis':
-        specifier: workspace:~
+        specifier: workspace:^
         version: link:../../../vendor/cordis
       '@mutantcat/dsh-agent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/agent
       '@mutantcat/dsh-agent-loop':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/agent-loop
       '@mutantcat/dsh-agent-loop-testkit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../test-support/agent-loop-testkit
       '@mutantcat/dsh-llm':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../llm/llm
       '@mutantcat/dsh-session':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/session
       '@mutantcat/dsh-session-persistence':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-persistence
       '@mutantcat/dsh-session-persistence-jsonl':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-persistence-jsonl
       '@mutantcat/dsh-session-projection':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session/session-projection
       '@mutantcat/dsh-session-query':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../session-query/session-query
       '@mutantcat/dsh-subagent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../subagent
       '@mutantcat/dsh-subagent-fork-in-process':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../subagent-fork-in-process
       '@mutantcat/dsh-subagent-spawn-in-process':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../subagent-spawn-in-process
       '@mutantcat/dsh-tools':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../core/tools
 
   packages/subprocess/subprocess:
@@ -17960,10 +17731,6 @@ packages:
 
   js-yaml@4.3.1:
     resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
-    hasBin: true
-
-  js-yaml@4.3.2:
-    resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
 
   jsbi@4.3.2:
@@ -24488,10 +24255,6 @@ snapshots:
       argparse: 2.0.1
 
   js-yaml@4.3.1:
-    dependencies:
-      argparse: 2.0.1
-
-  js-yaml@4.3.2:
     dependencies:
       argparse: 2.0.1
 

@@ -173,15 +173,10 @@ export class SessionManager {
   navigationAddress(sessionId: SessionId): SubagentAddress | undefined {
     const retained = this.addresses.get(sessionId)
     if (retained !== undefined) return retained
-    for (const parentSessionId of this.projectionStores.keys()) {
-      const child = this.projectionStores.get(parentSessionId)?.values().subagentCatalog
-        ?.find(entry => entry.id === sessionId)
-      if (child !== undefined && child.mode !== 'external') {
-        return {
-          parentSessionId,
-          childSessionId: sessionId,
-          mode: child.mode,
-        }
+    for (const [parentSessionId, catalog] of this.catalogs) {
+      const child = catalog.entries.find(entry => entry.kind === 'child' && entry.id === sessionId)
+      if (child?.kind === 'child') {
+        return { parentSessionId, childSessionId: sessionId, mode: child.mode }
       }
     }
     return undefined
@@ -254,9 +249,9 @@ export class SessionManager {
         session.handleRunning(summary.running)
       } else {
         const address = this.addresses.get(sessionId)
-        const child = address === undefined ? undefined : this.projectionStores.get(address.parentSessionId)?.values().subagentCatalog
-          ?.find(entry => entry.id === sessionId)
-        if (child !== undefined && child.mode !== 'external') {
+        const child = address === undefined ? undefined : this.catalogs.get(address.parentSessionId)?.entries
+          .find(entry => entry.kind === 'child' && entry.id === sessionId)
+        if (child?.kind === 'child') {
           // A catalogued child exists only after its delegated session has
           // durable history, even though child rows do not carry `blank`.
           session.handleBlank(false)
@@ -525,12 +520,11 @@ export class SessionManager {
 
   /**
    * Contract session.fork; on success merge the child into summaries
-   * immediately (same synchronous-addressability guarantee as create).
-   * Blankness starts provisionally true so the authoritative Host summary can
-   * preserve it or lower it after an exact cut before the first `turn/start`;
-   * lineage rides parentSessionId. A child published before Workspace
-   * attachment fails is also reconciled into the list.
-   * @param opts - source session and the optional exact inclusive boundary seq.
+   * immediately (same synchronous-addressability guarantee as create). The
+   * child carries the source's history, so it is never blank; lineage rides
+   * parentSessionId so the list nests it under its source. A child published
+   * before Workspace attachment fails is also reconciled into the list.
+   * @param opts - source session and the optional seq anchoring the cut.
    * @returns the fork result (the child session id).
    */
   async fork(
@@ -545,8 +539,8 @@ export class SessionManager {
       ? result.value.sessionId
       : workspaceAttachSessionId(result.error)
     if (childId !== undefined) {
-      this.recordMutation({ kind: 'placeholder', summary: { agentAvailable: true,
-        sessionId: childId, updatedAt: Date.now(), running: false, blank: true,
+      this.recordMutation({ kind: 'upsert', summary: {
+        sessionId: childId, updatedAt: Date.now(), running: false, blank: false,
         parentSessionId: opts.sessionId,
         ...(source?.cwd !== undefined ? { cwd: source.cwd } : {}),
       } })
@@ -729,15 +723,89 @@ export class SessionManager {
     this.listMutations = null
     this.listInflight = null
     void this.refreshList()
-    const parents = new Set(this.projectionLoads.keys())
+    const parents = new Set(this.openCatalogs)
     for (const id of this.sessions.keys()) {
       const address = this.addresses.get(id)
       if (address !== undefined) parents.add(address.parentSessionId)
     }
-    for (const { controller } of this.projectionInflight.values()) controller.abort()
-    this.projectionInflight.clear()
-    this.projectionLoads.clear()
-    for (const parentSessionId of parents) void this.refreshProjections(parentSessionId)
+    for (const parentSessionId of parents) void this.refreshSubagents(parentSessionId)
+  }
+
+  /** Debounce membership refetches for an explicitly consumed catalog. */
+  private scheduleCatalogRefresh(parentSessionId: SessionId): void {
+    if (this.catalogDebounce.has(parentSessionId)) return
+    const timer = setTimeout(() => {
+      this.catalogDebounce.delete(parentSessionId)
+      // The in-flight response predates the membership frame that scheduled
+      // this callback. Queue one post-settlement pull instead of treating an
+      // ordinary overlapping read as evidence that catalog membership changed.
+      if (this.catalogInflight.has(parentSessionId)) {
+        this.catalogStale.add(parentSessionId)
+        return
+      }
+      void this.refreshSubagents(parentSessionId)
+    }, 50)
+    this.catalogDebounce.set(parentSessionId, timer)
+  }
+
+  /** Apply one Agent-driver transition to loaded and in-flight catalogs. */
+  private updateCatalogActivity(childSessionId: SessionId, running: boolean): void {
+    const activity = running ? 'running' as const : 'inactive' as const
+    for (const inflight of this.catalogInflight.values()) {
+      inflight.activityRows.set(childSessionId, activity)
+    }
+    let changed = false
+    for (const [parentSessionId, catalog] of this.catalogs) {
+      if (!catalog.entries.some(entry =>
+        entry.kind === 'child' && entry.id === childSessionId && entry.activity !== activity)) continue
+      const entries = catalog.entries.map((entry) => {
+        if (entry.kind !== 'child' || entry.id !== childSessionId) return entry
+        return { ...entry, activity }
+      })
+      changed = true
+      this.catalogs.set(parentSessionId, { ...catalog, entries })
+    }
+    if (changed) this.notifier.markDirty()
+  }
+
+  /** Preserve and project a positive expandability hint after one direct subagent publishes. */
+  private markCatalogParentExpandable(parentSessionId: SessionId): void {
+    this.applyCatalogParentExpandable(parentSessionId)
+    for (const inflight of this.catalogInflight.values()) inflight.expandableRows.add(parentSessionId)
+  }
+
+  /** Apply one positive expandability hint to every loaded catalog containing that unique row id. */
+  private applyCatalogParentExpandable(parentSessionId: SessionId): void {
+    let changed = false
+    for (const [catalogParentId, catalog] of this.catalogs) {
+      if (!catalog.entries.some(entry =>
+        entry.kind === 'child' && entry.id === parentSessionId && !entry.hasChildren)) continue
+      const entries = catalog.entries.map((entry) => {
+        if (entry.kind !== 'child' || entry.id !== parentSessionId || entry.hasChildren) return entry
+        return { ...entry, hasChildren: true }
+      })
+      changed = true
+      this.catalogs.set(catalogParentId, { ...catalog, entries })
+    }
+    if (changed) this.notifier.markDirty()
+  }
+
+  /** Fold request-local row mutations into one catalog result before publication. */
+  private withCatalogMutations(
+    entries: SubagentCatalog['entries'],
+    expandableRows: ReadonlySet<SessionId>,
+    activityRows: ReadonlyMap<SessionId, 'running' | 'inactive'>,
+  ): SubagentCatalog['entries'] {
+    return entries.map((entry) => {
+      if (entry.kind !== 'child') return entry
+      const activity = activityRows.get(entry.id)
+      if (!expandableRows.has(entry.id) && activity === undefined) return entry
+      return {
+        ...entry,
+        ...expandableRows.has(entry.id) ? { hasChildren: true } : {},
+        ...activity === undefined ? {} : { activity },
+      }
+    })
   }
 
   private buildListSnapshot(): SessionListSnapshot {

@@ -141,7 +141,6 @@
     "@mutantcat/dsh-remote-mock": "workspace:^",
     "@mutantcat/dsh-scope": "workspace:^",
     "@mutantcat/dsh-session": "workspace:^",
-    "@mutantcat/dsh-session-format-catalog": "workspace:^",
     "@mutantcat/dsh-session-persistence": "workspace:^",
     "@mutantcat/dsh-session-projection": "workspace:^",
     "@mutantcat/dsh-session-projection-cache": "workspace:^",
