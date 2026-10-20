@@ -28,7 +28,7 @@ import { renderToolsSdk } from './ts-types.ts'
 import type { ToolSdkSchema } from './ts-types.ts'
 import { renderToolsSdkPy } from './py-types.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     /** Tool availability changes supplied by the tool registry. */
     'tool-registry': { kind: 'tool-registry' }

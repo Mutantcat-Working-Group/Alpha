@@ -3,14 +3,14 @@ import { describe, expect, it } from 'vitest'
 import { Context } from '@mutantcat/cordis'
 import {
   LlmRuntime, LlmAdapter, createMessage, createToolResultMessage, createUserMessage, projectFilesToText, ToolCallId,
-} from '@deepseek-ai/dsh-llm'
-import type { GenerateOptions, LlmImageRequestPricing, Message, StreamChunk, TokenUsage, UserMessage } from '@deepseek-ai/dsh-llm'
-import { AttachmentId } from '@deepseek-ai/dsh-attachment'
-import type { FileAttachmentRef, ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
-import { Session, SessionId, canonicalHeader } from '@deepseek-ai/dsh-session'
-import type { EpochHeader } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import TokenMeter from '@deepseek-ai/dsh-token-meter'
+} from '@mutantcat/dsh-llm'
+import type { GenerateOptions, LlmImageRequestPricing, Message, StreamChunk, TokenUsage, UserMessage } from '@mutantcat/dsh-llm'
+import { AttachmentId } from '@mutantcat/dsh-attachment'
+import type { FileAttachmentRef, ImageAttachmentRef } from '@mutantcat/dsh-attachment'
+import { Session, SessionId, canonicalHeader } from '@mutantcat/dsh-session'
+import type { EpochHeader } from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import TokenMeter from '@mutantcat/dsh-token-meter'
 import { estimateContent, estimateMessage } from '../src/estimate.ts'
 
 /** Adapter double declaring fixed per-occurrence image prices for one route. */

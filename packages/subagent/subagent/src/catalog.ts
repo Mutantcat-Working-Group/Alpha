@@ -13,8 +13,8 @@ import type {
   SessionHeader,
   SessionId,
   SessionLogOffset,
-} from '@deepseek-ai/dsh-session'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
+} from '@mutantcat/dsh-session'
+import type { ProjectionDefinition } from '@mutantcat/dsh-session-projection'
 import type { SubagentCatalogEntry } from './projection-types.ts'
 
 /** Catalog payload version emitted by local child creation. */
@@ -35,7 +35,7 @@ export type SubagentCatalogEvent =
     | { readonly version: 2; readonly mode: 'external'; readonly label?: string }
   )
 
-declare module '@deepseek-ai/dsh-session/types' {
+declare module '@mutantcat/dsh-session/types' {
   interface SessionEventMap {
     /**
      * A direct child's identity and available discovery fields.

@@ -496,7 +496,7 @@ export interface DefineToolOptions<S extends ParameterSchemaSpec, O extends Valu
     /** Pure replayable presentation metadata for direct top-level calls. */
     presentationMeta?(args: InferArgs<S>, value: InferValue<NoInfer<O>>): JsonValue
   }
-  /** Requests deferred loading of the tool definition; see {@link @deepseek-ai/dsh-llm#ToolSchema.deferLoading}. */
+  /** Requests deferred loading of the tool definition; see {@link @mutantcat/dsh-llm#ToolSchema.deferLoading}. */
   readonly deferLoading?: true
   /** Optional positive cooperative timeout budget in milliseconds. */
   readonly timeoutMs?: number

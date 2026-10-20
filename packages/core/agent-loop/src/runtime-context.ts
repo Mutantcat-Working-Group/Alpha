@@ -5,12 +5,12 @@
  * @module @mutantcat/dsh-agent-loop/runtime-context
  */
 
-import { createSystemMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed, ContextSnapshotSection, Message } from '@deepseek-ai/dsh-llm'
-import type { Session, SessionEvent, SessionSeq, SurfaceIntent, SystemMessage, UserMessage } from '@deepseek-ai/dsh-session'
-import { isReplacementSurfaceEvent } from '@deepseek-ai/dsh-session'
-import type { Context } from '@deepseek-ai/cordis'
-declare module '@deepseek-ai/dsh-llm' {
+import { createSystemMessage, createUserMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed, ContextSnapshotSection, Message } from '@mutantcat/dsh-llm'
+import type { Session, SessionEvent, SessionSeq, SurfaceIntent, SystemMessage, UserMessage } from '@mutantcat/dsh-session'
+import { isReplacementSurfaceEvent } from '@mutantcat/dsh-session'
+import type { Context } from '@mutantcat/cordis'
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'runtime-context': { kind: 'runtime-context' } & ContextFormed
   }

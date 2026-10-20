@@ -1,12 +1,12 @@
 /** Durable EOF refusals preserve historical generations and never fall back from the selected generation. */
 
-import { Context } from '@deepseek-ai/cordis'
-import { SESSION_FORMAT_VERSION, SessionId } from '@deepseek-ai/dsh-session'
-import { createSessionFormatCatalogWithChildren } from '@deepseek-ai/dsh-session-format-catalog'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
-import type { SessionFormatJsonObject } from '@deepseek-ai/dsh-session-format'
-import { SessionFormatUnsupportedError, SessionPersistenceCorruptionError } from '@deepseek-ai/dsh-session-persistence'
-import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
+import { Context } from '@mutantcat/cordis'
+import { SESSION_FORMAT_VERSION, SessionId } from '@mutantcat/dsh-session'
+import { createSessionFormatCatalogWithChildren } from '@mutantcat/dsh-session-format-catalog'
+import type { SessionEvent } from '@mutantcat/dsh-session'
+import type { SessionFormatJsonObject } from '@mutantcat/dsh-session-format'
+import { SessionFormatUnsupportedError, SessionPersistenceCorruptionError } from '@mutantcat/dsh-session-persistence'
+import JsonlSessionPersistence from '@mutantcat/dsh-session-persistence-jsonl'
 import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -36,7 +36,7 @@ const releasedPrefix: readonly SessionFormatJsonObject[] = [
   ...prefix.slice(0, 2),
   { type: 'system/message', surfaceOp: 'append', data: {
     turn: 1, step: 1, message: {
-      id: 'native-system', role: 'system', source: { kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' },
+      id: 'native-system', role: 'system', source: { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' },
       content: [{ type: 'text', text: 'Inspect the durable audit.' }],
     },
   } },

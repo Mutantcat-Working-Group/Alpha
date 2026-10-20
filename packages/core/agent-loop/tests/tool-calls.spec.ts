@@ -4,21 +4,21 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { createUserMessage, ToolCallId, StreamChunk  } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SessionEvent, SessionId } from '@deepseek-ai/dsh-session'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import LlmRuntime from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type PostToolDecision, type PreToolDecision } from '@deepseek-ai/dsh-tools'
-import AgentRegistry, { type Agent } from '@deepseek-ai/dsh-agent'
-import AgentLoop, { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from '@deepseek-ai/dsh-agent-loop'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import { Context } from '@mutantcat/cordis'
+import { createUserMessage, ToolCallId, StreamChunk  } from '@mutantcat/dsh-llm'
+import SessionStore, { SessionEvent, SessionId } from '@mutantcat/dsh-session'
+import SystemPrompt from '@mutantcat/dsh-system-prompt'
+import LlmRuntime from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type PostToolDecision, type PreToolDecision } from '@mutantcat/dsh-tools'
+import AgentRegistry, { type Agent } from '@mutantcat/dsh-agent'
+import AgentLoop, { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from '@mutantcat/dsh-agent-loop'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
 import { MockAdapter, textResponse } from './mock-adapter.ts'
 import { PtcRuntime } from '@mutantcat/dsh-ptc-runtime'
 import type { PtcRunRequest, PtcRunResult } from '@mutantcat/dsh-ptc-runtime'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'p': { kind: 'p' } & ContextFormed
   }

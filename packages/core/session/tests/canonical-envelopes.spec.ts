@@ -88,7 +88,7 @@ describe('canonical event payload acceptance', () => {
     }
     for (const accept of [entryPaths.seed!, entryPaths.restore!, entryPaths.adopt!, entryPaths.snapshot!]) {
       expect(() => accept(structuredClone(event))).not.toThrow()
-      for (const source of [{ kind: 'runtime-context' }, { kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }, { kind: 'user' }]) {
+      for (const source of [{ kind: 'runtime-context' }, { kind: 'plugin', plugin: '@mutantcat/dsh-system-prompt' }, { kind: 'user' }]) {
         const invalid = { ...event, data: { ...event.data, message: { ...message, source } } }
         expect(() => accept(invalid as unknown as SessionEvent)).toThrow(/system-prompt source/)
       }

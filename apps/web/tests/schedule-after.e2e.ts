@@ -6,11 +6,11 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { Agent, AgentHandle } from '@deepseek-ai/dsh-agent'
-import { composeEntries, loadOverlayPatches } from '@deepseek-ai/dsh-app-boot'
-import { ToolCallId, createUserMessage, LlmAdapter } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed, GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
-import { SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
+import type { Agent, AgentHandle } from '@mutantcat/dsh-agent'
+import { composeEntries, loadOverlayPatches } from '@mutantcat/dsh-app-boot'
+import { ToolCallId, createUserMessage, LlmAdapter } from '@mutantcat/dsh-llm'
+import type { ContextFormed, GenerateOptions, StreamChunk } from '@mutantcat/dsh-llm'
+import { SessionId, type SessionEvent } from '@mutantcat/dsh-session'
 import {
   ScheduleId,
   createEveryScheduleRecord,
@@ -35,7 +35,7 @@ import {
   saveFailureShot,
 } from './support.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'schedule-web-e2e': { kind: 'schedule-web-e2e' } & ContextFormed
   }

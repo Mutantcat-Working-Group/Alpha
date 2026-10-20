@@ -11,10 +11,10 @@ import {
   resolveCompactSpec,
   resolveConfig,
   resolveTargetPolicy,
-} from '@deepseek-ai/dsh-compaction-basic/src/config.ts'
-import type { CompactionResult } from '@deepseek-ai/dsh-compaction'
-import LlmRuntime, { createUserMessage, ToolCallId, CONTEXT_WINDOW_EXCEEDED_CODE, createSystemMessage, createToolResultMessage, LlmAdapter , createMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+} from '@mutantcat/dsh-compaction-basic/src/config.ts'
+import type { CompactionResult } from '@mutantcat/dsh-compaction'
+import LlmRuntime, { createUserMessage, ToolCallId, CONTEXT_WINDOW_EXCEEDED_CODE, createSystemMessage, createToolResultMessage, LlmAdapter , createMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
 import type {
   ContentBlock,
   GenerateOptions,
@@ -30,7 +30,7 @@ import TokenMeter from '@mutantcat/dsh-token-meter'
 import { agentEvents, type Agent, type RequestErrorAction } from '@mutantcat/dsh-agent'
 import ToolResultPruner from '@mutantcat/dsh-compaction-tool-result-pruner'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
   }

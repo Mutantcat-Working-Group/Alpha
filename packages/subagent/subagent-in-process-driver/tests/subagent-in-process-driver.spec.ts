@@ -1,5 +1,5 @@
-import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { ToolCallId, createUserMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
 import { describe, expect, it } from 'vitest'
 import { Context } from '@mutantcat/cordis'
 import { type Agent, type AgentOptions } from '@mutantcat/dsh-agent'
@@ -15,7 +15,7 @@ import { defineContentToolFixture } from '@mutantcat/dsh-tools'
 import { maxTokensResponse, MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import { startInProcessRun } from '../src/index.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'late-metadata': { kind: 'late-metadata' } & ContextFormed
   }

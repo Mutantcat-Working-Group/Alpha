@@ -1,5 +1,5 @@
-import { createUserMessage, createMessage } from '@deepseek-ai/dsh-llm'
-import type { MessageSource } from '@deepseek-ai/dsh-llm'
+import { createUserMessage, createMessage } from '@mutantcat/dsh-llm'
+import type { MessageSource } from '@mutantcat/dsh-llm'
 /**
  * Derived-message cache contract against a scratch oracle: project new nodes
  * once, rebuild on surface replacements, return fresh arrays over shared

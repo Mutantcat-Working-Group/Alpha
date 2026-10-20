@@ -13,11 +13,11 @@ import type { DeliveryRetentionBounds, RecurringScheduleRecord } from './types.t
 import type { ScheduleTask } from './storage.ts'
 import { appendDelivery } from './delivery-history.ts'
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-declare module '@deepseek-ai/dsh-llm' {
+import type { Context } from '@mutantcat/cordis'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { createUserMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'schedule': { kind: 'schedule' } & ContextFormed
   }

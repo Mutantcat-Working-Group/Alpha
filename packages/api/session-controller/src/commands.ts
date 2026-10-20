@@ -12,17 +12,17 @@ import type { FileUploadReceiptId } from '@mutantcat/dsh-client-file-upload/type
 import type {} from '@mutantcat/dsh-client-file-upload'
 import {
   ReasoningEffortId, assistantStreamChunks, createUserMessage, freezeMessage,
-} from '@deepseek-ai/dsh-llm'
-import type { MessageSource } from '@deepseek-ai/dsh-llm'
-import { buildForkSeed } from '@deepseek-ai/dsh-session/fork'
-import { SessionLogOffset, SessionSeq } from '@deepseek-ai/dsh-session'
-import type { SessionEvent, SessionHeader, SessionId, UserMessage } from '@deepseek-ai/dsh-session'
-import { SessionQueryError, type SessionObservation } from '@deepseek-ai/dsh-session-query'
-import { SessionTitleInvalidError } from '@deepseek-ai/dsh-session-title'
-import { canonicalClientTimeZone } from '@deepseek-ai/dsh-util-time'
-import { assertNever } from '@deepseek-ai/dsh-util-values'
-import { RemoteError, remoteErrorOf } from '@deepseek-ai/dsh-typert-protocol'
-import type { Workspace } from '@deepseek-ai/dsh-workspace'
+} from '@mutantcat/dsh-llm'
+import type { MessageSource } from '@mutantcat/dsh-llm'
+import { buildForkSeed } from '@mutantcat/dsh-session/fork'
+import { SessionLogOffset, SessionSeq } from '@mutantcat/dsh-session'
+import type { SessionEvent, SessionHeader, SessionId, UserMessage } from '@mutantcat/dsh-session'
+import { SessionQueryError, type SessionObservation } from '@mutantcat/dsh-session-query'
+import { SessionTitleInvalidError } from '@mutantcat/dsh-session-title'
+import { canonicalClientTimeZone } from '@mutantcat/dsh-util-time'
+import { assertNever } from '@mutantcat/dsh-util-values'
+import { RemoteError, remoteErrorOf } from '@mutantcat/dsh-typert-protocol'
+import type { Workspace } from '@mutantcat/dsh-workspace'
 import {
   ApiSessionAgentController,
   ApiSessionCwdConflict,

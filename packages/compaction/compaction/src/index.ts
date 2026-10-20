@@ -22,7 +22,7 @@ export { toolPairingBalancedAfter, toolPairingBalancedBefore } from './tool-pair
 export { compactCheckpointSource, isCompactCheckpointSource } from './checkpoint.ts'
 export type { CompactionCheckpointSource } from './checkpoint.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'compact-checkpoint': CompactionCheckpointSource
   }

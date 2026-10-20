@@ -25,8 +25,8 @@ import type {
   SystemPromptUpdate,
 } from '@mutantcat/dsh-llm'
 
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-declare module '@deepseek-ai/dsh-llm' {
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
   }

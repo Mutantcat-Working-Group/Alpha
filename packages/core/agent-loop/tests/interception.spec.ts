@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import LlmRuntime, { createUserMessage, ToolCallId  } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { Context } from '@mutantcat/cordis'
+import LlmRuntime, { createUserMessage, ToolCallId  } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
 import SessionStore, {
   SessionId,
   type SessionEvent,
@@ -20,7 +20,7 @@ import AgentLoop from '@mutantcat/dsh-agent-loop'
 import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
 import { MockAdapter, textResponse, toolCallResponse } from './mock-adapter.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'a': { kind: 'a' } & ContextFormed
     'accepted source': { kind: 'accepted source' } & ContextFormed

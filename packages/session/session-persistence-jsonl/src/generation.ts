@@ -25,10 +25,10 @@ import { pipeline, Readable } from 'node:stream'
 import { scheduler } from 'node:timers/promises'
 import { isDeepStrictEqual } from 'node:util'
 import { constants, createZstdCompress } from 'node:zlib'
-import { Session } from '@deepseek-ai/dsh-session'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
-import { BlockAssembler, expandAssistantStream } from '@deepseek-ai/dsh-llm'
-import { SessionFormatError } from '@deepseek-ai/dsh-session-format'
+import { Session } from '@mutantcat/dsh-session'
+import type { SessionEvent } from '@mutantcat/dsh-session'
+import { BlockAssembler, expandAssistantStream } from '@mutantcat/dsh-llm'
+import { SessionFormatError } from '@mutantcat/dsh-session-format'
 import type {
   SessionFormatArtifact,
   SessionFormatJsonValue,

@@ -1,5 +1,5 @@
-import { createAssistantMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { createAssistantMessage, createUserMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context, type Fiber } from '@mutantcat/cordis'
 import { DatabaseSync } from 'node:sqlite'
@@ -35,7 +35,7 @@ import {
   type SessionSearchRequest,
 } from '@mutantcat/dsh-session-query'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
   }

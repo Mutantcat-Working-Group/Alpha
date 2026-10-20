@@ -18,7 +18,7 @@ import LlmRuntime, {
   LlmAdapter,
   StreamChunk,
   type ToolResultMessage,
-} from '@deepseek-ai/dsh-llm'
+} from '@mutantcat/dsh-llm'
 import {
   type Config,
   type ReplayEntry,

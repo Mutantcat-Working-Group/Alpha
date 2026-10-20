@@ -1,10 +1,10 @@
 /** Durable composition of historical chunk collapse and V3 system/reference migration. */
 
-import { Context } from '@deepseek-ai/cordis'
-import { SESSION_FORMAT_VERSION, Session, SessionId, SessionLogOffset, SessionSeq } from '@deepseek-ai/dsh-session'
-import type { SessionEvent, SessionHeader } from '@deepseek-ai/dsh-session'
-import { createSessionFormatCatalog } from '@deepseek-ai/dsh-session-format'
-import { releasedV0SessionFormatCodec, releasedV1SessionFormatCodec, sessionFormatV0ToV1 } from '@deepseek-ai/dsh-session-format-v0-to-v1'
+import { Context } from '@mutantcat/cordis'
+import { SESSION_FORMAT_VERSION, Session, SessionId, SessionLogOffset, SessionSeq } from '@mutantcat/dsh-session'
+import type { SessionEvent, SessionHeader } from '@mutantcat/dsh-session'
+import { createSessionFormatCatalog } from '@mutantcat/dsh-session-format'
+import { releasedV0SessionFormatCodec, releasedV1SessionFormatCodec, sessionFormatV0ToV1 } from '@mutantcat/dsh-session-format-v0-to-v1'
 import {
   assertReleasedV2Header, RELEASED_V2_EVENT_TYPES, releasedV2SessionFormatCodec,
   restoreReleasedV2Artifact, sessionFormatV1ToV2,

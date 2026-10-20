@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import { createUserMessage, ToolCallId, createMessage } from '@deepseek-ai/dsh-llm'
-import type { MessageSource } from '@deepseek-ai/dsh-llm'
-import SessionStore, { Session, SessionForkError, SessionId, SessionLogOffset, SessionSeq, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from '@deepseek-ai/dsh-session'
-import type { SessionEvent, SurfaceEvent, TurnEndReason } from '@deepseek-ai/dsh-session'
+import { Context } from '@mutantcat/cordis'
+import { createUserMessage, ToolCallId, createMessage } from '@mutantcat/dsh-llm'
+import type { MessageSource } from '@mutantcat/dsh-llm'
+import SessionStore, { Session, SessionForkError, SessionId, SessionLogOffset, SessionSeq, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from '@mutantcat/dsh-session'
+import type { SessionEvent, SurfaceEvent, TurnEndReason } from '@mutantcat/dsh-session'
 
 declare module '@mutantcat/dsh-session/types' {
   interface SessionEventMap {

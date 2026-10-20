@@ -4,10 +4,10 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { makeTranslate, RemoteError } from '@mutantcat/dsh-client-test-runtime'
 import type {
   SessionListState, SessionSummary, SessionSnapshot,
-} from '@deepseek-ai/dsh-api-session-controller/client'
-import type { SubagentAddress, SubagentCatalogRow } from '@deepseek-ai/dsh-subagent/client'
-import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { SessionStatusSnapshot } from '@deepseek-ai/dsh-client-ui-session/client'
+} from '@mutantcat/dsh-api-session-controller/client'
+import type { SubagentAddress, SubagentCatalogRow } from '@mutantcat/dsh-subagent/client'
+import type { SessionId } from '@mutantcat/dsh-session/types'
+import type { SessionStatusSnapshot } from '@mutantcat/dsh-client-ui-session/client'
 import {
   SubagentHeaderLineage, type SubagentHeaderLineageProps,
 } from '../src/client/SubagentHeaderLineage.tsx'

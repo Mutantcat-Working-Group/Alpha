@@ -1,4 +1,4 @@
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock } from '@mutantcat/dsh-llm'
 import { describe, expect, it } from 'vitest'
 import { SESSION_FORMAT_VERSION, SessionId, SessionSeq } from '@mutantcat/dsh-session'
 import type { SessionEvent, SessionEventMap, SessionEventType } from '@mutantcat/dsh-session'

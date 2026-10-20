@@ -22,10 +22,10 @@ import {
   createToolResultMessage,
   createUserMessage,
   freezeMessage,
-} from '@deepseek-ai/dsh-llm'
-import type { ContextFormed, MessageSource } from '@deepseek-ai/dsh-llm'
+} from '@mutantcat/dsh-llm'
+import type { ContextFormed, MessageSource } from '@mutantcat/dsh-llm'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
     'watcher': { kind: 'watcher' } & ContextFormed

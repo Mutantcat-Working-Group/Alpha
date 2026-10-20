@@ -1,5 +1,5 @@
-import { createUserMessage, createMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { createUserMessage, createMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
 import { describe, expect, it } from 'vitest'
 import { Context } from '@mutantcat/cordis'
 import SessionStore, { SessionLogOffset, SessionSeq, SESSION_FORMAT_VERSION, SessionId } from '@mutantcat/dsh-session'
@@ -19,7 +19,7 @@ import type {
 import { type SessionQueryErrorCode } from '@mutantcat/dsh-session-query'
 import { TestSessionQueryEngine } from './test-service.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
   }

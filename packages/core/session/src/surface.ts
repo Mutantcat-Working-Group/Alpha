@@ -8,7 +8,7 @@
  * @module @mutantcat/dsh-session/surface
  */
 
-import type { Message, ToolSchema } from '@deepseek-ai/dsh-llm'
+import type { Message, ToolSchema } from '@mutantcat/dsh-llm'
 import { SessionLogOffset, SessionSeq } from './types.ts'
 import { KNOWN_SESSION_EVENT_TYPES, MESSAGE_PROJECTION_EVENT_TYPES } from './known-event-types.ts'
 import type {

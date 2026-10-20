@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { AttachmentId, ImageVariantId } from '@deepseek-ai/dsh-attachment'
-import type { ImageAttachmentRef, ImageMediaType, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
-import { createDeveloperMessage, createToolResultMessage, createUserMessage, ToolCallId, ReasoningEffortId, createMessage } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, GenerateOptions, Message, RequestUserInput } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+import { AttachmentId, ImageVariantId } from '@mutantcat/dsh-attachment'
+import type { ImageAttachmentRef, ImageMediaType, RequestImageAttachment } from '@mutantcat/dsh-attachment'
+import { createDeveloperMessage, createToolResultMessage, createUserMessage, ToolCallId, ReasoningEffortId, createMessage } from '@mutantcat/dsh-llm'
+import type { ContentBlock, GenerateOptions, Message, RequestUserInput } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
 import {
   serializeMessages,
   serializeMessagesWithImages,
@@ -12,7 +12,7 @@ import {
 } from '../src/protocols/chat-completions/serialize.ts'
 import type { ImageSerializationOptions } from '../src/protocols/chat-completions/serialize.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
   }

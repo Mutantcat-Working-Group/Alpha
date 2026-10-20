@@ -7,14 +7,14 @@
  * @module @mutantcat/dsh-tool-subagent-control/list-agents
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import { defineTool } from '@deepseek-ai/dsh-tools'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { SessionId } from '@deepseek-ai/dsh-session'
+import type { Context } from '@mutantcat/cordis'
+import { defineTool } from '@mutantcat/dsh-tools'
+import type { Agent } from '@mutantcat/dsh-agent'
+import type { SessionId } from '@mutantcat/dsh-session'
 import type {
   SubagentCatalogEntry, SubagentDescendantListEntry, SubagentListEntry,
-} from '@deepseek-ai/dsh-subagent'
-import { assertNever } from '@deepseek-ai/dsh-util-values'
+} from '@mutantcat/dsh-subagent'
+import { assertNever } from '@mutantcat/dsh-util-values'
 
 export const name = 'tool-subagent-list-agents'
 export const inject = ['tools', 'subagents', 'agents']

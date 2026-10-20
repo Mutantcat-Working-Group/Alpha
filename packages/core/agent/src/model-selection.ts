@@ -11,8 +11,8 @@ import {
   type ReasoningEffortId,
 } from '@mutantcat/dsh-llm'
 import type { PreStepDecision } from './runtime-types.ts'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-declare module '@deepseek-ai/dsh-llm' {
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'model-selection': { kind: 'model-selection' } & ContextFormed
   }

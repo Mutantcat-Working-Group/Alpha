@@ -12,16 +12,16 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@deepseek-ai/dsh-attachment'
-import { credentialRef } from '@deepseek-ai/dsh-credentials'
-import { LocalCredentialProvider } from '@deepseek-ai/dsh-credentials-local'
-import { FileSettingsProvider } from '@deepseek-ai/dsh-settings-file'
-import * as LlmDeepSeek from '@deepseek-ai/dsh-llm-deepseek'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
+} from '@mutantcat/dsh-attachment'
+import { credentialRef } from '@mutantcat/dsh-credentials'
+import { LocalCredentialProvider } from '@mutantcat/dsh-credentials-local'
+import { FileSettingsProvider } from '@mutantcat/dsh-settings-file'
+import * as LlmDeepSeek from '@mutantcat/dsh-llm-deepseek'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
   }

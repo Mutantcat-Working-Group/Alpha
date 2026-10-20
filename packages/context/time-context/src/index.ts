@@ -8,18 +8,18 @@
 import type { Context } from '@mutantcat/cordis'
 import z from '@mutantcat/schemastery'
 import { z as zod } from 'zod'
-import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-declare module '@deepseek-ai/dsh-llm' {
+import type { Agent, PreStepDecision } from '@mutantcat/dsh-agent'
+import { createUserMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'time-context': { kind: 'time-context' } & ContextFormed
   }
 }
 
-import type { UserMessage } from '@deepseek-ai/dsh-llm'
-import { SessionSeq } from '@deepseek-ai/dsh-session'
-import type {} from '@deepseek-ai/dsh-session-projection'
+import type { UserMessage } from '@mutantcat/dsh-llm'
+import { SessionSeq } from '@mutantcat/dsh-session'
+import type {} from '@mutantcat/dsh-session-projection'
 import {
   deriveBrowserTimeZoneContext,
   renderBrowserTimeZoneContext,

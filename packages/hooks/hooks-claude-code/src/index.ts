@@ -9,21 +9,21 @@
  */
 
 import { readFileSync } from 'node:fs'
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { Agent, PreStepDecision, TurnBoundaryProjection } from '@deepseek-ai/dsh-agent'
-import type {} from '@deepseek-ai/dsh-session-projection'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-declare module '@deepseek-ai/dsh-llm' {
+import type { Context } from '@mutantcat/cordis'
+import z from '@mutantcat/schemastery'
+import type { Agent, PreStepDecision, TurnBoundaryProjection } from '@mutantcat/dsh-agent'
+import type {} from '@mutantcat/dsh-session-projection'
+import { createUserMessage } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'hooks-claude-code': { kind: 'hooks-claude-code' } & ContextFormed
   }
 }
 
-import type { ContentBlock, MessageSource } from '@deepseek-ai/dsh-llm'
-import type { UserMessage } from '@deepseek-ai/dsh-session'
-import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@deepseek-ai/dsh-tools'
+import type { ContentBlock, MessageSource } from '@mutantcat/dsh-llm'
+import type { UserMessage } from '@mutantcat/dsh-session'
+import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@mutantcat/dsh-tools'
 import {
   appendHookInvoked,
   appendHookResult,

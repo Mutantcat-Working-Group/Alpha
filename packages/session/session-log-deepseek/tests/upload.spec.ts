@@ -9,11 +9,11 @@ import SessionStore, {
   type CreateSessionOptions,
   type SessionEvent,
   type SessionHeader,
-} from '@deepseek-ai/dsh-session'
-import { createSessionFormatCatalogWithChildren } from '@deepseek-ai/dsh-session-format-catalog'
-import DeepSeekLlmApiExtensionRegistry from '@deepseek-ai/dsh-deepseek-llm-api-extensions'
-import { createDeveloperMessage, createAssistantMessage, createSystemMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { JsonValue } from '@deepseek-ai/dsh-util-values'
+} from '@mutantcat/dsh-session'
+import { createSessionFormatCatalogWithChildren } from '@mutantcat/dsh-session-format-catalog'
+import DeepSeekLlmApiExtensionRegistry from '@mutantcat/dsh-deepseek-llm-api-extensions'
+import { createDeveloperMessage, createAssistantMessage, createSystemMessage, createUserMessage } from '@mutantcat/dsh-llm'
+import type { JsonValue } from '@mutantcat/dsh-util-values'
 import * as SessionLogDeepSeek from '../src/index.ts'
 import type { DeepSeekSessionLogExtension, DeepSeekSessionLogWireEvent, DeepSeekSessionLogWireSurfaceOp } from '../src/types.ts'
 

@@ -24,19 +24,19 @@ import type {
   RequestMessage,
   StreamChunk,
   TokenUsage,
-} from '@deepseek-ai/dsh-llm'
-import SessionStore, { buildForkSeed, Session, SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import LlmRuntime from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-import TokenMeter from '@deepseek-ai/dsh-token-meter'
-import type { Agent } from '@deepseek-ai/dsh-agent'
+} from '@mutantcat/dsh-llm'
+import SessionStore, { buildForkSeed, Session, SessionId, type SessionEvent } from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
+import LlmRuntime from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+import TokenMeter from '@mutantcat/dsh-token-meter'
+import type { Agent } from '@mutantcat/dsh-agent'
 import type {
   SummarizationInput,
   SummaryResult,
 } from '@mutantcat/dsh-compaction-basic/src/summarizer.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'listener': { kind: 'listener' } & ContextFormed
     'rival': { kind: 'rival' } & ContextFormed

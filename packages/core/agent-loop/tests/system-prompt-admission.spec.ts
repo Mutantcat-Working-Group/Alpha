@@ -10,9 +10,9 @@ import SystemPrompt from '@mutantcat/dsh-system-prompt'
 import ToolRuntime, { defineContentToolFixture } from '@mutantcat/dsh-tools'
 import { MockAdapter, textResponse } from './mock-adapter.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
-    'test-compaction': { kind: 'test-compaction' } & import('@deepseek-ai/dsh-llm').ContextFormed
+    'test-compaction': { kind: 'test-compaction' } & import('@mutantcat/dsh-llm').ContextFormed
   }
 }
 

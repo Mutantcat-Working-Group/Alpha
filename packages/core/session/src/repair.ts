@@ -5,7 +5,7 @@
  * inside the source's open turn. Both preserve every fully written event and
  * close the unfinished step and turn. Calls in already closed steps remain
  * unchanged, including any missing results.
- * @module @deepseek-ai/dsh-session/repair
+ * @module @mutantcat/dsh-session/repair
  */
 
 import { brandString } from '@mutantcat/dsh-brand'

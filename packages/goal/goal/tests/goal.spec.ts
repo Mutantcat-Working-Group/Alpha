@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { agentEvents } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage, HarnessError } from '@deepseek-ai/dsh-llm'
-import type { ContextFormed } from '@deepseek-ai/dsh-llm'
-import SessionStore, { Session, SessionId, type UserMessage } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
+import { Context } from '@mutantcat/cordis'
+import AgentRegistry, { agentEvents } from '@mutantcat/dsh-agent'
+import type { Agent } from '@mutantcat/dsh-agent'
+import { createUserMessage, HarnessError } from '@mutantcat/dsh-llm'
+import type { ContextFormed } from '@mutantcat/dsh-llm'
+import SessionStore, { Session, SessionId, type UserMessage } from '@mutantcat/dsh-session'
+import SessionProjectionRegistry from '@mutantcat/dsh-session-projection'
 import GoalService, {
   GoalError,
   GoalId,
@@ -15,7 +15,7 @@ import GoalService, {
 import type { GoalChangeMeta, GoalRef, GoalSnapshotChangeMeta } from '@mutantcat/dsh-goal'
 import { createInboxStub } from '@mutantcat/dsh-agent-loop-testkit'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'test': { kind: 'test' } & ContextFormed
     'ordinary-user-message': { kind: 'ordinary-user-message' } & ContextFormed

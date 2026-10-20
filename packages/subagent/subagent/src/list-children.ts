@@ -72,7 +72,7 @@ export async function listChildren(
   const query = ctx.get('sessionQuery')
   if (query === undefined) {
     throw new SubagentError(
-      'listing subagents requires the sessionQuery service (load @deepseek-ai/dsh-session-query)',
+      'listing subagents requires the sessionQuery service (load @mutantcat/dsh-session-query)',
       'SUBAGENT_CONTROL_QUERY_UNAVAILABLE',
     )
   }

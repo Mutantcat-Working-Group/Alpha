@@ -12,7 +12,7 @@ import type {
   SessionWireEvent,
 } from '../src/types.ts'
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@mutantcat/dsh-llm' {
   interface MessageSourceMap {
     'compact-checkpoint': { kind: 'compact-checkpoint'; compactionId: string }
   }

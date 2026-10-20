@@ -9,10 +9,10 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@deepseek-ai/dsh-attachment'
-import LlmRuntime, { createToolResultMessage, createUserMessage, ToolCallId } from '@deepseek-ai/dsh-llm'
-import type { Message, ToolSchema } from '@deepseek-ai/dsh-llm'
-import * as LlmPiAi from '@deepseek-ai/dsh-llm-pi-ai'
+} from '@mutantcat/dsh-attachment'
+import LlmRuntime, { createToolResultMessage, createUserMessage, ToolCallId } from '@mutantcat/dsh-llm'
+import type { Message, ToolSchema } from '@mutantcat/dsh-llm'
+import * as LlmPiAi from '@mutantcat/dsh-llm-pi-ai'
 import type { PiAiReplayResponse } from '../src/replay.ts'
 import { assemble, type AssembledResult } from './assemble.ts'
 
