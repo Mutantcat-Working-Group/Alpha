@@ -139,23 +139,32 @@ export const subagentCatalogProjectionDefinition = {
 export function establishCatalogChild(
   parent: Session,
   child: SessionHeader,
-  descriptor:
-    | { readonly mode: 'one-shot'; readonly label?: string }
-    | { readonly mode: 'continuable'; readonly label: string },
+  descriptor: { readonly mode: 'continuable'; readonly label: string },
 ): void {
-  parent.append('subagent/catalog', descriptor.mode === 'one-shot'
-    ? {
-      version: SUBAGENT_CATALOG_VERSION,
-      childId: child.id,
-      childCreatedAt: child.createdAt,
-      mode: descriptor.mode,
-      ...descriptor.label === undefined ? {} : { label: descriptor.label },
-    }
-    : {
-      version: SUBAGENT_CATALOG_VERSION,
-      childId: child.id,
-      childCreatedAt: child.createdAt,
-      mode: descriptor.mode,
-      label: descriptor.label,
-    })
+  parent.append('subagent/catalog', {
+    version: SUBAGENT_CATALOG_VERSION,
+    childId: child.id,
+    childCreatedAt: child.createdAt,
+    mode: descriptor.mode,
+    label: descriptor.label,
+  })
+}
+
+/** Catalog payload version emitted by external execution creation. */
+const EXTERNAL_SUBAGENT_CATALOG_VERSION = 2
+
+/**
+ * Record an external execution without a local child Session.
+ * @param parent - durable direct parent receiving the discovery fact.
+ * @param childId - identity returned by the external provider.
+ * @param label - display label assigned by the caller.
+ */
+export function establishExternalCatalogChild(parent: Session, childId: SessionId, label: string): void {
+  parent.append('subagent/catalog', {
+    version: EXTERNAL_SUBAGENT_CATALOG_VERSION,
+    childId,
+    childCreatedAt: Date.now(),
+    mode: 'external',
+    label,
+  })
 }

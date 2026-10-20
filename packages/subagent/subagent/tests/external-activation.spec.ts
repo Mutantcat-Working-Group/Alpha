@@ -1,3 +1,4 @@
+import { mountWorkingDirectoryFixture } from './working-directory-fixture.ts'
 /** External execution ownership, result delivery, and process cleanup. */
 
 import { describe, expect, it, vi } from 'vitest'
@@ -8,15 +9,16 @@ import SubagentRuntime from '../src/index.ts'
 import { TestSessionQuery } from './test-session-query.ts'
 import type { SubagentStartRequest, SubagentCapabilities, SubagentResult, SubagentRun } from '../src/types.ts'
 import { externalTestParent } from './external-activation-helpers.ts'
-import { continuationManager } from './continuation-internals.ts'
+import { subagentManager } from './manager-internals.ts'
 
 const capabilities: SubagentCapabilities = {
-  agentOptions: false, outputSchema: false, depthLimit: false, toolFilter: false, persona: false,
+  agentOptions: false, agentPreset: false, outputSchema: false, depthLimit: false,
 }
 
 async function setup(start: (request: SubagentStartRequest) => Promise<SubagentRun>) {
   const ctx = new Context()
   await ctx.plugin(SessionProjectionRegistry)
+  await mountWorkingDirectoryFixture(ctx)
   await ctx.plugin(SubagentRuntime)
   const parent = await externalTestParent(ctx)
   await ctx.plugin(TestSessionQuery)
@@ -91,7 +93,7 @@ describe('external subagent activations', () => {
       let drain = Promise.resolve()
       fixture.ctx.on('subagent/start', () => {
         if (change === 'drain') {
-          drain = continuationManager(fixture.ctx).drain()
+          drain = subagentManager(fixture.ctx).drain()
         } else {
           detachParent()
           if (change === 'parent-replace') {
@@ -115,7 +117,7 @@ describe('external subagent activations', () => {
     },
   )
 
-  it('detaches accepted work from caller cancellation and exposes its result before cleanup finishes', async () => {
+  it('detaches accepted work from caller cancellation and waits for cleanup before delivering its result', async () => {
     const backend = execution()
     let providerSignal: AbortSignal | undefined
     const fixture = await setup(async ({ signal }) => { providerSignal = signal; return backend.run })
@@ -125,21 +127,55 @@ describe('external subagent activations', () => {
     expect(backend.dispose).not.toHaveBeenCalled()
     expect(fixture.ctx.sessions.get(activation.childId)).toBeUndefined()
     backend.result.resolve(completed)
-    await expect(activation.result).resolves.toEqual(completed)
     await backend.cleaning.promise
+    const observed = vi.fn()
+    void activation.result.then(observed, observed)
+    const waiting = fixture.ctx.subagents.waitForChildren(fixture.parent)
+    const waited = vi.fn()
+    void waiting.then(waited)
     const disposal = activation.dispose()
     expect(activation.dispose()).toBe(disposal)
-    let cleaned = false
-    void disposal.then(() => { cleaned = true })
-    await Promise.resolve()
-    expect(cleaned).toBe(false)
-    expect(backend.dispose).toHaveBeenCalledTimes(1)
-    backend.cleanup.resolve(undefined)
-    await disposal
+    try {
+      await Promise.resolve()
+      expect(observed).not.toHaveBeenCalled()
+      expect(waited).not.toHaveBeenCalled()
+      expect(backend.dispose).toHaveBeenCalledTimes(1)
+    } finally {
+      backend.cleanup.resolve(undefined)
+      await disposal
+    }
+    await expect(activation.result).resolves.toEqual(completed)
+    await expect(waiting).resolves.toBe(true)
     await activation.dispose()
     expect(backend.dispose).toHaveBeenCalledTimes(1)
-    expect(fixture.records()).toMatchObject([{ id: activation.childId, mode: 'external' }])
+    expect(fixture.records()).toEqual([])
     expect(fixture.parent.inbox.nextTurn).toEqual([])
+  })
+
+  it('rejects a failed execution only after cleanup and lets parent waiting finish', async () => {
+    const backend = execution()
+    const fixture = await setup(async () => backend.run)
+    const activation = await fixture.start()
+    const error = new Error('backend execution failed')
+    const observed = vi.fn()
+    void activation.result.then(observed, observed)
+    const waiting = fixture.ctx.subagents.waitForChildren(fixture.parent)
+    const waited = vi.fn()
+    void waiting.then(waited)
+    backend.result.reject(error)
+    await backend.cleaning.promise
+    const disposal = activation.dispose().catch(() => undefined)
+    try {
+      await Promise.resolve()
+      expect(observed).not.toHaveBeenCalled()
+      expect(waited).not.toHaveBeenCalled()
+    } finally {
+      backend.cleanup.resolve(undefined)
+      await disposal
+    }
+    await expect(activation.result).rejects.toBe(error)
+    await expect(waiting).resolves.toBe(true)
+    await expect(fixture.ctx.subagents.waitForChildren(fixture.parent)).resolves.toBe(false)
   })
 
   it('cancels the external process once when the receipt is repeatedly disposed', async () => {
@@ -174,6 +210,72 @@ describe('external subagent activations', () => {
     expect(dispose).toHaveBeenCalledTimes(1)
   })
 
+  it.each(['user', 'ancestor'] as const)('interrupts an external run with %s authority and joins cleanup', async (kind) => {
+    const backend = execution()
+    let providerSignal: AbortSignal | undefined
+    const aborted: SubagentResult = { output: [], stopReason: 'aborted' }
+    const dispose = vi.fn(() => {
+      backend.result.resolve(aborted)
+      return backend.dispose()
+    })
+    const fixture = await setup(async ({ signal }) => {
+      providerSignal = signal
+      return { ...backend.run, dispose }
+    })
+    const activation = await fixture.start()
+    const warning = vi.spyOn(fixture.ctx.logger, 'warn')
+    const authority = kind === 'user'
+      ? { kind, parentSessionId: fixture.parent.id }
+      : { kind, agent: fixture.parent }
+    fixture.ctx.subagents.interrupt(activation.childId, authority)
+    fixture.ctx.subagents.interrupt(activation.childId, authority)
+    await backend.cleaning.promise
+    const disposal = activation.dispose()
+    const observed = vi.fn()
+    void activation.result.then(observed, observed)
+    try {
+      expect(providerSignal?.reason).toEqual({ kind: kind === 'user' ? 'user' : 'parent' })
+      expect(dispose).toHaveBeenCalledTimes(1)
+      expect(observed).not.toHaveBeenCalled()
+      if (kind === 'ancestor') {
+        const rejected = expect(disposal).rejects.toThrow('interrupt cleanup failed')
+        backend.cleanup.reject(new Error('interrupt cleanup failed'))
+        await rejected
+        await vi.waitFor(() => { expect(warning).toHaveBeenCalledTimes(1) })
+      } else {
+        backend.cleanup.resolve(undefined)
+        await disposal
+      }
+      await expect(activation.result).resolves.toEqual(aborted)
+      expect(dispose).toHaveBeenCalledTimes(1)
+      expect(fixture.parent.inbox.nextTurn).toEqual([])
+    } finally {
+      backend.cleanup.resolve(undefined)
+      await disposal.catch(() => undefined)
+    }
+  })
+
+  it('releases an external handle when caller cancellation prevents publication', async () => {
+    const backend = execution()
+    const error = new Error('startup cancelled')
+    const fixture = await setup(async () => {
+      fixture.controller.abort(error)
+      backend.result.resolve(completed)
+      return backend.run
+    })
+    const rejected = expect(fixture.start()).rejects.toBe(error)
+    await backend.cleaning.promise
+    try {
+      expect(backend.dispose).toHaveBeenCalledTimes(1)
+      expect(fixture.records()).toEqual([])
+      expect(fixture.parent.inbox.nextTurn).toEqual([])
+    } finally {
+      backend.cleanup.resolve(undefined)
+      await rejected
+    }
+    await expect(fixture.ctx.subagents.waitForChildren(fixture.parent)).resolves.toBe(false)
+  })
+
   it.each(['parent', 'caller'] as const)('delivers the full failed result with %s delivery', async (delivery) => {
     const backend = execution()
     backend.cleanup.resolve(undefined)
@@ -183,7 +285,7 @@ describe('external subagent activations', () => {
     backend.result.resolve(failed)
     await expect(activation.result).resolves.toEqual(failed)
     await activation.dispose()
-    expect(fixture.records()).toMatchObject([{ id: activation.childId, mode: 'external' }])
+    expect(fixture.records()).toMatchObject(delivery === 'parent' ? [{ id: activation.childId, mode: 'external' }] : [])
     if (delivery === 'caller') {
       expect(fixture.parent.inbox.nextTurn).toEqual([])
     } else {
@@ -198,12 +300,13 @@ describe('external subagent activations', () => {
     }
   })
 
-  it('reports cleanup failure separately from a completed result without exposing the private cause', async () => {
+  it.each(['parent', 'caller'] as const)('preserves the completed result for %s delivery when cleanup fails', async (delivery) => {
     const backend = execution()
     const fixture = await setup(async () => backend.run)
-    const activation = await fixture.start()
+    const ended = vi.fn()
+    fixture.ctx.on('subagent/end', ended)
+    const activation = await fixture.start(delivery)
     backend.result.resolve(completed)
-    await expect(activation.result).resolves.toEqual(completed)
     await backend.cleaning.promise
     const disposal = activation.dispose()
     const rejection = expect(disposal).rejects.toThrow('safe cleanup failure')
@@ -214,12 +317,26 @@ describe('external subagent activations', () => {
     expect((error as Error).message).not.toContain('/private/path')
     await expect(activation.result).resolves.toEqual(completed)
     expect(activation.dispose()).toBe(disposal)
-    expect(fixture.records()).toMatchObject([{
+    expect(fixture.records()).toMatchObject(delivery === 'parent' ? [{
       id: activation.childId, mode: 'external',
-    }])
+    }] : [])
+    expect(ended).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ stopReason: 'error' }))
+    if (delivery === 'parent') {
+      expect(fixture.parent.inbox.nextTurn).toHaveLength(1)
+      const notice = fixture.parent.inbox.nextTurn[0]!
+      expect(notice.source).toMatchObject({ kind: 'subagent-settled', senderSessionId: activation.childId })
+      const text = notice.content.flatMap(block => block.type === 'text' ? [block.text] : []).join('\n')
+      expect(text).toContain('finished')
+      expect(text).toContain('Reviewed three files.')
+      expect(text).toContain('Structured result: {"files":3}')
+      expect(text).not.toContain('failed before it finished')
+      expect(text).not.toContain('SECRET_TOKEN')
+      expect(text).not.toContain('/private/path')
+    } else {
+      expect(fixture.parent.inbox.nextTurn).toEqual([])
+    }
   })
 })
-
 
 it('records external membership at creation without publishing settlement updates', async () => {
   const backend = execution()
@@ -228,10 +345,9 @@ it('records external membership at creation without publishing settlement update
   fixture.ctx.sessionProjections.snapshot(fixture.parent.session)
   const unsubscribe = fixture.ctx.sessionProjections.onChanged(() => { snapshots.push(fixture.records()) })
   try {
-    const activation = await fixture.start()
+    const activation = await fixture.start('parent')
     const expected = { id: activation.childId, mode: 'external', label: 'External work' }
     expect(await fixture.ctx.subagents.listChildren(fixture.parent.id)).toMatchObject([expected])
-    expect(await fixture.ctx.subagents.listDescendants(fixture.parent.id)).toEqual([])
     expect(fixture.ctx.sessions.get(activation.childId)).toBeUndefined()
     const result: SubagentResult = { output: [{ type: 'text', text: 'x'.repeat(100_000) }], stopReason: 'completed' }
     backend.result.resolve(result)
@@ -245,7 +361,6 @@ it('records external membership at creation without publishing settlement update
     unsubscribe()
   }
 })
-
 
 it('refuses a reserved Session id for an external provider before dispatch', async () => {
   const start = vi.fn()

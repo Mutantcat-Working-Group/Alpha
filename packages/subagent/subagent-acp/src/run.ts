@@ -34,8 +34,7 @@ export interface AcpRunSpec {
   args: string[]
   /**
    * Absolute working directory for the child process AND its ACP session
-   * `cwd`. The provider resolves it before this spec exists: config override,
-   * else the delegating parent session's workspace.
+   * `cwd`, selected before provider startup.
    */
   cwd: string
   /** How to auto-answer the child's permission prompts. */
@@ -418,7 +417,7 @@ export async function startAcpRun(request: SubagentStartRequest, spec: AcpRunSpe
   const flags = { cancelled: false }
   let latestPermission: AcpPermissionDecision | undefined
 
-  const clientApp = createAcpClientApp({ name: 'alpha-subagent-acp' })
+  const clientApp = createAcpClientApp({ name: 'deepseek-harness-subagent-acp' })
     .onNotification(methods.client.session.update, ({ params }) => {
       const update = params.update
       if (update.sessionUpdate === 'agent_message_chunk') {

@@ -1,13 +1,13 @@
 {
   "name": "@mutantcat/dsh-tool-subagent-control",
   "description": "Globally named send_message, interrupt_agent, and list_agents tools over ctx.subagents continuations",
-  "version": "1.0.20261020",
+  "version": "0.2.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
     "directory": "packages/subagent/tool-subagent-control"
   },
   "type": "module",
@@ -23,39 +23,43 @@
       "default": "./lib/types/list-agents.js"
     },
     "./src/*": "./src/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./list-agents/locale/*.json": "./locale/list-agents/*.json"
   },
   "files": [
+    "locale/*.json",
+    "locale/list-agents/*.json",
     "lib/index.js",
     "lib/types/**/*.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@mutantcat/cordis": "workspace:^",
-    "@mutantcat/dsh-llm": "workspace:^",
-    "@mutantcat/dsh-session": "workspace:^",
-    "@mutantcat/dsh-subagent": "workspace:^",
-    "@mutantcat/dsh-tools": "workspace:^"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-llm": "workspace:*",
+    "@mutantcat/dsh-session": "workspace:*",
+    "@mutantcat/dsh-subagent": "workspace:*",
+    "@mutantcat/dsh-tools": "workspace:*"
   },
   "devDependencies": {
-    "@mutantcat/cordis": "workspace:^",
-    "@mutantcat/dsh-agent": "workspace:^",
-    "@mutantcat/dsh-agent-loop": "workspace:^",
-    "@mutantcat/dsh-agent-loop-testkit": "workspace:^",
-    "@mutantcat/dsh-llm": "workspace:^",
-    "@mutantcat/dsh-session": "workspace:^",
-    "@mutantcat/dsh-session-persistence": "workspace:^",
-    "@mutantcat/dsh-session-persistence-jsonl": "workspace:^",
-    "@mutantcat/dsh-session-projection": "workspace:^",
-    "@mutantcat/dsh-session-query": "workspace:^",
-    "@mutantcat/dsh-subagent": "workspace:^",
-    "@mutantcat/dsh-subagent-fork-in-process": "workspace:^",
-    "@mutantcat/dsh-subagent-spawn-in-process": "workspace:^",
-    "@mutantcat/dsh-tools": "workspace:^"
+    "@mutantcat/cordis": "workspace:~",
+    "@mutantcat/dsh-agent": "workspace:*",
+    "@mutantcat/dsh-agent-loop": "workspace:*",
+    "@mutantcat/dsh-agent-loop-testkit": "workspace:*",
+    "@mutantcat/dsh-llm": "workspace:*",
+    "@mutantcat/dsh-session": "workspace:*",
+    "@mutantcat/dsh-session-persistence": "workspace:*",
+    "@mutantcat/dsh-session-persistence-jsonl": "workspace:*",
+    "@mutantcat/dsh-session-projection": "workspace:*",
+    "@mutantcat/dsh-session-query": "workspace:*",
+    "@mutantcat/dsh-subagent": "workspace:*",
+    "@mutantcat/dsh-subagent-fork-in-process": "workspace:*",
+    "@mutantcat/dsh-subagent-spawn-in-process": "workspace:*",
+    "@mutantcat/dsh-tools": "workspace:*"
   },
   "dependencies": {
-    "@mutantcat/dsh-brand": "workspace:^",
-    "@mutantcat/dsh-util-values": "workspace:^"
+    "@mutantcat/dsh-brand": "workspace:*",
+    "@mutantcat/dsh-util-values": "workspace:*"
   }
 }

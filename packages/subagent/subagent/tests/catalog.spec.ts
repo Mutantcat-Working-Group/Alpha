@@ -11,6 +11,7 @@ import {
 } from '@mutantcat/dsh-session'
 import type { SessionEvent, SessionHeader } from '@mutantcat/dsh-session'
 import {
+  establishExternalCatalogChild,
   subagentCatalogProjectionDefinition,
 } from '../src/catalog.ts'
 import type { SubagentCatalogState } from '../src/catalog.ts'
@@ -51,6 +52,28 @@ function fact(
 }
 
 describe('subagent catalog projection', () => {
+  it('records an external child once with its label and creation time', async () => {
+    const ctx = new Context()
+    try {
+      await ctx.plugin(SessionStore)
+      const parent = ctx.sessions.create(header.id)
+      const before = Date.now()
+      establishExternalCatalogChild(parent, SessionId('external'), 'External work')
+      const events = parent.snapshotEvents()
+      expect(events).toHaveLength(1)
+      expect(events[0]).toMatchObject({
+        type: 'subagent/catalog',
+        data: { version: 2, childId: 'external', mode: 'external', label: 'External work' },
+      })
+      const entries = subagentCatalogProjectionDefinition.wire.view(fold(events))
+      expect(entries).toHaveLength(1)
+      expect(entries[0]!.createdAt).toBeGreaterThanOrEqual(before)
+      expect(entries[0]!.createdAt).toBeLessThanOrEqual(Date.now())
+    } finally {
+      await ctx.fiber.dispose()
+    }
+  })
+
   it('publishes detached catalog views and changes only for new own facts', async () => {
     const ctx = new Context()
     try {
