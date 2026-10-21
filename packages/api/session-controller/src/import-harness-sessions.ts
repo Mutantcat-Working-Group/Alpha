@@ -25,6 +25,12 @@ import {
   type ForeignSessionGeneration,
   type ForeignSessionHeader,
 } from '@mutantcat/dsh-session-persistence-jsonl/foreign'
+import {
+  detectForeignFormat,
+  listForeignSessionFiles,
+  readForeignSession,
+  type ForeignFormat,
+} from './foreign-format-adapters.ts'
 import { RemoteError } from '@mutantcat/dsh-typert-protocol'
 import type {
   SessionImportHarnessRequest,
@@ -123,11 +129,61 @@ export class HarnessSessionImport {
         {},
       )
     }
+    const format = await detectForeignFormat(sourceRoot)
+    if (format === 'dsh') {
+      return this.runDshImport(sourceRoot, persistence, signal)
+    }
+    return this.runForeignImport(sourceRoot, format, persistence, signal)
+  }
+
+  /** Import sessions from a DSH-format root using the existing JSONL pipeline. */
+  private async runDshImport(
+    sourceRoot: string,
+    persistence: SessionPersistence,
+    signal: AbortSignal,
+  ): Promise<SessionImportHarnessValue> {
     const scan = await this.scan(sourceRoot, signal)
     const results: SessionImportHarnessResult[] = [...scan.results]
     for (const header of scan.headers) {
       signal.throwIfAborted()
       results.push(await this.adopt(persistence, header, scan.headers, signal))
+    }
+    return { sourceRoot, results }
+  }
+
+  /** Import sessions from a non-DSH foreign format (Codex, Claude, etc.). */
+  private async runForeignImport(
+    sourceRoot: string,
+    format: ForeignFormat,
+    persistence: SessionPersistence,
+    signal: AbortSignal,
+  ): Promise<SessionImportHarnessValue> {
+    const files = await listForeignSessionFiles(sourceRoot, format, signal)
+    const results: SessionImportHarnessResult[] = []
+    for (const file of files) {
+      signal.throwIfAborted()
+      try {
+        const content = await readForeignSession(file, signal)
+        if (await persistence.stat(content.header.id, { signal }) !== undefined) {
+          results.push({ sourcePath: file.path, sessionId: content.header.id, status: 'already-present' })
+          continue
+        }
+        await validateStoredLog(content.header, content.events, {
+          root: sourceRoot,
+          path: file.path,
+          version: content.header.version,
+          compression: 'none',
+        })
+        await this.publish(persistence, content.header, content.events, content.inheritedEventCount, signal)
+        results.push({ sourcePath: file.path, sessionId: content.header.id, status: 'imported' })
+      } catch (error: unknown) {
+        if (isAlreadyPresent(error)) {
+          results.push({ sourcePath: file.path, status: 'already-present' })
+        } else {
+          signal.throwIfAborted()
+          results.push(refused({ root: sourceRoot, path: file.path, version: 0, compression: 'none' }, error))
+        }
+      }
     }
     return { sourceRoot, results }
   }

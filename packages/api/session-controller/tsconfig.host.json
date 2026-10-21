@@ -16,6 +16,7 @@
     "src/commands.ts",
     "src/control.ts",
     "src/file-references.ts",
+    "src/foreign-format-adapters.ts",
     "src/history.ts",
     "src/import-harness-sessions.ts",
     "src/list.ts",

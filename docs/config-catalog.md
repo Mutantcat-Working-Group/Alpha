@@ -37,8 +37,6 @@ Source: [`packages/acp/acp/src/index.ts:76`](../packages/acp/acp/src/index.ts)
 
 ## `@mutantcat/dsh-agent-default-model`
 
-Requires: `settings`
-
 ```ts config-catalog
 /** Composition entry for the default model selection. */
 export interface Config {

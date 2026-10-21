@@ -37,6 +37,8 @@ export interface IHarnessSessionsImport {
 
 /** Owns the Client-side import call and the Session-list refresh it triggers. */
 export class HarnessSessionsImport extends Service implements IHarnessSessionsImport {
+  static inject = ['remote']
+
   /** @param ctx - Client root Context carrying the Session Remote and Session list. */
   constructor(ctx: Context) {
     super(ctx, 'harnessSessionsImport')
