@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-typert-protocol",
   "description": "Compiler-independent Remote metadata and Typert provider protocols",
-  "version": "1.0.20261022",
+  "version": "1.0.20261023",
   "publishConfig": {
     "access": "public"
   },
