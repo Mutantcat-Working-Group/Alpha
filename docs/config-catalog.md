@@ -37,6 +37,8 @@ Source: [`packages/acp/acp/src/index.ts:76`](../packages/acp/acp/src/index.ts)
 
 ## `@mutantcat/dsh-agent-default-model`
 
+Requires: `settings`
+
 ```ts config-catalog
 /** Composition entry for the default model selection. */
 export interface Config {
@@ -3537,7 +3539,7 @@ export interface Config {
 export type ToolPresentationMode = 'native' | 'ptc' | 'both'
 ```
 
-Source: [`packages/core/tools/src/index.ts:663`](../packages/core/tools/src/index.ts)
+Source: [`packages/core/tools/src/index.ts:668`](../packages/core/tools/src/index.ts)
 
 <a id="mutantcatdsh-typert-loader"></a>
 
