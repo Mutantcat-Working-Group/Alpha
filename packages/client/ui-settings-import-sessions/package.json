@@ -31,8 +31,10 @@
         "@mutantcat/dsh-api-session-controller",
         "@mutantcat/dsh-client-locale",
         "@mutantcat/dsh-client-ui-renderer",
+        "@mutantcat/dsh-client-ui-session",
         "@mutantcat/dsh-client-ui-settings",
-        "@mutantcat/dsh-client-ui-slots"
+        "@mutantcat/dsh-client-ui-slots",
+        "@mutantcat/dsh-client-ui-workspace"
       ],
       "platform": "web"
     }
@@ -52,8 +54,10 @@
     "@mutantcat/dsh-client-test-runtime": "workspace:^",
     "@mutantcat/dsh-client-ui-primitives": "workspace:^",
     "@mutantcat/dsh-client-ui-renderer": "workspace:^",
+    "@mutantcat/dsh-client-ui-session": "workspace:^",
     "@mutantcat/dsh-client-ui-settings": "workspace:^",
     "@mutantcat/dsh-client-ui-slots": "workspace:^",
+    "@mutantcat/dsh-client-ui-workspace": "workspace:^",
     "@mutantcat/dsh-session": "workspace:^",
     "@testing-library/react": "^16.1.0",
     "@types/react": "~18.3.1",

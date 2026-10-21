@@ -28,6 +28,7 @@
   "dsh": {
     "client": {
       "inject": [
+        "@mutantcat/dsh-api-session-controller",
         "@mutantcat/dsh-client-locale",
         "@mutantcat/dsh-client-ui-renderer",
         "@mutantcat/dsh-client-ui-session",
