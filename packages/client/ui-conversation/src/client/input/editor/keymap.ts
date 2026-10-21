@@ -22,6 +22,13 @@ import {
 import { mergeRegister } from '@lexical/utils'
 import type { ArbitrateKey, ArbitrateOutcome } from '../../contract/draft-editor.ts'
 
+/**
+ * Character count above which a plain-text paste becomes a file attachment
+ * instead of inline editor content. Large pastes block the Lexical
+ * reconciler and the draft projection on every subsequent keystroke.
+ */
+const LARGE_PASTE_THRESHOLD = 4000
+
 /** The bar-supplied behavior behind each intercepted gesture. */
 export interface ComposerKeymapHandlers {
   /** Keyboard arbitration while the menu is open ('pass' when no pipeline). */
@@ -166,6 +173,13 @@ export function registerComposerKeymap(editor: LexicalEditor, handlers: Composer
         return true
       }
       event.preventDefault()
+      // Text pastes above the threshold become a file attachment instead of
+      // inline editor content: a multi-thousand-character paste blocks the
+      // Lexical reconciler and the draft projection on every keystroke.
+      if (text.length > LARGE_PASTE_THRESHOLD) {
+        handlers.intakeFiles([new File([text], 'pasted-text.txt', { type: 'text/plain' })])
+        return true
+      }
       handlers.pasteText(text)
       return true
     }, COMMAND_PRIORITY_CRITICAL),

@@ -13,9 +13,15 @@
   - img
   - text: System prompt
 - text: "Run two shell commands: wait for cancellation, then write skipped.txt. {{clock}}"
-- button "Copy"
-- button "Context injection runtime-context"
-- 'button "Failed Bash Error: tool call aborted" [expanded]'
+- button "Copy":
+  - img
+- button "Context injection @mutantcat/dsh-system-prompt":
+  - img
+  - img
+  - text: Context injection @mutantcat/dsh-system-prompt
+- 'button "Failed Bash Error: tool call aborted" [expanded]':
+  - img
+  - text: "Failed Bash Error: tool call aborted"
 - text: "IN { \"command\": \"node -e \\\"const fs=require('node:fs'); fs.writeFileSync('started.tmp', 'started'); fs.renameSync('started.tmp', 'started.txt'); setInterval(() => {}, 1000)\\\"\", \"description\": \"Wait until cancellation\" } OUT Error: tool call aborted"
 - button "Inspect"
 - 'button "Failed Bash Error: tool call aborted before dispatch"':

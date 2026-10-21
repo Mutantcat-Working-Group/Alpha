@@ -15,8 +15,12 @@
   - img
   - text: System prompt
 - text: Reply with a one-sentence description of event sourcing, then stop. {{clock}}
-- button "Copy"
-- button "Context injection runtime-context"
+- button "Copy":
+  - img
+- button "Context injection @mutantcat/dsh-system-prompt":
+  - img
+  - img
+  - text: Context injection @mutantcat/dsh-system-prompt
 - status:
   - text: This turn failedAPI key is invalid
   - code: AUTH

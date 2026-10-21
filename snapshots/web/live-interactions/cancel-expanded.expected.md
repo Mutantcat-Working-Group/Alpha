@@ -15,9 +15,15 @@
   - img
   - text: System prompt
 - text: Reply with a one-sentence description of event sourcing, then stop. {{clock}}
-- button "Copy"
-- button "Thought for a while" [expanded]
-- button "Context injection runtime-context"
+- button "Copy":
+  - img
+- button "Thought for a while" [expanded]:
+  - text: Thought for a while
+  - img
+- button "Context injection @mutantcat/dsh-system-prompt":
+  - img
+  - img
+  - text: Context injection @mutantcat/dsh-system-prompt
 - paragraph: partial
 - text: Stopped
 - button "Copy":

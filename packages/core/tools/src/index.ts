@@ -465,9 +465,14 @@ export interface ToolRuntimeScheduler {
 
 /**
  * Scheduler entry point omitted from the generated named service API.
+ *
+ * Registered globally: a run can hold this package twice (the Loader instantiates
+ * the built entry while callers resolve the source entry), so a per-copy
+ * `Symbol()` would leave each side with its own key and reads would yield
+ * `undefined` off a working `ToolRuntime`.
  * @internal
  */
-export const TOOL_RUNTIME_SCHEDULER: unique symbol = Symbol('@mutantcat/dsh-tools.scheduler')
+export const TOOL_RUNTIME_SCHEDULER: unique symbol = Symbol.for('@mutantcat/dsh-tools.scheduler')
 
 /** Canonical error code for cancellation after a tool body was invoked. */
 export const TOOL_ABORTED = 'ABORTED'

@@ -67,6 +67,8 @@ function selection(settings: AgentDefaultModelSettings): ModelSelection | null {
  * is mounted, its user layer is read live.
  */
 export class AgentDefaultModelConfig extends Service {
+  static inject = ['settings']
+
   static Config: z<Config> = z.object({
     provider: z.string().required(false),
     model: z.string().required(false),

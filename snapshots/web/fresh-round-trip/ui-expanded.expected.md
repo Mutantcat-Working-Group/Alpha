@@ -15,12 +15,27 @@
   - img
   - text: System prompt
 - text: "Use the bash tool to run exactly: echo WEB_E2E_OK. Then reply with the single word DONE and stop. {{clock}}"
-- button "Copy"
-- button "1 tool call" [expanded]
-- button "Context injection runtime-context"
-- button "Think The user wants me to run a simple bash command and reply with \"DONE\"."
-- button "Bash Echo the test string"
-- button "Think The command executed successfully and output \"WEB_E2E_OK\". I just need to reply with \"DONE\"."
+- button "Copy":
+  - img
+- button "1 tool call" [expanded]:
+  - text: 1 tool call
+  - img
+- button "Context injection @mutantcat/dsh-system-prompt":
+  - img
+  - img
+  - text: Context injection @mutantcat/dsh-system-prompt
+- button "Think The user wants me to run a simple bash command and reply with \"DONE\".":
+  - img
+  - img
+  - text: Think The user wants me to run a simple bash command and reply with "DONE".
+- button "Bash Echo the test string":
+  - img
+  - img
+  - text: Bash Echo the test string
+- button "Think The command executed successfully and output \"WEB_E2E_OK\". I just need to reply with \"DONE\".":
+  - img
+  - img
+  - text: Think The command executed successfully and output "WEB_E2E_OK". I just need to reply with "DONE".
 - paragraph: DONE
 - button "Copy":
   - img

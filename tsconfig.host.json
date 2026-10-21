@@ -109,7 +109,6 @@
     "apps/web/tests/schedule-after.e2e.ts",
     "apps/web/tests/feedback-command.e2e.ts",
     "apps/web/tests/feedback-local.e2e.ts",
-    "apps/web/tests/feedback-release.e2e.ts",
     "apps/web/tests/goal-command-presentation.e2e.ts",
     "apps/web/tests/startup-auto-selection.e2e.ts",
     "apps/web/tests/changed-files-turn.e2e.ts",

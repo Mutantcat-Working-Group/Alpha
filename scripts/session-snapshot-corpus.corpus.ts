@@ -203,6 +203,6 @@ it('keeps a current-writer majority plus bounded declared historical migration c
 
   expect(assertSnapshotCorpusPolicy(inventory)).toMatchObject({
     retainedRoles: 10,
-    retainedScenarios: 8,
+    retainedScenarios: 7,
   })
 })

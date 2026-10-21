@@ -15,10 +15,19 @@
   - img
   - text: System prompt
 - text: "Use one run_code program to do the following in order. Call present for missing.txt and catch its error without creating that file. Use bash to run exactly `printf \"DELIVERED_REPORT\\n\" > report.txt; printf \"DELIVERED_NOTE\\n\" > 说明.txt`. Call present for report.txt and 说明.txt. After present succeeds, deliberately throw the string \"AFTER_PRESENT\" (not an Error object) from that same run_code program. Do not retry the program or create any other files. Finish by mentioning `report.txt` and `说明.txt` in inline code, and put PRESENT_DONE in a separate paragraph. {{clock}}"
-- button "Copy"
-- button "1 tool call" [expanded]
-- button "Context injection runtime-context"
-- button "Think The user wants one run_code program that:"
+- button "Copy":
+  - img
+- button "1 tool call" [expanded]:
+  - text: 1 tool call
+  - img
+- button "Context injection @mutantcat/dsh-system-prompt":
+  - img
+  - img
+  - text: Context injection @mutantcat/dsh-system-prompt
+- button "Think The user wants one run_code program that:":
+  - img
+  - img
+  - text: "Think The user wants one run_code program that:"
 - text: Failed
 - 'button "Code Error: code run failed (exception): AFTER_PRESENT"':
   - img

@@ -468,22 +468,6 @@ class WebFetchOutput(TypedDict):
     body: WebFetchOutputBody1 | WebFetchOutputBody2
     truncated: bool
 
-class WebSearchArgs(TypedDict):
-    # Required search queries; accepts 1–4 items and merges their results.
-    queries: list[str]
-    # Additional keys beyond those declared are allowed.
-
-class WebSearchOutputSources(TypedDict):
-    url: str
-    title: NotRequired[str]
-    snippet: NotRequired[str]
-    publishedAt: NotRequired[str]
-
-class WebSearchOutput(TypedDict):
-    content: NotRequired[str]
-    sources: list[WebSearchOutputSources]
-    truncated: bool
-
 class WriteArgs(TypedDict):
     # Path to write, resolved by the filesystem backend.
     file_path: str
@@ -525,7 +509,7 @@ class Tools(Protocol):
     async def job_output(self, args: JobOutputArgs) -> JobOutputOutput:
         """Read a background job. Stream jobs return only output since the previous read; final-output jobs return their result after settlement. Every response ends with `[status: ...]`. Reads are non-blocking unless `wait: true`, which waits up to the configured cap."""
     async def list_agents(self, args: ListAgentsArgs) -> list[ListAgentsOutput1 | ListAgentsOutput2]:
-        """List your continuable background subagents by durable id and label. Use it to recall which ones you started, not to poll for completion — you are told when one finishes. Status comes from the live registry: running means the agent is working right now; inactive means no turn is executing, whether the child is loaded or must be resumed. inactive does not describe task completion, success, failure, or waiting for other agents. A `send_message` steers a running child at its nearest step boundary or starts or resumes a turn for an inactive child, and a direct child remains a `send_message` candidate in every status. The snapshot is not a delivery promise — `send_message` performs the authoritative check and may still fail. Children that could not be read are reported as diagnostics only in `descendants` scope. Scope `descendants` walks the whole tree below you in stable pre-order, annotating each entry with its durable direct-parent session id and depth. You may use `send_message` only for depth-1 entries; deeper entries are candidates for `interrupt_agent` only."""
+        """List your continuable background subagents by durable id and label. Use it to recall which ones you started, not to poll for completion — you are told when one finishes. Status comes from the live registry: running means the agent is working right now, idle means it is loaded but between turns (it may be waiting on agents it started), and ready means it exists only in storage — resumable, not terminal, and not a result waiting to be collected; a `send_message` steers a running child at its nearest step boundary or starts a turn for an idle or ready child, and a direct child remains a `send_message` candidate in every status. The snapshot is not a delivery promise — `send_message` performs the authoritative check and may still fail. Children that could not be read are reported as diagnostics instead of being silently dropped. Scope `descendants` walks the whole tree below you in stable pre-order, annotating each entry with its durable direct-parent session id and depth. You may use `send_message` only for depth-1 entries; deeper entries are candidates for `interrupt_agent` only."""
     async def read(self, args: ReadArgs) -> ReadOutput:
         """Read a UTF-8 text file and return line-numbered content."""
     async def read_image(self, args: ReadImageArgs) -> ReadImageOutput:
@@ -544,8 +528,6 @@ class Tools(Protocol):
         """Update the exact current goal revision. edit, pause, and resume require a direct top-level human request. During an automatic continuation of the current goal, complete and blocked are also allowed. blocked is rejected before the configured minimum round count; the model remains responsible for judging that the same condition persisted across those rounds and must explain it in blocked_reason."""
     async def web_fetch(self, args: WebFetchArgs) -> WebFetchOutput:
         """Fetch the content of a specific HTTP(S) URL and return it decoded to text."""
-    async def web_search(self, args: WebSearchArgs) -> WebSearchOutput:
-        """Search the web for current information. Provide 1–4 queries in the required queries array. Returns an optional summary answer and a list of source URLs."""
     async def write(self, args: WriteArgs) -> WriteOutput:
         """Create or fully replace a UTF-8 text file."""
 
