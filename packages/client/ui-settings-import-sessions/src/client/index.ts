@@ -27,6 +27,39 @@ declare module '@mutantcat/dsh-client-ui-slots' {
 /** Dictionary namespace owned by this plugin. */
 const NS = 'settings.importSessions'
 
+/** Desktop bridge seam that shows a native save dialog; absent in the browser. */
+interface DesktopSaveBridge {
+  dshDesktopBoot?: {
+    saveMarkdown?: (filename: string, content: string) => Promise<string | null>
+  }
+}
+
+/** Trigger a browser download of one text blob. */
+function downloadText(filename: string, text: string): void {
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Save one Markdown transcript: a native save dialog in the desktop shell, a
+ * browser download otherwise.
+ * @param filename - default file name offered by the save dialog.
+ * @param markdown - transcript body to write.
+ */
+async function saveMarkdown(filename: string, markdown: string): Promise<void> {
+  const bridge = (globalThis as DesktopSaveBridge).dshDesktopBoot
+  if (bridge?.saveMarkdown !== undefined) {
+    await bridge.saveMarkdown(filename, markdown)
+    return
+  }
+  downloadText(filename, markdown)
+}
+
 /** Services required by the Settings registration and the import call. */
 export const inject = ['slots', 'locale', 'harnessSessionsImport', 'uiWorkspace']
 
@@ -38,7 +71,10 @@ export function apply(ctx: ClientContext): void {
   const injected = (): ImportSessionsSectionInjected => ({
     sourceRoot: () => ctx.harnessSessionsImport.sourceRoot(),
     importSessions: request => ctx.harnessSessionsImport.importSessions(request),
-    exportSession: sessionId => ctx.harnessSessionsImport.exportSession(sessionId),
+    exportSession: async (sessionId, title) => {
+      const markdown = await ctx.harnessSessionsImport.exportSession(sessionId)
+      await saveMarkdown(`${title}.md`, markdown)
+    },
     archiveSession: sessionId => ctx.uiWorkspace.archiveSession(sessionId as never),
   })
 

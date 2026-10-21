@@ -71,6 +71,62 @@ describe('ui-settings-import-sessions browser plugin', () => {
     await b.ctx.fiber.dispose()
   })
 
+  it('exports a session through the desktop native save dialog', async () => {
+    const b = await bench()
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const injected = (b.slots.entries('settings.section')[0]!.inject as unknown as () => ImportSessionsSectionInjected)()
+
+    const saveMarkdown = vi.fn(async () => '/picked/Report.md')
+    ;(globalThis as { dshDesktopBoot?: unknown }).dshDesktopBoot = { saveMarkdown }
+    try {
+      await injected.exportSession('sid-1', 'Report')
+      expect(b.exportSession).toHaveBeenCalledWith('sid-1')
+      expect(saveMarkdown).toHaveBeenCalledWith('Report.md', '# Export')
+    } finally {
+      delete (globalThis as { dshDesktopBoot?: unknown }).dshDesktopBoot
+    }
+    await b.ctx.fiber.dispose()
+  })
+
+  it('treats a cancelled native save dialog as a no-op', async () => {
+    const b = await bench()
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const injected = (b.slots.entries('settings.section')[0]!.inject as unknown as () => ImportSessionsSectionInjected)()
+
+    ;(globalThis as { dshDesktopBoot?: unknown }).dshDesktopBoot = { saveMarkdown: vi.fn(async () => null) }
+    try {
+      await expect(injected.exportSession('sid-1', 'Report')).resolves.toBeUndefined()
+    } finally {
+      delete (globalThis as { dshDesktopBoot?: unknown }).dshDesktopBoot
+    }
+    await b.ctx.fiber.dispose()
+  })
+
+  it('falls back to a browser download when the desktop bridge is absent', async () => {
+    const b = await bench()
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const injected = (b.slots.entries('settings.section')[0]!.inject as unknown as () => ImportSessionsSectionInjected)()
+
+    const createObjectURL = vi.fn(() => 'blob:report')
+    const revokeObjectURL = vi.fn()
+    Object.assign(URL, { createObjectURL, revokeObjectURL })
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    try {
+      await injected.exportSession('sid-1', 'Report')
+      expect(createObjectURL).toHaveBeenCalled()
+      expect(click).toHaveBeenCalled()
+      expect(revokeObjectURL).toHaveBeenCalled()
+    } finally {
+      delete (URL as unknown as { createObjectURL?: unknown }).createObjectURL
+      delete (URL as unknown as { revokeObjectURL?: unknown }).revokeObjectURL
+      click.mockRestore()
+    }
+    await b.ctx.fiber.dispose()
+  })
+
   it('follows a late declaration and a declarer reload', async () => {
     const b = await bench()
     const fiber = b.ctx.plugin({ inject: [...inject], apply })

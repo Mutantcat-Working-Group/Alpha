@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { SessionListState, SessionSummary } from '@mutantcat/dsh-api-session-controller/client'
 import type { SessionImportHarnessValue } from '@mutantcat/dsh-api-session-controller/types'
 import type { SessionId } from '@mutantcat/dsh-session/types'
 import { ImportSessionsSection } from '../src/client/ImportSessionsSection.tsx'
@@ -10,6 +11,20 @@ import { en, type ImportSessionsLocaleKey } from '../src/client/locales.ts'
 afterEach(cleanup)
 
 const sid = (id: string): SessionId => id as SessionId
+
+function summary(id: string, title: string): SessionSummary {
+  return { id: sid(id), displayTitle: title, running: false, retainedBy: {}, blank: false, updatedAt: 0 }
+}
+
+function sessionState(sessions: readonly SessionSummary[]): SessionListState {
+  return {
+    ids: sessions.map(session => session.id),
+    byId: Object.fromEntries(sessions.map(session => [session.id, session])),
+    phase: 'ready',
+    subagentsByParent: {},
+    jobsBySession: {},
+  }
+}
 
 const t = ((key: ImportSessionsLocaleKey, params?: Record<string, string | number>): string =>
   Object.entries(params ?? {}).reduce(
@@ -28,15 +43,17 @@ function props(options: {
   importSessions?: ImportSessionsSectionProps['importSessions']
   exportSession?: ImportSessionsSectionProps['exportSession']
   archiveSession?: ImportSessionsSectionProps['archiveSession']
+  sessions?: SessionListState
   useSessions?: ImportSessionsSectionProps['useSessions']
 } = {}): ImportSessionsSectionProps {
   return {
     t,
     sourceRoot: options.sourceRoot ?? (async () => options.configured ?? '/source/sessions'),
     importSessions: options.importSessions ?? (async () => value([])),
-    exportSession: options.exportSession ?? (async () => '# Export'),
+    exportSession: options.exportSession ?? (async () => {}),
     archiveSession: options.archiveSession ?? (async () => {}),
-    useSessions: options.useSessions ?? (() => ({ phase: 'ready', ids: [], byId: {} })),
+    useSessions: options.useSessions
+      ?? ((select: (state: SessionListState) => unknown) => select(options.sessions ?? sessionState([]))),
   } as unknown as ImportSessionsSectionProps
 }
 
@@ -152,5 +169,27 @@ describe('ImportSessionsSection', () => {
     fireEvent.change(field, { target: { value: '/typed/sessions' } })
     fireEvent.click(screen.getByRole('button', { name: en.import }))
     await waitFor(() => { expect(importSessions).toHaveBeenCalledWith({ sourceRoot: '/typed/sessions' }) })
+  })
+
+  it('exports a listed session with its id and title', async () => {
+    const exportSession = vi.fn(async () => {})
+    render(<ImportSessionsSection {...props({
+      exportSession,
+      sessions: sessionState([summary('one', 'One')]),
+    })} />)
+
+    fireEvent.click(await screen.findByRole('button', { name: en.exportNamed.replace('{title}', 'One') }))
+    await waitFor(() => { expect(exportSession).toHaveBeenCalledWith('one', 'One') })
+  })
+
+  it('surfaces an export failure', async () => {
+    const exportSession = vi.fn(async () => { throw new Error('export blew up') })
+    render(<ImportSessionsSection {...props({
+      exportSession,
+      sessions: sessionState([summary('one', 'One')]),
+    })} />)
+
+    fireEvent.click(await screen.findByRole('button', { name: en.exportNamed.replace('{title}', 'One') }))
+    expect(await screen.findByText(en.failed.replace('{message}', 'export blew up'))).toBeTruthy()
   })
 })

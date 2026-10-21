@@ -5,6 +5,7 @@ interface DesktopBootGlobal {
   dshDesktopBoot?: {
     failed(message: string): Promise<void>
     ready(): Promise<{ streamBaseUrl: string }>
+    saveMarkdown(filename: string, content: string): Promise<string | null>
   }
 }
 const desktop = (globalThis as DesktopBootGlobal).dshDesktopBoot

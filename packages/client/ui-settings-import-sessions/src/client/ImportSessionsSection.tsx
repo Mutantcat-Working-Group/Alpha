@@ -30,11 +30,11 @@ export interface ImportSessionsSectionInjected {
    */
   importSessions: (request: SessionImportHarnessRequest) => Promise<SessionImportHarnessValue>
   /**
-   * Export one local session as Markdown.
+   * Export one local session as Markdown through the platform save path.
    * @param sessionId - Session to export.
-   * @returns the Markdown transcript string.
+   * @param title - session display title used for the default file name.
    */
-  exportSession: (sessionId: string) => Promise<string>
+  exportSession: (sessionId: string, title: string) => Promise<void>
   /**
    * Archive one local session.
    * @param sessionId - Session to archive.
@@ -94,17 +94,6 @@ function messageOf(reason: unknown): string {
   return reason instanceof Error ? reason.message : String(reason)
 }
 
-/** Trigger a browser download of one text blob. */
-function downloadText(filename: string, text: string): void {
-  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  anchor.click()
-  URL.revokeObjectURL(url)
-}
-
 /**
  * Render the session management page.
  * @param props - composed slot props (see {@link ImportSessionsSectionProps}).
@@ -161,11 +150,8 @@ export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactN
   const runExport = (sessionId: string, title: string): void => {
     setExporting(sessionId)
     setError(undefined)
-    void exportSession(sessionId).then(
-      (markdown) => {
-        downloadText(`${title}.md`, markdown)
-        setExporting(undefined)
-      },
+    void exportSession(sessionId, title).then(
+      () => { setExporting(undefined) },
       (reason: unknown) => {
         setError(messageOf(reason))
         setExporting(undefined)

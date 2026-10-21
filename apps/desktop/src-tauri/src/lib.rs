@@ -102,6 +102,15 @@ const BOOT_BRIDGE: &str = r#"(() => {
           .catch(() => {});
       }
     },
+    saveMarkdown: (filename, content) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.core === undefined || typeof api.core.invoke !== "function") {
+        return Promise.reject(new Error("native save unavailable"));
+      }
+      return Promise.resolve(
+        api.core.invoke("save_markdown", { filename: String(filename), content: String(content) })
+      );
+    },
   };
 })();
 "#;
@@ -157,6 +166,39 @@ struct BootFailurePayload {
     message: Option<String>,
 }
 
+/// Save one Markdown transcript through a native save dialog.
+///
+/// The dialog runs on a blocking worker because the native file dialog spins its own
+/// modal loop and the main thread must stay on the event loop.
+/// @param app - application handle that owns the dialog.
+/// @param filename - default file name offered in the dialog.
+/// @param content - Markdown transcript written to the chosen path.
+/// @returns the written path, or `None` when the user cancelled the dialog.
+#[tauri::command]
+async fn save_markdown(
+    app: tauri::AppHandle,
+    filename: String,
+    content: String,
+) -> Result<Option<String>, String> {
+    let chosen = tauri::async_runtime::spawn_blocking(move || {
+        app.dialog()
+            .file()
+            .add_filter("Markdown", &["md"])
+            .set_file_name(&filename)
+            .blocking_save_file()
+    })
+    .await
+    .map_err(|error| error.to_string())?;
+    match chosen {
+        None => Ok(None),
+        Some(file) => {
+            let path = file.into_path().map_err(|error| error.to_string())?;
+            std::fs::write(&path, content.as_bytes()).map_err(|error| error.to_string())?;
+            Ok(Some(path.to_string_lossy().to_string()))
+        }
+    }
+}
+
 /// Build and run the Alpha desktop shell.
 pub fn run() {
     tauri::Builder::default()
@@ -167,6 +209,7 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![save_markdown])
         .setup(|app| {
             app.manage(HostState::default());
             app.manage(Supervision::default());

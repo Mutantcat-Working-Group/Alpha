@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-save-markdown"
+description = "Allow the Web client to save a Markdown transcript through a native save dialog."
+commands.allow = ["save_markdown"]
