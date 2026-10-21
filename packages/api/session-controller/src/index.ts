@@ -19,6 +19,7 @@ import { SessionCommandController } from './commands.ts'
 import { SessionControlController } from './control.ts'
 import { SessionHistoryController } from './history.ts'
 import { HarnessSessionImport, configuredHarnessSessionsRoot, defaultHarnessSessionsRoot } from './import-harness-sessions.ts'
+import { exportSessionMarkdown } from './export-session-markdown.ts'
 import { SessionFileReferences } from './file-references.ts'
 import { ApiSessionList } from './list.ts'
 import { buildModelCatalog } from './catalog.ts'
@@ -425,6 +426,21 @@ export class SessionController extends TypertRemoteService {
     signal: AbortSignal,
   ): Promise<SessionImportHarnessValue> {
     return this.harnessImport.run(request, signal)
+  }
+
+  /**
+   * Export one local session as a Markdown transcript.
+   * @param request - session id to export.
+   * @param signal - caller cancellation for persistence reads.
+   * @returns the Markdown transcript string.
+   */
+  @Remote('exportSessionMarkdown')
+  exportSessionMarkdown(
+    request: { sessionId: string },
+    signal: AbortSignal,
+  ): Promise<{ markdown: string }> {
+    return exportSessionMarkdown(this.ctx, request.sessionId as SessionId, signal)
+      .then(markdown => ({ markdown }))
   }
 
   /**

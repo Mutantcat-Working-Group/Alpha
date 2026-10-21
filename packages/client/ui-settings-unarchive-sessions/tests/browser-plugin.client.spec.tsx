@@ -21,8 +21,10 @@ async function bench() {
   const locale = new LocaleRuntime(ctx)
   ctx.provide('locale', locale)
   const unarchiveSession = vi.fn<(sessionId: SessionId) => Promise<void>>(async () => {})
+  const exportSession = vi.fn<(sessionId: string) => Promise<string>>(async () => '# Export')
   ctx.provide('uiWorkspace', { unarchiveSession })
-  return { ctx, slots: ctx.get('slots') as SlotRegistry, locale, unarchiveSession }
+  ctx.provide('harnessSessionsImport', { exportSession })
+  return { ctx, slots: ctx.get('slots') as SlotRegistry, locale, unarchiveSession, exportSession }
 }
 
 function declare(slots: SlotRegistry): () => void {
@@ -38,7 +40,7 @@ describe('ui-settings-unarchive-sessions browser plugin', () => {
   })
 
   it('declares only the services used by the page and the archive write', () => {
-    expect(inject).toEqual(['slots', 'locale', 'uiWorkspace'])
+    expect(inject).toEqual(['slots', 'locale', 'uiWorkspace', 'harnessSessionsImport'])
   })
 
   it('registers the archived-session page last with localized copy', async () => {

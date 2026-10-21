@@ -33,6 +33,12 @@ export interface IHarnessSessionsImport {
    * @returns the effective source root and one result per discovered Session.
    */
   importSessions(request: SessionImportHarnessRequest): Promise<SessionImportHarnessValue>
+  /**
+   * Export one local session as a Markdown transcript.
+   * @param sessionId - Session to export.
+   * @returns the Markdown transcript string.
+   */
+  exportSession(sessionId: string): Promise<string>
 }
 
 /** Owns the Client-side import call and the Session-list refresh it triggers. */
@@ -61,6 +67,13 @@ export class HarnessSessionsImport extends Service implements IHarnessSessionsIm
     // authoritative list must be re-pulled; there is no pushed increment.
     await this.ctx.sessions.refresh()
     return result.value
+  }
+
+  /** @inheritdoc */
+  async exportSession(sessionId: string): Promise<string> {
+    const result = await this.ctx.remote.session.exportSessionMarkdown({ sessionId })
+    if (!result.ok) throw commandError('export', result.error)
+    return result.value.markdown
   }
 }
 

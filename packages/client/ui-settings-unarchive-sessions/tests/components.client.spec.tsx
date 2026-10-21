@@ -52,10 +52,12 @@ function props(options: {
   sessions: SessionListState
   workspaces: WorkspaceSnapshot
   unarchive?: (sessionId: SessionId) => Promise<void>
+  exportSession?: (sessionId: SessionId) => Promise<string>
 }): ArchivedSessionsSectionProps {
   return {
     t,
     unarchive: options.unarchive ?? (async () => {}),
+    exportSession: options.exportSession ?? (async () => '# Export'),
     useSessions: ((select: (state: SessionListState) => unknown) => select(options.sessions)),
     useWorkspaces: ((select: (state: WorkspaceSnapshot) => unknown) => select(options.workspaces)),
   } as unknown as ArchivedSessionsSectionProps
@@ -77,8 +79,8 @@ describe('ArchivedSessionsSection', () => {
     render(<ArchivedSessionsSection {...twoRows()} />)
 
     expect(screen.getAllByRole('listitem').map(row => row.textContent)).toEqual([
-      'Newer sessionProject · nowUnarchive',
-      'Older sessionProject · 2dUnarchive',
+      'Newer sessionProject · nowExport MDUnarchive',
+      'Older sessionProject · 2dExport MDUnarchive',
     ])
     expect(screen.getAllByRole('button', { name: /^Unarchive/ }).map(button => button.getAttribute('aria-label')))
       .toEqual(['Unarchive Newer session', 'Unarchive Older session'])

@@ -2,7 +2,7 @@
 
 /** Simplified Chinese dictionary and key source of truth. */
 export const zh = {
-  nav: '导入会话',
+  nav: '会话管理',
   sourceRoot: '来源目录',
   sourceRootHint: '官方 DeepSeek Harness 的 sessions 目录',
   readingSourceRoot: '正在读取来源目录…',
@@ -17,6 +17,15 @@ export const zh = {
   'status.refused': '已拒绝',
   refusedReason: '原因：{reason}',
   failed: '导入失败：{message}',
+  localSessions: '本地会话',
+  localSessionsHint: '当前软件中的会话，可归档或导出为 Markdown。',
+  noLocalSessions: '暂无本地会话。',
+  archive: '归档',
+  archiveNamed: '归档 {title}',
+  exportMd: '导出 MD',
+  exportNamed: '导出 {title} 为 Markdown',
+  exporting: '正在导出…',
+  exportFailed: '导出失败：{message}',
 } satisfies Record<string, string>
 
 /** Harness-import page locale key union. */
@@ -24,7 +33,7 @@ export type ImportSessionsLocaleKey = keyof typeof zh
 
 /** English dictionary checked against the Chinese key set. */
 export const en = {
-  nav: 'Import sessions',
+  nav: 'Session management',
   sourceRoot: 'Source directory',
   sourceRootHint: 'The official DeepSeek Harness sessions directory',
   readingSourceRoot: 'Reading the source directory…',
@@ -39,4 +48,13 @@ export const en = {
   'status.refused': 'Refused',
   refusedReason: 'Reason: {reason}',
   failed: 'Import failed: {message}',
+  localSessions: 'Local sessions',
+  localSessionsHint: 'Sessions in this app; archive or export as Markdown.',
+  noLocalSessions: 'No local sessions.',
+  archive: 'Archive',
+  archiveNamed: 'Archive {title}',
+  exportMd: 'Export MD',
+  exportNamed: 'Export {title} as Markdown',
+  exporting: 'Exporting…',
+  exportFailed: 'Export failed: {message}',
 } satisfies Record<ImportSessionsLocaleKey, string>

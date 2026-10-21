@@ -1,8 +1,8 @@
 /**
  * Archived-session Settings page: the registry-global archive set joined with
  * the loaded Session summaries, newest archive first, filtered by one search
- * box, with one Unarchive action per row. An archive entry whose Session is
- * gone has no row and no action; the set itself stays host-owned.
+ * box, with Unarchive and Export actions per row. An archive entry whose
+ * Session is gone has no row and no action; the set itself stays host-owned.
  */
 import { useMemo, useState, type ReactNode } from 'react'
 import { Button, IconSearchOutline16, relativeTime } from '@mutantcat/dsh-client-ui-primitives'
@@ -17,6 +17,12 @@ export interface ArchivedSessionsSectionInjected {
    * @param sessionId - Session to unarchive.
    */
   unarchive: (sessionId: SessionId) => Promise<void>
+  /**
+   * Export one archived Session as Markdown.
+   * @param sessionId - Session to export.
+   * @returns the Markdown transcript string.
+   */
+  exportSession: (sessionId: SessionId) => Promise<string>
 }
 
 /** Full component props assembled by the Settings slot renderer. */
@@ -49,17 +55,29 @@ function matches(row: ArchivedRow, normalizedQuery: string): boolean {
     || row.workspace.toLowerCase().includes(normalizedQuery)
 }
 
+/** Trigger a browser download of one text blob. */
+function downloadText(filename: string, text: string): void {
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
 /**
  * Render the archived-session page.
  * @param props - composed slot props (see {@link ArchivedSessionsSectionProps}).
  * @returns the settings page element tree.
  */
 export function ArchivedSessionsSection(props: ArchivedSessionsSectionProps): ReactNode {
-  const { t, unarchive, useSessions, useWorkspaces } = props
+  const { t, unarchive, exportSession, useSessions, useWorkspaces } = props
   const sessions = useSessions(state => state)
   const workspaces = useWorkspaces(state => state.items)
   const archivedSessionIds = useWorkspaces(state => state.archivedSessionIds)
   const [query, setQuery] = useState('')
+  const [exporting, setExporting] = useState<string | undefined>(undefined)
   const ungrouped = t('ungrouped')
   const summaries = sessions.byId
 
@@ -88,6 +106,17 @@ export function ArchivedSessionsSection(props: ArchivedSessionsSectionProps): Re
   const visible = rows.filter(row => matches(row, query.trim().toLowerCase()))
   const archived = archivedSessionIds.length > 0
 
+  const runExport = (row: ArchivedRow): void => {
+    setExporting(row.id)
+    void exportSession(row.id).then(
+      (markdown) => {
+        downloadText(`${row.title}.md`, markdown)
+        setExporting(undefined)
+      },
+      () => { setExporting(undefined) },
+    )
+  }
+
   return (
     <div className={css.section}>
       <div className={css.search}>
@@ -113,6 +142,15 @@ export function ArchivedSessionsSection(props: ArchivedSessionsSectionProps): Re
                   {[row.workspace, timeLabel(row.updatedAt, now, t)].join(' · ')}
                 </span>
               </span>
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label={t('exportNamed', { title: row.title })}
+                disabled={exporting === row.id}
+                onClick={() => { runExport(row) }}
+              >
+                {exporting === row.id ? t('exporting') : t('exportMd')}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

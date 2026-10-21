@@ -1,9 +1,10 @@
 /**
- * Harness chat-history import Settings page: one explicit source-root field and
- * import button over `ctx.harnessSessionsImport`, a progress state while the
- * call runs, and a per-Session result list afterwards. The page owns no
- * transport and no refresh: the injected import refreshes the Session list once
- * the Host has published what it adopted.
+ * Session management Settings page: foreign session import plus local session
+ * management (archive and Markdown export).
+ *
+ * The import section reads the configured source root and imports foreign
+ * sessions. The local session section lists the current app's sessions with
+ * archive and export actions.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@mutantcat/dsh-client-ui-primitives'
@@ -28,6 +29,17 @@ export interface ImportSessionsSectionInjected {
    * @returns the effective source root and one result per discovered Session.
    */
   importSessions: (request: SessionImportHarnessRequest) => Promise<SessionImportHarnessValue>
+  /**
+   * Export one local session as Markdown.
+   * @param sessionId - Session to export.
+   * @returns the Markdown transcript string.
+   */
+  exportSession: (sessionId: string) => Promise<string>
+  /**
+   * Archive one local session.
+   * @param sessionId - Session to archive.
+   */
+  archiveSession: (sessionId: string) => Promise<void>
 }
 
 /** Full component props assembled by the Settings slot renderer. */
@@ -82,18 +94,31 @@ function messageOf(reason: unknown): string {
   return reason instanceof Error ? reason.message : String(reason)
 }
 
+/** Trigger a browser download of one text blob. */
+function downloadText(filename: string, text: string): void {
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
 /**
- * Render the Harness chat-history import page.
+ * Render the session management page.
  * @param props - composed slot props (see {@link ImportSessionsSectionProps}).
  * @returns the settings page element tree.
  */
 export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactNode {
-  const { t, sourceRoot, importSessions } = props
+  const { t, sourceRoot, importSessions, exportSession, archiveSession, useSessions } = props
   const [root, setRoot] = useState('')
   const [ready, setReady] = useState(false)
   const [running, setRunning] = useState(false)
   const [value, setValue] = useState<SessionImportHarnessValue | undefined>(undefined)
   const [error, setError] = useState<string | undefined>(undefined)
+  const [exporting, setExporting] = useState<string | undefined>(undefined)
+  const sessions = useSessions(state => state)
   // The inject face is rebuilt per registration, so the one-shot read of the
   // configured default must not re-run when its identity changes.
   const readSourceRoot = useRef(sourceRoot)
@@ -133,10 +158,36 @@ export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactN
     )
   }
 
+  const runExport = (sessionId: string, title: string): void => {
+    setExporting(sessionId)
+    setError(undefined)
+    void exportSession(sessionId).then(
+      (markdown) => {
+        downloadText(`${title}.md`, markdown)
+        setExporting(undefined)
+      },
+      (reason: unknown) => {
+        setError(messageOf(reason))
+        setExporting(undefined)
+      },
+    )
+  }
+
+  const runArchive = (sessionId: string): void => {
+    setError(undefined)
+    void archiveSession(sessionId).catch((reason: unknown) => {
+      setError(messageOf(reason))
+    })
+  }
+
   const counts = countOf(value?.results ?? [])
+  const localSessions = sessions.phase === 'ready'
+    ? sessions.ids.map(id => sessions.byId[id]).filter((s): s is NonNullable<typeof s> => s !== undefined && !s.blank)
+    : []
 
   return (
     <div className={css.section}>
+      {/* Import section */}
       <label className={css.field} htmlFor="import-sessions-source-root">
         <span className={css.label}>{t('sourceRoot')}</span>
         <input
@@ -191,6 +242,38 @@ export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactN
             )}
         </>
       )}
+
+      {/* Local sessions section */}
+      <h3 className={css.label}>{t('localSessions')}</h3>
+      <p className={css.status}>{t('localSessionsHint')}</p>
+      {localSessions.length === 0
+        ? <p className={css.status}>{t('noLocalSessions')}</p>
+        : (
+          <ul className={css.list} aria-label={t('localSessions')}>
+            {localSessions.map(session => (
+              <li key={session.id} className={css.row}>
+                <span className={css.identity}>{session.displayTitle}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label={t('exportNamed', { title: session.displayTitle })}
+                  disabled={exporting === session.id}
+                  onClick={() => { runExport(session.id, session.displayTitle) }}
+                >
+                  {exporting === session.id ? t('exporting') : t('exportMd')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label={t('archiveNamed', { title: session.displayTitle })}
+                  onClick={() => { runArchive(session.id) }}
+                >
+                  {t('archive')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
     </div>
   )
 }

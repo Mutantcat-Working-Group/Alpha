@@ -25,8 +25,11 @@ async function bench() {
     sourceRoot: '/source/sessions',
     results: [],
   }))
-  ctx.provide('harnessSessionsImport', { sourceRoot, importSessions })
-  return { ctx, slots: ctx.get('slots') as SlotRegistry, locale, sourceRoot, importSessions }
+  const exportSession = vi.fn(async () => '# Export')
+  const archiveSession = vi.fn(async () => {})
+  ctx.provide('harnessSessionsImport', { sourceRoot, importSessions, exportSession })
+  ctx.provide('uiWorkspace', { archiveSession })
+  return { ctx, slots: ctx.get('slots') as SlotRegistry, locale, sourceRoot, importSessions, exportSession, archiveSession }
 }
 
 function declare(slots: SlotRegistry): () => void {
@@ -42,7 +45,7 @@ describe('ui-settings-import-sessions browser plugin', () => {
   })
 
   it('declares only the services used by the page and the import', () => {
-    expect(inject).toEqual(['slots', 'locale', 'harnessSessionsImport'])
+    expect(inject).toEqual(['slots', 'locale', 'harnessSessionsImport', 'uiWorkspace'])
   })
 
   it('registers the import page after archived sessions with localized copy', async () => {
@@ -54,10 +57,10 @@ describe('ui-settings-import-sessions browser plugin', () => {
     expect(entry.component).toBe(ImportSessionsSection)
     expect(entry.options).toMatchObject({ id: 'import-sessions', order: 26 })
     expect(entry.locale).toBe('settings.importSessions')
-    expect(resolveSlotLabel(entry.options.label)).toBe('导入会话')
+    expect(resolveSlotLabel(entry.options.label)).toBe('会话管理')
 
     b.locale.setLocale('en')
-    expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('Import sessions')
+    expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('Session management')
 
     const injected = (entry.inject as unknown as () => ImportSessionsSectionInjected)()
     await expect(injected.sourceRoot()).resolves.toBe('/source/sessions')

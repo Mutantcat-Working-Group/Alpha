@@ -21,10 +21,16 @@
       "path": "../ui-renderer"
     },
     {
+      "path": "../ui-session"
+    },
+    {
       "path": "../ui-settings"
     },
     {
       "path": "../ui-slots"
+    },
+    {
+      "path": "../ui-workspace"
     },
     {
       "path": "../../api/session-controller/tsconfig.client.json"

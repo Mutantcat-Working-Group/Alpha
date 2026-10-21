@@ -900,6 +900,14 @@ workspaceDesktop(): { name: string; available: boolean; fileManager: 'finder' | 
 @Remote('importHarnessSessions') importHarnessSessions( request: SessionImportHarnessRequest, signal: AbortSignal, ): Promise<SessionImportHarnessValue>
 
 /**
+ * Export one local session as a Markdown transcript.
+ * @param request - session id to export.
+ * @param signal - caller cancellation for persistence reads.
+ * @returns the Markdown transcript string.
+ */
+@Remote('exportSessionMarkdown') exportSessionMarkdown( request: { sessionId: string }, signal: AbortSignal, ): Promise<{ markdown: string }>
+
+/**
  * Read one cold-safe, message-aligned Session history page.
  * @param request - durable address, backward cursor, and page budget.
  * @param signal - cancellation for persistence reads.

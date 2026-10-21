@@ -26,11 +26,17 @@ function props(options: {
   configured?: string
   sourceRoot?: () => Promise<string>
   importSessions?: ImportSessionsSectionProps['importSessions']
+  exportSession?: ImportSessionsSectionProps['exportSession']
+  archiveSession?: ImportSessionsSectionProps['archiveSession']
+  useSessions?: ImportSessionsSectionProps['useSessions']
 } = {}): ImportSessionsSectionProps {
   return {
     t,
     sourceRoot: options.sourceRoot ?? (async () => options.configured ?? '/source/sessions'),
     importSessions: options.importSessions ?? (async () => value([])),
+    exportSession: options.exportSession ?? (async () => '# Export'),
+    archiveSession: options.archiveSession ?? (async () => {}),
+    useSessions: options.useSessions ?? (() => ({ phase: 'ready', ids: [], byId: {} })),
   } as unknown as ImportSessionsSectionProps
 }
 

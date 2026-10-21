@@ -1813,6 +1813,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'the effective source root and one result per discovered Session.',
       },
       {
+        signature: '@Remote(\'exportSessionMarkdown\') exportSessionMarkdown( request: { sessionId: string }, signal: AbortSignal, ): Promise<{ markdown: string }>',
+        description: 'Export one local session as a Markdown transcript.',
+        parameters: [{ name: 'request', description: 'session id to export.' }, { name: 'signal', description: 'caller cancellation for persistence reads.' }],
+        returns: 'the Markdown transcript string.',
+      },
+      {
         signature: '@Remote(\'page\') page(request: SessionPageRequest, signal: AbortSignal): Promise<SessionPage>',
         description: 'Read one cold-safe, message-aligned Session history page.',
         parameters: [{ name: 'request', description: 'durable address, backward cursor, and page budget.' }, { name: 'signal', description: 'cancellation for persistence reads.' }],

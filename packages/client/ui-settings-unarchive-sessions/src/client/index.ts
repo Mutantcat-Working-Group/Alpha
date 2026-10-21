@@ -27,7 +27,7 @@ declare module '@mutantcat/dsh-client-ui-slots' {
 const NS = 'settings.archivedSessions'
 
 /** Services required by the Settings registration and the archive write. */
-export const inject = ['slots', 'locale', 'uiWorkspace']
+export const inject = ['slots', 'locale', 'uiWorkspace', 'harnessSessionsImport']
 
 /** Contribute the archived-session page to Settings. */
 export function apply(ctx: ClientContext): void {
@@ -36,6 +36,7 @@ export function apply(ctx: ClientContext): void {
   const t = ctx.locale.bind(NS)
   const injected = (): ArchivedSessionsSectionInjected => ({
     unarchive: sessionId => ctx.uiWorkspace.unarchiveSession(sessionId),
+    exportSession: sessionId => ctx.harnessSessionsImport.exportSession(String(sessionId)),
   })
 
   ctx.slots.inject('settings.section', () => ctx.slots.register({
