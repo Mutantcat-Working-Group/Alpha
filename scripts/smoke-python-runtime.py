@@ -2292,6 +2292,8 @@ def project_session_snapshot(records: list[dict[str, object]]) -> list[dict[str,
 
 
 SESSION_FORMAT_TOKEN = "{{sessionFormatVersion}}"
+SOURCE_SESSION_FORMAT_TOKEN = "{{sourceSessionFormatVersion}}"
+DELIVERY_ACCEPTED_EVENT = "session-log-deepseek/delivery-accepted"
 
 
 def expand_snapshot_stream_member(member: object) -> list[dict[str, object]]:
@@ -2414,7 +2416,68 @@ def normalize_session_format_comparison(
     return normalized
 
 
-def normalize_snapshot_comparison_text(name: str, content: str) -> str:
+def tokenize_delivery_generation(record: object, source_session_version: int) -> object:
+    """Replace one native delivery marker's recorded generation with the comparison token."""
+    if not isinstance(record, dict) or record.get("type") != DELIVERY_ACCEPTED_EVENT:
+        return record
+    data = record.get("data")
+    if not isinstance(data, dict) or data.get("sessionFormatVersion") != source_session_version:
+        return record
+    return {**record, "data": {**data, "sessionFormatVersion": SOURCE_SESSION_FORMAT_TOKEN}}
+
+
+def tokenize_session_notification(notification: object, source_session_version: int) -> object:
+    """Tokenize the event a `session.event` notification carries, in either envelope spelling."""
+    if not isinstance(notification, dict) or notification.get("method") != "session.event":
+        return notification
+    for envelope in ("params", "payload"):
+        carried = notification.get(envelope)
+        if isinstance(carried, dict) and "event" in carried:
+            return {
+                **notification,
+                envelope: {
+                    **carried,
+                    "event": tokenize_delivery_generation(carried["event"], source_session_version),
+                },
+            }
+    return notification
+
+
+def tokenize_projection_deliveries(projection: object, source_session_version: int) -> object:
+    """Tokenize the delivery markers a projected snapshot publishes, and only those."""
+    if not isinstance(projection, dict):
+        return projection
+    tokenized = dict(projection)
+    events = tokenized.get("events")
+    if isinstance(events, list):
+        tokenized["events"] = [
+            tokenize_delivery_generation(event, source_session_version) for event in events
+        ]
+    notifications = tokenized.get("notifications")
+    if isinstance(notifications, list):
+        tokenized["notifications"] = [
+            tokenize_session_notification(notification, source_session_version)
+            for notification in notifications
+        ]
+    return tokenized
+
+
+def snapshot_session_generation(entries: list[tuple[str, str]], label: str) -> int | None:
+    """Read the one Session generation a side of a native writer comparison was written at."""
+    versions = {session_header_version(content, name) for name, content in entries}
+    if len(versions) > 1:
+        raise AssertionError(
+            f"{label} native writer comparison requires one Session generation across all roles; "
+            f"found {sorted(versions)}",
+        )
+    return next(iter(versions), None)
+
+
+def normalize_snapshot_comparison_text(
+    name: str,
+    content: str,
+    source_session_version: int | None = None,
+) -> str:
     """Normalize Session generation metadata only while comparing committed expected outputs."""
     if name.startswith("session") and name.endswith(".jsonl"):
         parsed = [json.loads(line) for line in content.splitlines() if line]
@@ -2423,17 +2486,20 @@ def normalize_snapshot_comparison_text(name: str, content: str) -> str:
         if not isinstance(source_version, int):
             raise AssertionError(f"{name}: snapshot Session header has no integer format version")
         records = [
-            normalize_session_format_comparison(expanded, source_version)
+            normalize_session_format_comparison(
+                expanded if source_session_version is None
+                else tokenize_delivery_generation(expanded, source_session_version),
+                source_version,
+            )
             for record in parsed
             for expanded in expand_snapshot_assistant_event(record)
         ]
         return render_jsonl(records)
     if name.endswith(".json"):
-        return json.dumps(
-            normalize_session_format_comparison(json.loads(content)),
-            indent=2,
-            ensure_ascii=False,
-        ) + "\n"
+        projection = normalize_session_format_comparison(json.loads(content))
+        if source_session_version is not None:
+            projection = tokenize_projection_deliveries(projection, source_session_version)
+        return json.dumps(projection, indent=2, ensure_ascii=False) + "\n"
     return content
 
 
@@ -2442,8 +2508,16 @@ def compare_snapshot_files(
     update: bool,
     directory: Path,
     filenames: tuple[str, ...],
+    native_writer_output: bool = False,
 ) -> None:
-    """Compare ordered artifact roles and Session content across generations, or write generated filenames."""
+    """Compare ordered artifact roles and Session content across generations, or write generated filenames.
+
+    `native_writer_output` compares the current writer's output against goldens a
+    native writer recorded at an earlier generation: each side tokenizes the
+    delivery markers it recorded at its own generation, so a format bump alone
+    does not read as a behavior change. The default comparison keeps every
+    delivery generation exact.
+    """
     scenario = directory.name
 
     def role_name(name: str) -> str:
@@ -2490,6 +2564,16 @@ def compare_snapshot_files(
         if index in actual_sessions:
             raise AssertionError(f"{scenario} snapshot builder produced duplicate Session role {index}")
         actual_sessions[index] = (name, content)
+    expected_generation = actual_generation = None
+    if native_writer_output:
+        expected_generation = snapshot_session_generation(
+            [(path.name, path.read_text(encoding="utf-8")) for path in selected_expected.values()],
+            f"{scenario} expected output",
+        )
+        actual_generation = snapshot_session_generation(
+            [(name, content) for name, content in actual_sessions.values()],
+            f"{scenario} generated output",
+        )
     if set(selected_expected) != set(actual_sessions):
         raise AssertionError(
             f"{scenario} snapshot Session roles differ: "
@@ -2499,8 +2583,10 @@ def compare_snapshot_files(
         parsed = parse_snapshot_session_filename(name)
         expected_path = directory / name if parsed is None else selected_expected[parsed[0]]
         expected_text = expected_path.read_text(encoding="utf-8")
-        compared_actual = normalize_snapshot_comparison_text(name, actual)
-        compared_expected = normalize_snapshot_comparison_text(expected_path.name, expected_text)
+        compared_actual = normalize_snapshot_comparison_text(name, actual, actual_generation)
+        compared_expected = normalize_snapshot_comparison_text(
+            expected_path.name, expected_text, expected_generation,
+        )
         if compared_actual == compared_expected:
             continue
         diff = "".join(difflib.unified_diff(
