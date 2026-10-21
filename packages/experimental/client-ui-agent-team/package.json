@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-client-ui-agent-team",
   "description": "Web Agent Teams roster, task board, and teammate navigation",
-  "version": "1.0.20261020",
+  "version": "1.0.20261021",
   "publishConfig": {
     "access": "public"
   },

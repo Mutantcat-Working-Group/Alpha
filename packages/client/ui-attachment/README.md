@@ -41,6 +41,8 @@ Trajectory attachment rows request 48px square thumbnails that contain the compl
 
 While a file drag is over the page, the full-viewport overlay announces the drop: illustration, title, and a limits line when drops are accepted. The overlay only shows state — the owner's document-level listeners decide accept or reject.
 
+One drop may carry both kinds of item, and each item is classified by its entry before intake: a regular file becomes a draft attachment, while a folder never does, because a folder has no bytes to upload. A folder's absolute path goes to the slot owner instead, which inserts it into the draft at the caret and, when the editor holds no selection, at the end; the disclosure comes from the drop's text payloads or from a path the engine attaches to the entry, and a folder the platform left pathless is reported back by name rather than attached as an empty file.
+
 -----
 
 <a id="understand-the-implementation"></a>

@@ -58,6 +58,10 @@ export function serialize(
   const inHistory = model?.systemPromptUpdate === 'in-history'
   const input = (blocks: readonly ContentBlock[]): WireInput[] => blocks.flatMap((block): WireInput[] => {
     if (block.type === 'text') return block.text ? [{ type: 'text', text: block.text }] : []
+    // Reasoning and tool-call blocks belong to the assistant turn that produced
+    // them. A request-only user or tool-result entry may retain them for its own
+    // durability, so they are omitted here instead of failing the request.
+    if (block.type === 'reasoning' || block.type === 'tool-call') return []
     if (block.type !== 'image') return unsupported(`user/tool-result content ${block.type}`)
     const version = images.get(block.attachment.attachmentId)
     if (version === undefined) throw new LlmError('DeepSeek Messages request image is missing', 'INVALID_REQUEST')
@@ -100,13 +104,16 @@ export function serialize(
       }
       continue
     }
-    if (message.role === 'assistant') flushSystemUpdates()
     const content: WireBlock[] = message.role === 'assistant'
       ? assistant(message, options.model, onReplayDegrade)
       : message.role === 'tool'
         ? [{ type: 'tool_result', tool_use_id: message.toolCallId, content: input(message.content), ...message.isError === undefined ? {} : { is_error: message.isError } }]
         : message.content.flatMap((block): WireBlock[] => input([block]))
-    if (message.role === 'user' && content.length === 0) continue
+    // An entry whose representation is empty carries no input: skipping it before
+    // any pending system update flushes keeps that update tied to the turn that
+    // actually precedes it.
+    if ((message.role === 'user' || message.role === 'assistant') && content.length === 0) continue
+    if (message.role === 'assistant') flushSystemUpdates()
     const wireRole = message.role === 'tool' ? 'user' : message.role
     const previous = messages.at(-1)
     if (previous?.role === wireRole) previous.content.push(...content)

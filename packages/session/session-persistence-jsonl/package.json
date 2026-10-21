@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-persistence-jsonl",
   "description": "JSONL durable session persistence backend for the Alpha",
-  "version": "1.0.20261020",
+  "version": "1.0.20261021",
   "publishConfig": {
     "access": "public"
   },
@@ -18,12 +18,17 @@
       "types": "./lib/types/index.d.ts",
       "default": "./lib/index.js"
     },
+    "./foreign": {
+      "types": "./lib/types/foreign.d.ts",
+      "default": "./lib/types/foreign.js"
+    },
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
   "files": [
     "lib/index.js",
     "lib/worker.cjs",
+    "lib/types/**/*.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",

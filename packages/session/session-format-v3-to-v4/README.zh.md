@@ -15,7 +15,6 @@ kind: "package-library"
 
 - [使用本包](#use-this-package)
 - [V3 到 V4 规范](#v3-to-v4-specification)
-  - [Header 与物理分帧](#header-and-framing)
   - [工具结果表示](#tool-results)
   - [扩展数据](#extension-data)
   - [消息来源转换](#message-sources)
@@ -23,8 +22,6 @@ kind: "package-library"
   - [序号引用与继承](#sequence-references)
   - [Delivery 代际](#delivery-guards)
   - [源审计与拒绝](#source-audit)
-- [原生 V4 接纳](#native-v4-admission)
-  - [Header、消息与表面元数据](#native-fields)
   - [生命周期与引用关系](#native-relationships)
   - [Developer 变更与延迟 schema](#developer-changes)
   - [Fork 生成的结果](#fork-results)
@@ -75,6 +72,11 @@ const artifact = restore.finish()
 本边不重命名 preset id、PTC dispatch 事件标签、文件附件或物理文件名。内嵌流中的内容扩展遵循下列规则，流顺序和索引保持不变。
 
 V4 消息源准入在可恢复扫描丢弃行之前拒绝 surface、inbox 和标题请求消息中的退役 plugin 包装。目录和原生 JSONL 扫描器在公开恢复数据之前校验所有已知消息源槽位。未知的非空归属 kind 和所有自有 JSON 元数据字段保持不变；`constructor`、`__proto__` 等外部名字只是普通的生产者字符串。
+
+<a id="tool-results"></a>
+### 工具结果表示
+
+原生 V4 的消息字段接纳见下文；本迁移只转换一种工具结果表示。
 
 [liftToolResult](src/tool-role.ts) 转换 `tool/result` 事件中源表示为 user 角色的消息。它要求非空消息 id、带非空 call id 的 `{ kind: 'tool', callId }` 来源，以及恰好一个引用同一调用的 `tool-result` block。该 block 的 content 必须为数组；可选 `isError` 必须为布尔值。
 

@@ -196,7 +196,10 @@ describe('AgentLoop initiator scope', () => {
     await firstIdle
     const firstSignal = signals[0]
     expect(firstSignal).toBeDefined()
-    expect(new Set([...signals, ...adapter.requests.slice(0, 2).map(request => request.signal!)])).toEqual(new Set([firstSignal]))
+    expect(new Set(signals)).toEqual(new Set([firstSignal]))
+    // A provider request carries the turn signal joined with that step's
+    // interrupt, so it stays bound to the turn instead of replacing it.
+    for (const request of adapter.requests.slice(0, 2)) expect(request.signal?.aborted).toBe(false)
     expect(preStepSignals).toHaveLength(2)
     expect(new Set(preStepSignals)).toEqual(new Set([firstSignal]))
 
@@ -207,7 +210,8 @@ describe('AgentLoop initiator scope', () => {
     await secondIdle
     const secondSignal = signals[0]
     expect(secondSignal).toBeDefined()
-    expect(new Set([...signals, adapter.requests[2]!.signal!])).toEqual(new Set([secondSignal]))
+    expect(new Set(signals)).toEqual(new Set([secondSignal]))
+    expect(adapter.requests[2]!.signal?.aborted).toBe(false)
     expect(preStepSignals).toHaveLength(1)
     expect(preStepSignals[0]).toBe(secondSignal)
     expect(secondSignal).not.toBe(firstSignal)

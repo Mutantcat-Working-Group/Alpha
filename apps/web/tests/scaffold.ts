@@ -394,6 +394,17 @@ export interface LaunchOptions {
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
   /**
+   * Patch the shipped DeepSeek search row to a deterministic endpoint and
+   * credential reference. Browser search scenarios keep the real provider and
+   * credentials seam while avoiding external search traffic and ambient keys.
+   */
+  deepSeekSearch?: {
+    /** Anthropic-compatible base URL; the provider appends `/messages`. */
+    baseURL: string
+    /** Credential reference resolved by the shipped search provider. */
+    apiKeyEnv: string
+  }
+  /**
    * Replace the roster row the scaffold pins by default (no configured roots,
    * default `standard` — the plugin's own shipped presets). Supply this only
    * to change WHICH presets a scenario sees beyond the shipped set — a
@@ -619,6 +630,15 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       // be able to change a golden, whatever roots a scenario asks for.
       : [{ id: 'agent-presets', config: { ...options.agentPresets, includeUserRoot: false } }],
     ...options.toolsMode === undefined ? [] : [{ id: 'tools', config: { mode: options.toolsMode } }],
+    ...options.deepSeekSearch === undefined
+      ? []
+      : [{
+        id: 'web-search-deepseek',
+        config: {
+          apiKeyEnv: options.deepSeekSearch.apiKeyEnv,
+          baseURL: options.deepSeekSearch.baseURL,
+        },
+      }],
     // The direct DeepSeek adapter, inserted by this scaffold rather than
     // inherited: no shipped bundle mounts a provider, so record mode and the
     // keyless first-run lane bring their own route while every other scenario

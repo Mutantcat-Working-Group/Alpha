@@ -270,17 +270,6 @@ The model-facing `list_agents` adapter reports current activity as `running` or 
 
 `SubagentRuntime.listChildren(parentSessionId, signal?)` reads the parent's `subagentCatalog` view through a live-preferred Session observation and releases that observation on success or failure. It returns direct-child entries in parent event order without reading child logs or enumerating the Session corpus. Query failures propagate; a missing catalog projection fails explicitly. Browser rows derive membership from the shared projection store and add activity from Session status; the control stream pushes complete catalog updates. `listDescendants()` retains corpus traversal, child-identity diagnostics, and complete `hasChildren` computation. [The parent-catalog Agent Note](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.md) owns creation, fork isolation, ordering, and persistence costs.
 
-```ts type-equiv
-/**
- * Authority under which one interrupt request is admitted. `user` carries the
- * durable direct-parent address a human client presented; `ancestor` carries
- * the exact live Agent object whose recorded lineage must contain the caller.
- */
-type SubagentInterruptAuthority =
-  | { readonly kind: 'user'; readonly parentSessionId: SessionId }
-  | { readonly kind: 'ancestor'; readonly agent: Agent }
-```
-
 ## Durable enumeration
 
 `listChildren` reads the parent-owned catalog. `listDescendants` enumerates Session-backed children through corpus identity. External entries carry `mode: 'external'` and cannot open a child Session or accept follow-ups. Catalog entries record membership at creation without execution status. Complete results go to the caller or the parent completion notice. `list_agents` exposes only continuable children with `running` or `inactive` activity; see the [control tool](../../packages/subagent/tool-subagent-control/README.md#list_agents) for its scopes and diagnostics.
@@ -587,15 +576,23 @@ async drainContinuableDescendants(parents: readonly Agent[]): Promise<void>
 async drainContinuableChildren(parent: Agent, childIds: readonly SessionId[]): Promise<void>
 
 /**
- * Read the parent's durable direct-child catalog without loading or resuming an Agent.
- * The service owns and releases the live-preferred Session observation.
- * @param parentSessionId - parent whose direct children are requested.
- * @param signal - cancellation forwarded to the Session query.
- * @returns catalog children in parent event order.
- * @throws {@link SubagentError} when query or catalog projection is unavailable.
- * @throws SessionQueryError when the parent cannot be read or the query is cancelled.
+ * Enumerate the parent's direct session-backed subagents without loading or
+ * resuming an Agent. The Session query service supplies one live-preferred
+ * corpus and shared point observations; the projection cache supplies
+ * immutable descriptor hits without opening cold logs. The registered
+ * `subagent` projection remains the sole mode/label classifier.
+ *
+ * Every query receives `signal`, and the listing rechecks cancellation
+ * around each await. Read rejections that settle
+ * after an abort become a stable `SubagentError` with code `CANCELLED`.
+ * @param parentSessionId - parent session whose direct children are listed.
+ * @param signal - caller-owned cancellation forwarded to Session queries
+ *   and observed around every read await.
+ * @returns children and per-child diagnostics ordered by `createdAt`, then id.
+ * @throws {@link SubagentError} when the projection registry or the session
+ *   store is not mounted, or the caller cancels the listing.
  */
-listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentCatalogEntry[]>
+listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentListEntry[]>
 
 /**
  * Enumerate the root's complete session-backed subagent tree in stable

@@ -5,7 +5,7 @@ import type {
   SessionAssistantStreamFrame,
 } from '../../types.ts'
 import { expandAssistantStream } from '@mutantcat/dsh-llm/assistant-stream'
-import type { AssistantStreamRecord } from '@mutantcat/dsh-llm/assistant-stream'
+import type { AssistantStreamRecord, TimedStreamChunk } from '@mutantcat/dsh-llm/assistant-stream'
 import type { LlmAttemptId } from '@mutantcat/dsh-llm/brand'
 import type {
   SessionAssistantSettlementEntry,
@@ -45,6 +45,8 @@ export class ClientAssistantStream {
 
   /**
    * Replace the durable Web window and adopt an optional reconnect baseline.
+   * Baseline records this build cannot expand are skipped, so a stale or
+   * foreign transient prefix never fails the durable window.
    * @param entries - durable entries in the replacement window.
    * @param baseline - compact prefix for an Assistant attempt that is still live.
    * @returns immediately visible durable entries plus reconstructed transient chunks.
@@ -70,25 +72,40 @@ export class ClientAssistantStream {
     this.publishedSeqs = new Set(visible.map(entry => entry.event.seq))
     this.durableCursor = visible.reduce((cursor, entry) => Math.max(cursor, entry.event.seq), -1)
     if (opening !== undefined) {
-      for (const [index, member] of expandAssistantStream(
-        opening.stream as unknown as readonly AssistantStreamRecord[],
-      ).entries()) {
-        this.transientInGap += 1
-        visible.push({
-          type: 'transient',
-          event: {
-            type: 'assistant/live-chunk',
-            seq: this.durableCursor + 1 - 1 / (this.transientInGap + 1),
-            time: member.time,
-            data: {
-              attemptId: opening.attemptId,
-              turn: opening.turn,
-              step: opening.step,
-              chunk: member.chunk,
+      // The opening prefix is process-local presentation state written by the
+      // Host's own accumulator, and one Web bundle can outlive the Host build it
+      // was served beside. Expand one compact record at a time so a record this
+      // build cannot read is dropped instead of failing the durable window it
+      // is attached to; the settled message still publishes in full.
+      let members = 0
+      for (const record of opening.stream as unknown as readonly AssistantStreamRecord[]) {
+        let expanded: readonly TimedStreamChunk[]
+        try {
+          expanded = expandAssistantStream([record])
+        } catch {
+          // An unreadable transient record is presentation state only.
+          continue
+        }
+        for (const member of expanded) {
+          if (members >= opening.nextIndex) break
+          members += 1
+          this.transientInGap += 1
+          visible.push({
+            type: 'transient',
+            event: {
+              type: 'assistant/live-chunk',
+              seq: this.durableCursor + 1 - 1 / (this.transientInGap + 1),
+              time: member.time,
+              data: {
+                attemptId: opening.attemptId,
+                turn: opening.turn,
+                step: opening.step,
+                chunk: member.chunk,
+              },
             },
-          },
-        })
-        if (index + 1 >= opening.nextIndex) break
+          })
+        }
+        if (members >= opening.nextIndex) break
       }
     }
     return visible

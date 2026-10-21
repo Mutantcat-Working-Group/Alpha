@@ -210,10 +210,17 @@ Requires: `agentDefaultModel` · `agents` · `attachments` · `fileUploads` · `
 export interface Config {
   /** Override platform desktop-opener detection. */
   readonly nativeOpen?: boolean
+  /**
+   * Source sessions root for the explicit official-Harness chat-history
+   * import. Defaults to the official DeepSeek Harness home's `sessions`
+   * directory; it is never Alpha's own store, which the mounted persistence
+   * backend owns.
+   */
+  readonly harnessSessionsRoot?: string
 }
 ```
 
-Source: [`packages/api/session-controller/src/index.ts:72`](../packages/api/session-controller/src/index.ts)
+Source: [`packages/api/session-controller/src/index.ts:76`](../packages/api/session-controller/src/index.ts)
 
 <a id="mutantcatdsh-api-settings-controller"></a>
 
@@ -3841,6 +3848,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@mutantcat/dsh-client-ui-session` ([`packages/client/ui-session/src/index.ts`](../packages/client/ui-session/src/index.ts))
 - `@mutantcat/dsh-client-ui-settings` ([`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts))
 - `@mutantcat/dsh-client-ui-settings-general` ([`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts))
+- `@mutantcat/dsh-client-ui-settings-import-sessions` ([`packages/client/ui-settings-import-sessions/src/index.ts`](../packages/client/ui-settings-import-sessions/src/index.ts))
 - `@mutantcat/dsh-client-ui-settings-models` ([`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts))
 - `@mutantcat/dsh-client-ui-settings-plugin-inventory` ([`packages/client/ui-settings-plugin-inventory/src/index.ts`](../packages/client/ui-settings-plugin-inventory/src/index.ts))
 - `@mutantcat/dsh-client-ui-settings-plugins` ([`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts))

@@ -55,6 +55,22 @@ it('uses provider input defaults for a model absent from the installed catalog',
   expect(onChange).toHaveBeenCalledWith([{ id: 'custom', input: ['text', 'image'] }])
 })
 
+it('adopts image input for a fetched vision model the listing does not describe', async () => {
+  const onChange = vi.fn()
+  render(<ModelListEditor
+    models={[]} onChange={onChange} disabled={false} t={key => en[key]}
+    probe={{ settingsNs: 'llm-pi-ai', baseURL: 'https://gateway.example/v1' }}
+    operations={operations(() => Promise.resolve({
+      kind: 'found', models: [{ id: 'gpt-4o' }, { id: 'acme-text' }],
+    }))}
+  />)
+  fireEvent.click(screen.getByRole('button', { name: en.fetchModels }))
+  const picker = await screen.findByRole('dialog', { name: en.fetchTitle })
+  fireEvent.click(within(picker).getByRole('button', { name: en.fetchAdopt }))
+  // The listing named no modalities, so the vision id supplies the declaration.
+  expect(onChange).toHaveBeenCalledExactlyOnceWith([{ id: 'gpt-4o', input: ['text', 'image'] }, { id: 'acme-text' }])
+})
+
 it('inherits catalog inputs once an incomplete draft has a model id', async () => {
   const onChange = vi.fn()
   const props = {
@@ -62,7 +78,7 @@ it('inherits catalog inputs once an incomplete draft has a model id', async () =
     probe: { settingsNs: 'llm-pi-ai', provider: 'openai' },
     disabled: false, t: (key: keyof typeof en) => en[key],
     operations: operations(() => Promise.resolve({
-      kind: 'found', models: [{ id: 'vision', inputModalities: ['text', 'image'] }],
+      kind: 'found', models: [{ id: 'acme-seer', inputModalities: ['text', 'image'] }],
     })),
   }
   const { rerender } = render(<ModelListEditor {...props} models={[{}]} />)
@@ -75,11 +91,46 @@ it('inherits catalog inputs once an incomplete draft has a model id', async () =
 
   const id = screen.getByLabelText<HTMLInputElement>(`${en.modelId} 1`)
   expect(id.value).toBe('')
-  fireEvent.change(id, { target: { value: 'vision' } })
-  expect(onChange).toHaveBeenCalledExactlyOnceWith([{ id: 'vision' }])
-  rerender(<ModelListEditor {...props} models={[{ id: 'vision' }]} />)
+  fireEvent.change(id, { target: { value: 'acme-seer' } })
+  expect(onChange).toHaveBeenCalledExactlyOnceWith([{ id: 'acme-seer' }])
+  rerender(<ModelListEditor {...props} models={[{ id: 'acme-seer' }]} />)
   expect(image.checked).toBe(true)
   expect(onChange).toHaveBeenCalledTimes(1)
+})
+
+it('pre-selects image input for a known vision model id and drops it on a rename', async () => {
+  const onChange = vi.fn()
+  const props = {
+    onChange,
+    disabled: false, t: (key: keyof typeof en) => en[key],
+    operations: operations(() => Promise.resolve({ kind: 'found', models: [] })),
+  }
+  const { rerender } = render(<ModelListEditor {...props} models={[{}]} probe={{ settingsNs: 'llm-pi-ai' }} />)
+  fireEvent.click(screen.getByRole('button', { name: `${en.modelAdvanced} 1` }))
+  const id = screen.getByLabelText<HTMLInputElement>(`${en.modelId} 1`)
+
+  // The id alone names the capability, so the declaration is written with it.
+  fireEvent.change(id, { target: { value: 'gpt-4o' } })
+  expect(onChange).toHaveBeenLastCalledWith([{ id: 'gpt-4o', input: ['text', 'image'] }])
+  rerender(<ModelListEditor {...props} models={[{ id: 'gpt-4o', input: ['text', 'image'] }]} probe={{ settingsNs: 'llm-pi-ai' }} />)
+  expect(screen.getByRole<HTMLInputElement>('checkbox', { name: en.modelInputImage }).checked).toBe(true)
+
+  // Renaming away from the family removes the declaration this rule wrote.
+  fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'acme-large' } })
+  expect(onChange).toHaveBeenLastCalledWith([{ id: 'acme-large' }])
+})
+
+it('keeps an id edit that a user composed before the rename', async () => {
+  const onChange = vi.fn()
+  render(<ModelListEditor
+    models={[{ id: 'gpt-4o', input: ['text'] }]} onChange={onChange} disabled={false}
+    t={key => en[key]} probe={{ settingsNs: 'llm-pi-ai' }}
+    operations={operations(() => Promise.resolve({ kind: 'found', models: [] }))}
+  />)
+  fireEvent.click(screen.getByRole('button', { name: `${en.modelAdvanced} 1` }))
+  fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'claude-3-5-sonnet' } })
+  // A text-only override outlives the rename; only this rule's own declaration follows the id.
+  expect(onChange).toHaveBeenLastCalledWith([{ id: 'claude-3-5-sonnet', input: ['text'] }])
 })
 
 it('restores inherited image input after a failed catalog read is retried manually', async () => {

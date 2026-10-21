@@ -8145,7 +8145,7 @@
       "kind": "event",
       "event": "request/header",
       "surface": false,
-      "digest": "4208123b50df5006b181481ab45fcf1cde807b88d3fd4d340090bc2e202fac41",
+      "digest": "a5805fab2457f244f1124989f2d50e48544294de239092278992db8b95807f71",
       "schema": {
         "root": 0,
         "nodes": [
@@ -8174,7 +8174,7 @@
               },
               {
                 "name": "type",
-                "type": 19,
+                "type": 18,
                 "optional": false
               }
             ],
@@ -8190,7 +8190,7 @@
               },
               {
                 "name": "reason",
-                "type": 14,
+                "type": 13,
                 "optional": false
               },
               {
@@ -8215,13 +8215,8 @@
                 "optional": false
               },
               {
-                "name": "system",
-                "type": 9,
-                "optional": true
-              },
-              {
                 "name": "tools",
-                "type": 10,
+                "type": 9,
                 "optional": true
               }
             ],
@@ -8296,12 +8291,8 @@
             "element": 7
           },
           {
-            "kind": "primitive",
-            "type": "never"
-          },
-          {
             "kind": "array",
-            "element": 11
+            "element": 10
           },
           {
             "kind": "object",
@@ -8323,7 +8314,7 @@
               },
               {
                 "name": "parameters",
-                "type": 12,
+                "type": 11,
                 "optional": false
               }
             ],
@@ -8335,7 +8326,7 @@
             "indices": [
               {
                 "key": 7,
-                "value": 13
+                "value": 12
               }
             ]
           },
@@ -8346,10 +8337,10 @@
           {
             "kind": "union",
             "types": [
+              14,
               15,
               16,
-              17,
-              18
+              17
             ]
           },
           {

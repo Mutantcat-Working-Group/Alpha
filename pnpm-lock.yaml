@@ -1103,6 +1103,9 @@ importers:
       '@mutantcat/dsh-fs-local':
         specifier: workspace:^
         version: link:../../fs/fs-local
+      '@mutantcat/dsh-home-paths':
+        specifier: workspace:^
+        version: link:../../util/home-paths
       '@mutantcat/dsh-jobs':
         specifier: workspace:^
         version: link:../../jobs/jobs
@@ -1127,6 +1130,9 @@ importers:
       '@mutantcat/dsh-session-persistence':
         specifier: workspace:^
         version: link:../../session/session-persistence
+      '@mutantcat/dsh-session-persistence-jsonl':
+        specifier: workspace:^
+        version: link:../../session/session-persistence-jsonl
       '@mutantcat/dsh-session-projection':
         specifier: workspace:^
         version: link:../../session/session-projection
@@ -2139,6 +2145,9 @@ importers:
       '@mutantcat/dsh-client-ui-settings-general':
         specifier: workspace:^
         version: link:../../client/ui-settings-general
+      '@mutantcat/dsh-client-ui-settings-import-sessions':
+        specifier: workspace:^
+        version: link:../../client/ui-settings-import-sessions
       '@mutantcat/dsh-client-ui-settings-models':
         specifier: workspace:^
         version: link:../../client/ui-settings-models
@@ -4119,6 +4128,48 @@ importers:
       react:
         specifier: ^18.2.0
         version: 18.3.1
+
+  packages/client/ui-settings-import-sessions:
+    devDependencies:
+      '@mutantcat/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@mutantcat/dsh-api-session-controller':
+        specifier: workspace:^
+        version: link:../../api/session-controller
+      '@mutantcat/dsh-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@mutantcat/dsh-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
+      '@mutantcat/dsh-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@mutantcat/dsh-client-ui-renderer':
+        specifier: workspace:^
+        version: link:../ui-renderer
+      '@mutantcat/dsh-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
+      '@mutantcat/dsh-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@mutantcat/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
 
   packages/client/ui-settings-models:
     devDependencies:

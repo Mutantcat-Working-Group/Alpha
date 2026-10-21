@@ -3,11 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { makeTranslate, RemoteError } from '@mutantcat/dsh-client-test-runtime'
 import type {
-  SessionListState, SessionSummary, SessionSnapshot,
+  SessionListState, SessionSummary, SubagentCatalogSnapshot,
 } from '@mutantcat/dsh-api-session-controller/client'
-import type { SubagentAddress, SubagentCatalogRow } from '@mutantcat/dsh-subagent/client'
 import type { SessionId } from '@mutantcat/dsh-session/types'
-import type { SessionStatusSnapshot } from '@mutantcat/dsh-client-ui-session/client'
 import {
   SubagentHeaderLineage, type SubagentHeaderLineageProps,
 } from '../src/client/SubagentHeaderLineage.tsx'
@@ -25,9 +23,7 @@ const CHILD = 'child' as SessionId
 const GRANDCHILD = 'grandchild' as SessionId
 const t: SubagentHeaderLineageProps['t'] = makeTranslate(zh)
 
-type CatalogFixture = { entries: readonly (SubagentCatalogRow | { id: SessionId; mode: 'unknown' | 'external'; label?: string; activity: 'inactive' })[]; parentAvailable: boolean; state: 'loading' | 'ready' | 'error'; error: SessionListState['projectionsBySession'][SessionId]['error'] }
-
-function catalog(over: Partial<CatalogFixture> = {}): CatalogFixture {
+function catalog(over: Partial<SubagentCatalogSnapshot> = {}): SubagentCatalogSnapshot {
   return {
     entries: [
       {
@@ -137,7 +133,7 @@ describe('SubagentHeaderLineage', () => {
     expect(inactiveTrigger.querySelector('[data-state="ongoing"]')).toBeNull()
   })
 
-  it('does not count Sessions outside projected membership', () => {
+  it('does not aggregate subagents reached through an ordinary fork', () => {
     const fork = 'fork' as SessionId
     const forkChild = 'fork-child' as SessionId
     render(<SubagentHeaderLineage {...props(catalog(), {}, {
@@ -149,7 +145,7 @@ describe('SubagentHeaderLineage', () => {
       [forkChild]: { ...summary(forkChild, 1), parentId: fork, origin: 'subagent', running: true },
     })} />)
 
-    const trigger = screen.getByRole('button', { name: '1 个子代理' })
+    const trigger = screen.getByRole('button', { name: '2 个子代理' })
     expect(trigger.querySelector('[data-state="ongoing"]')).toBeNull()
   })
 
@@ -356,17 +352,7 @@ describe('SubagentHeaderLineage', () => {
     })
   })
 
-  it('keeps unknown catalog children clickable by their durable parent address', () => {
-    const input = props(catalog({ entries: [{ id: CHILD, mode: 'unknown', activity: 'inactive' }] }))
-    render(<SubagentHeaderLineage {...input} />)
-    hoverCatalog(screen.getByRole('button', { name: /子代理/ }))
-    const row = screen.getByRole('treeitem', { name: new RegExp(CHILD) })
-    expect(row.textContent).toContain('模式未知')
-    fireEvent.keyDown(row, { key: 'Enter' })
-    expect(input.openChild).toHaveBeenCalledWith({ parentSessionId: PARENT, childSessionId: CHILD, mode: 'unknown' })
-  })
-
-  it('shows durable completion and token totals, ticks active duration, and freezes inactive rows', async () => {
+  it('shows durable token totals, ticks active duration by seconds, and freezes inactive rows', async () => {
     const now = 2_000_000_000_000
     const minute = 60_000
     const hour = 60 * minute
@@ -493,7 +479,7 @@ describe('SubagentHeaderLineage', () => {
     expect(input.setCatalogOpen).toHaveBeenCalledWith(CHILD, false)
   })
 
-  it('shows one generic state while a child catalog loads', () => {
+  it('shows known descendant rows while their catalog loads', () => {
     const secondGrandchild = 'grandchild-2' as SessionId
     const summaries = {
       [GRANDCHILD]: {
@@ -509,16 +495,18 @@ describe('SubagentHeaderLineage', () => {
     hoverCatalog(screen.getByRole('button', { name: /2 个子代理/ }))
     fireEvent.click(screen.getByRole('button', { name: '展开 worker 的下级子代理' }))
 
-    expect(deferred.refresh).toHaveBeenCalledWith(CHILD)
+    expect(deferred.setCatalogOpen).toHaveBeenCalledWith(CHILD, true)
     expect(screen.getByRole('group').getAttribute('aria-busy')).toBe('true')
-    expect(screen.getByText('正在加载子代理…')).toBeTruthy()
-    expect(screen.queryByRole('treeitem', { name: '正在加载子代理' })).toBeNull()
+    const loadingRows = screen.getAllByRole('treeitem', { name: '正在加载子代理' })
+    expect(loadingRows).toHaveLength(2)
+    expect(loadingRows.every(row => row.getAttribute('aria-level') === '2')).toBe(true)
+    expect(loadingRows[1]?.querySelector('[data-state="ongoing"]')).not.toBeNull()
 
     const loading = props(catalog(), {
       [CHILD]: catalog({ entries: [], state: 'loading' }),
     }, summaries)
     view.rerender(<SubagentHeaderLineage {...loading} />)
-    expect(screen.getByText('正在加载子代理…')).toBeTruthy()
+    expect(screen.getAllByRole('treeitem', { name: '正在加载子代理' })).toHaveLength(2)
 
     const ready = props(catalog(), {
       [CHILD]: catalog({
@@ -607,7 +595,7 @@ describe('SubagentHeaderLineage', () => {
     expect(failed.refresh).toHaveBeenCalledWith(PARENT)
   })
 
-  it('does not expose summary-only descendants as catalog rows', () => {
+  it('keeps known descendants reachable while their catalog is absent or stale-empty', () => {
     const second = 'child-2' as SessionId
     const summaries = {
       [CHILD]: {
@@ -619,11 +607,19 @@ describe('SubagentHeaderLineage', () => {
     }
     const absent = props(undefined, {}, summaries)
     const view = render(<SubagentHeaderLineage {...absent} />)
-    expect(screen.queryByRole('button')).toBeNull()
+
+    const trigger = screen.getByRole('button', { name: '1 个子代理，正在运行' })
+    expect(within(trigger).getByText('2 个子代理')).toBeTruthy()
+    hoverCatalog(trigger)
+    expect(absent.setCatalogOpen).toHaveBeenCalledWith(PARENT, true)
+    expect(screen.getAllByRole('treeitem', { name: '正在加载子代理' })).toHaveLength(2)
+    expect(absent.openChild).not.toHaveBeenCalled()
 
     const staleEmpty = props(catalog({ entries: [] }), {}, summaries)
     view.rerender(<SubagentHeaderLineage {...staleEmpty} />)
-    expect(screen.queryByRole('button')).toBeNull()
+    expect(screen.getByRole('button', { name: '1 个子代理，正在运行' })).toBeTruthy()
+    expect(screen.getAllByRole('treeitem', { name: '正在加载子代理' })).toHaveLength(2)
+    expect(staleEmpty.openChild).not.toHaveBeenCalled()
   })
 
   it('hides a bare loading catalog and keeps the error fallback without focusable rows', async () => {
@@ -838,29 +834,8 @@ describe('SubagentReadOnlyComposer', () => {
     expect(screen.getByRole('status').textContent).toContain('父会话当前不在线')
   })
 
-  it('keeps an unknown child read-only until its descriptor is available', () => {
-    render(<SubagentReadOnlyComposer matched={{ reason: 'unknown' }} t={t} />)
-    expect(screen.getByRole('status').textContent).toContain('读取子会话后才能确定是否可继续')
-  })
-
   it('explains that one-shot histories never accept follow-ups', () => {
     render(<SubagentReadOnlyComposer matched={{ reason: 'one-shot' }} t={t} />)
     expect(screen.getByRole('status').textContent).toContain('一次性任务不支持后续消息')
   })
-})
-
-
-it('shows external membership without an execution status or child Session navigation', () => {
-  const input = props(catalog({ entries: [
-    { id: CHILD, mode: 'external', label: 'External review', activity: 'inactive' },
-  ] }))
-  render(<SubagentHeaderLineage {...input} />)
-  hoverCatalog(screen.getByRole('button', { name: /子代理/ }))
-  const row = screen.getByRole('treeitem', { name: /External review.*外部任务/ })
-  expect(row.getAttribute('aria-disabled')).toBe('true')
-  expect(row.hasAttribute('aria-expanded')).toBe(false)
-  expect(row.getAttribute('aria-label')).not.toMatch(/已完成|未运行|结果待定/)
-  fireEvent.click(row)
-  expect(input.openChild).not.toHaveBeenCalled()
-  expect(input.openChildAside).not.toHaveBeenCalled()
 })

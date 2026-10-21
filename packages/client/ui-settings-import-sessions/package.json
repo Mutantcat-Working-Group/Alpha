@@ -1,0 +1,68 @@
+{
+  "name": "@mutantcat/dsh-client-ui-settings-import-sessions",
+  "description": "Harness chat-history import settings page: the official DeepSeek Harness sessions root with one explicit import action",
+  "version": "1.0.20261021",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mutantcat-Working-Group/Alpha.git",
+    "directory": "packages/client/ui-settings-import-sessions"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@mutantcat/dsh-api-session-controller",
+        "@mutantcat/dsh-client-locale",
+        "@mutantcat/dsh-client-ui-renderer",
+        "@mutantcat/dsh-client-ui-settings",
+        "@mutantcat/dsh-client-ui-slots"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@mutantcat/cordis": "workspace:^"
+  },
+  "devDependencies": {
+    "@mutantcat/cordis": "workspace:^",
+    "@mutantcat/dsh-api-session-controller": "workspace:^",
+    "@mutantcat/dsh-client-locale": "workspace:^",
+    "@mutantcat/dsh-client-test-runtime": "workspace:^",
+    "@mutantcat/dsh-client-ui-primitives": "workspace:^",
+    "@mutantcat/dsh-client-ui-renderer": "workspace:^",
+    "@mutantcat/dsh-client-ui-settings": "workspace:^",
+    "@mutantcat/dsh-client-ui-slots": "workspace:^",
+    "@mutantcat/dsh-session": "workspace:^",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "~18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

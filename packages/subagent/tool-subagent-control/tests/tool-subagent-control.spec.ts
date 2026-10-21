@@ -278,7 +278,7 @@ describe('dsh-tool-subagent-control', () => {
 
     await waitNoActivation(ctx, started.childId)
     const loaded = await loadStoredSession(ctx.sessionPersistence, started.childId)
-    const prompts = loaded.events.flatMap(event => event.type === 'user/message' && event.data.source.kind !== 'plugin'
+    const prompts = loaded.events.flatMap(event => event.type === 'user/message' && event.data.source.kind !== 'runtime-context'
       ? event.data.content.flatMap(block => block.type === 'text'
         && !block.text.startsWith('Your parent agent id is ')
         ? [block.text]
@@ -400,7 +400,7 @@ describe('dsh-tool-subagent-control interrupt_agent', () => {
     expect(waking.isError).toBe(false)
     await waitNoActivation(ctx, started.childId)
     const loaded = await loadStoredSession(ctx.sessionPersistence, started.childId)
-    const prompts = loaded.events.flatMap(event => event.type === 'user/message' && event.data.source.kind !== 'plugin'
+    const prompts = loaded.events.flatMap(event => event.type === 'user/message' && event.data.source.kind !== 'runtime-context'
       ? event.data.content.flatMap(block => block.type === 'text'
         && !block.text.startsWith('Your parent agent id is ')
         ? [block.text]

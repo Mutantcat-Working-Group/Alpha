@@ -18,6 +18,7 @@ import {
 import { SessionCommandController } from './commands.ts'
 import { SessionControlController } from './control.ts'
 import { SessionHistoryController } from './history.ts'
+import { HarnessSessionImport, configuredHarnessSessionsRoot, defaultHarnessSessionsRoot } from './import-harness-sessions.ts'
 import { SessionFileReferences } from './file-references.ts'
 import { ApiSessionList } from './list.ts'
 import { buildModelCatalog } from './catalog.ts'
@@ -38,6 +39,9 @@ import type {
   SessionFollowRequest,
   SessionForkRequest,
   SessionForkValue,
+  SessionImportHarnessRequest,
+  SessionImportHarnessSourceValue,
+  SessionImportHarnessValue,
   SessionListRequest,
   SessionListValue,
   SessionOpenWorkspacePathRequest,
@@ -72,6 +76,13 @@ declare module '@mutantcat/cordis' {
 export interface Config {
   /** Override platform desktop-opener detection. */
   readonly nativeOpen?: boolean
+  /**
+   * Source sessions root for the explicit official-Harness chat-history
+   * import. Defaults to the official DeepSeek Harness home's `sessions`
+   * directory; it is never Alpha's own store, which the mounted persistence
+   * backend owns.
+   */
+  readonly harnessSessionsRoot?: string
 }
 
 /** Host integrations replaceable by direct unit tests. */
@@ -101,12 +112,14 @@ export class SessionController extends TypertRemoteService {
 
   static Config: z<Config> = z.object({
     nativeOpen: z.boolean(),
+    harnessSessionsRoot: z.string().default(defaultHarnessSessionsRoot()),
   })
 
   private readonly agents: ApiSessionAgentController
   private readonly commands: SessionCommandController
   private readonly controlState: SessionControlController
   private readonly history: SessionHistoryController
+  private readonly harnessImport: HarnessSessionImport
   private readonly listState: ApiSessionList
   private readonly openPath: (path: string, signal: AbortSignal) => Promise<void>
   private readonly revealPath: (path: string, signal: AbortSignal) => Promise<void>
@@ -135,6 +148,10 @@ export class SessionController extends TypertRemoteService {
       await Promise.allSettled([...this.promotions])
     }, 'session-controller.promotions')
     this.history = new SessionHistoryController(ctx, (observation) => { this.promote(observation) })
+    this.harnessImport = new HarnessSessionImport(
+      ctx,
+      configuredHarnessSessionsRoot(config.harnessSessionsRoot),
+    )
     this.listState = new ApiSessionList(ctx)
     this.openPath = internals.openPath ?? openNativePath
     this.revealPath = internals.revealPath ?? revealNativePath
@@ -253,7 +270,7 @@ export class SessionController extends TypertRemoteService {
 
   /**
    * Select one Session-local model after explicitly resuming the Session.
-   * @param request - Session identity and requested model selection.
+   * @param request - Session identity, requested selection, and whether to cut the running turn's step short with it.
    * @returns the normalized selection installed for the Session.
    */
   @Remote('selectModel')
@@ -382,6 +399,32 @@ export class SessionController extends TypertRemoteService {
   @Remote('cancel')
   cancel(request: SessionCancelRequest): SessionCancelValue {
     return this.commands.cancel(request)
+  }
+
+  /**
+   * Read the deployment's configured default source root for the official
+   * DeepSeek Harness chat-history import.
+   * @returns the configured foreign sessions root.
+   */
+  @Remote('harnessSessionsRoot')
+  harnessSessionsRoot(): SessionImportHarnessSourceValue {
+    return { sourceRoot: this.harnessImport.sourceRoot }
+  }
+
+  /**
+   * Import the official DeepSeek Harness chat history into Alpha's own store.
+   * Read-only over the source root, idempotent, and isolated per Session; it
+   * never watches or synchronizes on its own.
+   * @param request - optional source-root override.
+   * @param signal - caller cancellation for reads, migration, and publication.
+   * @returns the effective source root and one result per discovered Session.
+   */
+  @Remote('importHarnessSessions')
+  importHarnessSessions(
+    request: SessionImportHarnessRequest,
+    signal: AbortSignal,
+  ): Promise<SessionImportHarnessValue> {
+    return this.harnessImport.run(request, signal)
   }
 
   /**

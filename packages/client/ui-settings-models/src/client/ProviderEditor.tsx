@@ -30,10 +30,13 @@ import type { JsonValue } from '@mutantcat/dsh-util-values'
 import {
   DeepSeekModelsEditor, modelDrafts, validateDeepSeekModels,
 } from './DeepSeekModelsEditor.tsx'
+import type { DeepSeekModelsValidationFailure } from './DeepSeekModelsEditor.tsx'
 import { apiKeyFailure } from './apiKey.ts'
 import { EditorFooter } from './EditorFooter.tsx'
 import { ModelListEditor } from './ModelListEditor.tsx'
-import { deriveKeyRef, protocolChoices } from './store.ts'
+import { validateReasoningEfforts } from './ModelReasoningEfforts.tsx'
+import type { ReasoningEffortsFailure } from './ModelReasoningEfforts.tsx'
+import { deriveKeyRef, protocolChoices, reasoningLevelChoices } from './store.ts'
 import type { ModelsOperations } from './operations.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
 import type { en } from './locales.ts'
@@ -183,6 +186,19 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
     [layout, namespace, schema],
   )
 
+  // The model list is validated by the same per-row checker for both families,
+  // so a bad row is named by its position rather than by a blanket message.
+  // Only a hand-declared pi-ai route's rows edit reasoning levels — the one
+  // model list with no installed catalog behind it — so only there are the
+  // levels read and the declarations checked.
+  const reasoningLevels = useMemo(
+    () => layout === 'pi-ai' && props.declared === true ? reasoningLevelChoices(namespace, schema) : [],
+    [layout, props.declared, namespace, schema],
+  )
+  const editsReasoning = reasoningLevels.length > 0
+  const validateModels = (value: unknown): DeepSeekModelsValidationFailure | ReasoningEffortsFailure | undefined =>
+    validateDeepSeekModels(value) ?? (editsReasoning ? validateReasoningEfforts(value) : undefined)
+
   useEffect(() => {
     let stale = false
     setKeyState(undefined)
@@ -210,9 +226,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
       : schema.setPath(current, [key], value))
   }
 
-  // The model list is validated by the same per-row checker for both families,
-  // so a bad row is named by its position rather than by a blanket message.
-  const modelFailure = validateDeepSeekModels(schema.getPath(draft, ['models']))
+  const modelFailure = validateModels(schema.getPath(draft, ['models']))
   const keyFailure = apiKeyFailure(keyDraft)
   // What a probe or a write must carry: the typed key with paste whitespace
   // removed. A blank field yields an empty string, which both call sites read
@@ -256,7 +270,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
       // with a bad row; it stays because the schema check below would refuse
       // the write with a message naming a path instead of the row, and because
       // nothing but this function decides what is written.
-      const failure = validateDeepSeekModels(schema.getPath(next, ['models']))
+      const failure = validateModels(schema.getPath(next, ['models']))
       /* v8 ignore next 3 -- unreachable from the card: the same failure disables submit */
       if (failure !== undefined) {
         return `${t('model')} ${String(failure.index + 1)}: ${t(failure.key)}`
@@ -468,6 +482,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
                 <ModelListEditor
                   {...catalogProps}
                   catalogProvider={props.declared === true ? undefined : props.provider}
+                  reasoningLevels={reasoningLevels}
                   defaultInput={Array.isArray(defaultInput) ? defaultInput : undefined}
                   probe={probe}
                   probeBlocked={keyFailure}

@@ -26,7 +26,7 @@ import clsx from 'clsx'
 import type { ModelReasoningEffort, ModelSelection } from '@mutantcat/dsh-api-remotes/client'
 import {
   IconCheckOutline16, IconChevronDownOutline14, IconChevronRightOutline14,
-  IconDataOutline16, IconWarningOutline16, Toast,
+  IconDataOutline16, IconStopFill16, IconWarningOutline16, Toast,
 } from '@mutantcat/dsh-client-ui-primitives'
 import type { PropsLocale } from '@mutantcat/dsh-client-ui-slots'
 import type { ModelSelectInjected } from './slots.ts'
@@ -52,7 +52,7 @@ const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
  * @returns the trigger and, while open, the two-level menu.
  */
 export function ModelSelect(
-  { locked, available, directory, load, select, t }:
+  { locked, available, directory, load, select, switchNow, t }:
   ModelSelectInjected & { locked: boolean } & PropsLocale<'model'>,
 ) {
   const state = useSyncExternalStore(
@@ -323,6 +323,17 @@ export function ModelSelect(
     void select(selection).then(settleSelection)
   }
 
+  /**
+   * Cut the running turn's in-flight model step so it continues under the
+   * selection already parked for it. The picker closes on acceptance: the
+   * point of the action is the transcript continuing, not the menu.
+   */
+  const applySwitchNow = (): void => {
+    if (state.current === null) return
+    lastActionRef.current = 'select'
+    void switchNow(state.current).then(settleSelection)
+  }
+
   const waiting = state.current === null && state.status === 'loading'
   const modelLabel = waiting
     ? t('trigger.loading')
@@ -401,6 +412,28 @@ export function ModelSelect(
 
           {pane === 'model' && (
             <>
+              {/* Offered only while the fold holds a selection the running turn
+                  has not used yet: the list above already shows it as current,
+                  and this is what makes it take effect before the turn's next
+                  step. The ordinary switch consumes it, so the row disappears
+                  by itself. */}
+              {state.switchPending && state.current !== null && (
+                <div className={css.switchPending}>
+                  <button
+                    ref={itemRef()}
+                    type="button"
+                    role="menuitem"
+                    className={css.switchAction}
+                    disabled={busy}
+                    title={t('switch.hint', { model: modelLabel })}
+                    onClick={applySwitchNow}
+                  >
+                    <IconStopFill16 className={css.switchIcon} />
+                    <span className={css.switchLabel}>{t('switch.action')}</span>
+                  </button>
+                  <div className={css.switchHint}>{t('switch.hint', { model: modelLabel })}</div>
+                </div>
+              )}
               {state.status === 'loading' && (
                 <div className={css.status}>{t('status.loading')}</div>
               )}

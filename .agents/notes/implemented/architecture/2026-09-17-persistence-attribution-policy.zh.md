@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-核心拥有的 user-message source 属性绑定[已记录的兼容性策略](../process/2026-09-17-persistence-schema-review.zh.md)。生产者另行将其 wire 字面量 kind 声明为仅用于归属。双方保存的 schema 必须具有兼容的策略状态，符合条件的添加才能获得同版本分类。已有分支继续接受结构比较；缺失策略、未标记的添加、删除以及已有语义分组的变更继续采用严格分类。固定的 system、model 和 tool source 字段不参与。
+核心拥有的 user-message source 属性绑定[已记录的兼容性策略](../../../../docs/persistence-changes/README.zh.md#compatibility-rules)。生产者另行将其 wire 字面量 kind 声明为仅用于归属。双方保存的 schema 必须具有兼容的策略状态，符合条件的添加才能获得同版本分类。已有分支继续接受结构比较；缺失策略、未标记的添加、删除以及已有语义分组的变更继续采用严格分类。固定的 system、model 和 tool source 字段不参与。
 
 tmux-context 生产者将位置归属标记为符合条件。其自身投影使用 kind 避免重复注入，而未安装该生产者的读取方保留已记录内容及 source 的每个 JSON 属性。该标记承诺读取方不依赖生产者，并不禁止生产者内部的去重。
 

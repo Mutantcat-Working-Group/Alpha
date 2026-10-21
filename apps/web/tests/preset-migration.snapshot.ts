@@ -81,7 +81,7 @@ describe.skipIf(webSnapshotMode() === 'record')('historical preset restoration t
       const address = { kind: 'subagent', parentSessionId: id, childSessionId: childId, mode: 'one-shot' } as const
       const childPage = await scaffold.ctx.sessionController.page({ address, throughSeq: childRows.length - 1 }, signal)
       expect(childPage.records.map(record => record.event.type)).toEqual(childRows.map(row => row['type']))
-      await expect(scaffold.ctx.sessionController.page({ address: { ...address, childSessionId: brokenId, mode: 'unknown' }, throughSeq: 1 }, signal))
+      await expect(scaffold.ctx.sessionController.page({ address: { ...address, childSessionId: brokenId, mode: 'unknown' as 'one-shot' }, throughSeq: 1 }, signal))
         .rejects.toThrow()
       await expect(scaffold.ctx.sessionController.page({ address: { kind: 'session', sessionId: id }, throughSeq: rows.length - 1 }, signal))
         .resolves.toMatchObject({ hasMore: false })

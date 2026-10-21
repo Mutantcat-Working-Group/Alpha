@@ -17,18 +17,31 @@ import type {
 import type { ProjectionDefinition } from '@mutantcat/dsh-session-projection'
 import type { SubagentCatalogEntry } from './projection-types.ts'
 
-/** Current payload version for `subagent/catalog` events. */
+/** Payload version emitted when this process creates a child. */
 export const SUBAGENT_CATALOG_VERSION = 0
 
-/** One complete parent-owned catalog fact. */
+/** Payload version for a child whose mode the historical evidence cannot name. */
+const UNKNOWN_CHILD_CATALOG_VERSION = 1
+
+/** Modes a locally created child records. */
+type LocalCatalogMode =
+  | { readonly mode: 'one-shot'; readonly label?: string }
+  | { readonly mode: 'continuable'; readonly label: string }
+
+/**
+ * One complete parent-owned catalog fact. Version 0 records local creation,
+ * version 1 additionally records a migrated child whose descriptor is missing
+ * or unrecognized, and version 2 records an execution that ran outside a local
+ * child Session.
+ */
 export type SubagentCatalogEvent =
   & {
-    readonly version: 0
     readonly childId: SessionId
     readonly childCreatedAt: number
   } & (
-    | { readonly mode: 'one-shot'; readonly label?: string }
-    | { readonly mode: 'continuable'; readonly label: string }
+    | ({ readonly version: 0 } & LocalCatalogMode)
+    | ({ readonly version: 1 } & (LocalCatalogMode | { readonly mode: 'unknown'; readonly label?: string }))
+    | { readonly version: 2; readonly mode: 'external'; readonly label?: string }
   )
 
 declare module '@mutantcat/dsh-session/types' {
@@ -48,34 +61,47 @@ export interface SubagentCatalogState {
 }
 
 const sessionIdSchema = z.string() as unknown as z.ZodType<SessionId>
+const localVersions = z.union([z.literal(SUBAGENT_CATALOG_VERSION), z.literal(UNKNOWN_CHILD_CATALOG_VERSION)])
 const oneShotCatalogSchema = z.object({
-  version: z.literal(SUBAGENT_CATALOG_VERSION),
+  version: localVersions,
   childId: sessionIdSchema,
   childCreatedAt: z.number().int().nonnegative(),
   mode: z.literal('one-shot'),
   label: z.string().optional(),
 }).strict()
 const continuableCatalogSchema = z.object({
-  version: z.literal(SUBAGENT_CATALOG_VERSION),
+  version: localVersions,
   childId: sessionIdSchema,
   childCreatedAt: z.number().int().nonnegative(),
   mode: z.literal('continuable'),
   label: z.string(),
 }).strict()
+const unknownCatalogSchema = oneShotCatalogSchema.extend({
+  version: z.literal(UNKNOWN_CHILD_CATALOG_VERSION),
+  mode: z.literal('unknown'),
+})
+const externalCatalogSchema = oneShotCatalogSchema.extend({
+  version: z.literal(2),
+  mode: z.literal('external'),
+})
 const eventDataSchema = z.union([
   oneShotCatalogSchema,
+  externalCatalogSchema,
   continuableCatalogSchema,
+  unknownCatalogSchema,
 ]) as unknown as z.ZodType<SubagentCatalogEvent>
-const viewSchema = z.array(z.union([
-  oneShotCatalogSchema.omit({ version: true, childId: true, childCreatedAt: true }).extend({
+const catalogFactSchemas = [
+  oneShotCatalogSchema,
+  externalCatalogSchema,
+  continuableCatalogSchema,
+  unknownCatalogSchema,
+] as const
+const viewSchema = z.array(z.union(catalogFactSchemas.map(schema => schema
+  .omit({ version: true, childId: true, childCreatedAt: true })
+  .extend({
     id: sessionIdSchema,
-    createdAt: oneShotCatalogSchema.shape.childCreatedAt,
-  }),
-  continuableCatalogSchema.omit({ version: true, childId: true, childCreatedAt: true }).extend({
-    id: sessionIdSchema,
-    createdAt: continuableCatalogSchema.shape.childCreatedAt,
-  }),
-])) as unknown as z.ZodType<SubagentCatalogEntry[]>
+    createdAt: schema.shape.childCreatedAt,
+  })))) as unknown as z.ZodType<SubagentCatalogEntry[]>
 const stateSchema: z.ZodType<SubagentCatalogState> = z.object({
   inheritedEventCount: z.number().int().nonnegative() as unknown as z.ZodType<SessionLogOffset>,
   head: chunkedListSchema(eventDataSchema).optional(),
@@ -88,28 +114,16 @@ declare module '@mutantcat/dsh-session-projection/types' {
 }
 
 /**
- * Materialize direct children from their parent's successful creation facts.
+ * Materialize every complete direct-child fact, including migrated children
+ * whose mode stayed unknown and executions outside a local child Session.
  * @param state - parent catalog fold state.
  * @returns current direct-child rows in parent catalog event order.
  */
 function subagentCatalogEntries(state: SubagentCatalogState): SubagentCatalogEntry[] {
-  const entries: SubagentCatalogEntry[] = []
-  for (const data of iterateChunkedList(state.head)) {
-    entries.push(data.mode === 'one-shot'
-      ? {
-        id: data.childId,
-        createdAt: data.childCreatedAt,
-        mode: data.mode,
-        ...data.label === undefined ? {} : { label: data.label },
-      }
-      : {
-        id: data.childId,
-        createdAt: data.childCreatedAt,
-        mode: data.mode,
-        label: data.label,
-      })
-  }
-  return entries
+  return [...iterateChunkedList(state.head)].map((data) => {
+    const { version: _version, childId, childCreatedAt, ...descriptor } = data
+    return { id: childId, createdAt: childCreatedAt, ...descriptor }
+  })
 }
 
 /** Parent-owned direct-child catalog projection; invalid own facts reject restoration. */
@@ -121,7 +135,7 @@ export const subagentCatalogProjectionDefinition = {
     if (event.type !== 'subagent/catalog' || event.seq < state.inheritedEventCount) return state
     return { ...state, head: appendChunkedList(state.head, eventDataSchema.parse(event.data)) }
   },
-  stateVersion: 2,
+  stateVersion: 3,
   wire: { viewSchema, view: subagentCatalogEntries },
 } satisfies ProjectionDefinition<'subagentCatalog', SubagentCatalogState>
 

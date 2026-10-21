@@ -776,7 +776,7 @@ describe('Session history raw journal', () => {
     })
     session.append('user/message', createUserMessage({
       content: [{ type: 'text', text: '<context_checkpoint>summary</context_checkpoint>' }],
-      source: { kind: 'plugin', plugin: 'compact' },
+      source: checkpointSource(String(summary.seq)),
     }), {
       surfaceOp: { op: 'replace', startSeq: shadowedStart, endSeq: shadowedEnd },
       sourceEventSeqs: [...shadowed, summary.seq],

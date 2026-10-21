@@ -7,6 +7,7 @@
 
 import { existsSync, globSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { historicalSchemaRegion } from './historical-schema-region.ts'
 import {
   findReferenceViolations,
   isArchivedAgentNotePath,
@@ -85,6 +86,9 @@ function findViolations(absPath: string): Violation[] {
     // Remove trailing separators or sentence punctuation matched greedily.
     ref => ref.replace(/[./]+$/, ''),
     isDriftedPackageReference,
+    // A historical format reference records where a type lived in that
+    // format; a later move must not rewrite the frozen record.
+    historicalSchemaRegion,
   )
 }
 

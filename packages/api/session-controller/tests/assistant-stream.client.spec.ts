@@ -122,6 +122,27 @@ describe('ClientAssistantStream', () => {
     expect(stream.replace([])).toEqual([])
   })
 
+  it('drops a transient record this build cannot expand instead of failing the window', () => {
+    const stream = new ClientAssistantStream()
+    const durable = ordinary(4)
+    const readable = baseline(1)
+    const attempt = readable.activeAttempt
+    if (attempt === undefined) throw new Error('expected an active attempt')
+    const unreadable: SessionAssistantStreamBaseline = {
+      ...readable,
+      activeAttempt: {
+        ...attempt,
+        // A record kind this build does not know, as a newer writer would store it.
+        stream: [{ type: 'record-from-a-newer-build', time: 30 }],
+      },
+    }
+
+    const visible = stream.replace([durable], unreadable)
+
+    expect(visible).toHaveLength(1)
+    expect(visible[0]).toBe(durable)
+  })
+
   it('passes through durable events not owned by the active attempt', () => {
     const stream = new ClientAssistantStream()
     stream.acceptFrame(start(ATTEMPT, 1))

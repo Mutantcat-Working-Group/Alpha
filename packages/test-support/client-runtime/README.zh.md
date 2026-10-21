@@ -44,8 +44,6 @@ await runtime.dispose()
 
 可选渲染参数通过 `entryKey` 选择 keyed 条目，或通过 `only` 选择 list 条目；`view.update(owner)` 保留该选择。`runtime.panelInfo` 提供默认的 `usePanelInfo` 数据源，初始不选中全局面板。挂载生产 Layout 所有者之前，先调用 `releasePanelInfoSource()` 释放该数据源。`dispose()` 同时释放默认的工作区与面板信息根数据源；提前释放是幂等的，不会移除替代它们的所有者。
 
-Session fixture 从显式提供的地址或已加载的父级投影解析子代理地址，不会保留 Session generation。外部目录项没有本地浏览地址。
-
 ### 局部 DOM 快照
 
 注册的快照序列化器把 CSS-module 哈希类名折回语义名（`_frame_a1b2c3` → `frame`），使 `.snap` 文件只含结构，并把 `<svg>` 内部折叠为 `data-content` 指纹。需要自定义页面 frame 的套件改用 `root.declare(children, Frame)` 而非自动 frame；`dispose()` 沿单一轴拆除视图、功能 fiber、已铸 scope 与持久化存储状态，且幂等。

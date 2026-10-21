@@ -143,6 +143,34 @@ describe('draft-provider model discovery', () => {
     expect(server.headers[0]?.['user-agent']).toBe(userAgent())
   })
 
+  it('carries the input modalities a listing discloses and reads a bare vision flag', async () => {
+    const server = await listingServer({
+      body: JSON.stringify({
+        data: [
+          { id: 'acme-seer', architecture: { input_modalities: ['text', 'image'] } },
+          { id: 'acme-ears', input_modalities: ['text', 'audio', 'image'] },
+          { id: 'acme-flag', capabilities: { vision: true } },
+          { id: 'acme-deaf', capabilities: { vision: false } },
+          { id: 'acme-green', architecture: { input_modalities: ['text', 'image', 'image'] } },
+          { id: 'acme-voice', input_modalities: ['audio'] },
+        ],
+      }),
+    })
+    const ctx = await harness()
+
+    // A modality this build does not know is dropped, not refused, and a repeat
+    // is removed because the adopted row is stored under a schema that rejects
+    // duplicates. An entry that discloses nothing stays on the route default.
+    expect(await ctx.llm.discoverModels('llm-pi-ai', { baseURL: server.url })).toEqual([
+      { id: 'acme-seer', name: 'acme-seer', inputModalities: ['text', 'image'] },
+      { id: 'acme-ears', name: 'acme-ears', inputModalities: ['text', 'image'] },
+      { id: 'acme-flag', name: 'acme-flag', inputModalities: ['text', 'image'] },
+      { id: 'acme-deaf', name: 'acme-deaf' },
+      { id: 'acme-green', name: 'acme-green', inputModalities: ['text', 'image'] },
+      { id: 'acme-voice', name: 'acme-voice' },
+    ])
+  })
+
   it('reads an enriched models map using route ids and nested capacities', async () => {
     const server = await listingServer({
       body: JSON.stringify({
@@ -504,10 +532,21 @@ const RECORDED_LISTINGS = [
     file: 'openrouter-2026-09-02.json',
     api: 'openai-completions',
     models: [
-      { id: 'anthropic/claude-fable-5.1', name: 'Anthropic: Claude Fable 5.1', contextWindow: 1_000_000, maxTokens: 128_000 },
+      // The listing declares text, image, and file input; this build knows the
+      // first two and drops the rest.
+      {
+        id: 'anthropic/claude-fable-5.1', name: 'Anthropic: Claude Fable 5.1', contextWindow: 1_000_000, maxTokens: 128_000,
+        inputModalities: ['text', 'image'],
+      },
       // The router's own aggregate route reports no completion cap.
-      { id: 'openrouter/auto-beta', name: 'Auto Router (Beta)', contextWindow: 2_000_000 },
-      { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek: DeepSeek V4 Flash 0423', contextWindow: 1_048_576, maxTokens: 384_000 },
+      {
+        id: 'openrouter/auto-beta', name: 'Auto Router (Beta)', contextWindow: 2_000_000,
+        inputModalities: ['text', 'image'],
+      },
+      {
+        id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek: DeepSeek V4 Flash 0423', contextWindow: 1_048_576, maxTokens: 384_000,
+        inputModalities: ['text'],
+      },
     ],
   },
   {

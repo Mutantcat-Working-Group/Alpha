@@ -115,6 +115,7 @@ const LEGACY_COMPAT_LINES: readonly GuardedLine[] = [
   { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 49, reason: 'asserts the legacy twin beside a hand-written invariant alias' },
   { file: 'scripts/gen-tsconfig-paths.spec.ts', line: 50, reason: 'asserts the legacy twin a generated alias earns' },
   { file: 'scripts/verify-default-product-isolation.ts', line: 135, reason: 'tolerates the external engine packages, which stay in the legacy scope on the registry' },
+  { file: 'packages/session/session-format-v3-to-v4/src/sources.ts', line: 47, reason: 'recognizes the released scope of a historical Session producer identity' },
 ]
 
 /** Every line the substitution skips. */
@@ -157,6 +158,8 @@ const POSTCONDITIONS: readonly PostCondition[] = [
   { file: 'tsconfig.base.json', text: '"@deepseek-ai/cordis": ["./vendor/cordis/src"]', count: 1 },
   // The Loader's plugin-specifier rewrite.
   { file: 'vendor/loader/src/config/tree.ts', text: "const LEGACY_SCOPE = '@deepseek-ai/'", count: 1 },
+  // Historical Session data keeps the scope its writer published under.
+  { file: 'packages/session/session-format-v3-to-v4/src/sources.ts', text: "'@deepseek-ai/dsh-system-prompt'", count: 1 },
 ]
 
 /** Tracked files this codemod never reads. */

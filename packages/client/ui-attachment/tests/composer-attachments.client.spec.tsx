@@ -6,6 +6,7 @@ import type {
   ComposerAttachment, ComposerAttachmentsOwnerProps, ComposerAttachmentsProps,
 } from '@mutantcat/dsh-client-ui-conversation/client'
 import { ComposerAttachments } from '../src/client/ComposerAttachments.tsx'
+import { localPathOf } from '../src/client/drop-events.ts'
 
 beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class {
@@ -79,12 +80,44 @@ function props(overrides: Partial<ComposerAttachmentsOwnerProps> = {}): Composer
     attachments: [],
     canAcceptDrop: true,
     onAddFiles: () => {},
+    onDropPaths: () => {},
     onRemoveAttachment: () => {},
     uploads: {},
     onRetryFile: () => {},
     t,
     ...overrides,
   } as unknown as ComposerAttachmentsProps
+}
+
+/** One dropped item: a regular file, or a folder named by its entry. */
+interface DroppedEntry {
+  readonly file?: File
+  readonly directory?: string
+}
+
+/**
+ * A drop's transfer as the page reads it: file entries, folder entries, and the
+ * text payloads a platform may disclose paths through.
+ * @param entries - dropped items in order.
+ * @param payloads - text payloads by MIME type, empty by default.
+ * @returns the transfer stub, including its mutable drop effect.
+ */
+function transfer(
+  entries: readonly DroppedEntry[],
+  payloads: Readonly<Record<string, string>> = {},
+) {
+  const items = entries.map(entry => ({
+    kind: 'file',
+    getAsFile: (): File | null => entry.file ?? null,
+    webkitGetAsEntry: () => ({ isDirectory: entry.directory !== undefined, name: entry.directory ?? entry.file?.name ?? '' }),
+  }))
+  return {
+    types: ['Files'],
+    files: entries.flatMap(entry => entry.file === undefined ? [] : [entry.file]),
+    items,
+    dropEffect: 'none',
+    getData: (type: string): string => payloads[type] ?? '',
+  }
 }
 
 describe('ComposerAttachments', () => {
@@ -103,7 +136,7 @@ describe('ComposerAttachments', () => {
     expect(view.queryByRole('status')).toBeNull()
 
     const image = attachment('dropped').file
-    const dataTransfer = { types: ['Files'], files: [image], dropEffect: 'none' }
+    const dataTransfer = transfer([{ file: image }])
     expect(fireEvent.dragEnter(document.body, { dataTransfer })).toBe(false)
     expect(view.getByRole('status').textContent).toContain('文件或图片拖动到此处即可添加')
     expect(view.getByRole('status').textContent).toContain('图片限制：最多 20 张，每张 5MB')
@@ -144,7 +177,8 @@ describe('ComposerAttachments', () => {
     const onAddFiles = vi.fn()
     const view = render(<ComposerAttachments {...props({ canAcceptDrop: false, onAddFiles })} />)
     const image = attachment('blocked').file
-    const dataTransfer = { types: ['Files'], files: [image], dropEffect: 'copy' }
+    const dataTransfer = transfer([{ file: image }])
+    dataTransfer.dropEffect = 'copy'
     fireEvent.dragEnter(document.body, { dataTransfer })
     expect(view.getByRole('status').textContent).toBe('当前无法添加文件或图片')
     fireEvent.dragOver(document.body, { dataTransfer })
@@ -275,5 +309,105 @@ describe('ComposerAttachments file drafts', () => {
       },
     })} />)
     expect(view.getByTitle('.env').textContent).toContain('ENV 3B')
+  })
+})
+
+describe('folder drops', () => {
+  it('inserts the path a drop disclosed as a file URL', () => {
+    const onDropPaths = vi.fn()
+    render(<ComposerAttachments {...props({ onDropPaths })} />)
+    fireEvent.drop(document.body, {
+      dataTransfer: transfer([{ directory: 'src' }], { 'text/uri-list': 'file:///Users/tyza66/project/src\n' }),
+    })
+    expect(onDropPaths).toHaveBeenCalledWith(['/Users/tyza66/project/src'], [])
+  })
+
+  it('keeps a file and a folder from one drop apart', () => {
+    const onAddFiles = vi.fn()
+    const onDropPaths = vi.fn()
+    render(<ComposerAttachments {...props({ onAddFiles, onDropPaths })} />)
+    const file = attachment('mixed').file
+    fireEvent.drop(document.body, {
+      dataTransfer: transfer([{ file }, { directory: 'docs' }], { 'text/plain': '/work/docs' }),
+    })
+    expect(onAddFiles).toHaveBeenCalledWith([file])
+    expect(onDropPaths).toHaveBeenCalledWith(['/work/docs'], [])
+  })
+
+  it('prefers the path the engine attached to the dropped entry', () => {
+    const onDropPaths = vi.fn()
+    render(<ComposerAttachments {...props({ onDropPaths })} />)
+    const entryFile = new File([], 'photos')
+    Object.defineProperty(entryFile, 'path', { value: '/gateway/photos' })
+    fireEvent.drop(document.body, { dataTransfer: transfer([{ file: entryFile, directory: 'photos' }]) })
+    expect(onDropPaths).toHaveBeenCalledWith(['/gateway/photos'], [])
+  })
+
+  it('names a folder whose path the platform did not disclose', () => {
+    const onDropPaths = vi.fn()
+    render(<ComposerAttachments {...props({ onDropPaths })} />)
+    fireEvent.drop(document.body, { dataTransfer: transfer([{ directory: 'secrets' }]) })
+    expect(onDropPaths).toHaveBeenCalledWith([], ['secrets'])
+  })
+
+  it('skips a non-file item, a file item without an entry, and an entry without a file', () => {
+    const onAddFiles = vi.fn()
+    const onDropPaths = vi.fn()
+    render(<ComposerAttachments {...props({ onAddFiles, onDropPaths })} />)
+    const attached = attachment('kept').file
+    fireEvent.drop(document.body, {
+      dataTransfer: {
+        types: ['Files'],
+        files: [],
+        items: [
+          // A drag that also publishes a string payload.
+          { kind: 'string', type: 'text/plain', getAsFile: () => null, webkitGetAsEntry: () => null },
+          // An engine that classifies entries but hands back no entry object.
+          { kind: 'file', type: 'image/png', getAsFile: () => null, webkitGetAsEntry: () => null },
+          // A file entry the engine cannot materialize as a File.
+          { kind: 'file', type: 'text/plain', getAsFile: () => null, webkitGetAsEntry: () => ({ isDirectory: false, name: 'ghost.txt' }) },
+          // One real file still arrives with the classified batch.
+          { kind: 'file', type: 'image/png', getAsFile: () => attached, webkitGetAsEntry: () => ({ isDirectory: false, name: 'kept' }) },
+        ],
+        dropEffect: 'none',
+        getData: () => '',
+      },
+    })
+    expect(onAddFiles).toHaveBeenCalledWith([attached])
+    expect(onDropPaths).not.toHaveBeenCalled()
+  })
+
+  it('attaches every file of an engine that classifies no entries', () => {
+    const onAddFiles = vi.fn()
+    const onDropPaths = vi.fn()
+    render(<ComposerAttachments {...props({ onAddFiles, onDropPaths })} />)
+    const file = attachment('legacy').file
+    fireEvent.drop(document.body, {
+      // A real DataTransfer always answers getData; an engine that classifies
+      // no entries still delivers the file list and discloses no paths.
+      dataTransfer: { types: ['Files'], files: [file], items: [], dropEffect: 'none', getData: () => '' },
+    })
+    expect(onAddFiles).toHaveBeenCalledWith([file])
+    expect(onDropPaths).not.toHaveBeenCalled()
+  })
+})
+
+describe('localPathOf', () => {
+  it.each([
+    ['file:///Users/tyza66/work', '/Users/tyza66/work'],
+    ['file://localhost/Users/tyza66/work', '/Users/tyza66/work'],
+    ['file:///C:/work/alpha', 'C:/work/alpha'],
+    ['file:///Users/tyza66/my%20work', '/Users/tyza66/my work'],
+    ['file:/Users/tyza66/work', '/Users/tyza66/work'],
+    ['file:/Users/tyza66/100%work', '/Users/tyza66/100%work'],
+    ['  file:///Users/tyza66/work  ', '/Users/tyza66/work'],
+    ['/Users/tyza66/work', '/Users/tyza66/work'],
+    ['C:\\work\\alpha', 'C:\\work\\alpha'],
+  ])('reads %s as %s', (line, expected) => {
+    expect(localPathOf(line)).toBe(expected)
+  })
+
+  it.each([['https://example.test/a'], ['relative/path'], ['file:relative/path'], [''], ['   ']])('reads no path out of %s', (line) => {
+    expect(localPathOf(line)).toBeUndefined()
   })
 })

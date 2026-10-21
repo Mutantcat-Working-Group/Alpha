@@ -29,6 +29,7 @@ function fold(events: readonly SessionEvent[]): SubagentCatalogState {
   return state
 }
 
+/** One local-creation fact; the version defaults to what this process emits. */
 function fact(
   seq: number,
   childId: string,
@@ -37,17 +38,32 @@ function fact(
     | { readonly mode: 'one-shot'; readonly label?: string }
     | { readonly mode: 'continuable'; readonly label: string },
 ): SessionEvent<'subagent/catalog'> {
+  return migratedFact(seq, childId, childCreatedAt, 0, descriptor)
+}
+
+/** One catalog fact at an explicit payload version, as a migrated V4 log carries. */
+function migratedFact(
+  seq: number,
+  childId: string,
+  childCreatedAt: number,
+  version: 0 | 1 | 2,
+  descriptor:
+    | { readonly mode: 'one-shot'; readonly label?: string }
+    | { readonly mode: 'continuable'; readonly label: string }
+    | { readonly mode: 'unknown'; readonly label?: string }
+    | { readonly mode: 'external'; readonly label?: string },
+): SessionEvent<'subagent/catalog'> {
   return {
     type: 'subagent/catalog',
     seq: SessionSeq(seq),
     time: 0,
     data: {
-      version: 0,
+      version,
       childId: SessionId(childId),
       childCreatedAt,
       ...descriptor,
     },
-  }
+  } as SessionEvent<'subagent/catalog'>
 }
 
 describe('subagent catalog projection', () => {
@@ -122,6 +138,25 @@ describe('subagent catalog projection', () => {
       { id: SessionId('child-a'), createdAt: 1, mode: 'one-shot', label: 'once' },
       { id: SessionId('child-d'), createdAt: 3, mode: 'continuable', label: 'later' },
     ])
+  })
+
+  it('keeps migrated unknown children and external executions in event order', () => {
+    const state = fold([
+      migratedFact(0, 'child-unknown', 4, 1, { mode: 'unknown' }),
+      migratedFact(1, 'child-external', 5, 2, { mode: 'external', label: 'remote agent' }),
+      migratedFact(2, 'child-local-v1', 6, 1, { mode: 'one-shot', label: 'once' }),
+    ])
+    expect(subagentCatalogProjectionDefinition.wire.view(state)).toEqual([
+      { id: SessionId('child-unknown'), createdAt: 4, mode: 'unknown' },
+      { id: SessionId('child-external'), createdAt: 5, mode: 'external', label: 'remote agent' },
+      { id: SessionId('child-local-v1'), createdAt: 6, mode: 'one-shot', label: 'once' },
+    ])
+  })
+
+  it('rejects a catalog fact whose version and mode disagree', () => {
+    expect(() => fold([migratedFact(0, 'child', 1, 0, { mode: 'unknown' })])).toThrow()
+    expect(() => fold([migratedFact(0, 'child', 1, 2, { mode: 'one-shot' })])).toThrow()
+    expect(() => fold([migratedFact(0, 'child', 1, 2, { mode: 'continuable', label: 'x' })])).toThrow()
   })
 
   it('ignores unrelated and inherited events without changing state', () => {

@@ -151,6 +151,7 @@ async function bench(script: Script, options: BenchOptions = {}): Promise<{
       status: 'idle',
       ctx: ownerCtx,
       cancel: () => {},
+      interruptModelStep: () => false,
       runMaintenance: () => Promise.reject(new Error('not used')),
       send: () => {},
       followup: (message: UserMessage) => {

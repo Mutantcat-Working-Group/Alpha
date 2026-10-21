@@ -131,6 +131,8 @@ async function harness(logged?: {
     status: 'running',
     ctx,
     inbox: { nextTurn: [], nextStep: [] },
+    // This Agent never runs a turn, so it has no provider wait to cut.
+    interruptModelStep: () => false,
   } as unknown as Agent
   await ctx.agents.register(agent)
   return { ctx, agent, sessionId: session.id }
@@ -505,6 +507,32 @@ describe('Web session model selection', () => {
     })
     expect(currentSelection(ctx, sessionId))
       .toEqual({ provider: 'deepseek-official', model: 'private-preview', reasoningEffort: 'max' })
+    await ctx.fiber.dispose()
+  })
+
+  it('cuts the in-flight provider wait when the selection is applied immediately', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    const remote = createSessionTestRemote(ctx, {
+      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+      cwd: '/tmp',
+    })
+    const interrupt = vi.spyOn(agent, 'interruptModelStep')
+
+    const selected = expectValue(await remote.selectModel(request({
+      sessionId,
+      provider: 'deepseek-official',
+      model: 'private-preview',
+      immediate: true,
+    })))
+
+    expect(selected.selected).toEqual({
+      provider: 'deepseek-official',
+      model: 'private-preview',
+      reasoningEffort: 'high',
+    })
+    // An idle Agent has no provider wait to cut, so the call is a no-op but the
+    // selection still lands for the next request.
+    expect(interrupt).toHaveBeenCalledTimes(1)
     await ctx.fiber.dispose()
   })
 

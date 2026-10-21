@@ -7,6 +7,7 @@ import type {} from '@mutantcat/dsh-client-file-upload/client'
 import { typertOwnedValue } from '@mutantcat/dsh-typert-protocol'
 import { createSessionControlStream } from './transport.ts'
 import { ClientSessions } from './sessions/service.ts'
+import { HarnessSessionsImport } from './harness-import.ts'
 import type { SessionRemotes } from './sessions/remotes.ts'
 import type {} from '../remote-events.ts'
 
@@ -27,6 +28,8 @@ export type {
 export { createScope, scopeOf } from './scope.ts'
 export type { AgentContext, AgentScopeHandle } from './scope.ts'
 export { SessionCreateError, SessionForkError } from './sessions/service.ts'
+export { HarnessSessionsImport } from './harness-import.ts'
+export type { IHarnessSessionsImport } from './harness-import.ts'
 export type { SessionBinding, SessionListState, SessionSummary } from './sessions/service.ts'
 export type {
   SessionListPhase,
@@ -113,6 +116,7 @@ export function apply(ctx: Context): void {
   const remotes = ctx.remote as unknown as SessionRemotes
   const connection = ctx.get('connection') as ConnectionHandle
   const sessions = new ClientSessions(ctx, remotes)
+  new HarnessSessionsImport(ctx)
   ctx.remote.$on('api-session/added', (summary) => { sessions.handleSessionAdded(summary) })
   ctx.remote.$on('api-session/removed', (sessionId) => { sessions.handleSessionRemoved(sessionId) })
   ctx.remote.$on('api-session/status', (sessionId, running) => {

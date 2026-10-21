@@ -849,11 +849,19 @@ describe('WorkflowRunPanel', () => {
   })
 
   it.each([
-    ['external execution', listState({ projectionsBySession: { [PARENT_ID]: { state: 'ready', error: null, values: { subagentCatalog: [{ createdAt: 1, id: CHILD_ID, mode: 'external' }] } } } }), 'running'],
-    ['catalog absent', listState({ projectionsBySession: {} }), 'running'],
-    ['catalog empty', listState({ projectionsBySession: { [PARENT_ID]: { state: 'ready', error: null, values: { subagentCatalog: [] } } } }), 'running'],
-    ['wrong parent', listState({ projectionsBySession: { ['other' as SessionId]: { state: 'ready', error: null, values: { subagentCatalog: [{ createdAt: 1, id: CHILD_ID, mode: 'one-shot' }] } } } }), 'running'],
-    ['child inactive', listState({ byId: { ...listState().byId, [CHILD_ID]: { ...listState().byId[CHILD_ID]!, running: false } } }), 'running'],
+    ['not in ordinary list', listState({ ids: [PARENT_ID] }), 'running'],
+    ['remote row', listState({ byId: {
+      ...listState().byId,
+      [CHILD_ID]: { ...listState().byId[CHILD_ID]!, origin: undefined },
+    } }), 'running'],
+    ['wrong parent', listState({ byId: {
+      ...listState().byId,
+      [CHILD_ID]: { ...listState().byId[CHILD_ID]!, parentId: 'other' as SessionId },
+    } }), 'running'],
+    ['list terminal', listState({ byId: {
+      ...listState().byId,
+      [CHILD_ID]: { ...listState().byId[CHILD_ID]!, running: false },
+    } }), 'running'],
     ['member terminal', listState(), 'completed'],
   ] as const)('does not navigate when %s', (_name, sessions, memberStatus) => {
     const data: WorkflowRunChatData = {

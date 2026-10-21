@@ -807,7 +807,7 @@ inspect( sessionId: SessionId, signal?: AbortSignal, ): Promise<SessionInspectio
 
 /**
  * Select one Session-local model after explicitly resuming the Session.
- * @param request - Session identity and requested model selection.
+ * @param request - Session identity, requested selection, and whether to cut the running turn's step short with it.
  * @returns the normalized selection installed for the Session.
  */
 @Remote('selectModel') selectModel(request: SessionSelectModelRequest): Promise<SessionSelectModelValue>
@@ -847,10 +847,8 @@ workspaceDesktop(): { name: string; available: boolean; fileManager: 'finder' | 
 @Remote('rename') rename(request: SessionRenameRequest): Promise<SessionRenameValue>
 
 /**
- * Fork one cold-readable exact event prefix into a new Session. An omitted
- * boundary selects the latest completed-turn prefix; an open cut receives
- * synthetic fork closers.
- * @param request - source Session and optional exact inclusive event boundary.
+ * Fork one cold-readable completed-turn prefix into a new Session.
+ * @param request - source Session and optional event anchor.
  * @returns the new Session identity.
  */
 @Remote('fork') fork(request: SessionForkRequest): Promise<SessionForkValue>
@@ -883,6 +881,23 @@ workspaceDesktop(): { name: string; available: boolean; fileManager: 'finder' | 
  * @returns acknowledgement that cancellation was requested.
  */
 @Remote('cancel') cancel(request: SessionCancelRequest): SessionCancelValue
+
+/**
+ * Read the deployment's configured default source root for the official
+ * DeepSeek Harness chat-history import.
+ * @returns the configured foreign sessions root.
+ */
+@Remote('harnessSessionsRoot') harnessSessionsRoot(): SessionImportHarnessSourceValue
+
+/**
+ * Import the official DeepSeek Harness chat history into Alpha's own store.
+ * Read-only over the source root, idempotent, and isolated per Session; it
+ * never watches or synchronizes on its own.
+ * @param request - optional source-root override.
+ * @param signal - caller cancellation for reads, migration, and publication.
+ * @returns the effective source root and one result per discovered Session.
+ */
+@Remote('importHarnessSessions') importHarnessSessions( request: SessionImportHarnessRequest, signal: AbortSignal, ): Promise<SessionImportHarnessValue>
 
 /**
  * Read one cold-safe, message-aligned Session history page.

@@ -15,6 +15,7 @@ English | [中文](README.zh.md)
 - [Use this package](#use-this-package)
 - [Client references](#client-references)
 - [Session media references](#session-media-references)
+- [Harness chat-history import](#harness-chat-history-import)
 - [Configuration](#configuration)
 - [Model Experience](#model-experience)
 - [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
@@ -56,6 +57,13 @@ References keep local Session data, scoped Contexts, and history streams alive, 
 
 `SessionMediaReferences` mounts `GET|HEAD /api/file?path=<absolute path>` on the authenticated `connection.fetch` channel when `connection`, `fs`, and `attachments` are composed. It reads ordinary files through `ctx.fs`, including temporary paths outside registered workspaces and files in remote providers. Neither directory containment nor MIME categories restrict access; `mime-types` supplies the response type, with `application/octet-stream` for unknown extensions. GET reuses `readBytes` for preflight and ongoing byte limits; HEAD reads metadata only. All files use `ctx.attachments.imageLimits.maxImageBytes` (normally 20 MiB); exceeding this limit returns 413. Responses contain the complete file, ignore Range, and carry `private, no-store`, `nosniff`, and a sandbox CSP so directly opened HTML/SVG cannot execute with the API origin. The Client rewrite lives in `ui-chat` (`AssistantMarkdown`); audio/video responses are available, while Markdown audio/video player nodes remain separate work.
 
+<a id="harness-chat-history-import"></a>
+## Harness chat-history import
+
+`session.importHarnessSessions` adopts the official DeepSeek Harness chat history into Alpha's own Session store, and only when a user asks. It reads the root the `harnessSessionsRoot` Config field names, or the one a request overrides it with, and never writes to that root: discovery selects each Session directory's highest canonical generation, restore migrates an older generation through the build-static format chain, and the storage contract validates the restored log before anything is written. Adoption copies the validated current-format events into the mounted `ctx.sessionPersistence` backend, so the target root and physical encoding remain Alpha's own.
+
+One result is returned per discovered Session — `imported`, `already-present`, or `refused` with its cause. Isolation is per Session, so an unreadable or corrupt source Session is refused while its siblings still import, and a repeated run adopts nothing and reports every Session as already present. The operation never watches, polls, or synchronizes. `harnessSessionsRoot` lets a Client pre-fill its editable source root with the configured default, and the Client face is the `harnessSessionsImport` service, whose `importSessions` re-pulls the Session list once the Host has published what it adopted.
+
 -----
 
 <a id="configuration"></a>
@@ -64,6 +72,7 @@ References keep local Session data, scoped Contexts, and history streams alive, 
 | Field | Default | Meaning |
 |---|---:|---|
 | `nativeOpen` | platform-detected | Whether Session workspace paths can be handed to a native desktop opener |
+| `harnessSessionsRoot` | official Harness home's `sessions` | Source sessions root the explicit Harness chat-history import reads |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#mutantcatdsh-api-session-controller) is the exhaustive source for accepted fields and their JSDoc.
 

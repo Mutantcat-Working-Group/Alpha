@@ -19,11 +19,8 @@ import type {} from '@mutantcat/dsh-token-meter/client'
 import css from './SubagentHeaderLineage.module.css'
 import { indexSubagentDescendants } from './subagent-lineage.ts'
 
-type SubagentCatalogSnapshot = Omit<SessionProjectionSnapshot, 'values' | 'state'> & {
-  state: 'loading' | 'ready' | 'error'
-  entries: (SessionProjectionMap['subagentCatalog'][number] & { activity: 'running' | 'inactive' })[]
-}
-type Catalogs = Readonly<Record<SessionId, SubagentCatalogSnapshot>>
+type CatalogEntry = SubagentCatalogSnapshot['entries'][number]
+type Catalogs = SessionListState['subagentsByParent']
 
 /** Business actions supplied by the slot registration. */
 export interface SubagentCatalogInjected {
@@ -247,7 +244,9 @@ function CatalogRows({
   openChild, openChildAside, refresh, toggleBranch, closeCatalog, t,
 }: CatalogRowsProps & { t: TranslateNS<typeof NS> }) {
   const emptyLoading = catalog.state === 'loading' && catalog.entries.length === 0
-  const reserveDisclosure = catalog.entries.some(entry => entry.mode !== 'external' && !isKnownLeaf(catalogs[entry.id]))
+  const reserveDisclosure = catalog.entries.some(
+    entry => entry.kind === 'child' && entry.hasChildren,
+  )
   return (
     <>
       {emptyLoading && (
@@ -272,24 +271,39 @@ function CatalogRows({
         </div>
       )}
       {catalog.entries.map((entry) => {
-        const external = entry.mode === 'external'
+        if (entry.kind === 'diagnostic') {
+          const reason = diagnosticReason(entry, t)
+          return (
+            <div key={entry.id} className={css.node}>
+              <div
+                role="treeitem"
+                aria-disabled="true"
+                aria-level={level}
+                aria-label={`${entry.id} ${reason}`}
+                className={`${css.row} ${css.disabled}`}
+                title={reason}
+              >
+                {reserveDisclosure && <span className={css.disclosureSpace} />}
+                <StateDot state="error" />
+                <span className={css.content}>
+                  <span className={css.label}>{entry.id}</span>
+                  <span className={css.summary}>{reason}</span>
+                </span>
+              </div>
+            </div>
+          )
+        }
+
         const childCatalog = catalogs[entry.id]
         const isCurrent = entry.id === currentSessionId
         const isExpanded = expanded.has(entry.id)
-        const knownLeaf = external || isKnownLeaf(childCatalog)
+        const knownLeaf = !entry.hasChildren
         const childLoading = childCatalog === undefined
           || (childCatalog.state === 'loading' && childCatalog.entries.length === 0)
         const summary = summaries[entry.id]
         const label = entry.label ?? entry.id
-        const mode = external ? t('mode.external') : entry.mode === 'unknown' ? t('mode.unknown')
-          : entry.mode === 'one-shot' ? t('mode.oneShot') : t('mode.continuable')
-        const completed = !external && entry.activity === 'inactive'
-          && summary?.projectionValues?.subagentTiming?.lastTurnCompleted === true
-        const activity = external ? undefined : entry.activity === 'running'
-          ? t('activity.running')
-          : completed
-            ? t('activity.completed')
-            : t('activity.inactive')
+        const mode = entry.mode === 'one-shot' ? t('mode.oneShot') : t('mode.continuable')
+        const activity = entry.activity === 'running' ? t('activity.running') : t('activity.inactive')
         const secondary = [summary?.title, mode, activity]
           .filter(value => value !== undefined)
           .join(' · ')
@@ -313,12 +327,13 @@ function CatalogRows({
           .join(' · ')
 
         const open = (): void => {
-          if (external) return
-          openChild({
-            parentSessionId,
-            childSessionId: entry.id,
-            mode: entry.mode,
-          })
+          openChild({ parentSessionId, childSessionId: entry.id, mode: entry.mode })
+          closeCatalog()
+        }
+        const openAside = (event: MouseEvent<HTMLButtonElement>): void => {
+          event.preventDefault()
+          event.stopPropagation()
+          openChildAside({ parentSessionId, childSessionId: entry.id, mode: entry.mode })
           closeCatalog()
         }
         const handleKey = (event: KeyboardEvent<HTMLDivElement>): void => {
@@ -345,8 +360,7 @@ function CatalogRows({
           <div key={entry.id} className={css.node}>
             <div
               role="treeitem"
-              tabIndex={external ? -1 : 0}
-              aria-disabled={external || undefined}
+              tabIndex={0}
               aria-level={level}
               aria-current={isCurrent || undefined}
               aria-label={[label, secondary, metrics].filter(value => value !== '').join(' ')}
@@ -387,18 +401,13 @@ function CatalogRows({
                     )}
                   </span>
                 )}
-                {!isCurrent && !external && (
+                {!isCurrent && (
                   <button
                     type="button"
                     className={css.sidebarButton}
                     aria-label={t('open.sidebar', { label })}
                     title={t('open.sidebar', { label })}
-                    onClick={(event) => {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      openChildAside({ parentSessionId, childSessionId: entry.id, mode: entry.mode })
-                      closeCatalog()
-                    }}
+                    onClick={openAside}
                     onKeyDown={(event) => { event.stopPropagation() }}
                   >
                     <IconChevronRightOutline14 />
@@ -500,16 +509,6 @@ function CatalogDropdown({
   const ancestorSwitcher = variant === 'switcher' && openTitle !== undefined
   const catalogs = useSessions(state => state.subagentsByParent)
   const summaries = useSessions(state => state.byId)
-  const statuses = useSessionStatus(value => value)
-  const catalogs = useMemo<Catalogs>(() => Object.fromEntries(Object.entries(projections).map(([id, snapshot]) => [id, {
-    state: snapshot.state === 'idle'
-      ? snapshot.values.subagentCatalog === undefined ? 'loading' : 'ready'
-      : snapshot.state,
-    error: snapshot.error,
-    entries: (snapshot.values.subagentCatalog ?? []).map(entry => ({
-      ...entry, activity: (statuses.get(entry.id)?.running ?? summaries[entry.id]?.running) === true ? 'running' as const : 'inactive' as const,
-    })),
-  }])), [projections, summaries, statuses])
   const catalog = catalogs[rootSessionId]
   const [open, setOpen] = useState(false)
   const [menuPosition, setMenuPosition] = useState<CSSProperties>()
@@ -525,8 +524,8 @@ function CatalogDropdown({
   setCatalogOpenRef.current = setCatalogOpen
   const currentEntry = currentSessionId === undefined
     ? undefined
-    : catalog?.entries.find(entry => entry.id === currentSessionId)
-  const switcherDisplayTitle = currentEntry !== undefined
+    : catalog?.entries.find(entry => entry.kind === 'child' && entry.id === currentSessionId)
+  const switcherDisplayTitle = currentEntry?.kind === 'child'
     ? currentEntry.label ?? currentEntry.id
     : displayTitle
   const healthy = catalog?.entries.filter(entry => entry.kind === 'child') ?? []

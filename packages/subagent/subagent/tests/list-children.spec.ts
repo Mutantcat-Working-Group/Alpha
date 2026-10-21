@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { z } from 'zod'
 import { Context } from '@mutantcat/cordis'
 import { createUserMessage } from '@mutantcat/dsh-llm'
+import type { MessageSource } from '@mutantcat/dsh-llm'
 import AgentLoop from '@mutantcat/dsh-agent-loop'
 import type { Agent } from '@mutantcat/dsh-agent'
 import { mountAgentLoopTestDependencies } from '@mutantcat/dsh-agent-loop-testkit'
@@ -33,6 +34,13 @@ import { TestSessionQuery } from './test-session-query.ts'
 import { seedStoredSession } from './persistence-helpers.ts'
 
 type Script = ConstructorParameters<typeof MockAdapter>[0]
+
+type CheckpointSource = Extract<MessageSource, { readonly kind: 'compact-checkpoint' }>
+
+/** Build a typed checkpoint source for the compacted-twin fixture without owning compaction. */
+function checkpointSource(compactionId: string): CheckpointSource {
+  return { kind: 'compact-checkpoint', compactionId: compactionId as CheckpointSource['compactionId'] }
+}
 
 const roots: string[] = []
 const projectionCacheDisposers: Array<() => Promise<void>> = []
@@ -829,20 +837,50 @@ describe('SubagentRuntime.listChildren', () => {
       createdAt: 1,
       origin: 'subagent',
     }, childEvents(descriptorPayload('twin child')))
-    // The compacted twin: a compaction checkpoint replaces the whole surface,
-    // while the append-only log retains the model-hidden descriptor event.
+    // The compacted twin: one real compaction lifecycle replaces the whole
+    // surface, while the append-only log retains the model-hidden descriptor.
+    const checkpoint = checkpointSource('compacted-twin')
+    const compaction = { compactionId: checkpoint.compactionId }
     const compactedEvents = childEvents(descriptorPayload('twin child'))
-    compactedEvents.push({
-      type: 'user/message',
-      seq: SessionSeq(4),
-      time: 5,
-      data: createUserMessage({
-        content: [{ type: 'text', text: 'summary of everything' }],
-        source: { kind: 'plugin', plugin: 'compact' },
-      }),
-      surfaceOp: { op: 'replace', startSeq: SessionSeq(1), endSeq: SessionSeq(1) },
-      sourceEventSeqs: [SessionSeq(1)],
-    })
+    compactedEvents.push(
+      {
+        type: 'compaction/start',
+        seq: SessionSeq(4),
+        time: 5,
+        data: { ...compaction, turn: null },
+      },
+      {
+        type: 'compaction/summary',
+        seq: SessionSeq(5),
+        time: 6,
+        data: {
+          ...compaction,
+          summary: [{ type: 'text', text: 'summary of everything' }],
+          shadowedRange: { start: SessionSeq(1), end: SessionSeq(1) },
+          shadowedSeqs: [SessionSeq(1)],
+          shadowedTokenCount: 1,
+          provider: 'test-provider',
+          model: 'test-model',
+        },
+      },
+      {
+        type: 'user/message',
+        seq: SessionSeq(6),
+        time: 7,
+        data: createUserMessage({
+          content: [{ type: 'text', text: 'summary of everything' }],
+          source: checkpoint,
+        }),
+        surfaceOp: { op: 'replace', startSeq: SessionSeq(1), endSeq: SessionSeq(1) },
+        sourceEventSeqs: [SessionSeq(1)],
+      },
+      {
+        type: 'compaction/end',
+        seq: SessionSeq(7),
+        time: 8,
+        data: { ...compaction, turn: null },
+      },
+    )
     const compacted = await authorChild(ctx, '00000000-0000-4000-8000-00000000c1de', {
       parentSession: parent.id,
       createdAt: 2,

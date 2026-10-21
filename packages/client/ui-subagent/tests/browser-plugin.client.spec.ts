@@ -1,5 +1,4 @@
 /** ui-subagent browser half: catalog actions and read-only composer routing. */
-import { createSnapshotStore } from '@mutantcat/dsh-client-store'
 import { Context } from '@mutantcat/cordis'
 import { stubSettingsScope } from '@mutantcat/dsh-client-test-runtime'
 import { describe, expect, it } from 'vitest'
@@ -42,11 +41,8 @@ function sessionsWith(sessions: SessionSummary[]) {
       subscribe: () => () => {},
     },
     actionCalls,
-    subagentAddress: (childSessionId: SessionId) => childSessionId === address.childSessionId
-      ? address
-      : undefined,
-    refreshProjections: (parentSessionId: SessionId) => {
-      actionCalls.push({ method: 'refreshProjections', args: [parentSessionId] })
+    refreshSubagents: (parentSessionId: SessionId) => {
+      actionCalls.push({ method: 'refreshSubagents', args: [parentSessionId] })
       return Promise.resolve()
     },
     setSubagentCatalogOpen: (parentSessionId: SessionId, open: boolean) => {
@@ -127,7 +123,8 @@ describe('apply', () => {
           { kind: 'subagentchat', preferNewPane: true },
         ],
       },
-      { method: 'refreshProjections', args: [sid('parent')] },
+      { method: 'refreshSubagents', args: [sid('parent')] },
+      { method: 'setSubagentCatalogOpen', args: [sid('parent'), true] },
     ])
 
     const composerEntry = ctx.slots.entries('conversation.composer')
@@ -150,8 +147,6 @@ describe('apply', () => {
     // One-shot stays read-only even while running: it has no stop action.
     expect(select(owner({ address: { ...address, mode: 'one-shot' }, parentAvailable: true }, true)))
       .toEqual({ reason: 'one-shot' })
-    expect(select(owner({ address: { ...address, mode: 'unknown' }, parentAvailable: true })))
-      .toEqual({ reason: 'unknown' })
     expect(select(owner({ address }))).toBeNull()
     expect(select(owner({ address, parentAvailable: true }))).toBeNull()
     expect(select(owner({ address, parentAvailable: false })))

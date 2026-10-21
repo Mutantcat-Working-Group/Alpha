@@ -1967,6 +1967,16 @@ describe('plugin registration and config', () => {
     })).rejects.toThrow('llm-deepseek: defaultInput must name at least one modality')
   })
 
+  it('refuses a duplicated modality', async () => {
+    const ctx = new Context()
+    await ctx.plugin(LlmRuntime)
+    await expect(ctx.plugin(LlmDeepSeek, {
+      protocol: 'chat-completions',
+      baseURL: 'http://127.0.0.1:1',
+      defaultInput: ['text', 'text'],
+    })).rejects.toThrow('llm-deepseek: defaultInput must not contain duplicates')
+  })
+
   it('uses exact model capacity before the adapter-wide default', async () => {
     const ctx = new Context()
     await ctx.plugin(LlmRuntime)

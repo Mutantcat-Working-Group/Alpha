@@ -7,6 +7,7 @@
 import type {
   ModelCatalogFailure, ModelProviderGroup, ModelSelection, ModelSelectionProjection,
 } from '@mutantcat/dsh-api-session-controller/types'
+import type { SessionSnapshot } from '@mutantcat/dsh-api-session-controller/client'
 import type { SessionId } from '@mutantcat/dsh-api-remotes/client'
 import type { RemoteResult, TypertClientRemote } from '@mutantcat/dsh-typert-protocol'
 import type { ObservableSnapshot, SnapshotStore } from '@mutantcat/dsh-client-store'
@@ -42,6 +43,14 @@ export interface ModelDirectoryState {
   status: 'idle' | 'loading' | 'ready' | 'selecting' | 'error'
   /** Whole-request or selection failure text; null when none. */
   error: string | null
+  /**
+   * Whether "switch now" applies: the durable fold holds a selection the latest
+   * request did not use yet while this Session runs, so the in-flight turn is
+   * still generating with the previous model. False from the moment that
+   * request records the selection — the ordinary way a switch takes effect —
+   * and false while idle, when the next step or turn consumes it on its own.
+   */
+  switchPending: boolean
 }
 
 /** One session's shared directory controller; disposed with the session scope. */
@@ -49,6 +58,7 @@ export class ModelDirectory {
   /** The shared snapshot both entries render from (uSES-safe store). */
   readonly store: SnapshotStore<ModelDirectoryState> = createSnapshotStore<ModelDirectoryState>({
     current: null, routable: null, groups: [], failures: [], status: 'idle', error: null,
+    switchPending: false,
   })
 
   /** Latest selection operation wins; an older response never overwrites a newer one. */
@@ -64,6 +74,7 @@ export class ModelDirectory {
   private confirmed: ModelSelection | null = null
   private readonly unsubscribeCatalog: () => void
   private readonly unsubscribeSelection: () => void
+  private readonly unsubscribeLive: () => void
 
   /**
    * @param sessions - the session wire face (captured from the plugin's root connection).
@@ -71,6 +82,7 @@ export class ModelDirectory {
    * @param available - whether this session may use Agent-bound model RPCs.
    * @param catalog - Host-generation catalog shared by every Session.
    * @param projected - durable model selection projected from Session history.
+   * @param live - the Session's own snapshot source (its run state).
    */
   constructor(
     private readonly sessions: Pick<TypertClientRemote['session'], 'selectModel'>,
@@ -78,9 +90,11 @@ export class ModelDirectory {
     private readonly available: () => boolean,
     private readonly catalog: ModelCatalogDirectory,
     private readonly projected: ObservableSnapshot<unknown>,
+    private readonly live: ObservableSnapshot<SessionSnapshot>,
   ) {
     this.unsubscribeCatalog = catalog.store.subscribe(() => { this.syncInputs() })
     this.unsubscribeSelection = projected.subscribe(() => { this.syncInputs() })
+    this.unsubscribeLive = live.subscribe(() => { this.syncInputs() })
     this.syncInputs()
   }
 
@@ -106,6 +120,22 @@ export class ModelDirectory {
    * @returns the selection outcome, including the original Remote failure.
    */
   async select(selection: ModelSelection): Promise<RemoteResult<void>> {
+    return this.submit(selection, false)
+  }
+
+  /**
+   * Apply a selection to the running turn now instead of parking it: the Host
+   * installs the selection and cuts the in-flight model step short, so the next
+   * step of the same turn continues under it. An idle Session, or one between
+   * model steps, just keeps the parked selection.
+   * @param selection - provider, provider-owned model id, and optional adapter-owned effort.
+   * @returns the selection outcome, including the original Remote failure.
+   */
+  async switchNow(selection: ModelSelection): Promise<RemoteResult<void>> {
+    return this.submit(selection, true)
+  }
+
+  private async submit(selection: ModelSelection, immediate: boolean): Promise<RemoteResult<void>> {
     this.assertAvailable()
     const generation = ++this.generation
     this.store.update((s) => { s.status = 'selecting'; s.error = null })
@@ -116,6 +146,7 @@ export class ModelDirectory {
       ...selection.reasoningEffort === undefined
         ? {}
         : { reasoningEffort: selection.reasoningEffort },
+      ...immediate ? { immediate: true } : {},
     })
     if (this.disposed || generation !== this.generation) {
       return result.ok ? { ok: true, value: undefined } : result
@@ -152,6 +183,7 @@ export class ModelDirectory {
     this.disposed = true
     this.unsubscribeSelection()
     this.unsubscribeCatalog()
+    this.unsubscribeLive()
   }
 
   private assertAvailable(): void {
@@ -164,6 +196,7 @@ export class ModelDirectory {
     if (this.disposed) return
     const catalog = this.catalog.store.getSnapshot()
     const projected = modelSelectionProjection(this.projected.getSnapshot())
+    const switchPending = this.isSwitchPending(projected)
     // The durable projection is the record of what the Session will request; a
     // wire confirmation stands in only until that record reports the same route.
     if (this.confirmed !== null && projected !== undefined
@@ -181,6 +214,7 @@ export class ModelDirectory {
           state.current = confirmed
           state.routable = true
           state.error = null
+          state.switchPending = switchPending
           if (state.status !== 'selecting') state.status = 'ready'
         })
         return
@@ -201,6 +235,7 @@ export class ModelDirectory {
         failures: [],
         status: catalog.status === 'error' ? 'error' : 'loading',
         error: catalog.error,
+        switchPending,
       })
       return
     }
@@ -222,7 +257,22 @@ export class ModelDirectory {
       failures: catalogValue.failures,
       status,
       error: null,
+      switchPending,
     })
+  }
+
+  /**
+   * Whether the running turn still generates with a model the fold has already
+   * replaced. A Session that has recorded no request yet reports its pending
+   * selection as `next` with no `lastUsed`, and the first request it admits
+   * uses that selection — so an unrecorded request never offers the cut.
+   * @param projected - durable model selection fold, or undefined while unread.
+   * @returns true only while this Session runs with a superseded selection.
+   */
+  private isSwitchPending(projected: ModelSelectionProjection | undefined): boolean {
+    if (projected === undefined || projected.lastUsed === null) return false
+    if (!this.live.getSnapshot().running) return false
+    return !sameSelection(projected.next, projected.lastUsed)
   }
 }
 

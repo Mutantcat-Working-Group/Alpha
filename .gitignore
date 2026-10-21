@@ -49,3 +49,8 @@ worktrees/
 .agents/worktrees/
 .typert-*/
 native/system/test/bin/
+website/.vitepress/*.timestamp-*.mjs
+# Compiled output written beside sources by a package-local tsc run.
+packages/**/src/**/*.js
+packages/**/src/**/*.js.map
+packages/**/src/**/*.d.ts.map

@@ -18,6 +18,7 @@ async function fixture() {
     const agent: Agent = {
       id: session.id, session, ctx: fiber.ctx, options: {}, status: 'idle',
       inbox: unsupportedInbox(), send() {}, followup() {}, inject() {}, cancel() {},
+      interruptModelStep: () => false,
       steer: () => ({ outcome: Promise.resolve({ status: 'rejected' as const }) }),
       runMaintenance: task => task(new AbortController().signal),
       whenIdle: () => Promise.resolve(undefined),

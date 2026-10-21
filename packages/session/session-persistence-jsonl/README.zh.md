@@ -85,6 +85,10 @@ kind: "package-reference"
 
 历史格式的 `stat` 与 `list` 修订号需要与根目录 Session 数量成正比的元数据工作。首次正文准备扫描所有所选 header 并解码直属子正文；复用准备缓存仍扫描成员集合并检查修订。只读访问从不发布升级，因此冷进程与被淘汰的准备缓存会重复这些工作。当前 V4 正文读取和修订号避开历史全库扫描。见[实测成本与诊断命令](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md#catalog-scan-measurements)。
 
+### 读取另一套安装的根目录
+
+`@mutantcat/dsh-session-persistence-jsonl/foreign` 入口用于读取本后端并未写入的 sessions 根目录，复用相同的路径布局、物理分帧与格式目录（format catalog）。`listForeignSessionGenerations(root)` 报告每个 Session 目录的最高规范世代，把同版本并列解析为 Zstandard 产物，并把根目录缺失视为没有 Session。`readForeignSessionHeader(generation)` 把单个 header 还原为已安装格式，并拒绝 header 无法标识自身路径的世代；`readForeignSessionContent(header, corpus)` 把整份日志解码为连续的当前格式事件，并从扫描到的语料中取得 V3 父会话的子项证据。该入口不会写入、移动或改写它所读取根目录下的任何内容，也不会有任何迁移在那里发布后继：把外部 Session 采纳进另一套存储属于调用方的职责。
+
 -----
 
 <a id="understand-the-implementation"></a>
@@ -110,6 +114,7 @@ kind: "package-reference"
 | [`src/index.ts`](src/index.ts) | 插件入口：`Config` schema、后端服务类与文件存储原语 |
 | [`src/storage.ts`](src/storage.ts) | JSONL 句柄、已路由实时事件缓冲、进程内写入者记账、监听器、teardown |
 | [`src/format.ts`](src/format.ts) | 日志路径派生、header 编码与当前记录扫描 |
+| [`src/foreign.ts`](src/foreign.ts) | 对另一套安装的 sessions 根目录做只读发现、header 还原与当前格式正文还原 |
 | [`src/generation.ts`](src/generation.ts) | 单遍历史还原、有界 stage 编码、源 revision 检查与排他后继发布 |
 | [`src/migration-verifier.ts`](src/migration-verifier.ts) | stage 与竞争 generation 校验的 Worker 生命周期 |
 | [`src/zstd.ts`](src/zstd.ts) | Zstandard 帧压缩、解码与帧扫描 |

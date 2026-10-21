@@ -279,6 +279,9 @@
     - id: ui-settings-unarchive-sessions
       name: '@mutantcat/dsh-client-ui-settings-unarchive-sessions'
 
+    - id: ui-settings-import-sessions
+      name: '@mutantcat/dsh-client-ui-settings-import-sessions'
+
     - id: ui-conversation
       name: '@mutantcat/dsh-client-ui-conversation'
 

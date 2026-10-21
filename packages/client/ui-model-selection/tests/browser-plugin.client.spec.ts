@@ -141,7 +141,12 @@ async function bench(locale: 'zh' | 'en' = 'zh') {
   const scopes = new Map<SessionId, Context>()
   const bindings = new Map<SessionId, {
     sessionId: SessionId
-    session: { sessionId: SessionId; projections: { faceOf: () => SnapshotStore<ModelSelectionProjection | undefined> } }
+    session: {
+      sessionId: SessionId
+      projections: { faceOf: () => SnapshotStore<ModelSelectionProjection | undefined> }
+      getSnapshot: () => { running: boolean }
+      subscribe: () => () => void
+    }
     ctx: Context
   }>()
   const addressed = new Set<SessionId>()
@@ -166,7 +171,15 @@ async function bench(locale: 'zh' | 'en' = 'zh') {
     projections.set(id, projection)
     const binding = {
       sessionId: id,
-      session: { sessionId: id, projections: { faceOf: () => projection } },
+      // The directory reads the Session's run state to decide whether a
+      // durable selection is still waiting for the next step; this bench never
+      // runs a turn.
+      session: {
+        sessionId: id,
+        projections: { faceOf: () => projection },
+        getSnapshot: () => ({ running: false }),
+        subscribe: () => () => {},
+      },
       ctx: handle.ctx,
     }
     bindings.set(id, binding)

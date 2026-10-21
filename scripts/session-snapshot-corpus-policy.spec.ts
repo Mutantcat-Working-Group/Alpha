@@ -16,7 +16,11 @@ const adjacent = Array.from({ length: SESSION_FORMAT_VERSION - 1 }, (_, index) =
   selectedVersions: [index + 1],
   retained: { version: index + 1, coverage: ['adjacent-migration'] as const },
 }))
-const current = { key: 'session/current', selectedVersions: Array<number>(8).fill(SESSION_FORMAT_VERSION) }
+// Keep one more current role than every retained role so the required strict
+// majority holds at any format version.
+const retainedRoles = 5 + adjacent.length
+const currentRoles = retainedRoles + 1
+const current = { key: 'session/current', selectedVersions: Array<number>(currentRoles).fill(SESSION_FORMAT_VERSION) }
 
 describe('recorded-session corpus policy', () => {
   it('accepts a current majority and complete bounded migration coverage', () => {
@@ -30,7 +34,11 @@ describe('recorded-session corpus policy', () => {
       { key: 'session/packed', selectedVersions: [0], retained: { version: 0, coverage: ['packed-row'] } },
       { key: 'session/retry', selectedVersions: [0], retained: { version: 0, coverage: ['retry-failure'] } },
       ...adjacent,
-    ])).toEqual({ currentRoles: 8, retainedRoles: 5 + adjacent.length, retainedScenarios: 3 + adjacent.length })
+    ])).toEqual({
+      currentRoles,
+      retainedRoles,
+      retainedScenarios: 3 + adjacent.length,
+    })
   })
 
   it('retains retired tools in the current format without claiming migration coverage', () => {

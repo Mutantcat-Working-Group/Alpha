@@ -15,7 +15,6 @@ Restore supported released V3 Sessions as V4 without rewriting their stored gene
 
 - [Use this package](#use-this-package)
 - [V3-to-V4 specification](#v3-to-v4-specification)
-  - [Header and physical framing](#header-and-framing)
   - [Tool-result representation](#tool-results)
   - [Extension data](#extension-data)
   - [Message-source conversion](#message-sources)
@@ -23,8 +22,6 @@ Restore supported released V3 Sessions as V4 without rewriting their stored gene
   - [Sequence references and inheritance](#sequence-references)
   - [Delivery generations](#delivery-guards)
   - [Source audit and refusal](#source-audit)
-- [Native V4 admission](#native-v4-admission)
-  - [Header, messages, and surface metadata](#native-fields)
   - [Lifecycle and reference relationships](#native-relationships)
   - [Developer changes and deferred schemas](#developer-changes)
   - [Fork-generated results](#fork-results)
@@ -75,6 +72,11 @@ Complete restoration validates native V4 tool and fork results, turn/step order,
 No preset id, PTC dispatch event tag, file attachment, or physical filename is renamed by this edge. Content extensions in embedded streams follow the rules below; stream order and indices remain unchanged.
 
 V4 source admission rejects retired plugin wrappers in surface, inbox, and title-request messages before recoverable scanning can discard rows. The catalog and native JSONL scanner validate every known message-source slot before exposing restored data. Unknown nonempty attribution kinds and every own JSON metadata field remain intact; external names such as `constructor` and `__proto__` are ordinary producer strings.
+
+<a id="tool-results"></a>
+### Tool-result representation
+
+Native V4 admission of message fields is described below; this edge converts one tool result representation.
 
 [liftToolResult](src/tool-role.ts) converts the message of a `tool/result` event whose source representation has role `user`. It requires a nonempty message id, source `{ kind: 'tool', callId }` with a nonempty call id, and exactly one `tool-result` block naming the same call. The block's content must be an array; an optional `isError` must be boolean.
 

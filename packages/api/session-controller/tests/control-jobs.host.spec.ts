@@ -56,6 +56,7 @@ async function harness(withJobs: boolean): Promise<{
     steer: () => {},
     inject: () => {},
     cancel: () => {},
+    interruptModelStep: () => false,
     runMaintenance: task => task(new AbortController().signal),
     whenIdle: () => Promise.resolve(),
   }

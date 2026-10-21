@@ -193,6 +193,9 @@ export function apply(ctx: ClientContext): void {
           select: (selection: ModelSelection) => available
             ? directory.select(selection)
             : Promise.resolve(undefined),
+          switchNow: (selection: ModelSelection) => available
+            ? directory.switchNow(selection)
+            : Promise.resolve(undefined),
         }
       },
     }, ModelSelect))

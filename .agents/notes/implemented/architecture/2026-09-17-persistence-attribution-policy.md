@@ -10,7 +10,7 @@ A producer-owned message source appears transitively in several persisted event 
 
 ## Decision
 
-The core-owned user-message source property binds the [recorded compatibility policy](../process/2026-09-17-persistence-schema-review.md). A producer separately qualifies its literal wire kind as attribution-only. Both saved schemas must carry compatible policy state before a qualified addition receives a same-version classification. Existing alternatives remain structurally compared; missing policy, unqualified additions, removals, and changes to existing semantic groups retain strict classification. Fixed system, model, and tool source fields do not participate.
+The core-owned user-message source property binds the [recorded compatibility policy](../../../../docs/persistence-changes/README.md#compatibility-rules). A producer separately qualifies its literal wire kind as attribution-only. Both saved schemas must carry compatible policy state before a qualified addition receives a same-version classification. Existing alternatives remain structurally compared; missing policy, unqualified additions, removals, and changes to existing semantic groups retain strict classification. Fixed system, model, and tool source fields do not participate.
 
 The tmux-context producer qualifies its location attribution. Its own projection uses the kind to avoid repeated injection, while readers without that producer retain the recorded content and every source JSON property. The qualification promises reader independence; it does not forbid producer-local duplicate suppression.
 

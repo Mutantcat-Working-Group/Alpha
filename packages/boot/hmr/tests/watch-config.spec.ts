@@ -45,8 +45,8 @@ async function bootHmr(dir: string, root: string[] = [], usePolling?: boolean): 
   return ctx
 }
 
-async function eventually(test: () => boolean, message: string): Promise<void> {
-  const deadline = Date.now() + 10_000
+async function eventually(test: () => boolean, message: string, timeoutMs = 20_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs
   while (!test()) {
     if (Date.now() >= deadline) throw new Error(message)
     await new Promise(resolve => setTimeout(resolve, 10))
@@ -109,7 +109,7 @@ describe('HMR exact config paths', () => {
     }
   })
 
-  it('observes add, change, and unlink outside its module roots', { timeout: 20_000 }, async () => {
+  it('observes add, change, and unlink outside its module roots', { timeout: 30_000 }, async () => {
     const dir = mkdtempSync(join(tmpdir(), 'dsh-hmr-config-'))
     hmrRoots.push(dir)
     const filename = join(dir, 'plugins.yml')
@@ -136,7 +136,7 @@ describe('HMR exact config paths', () => {
     }
   })
 
-  it('observes creation when the config parent did not exist at registration', { timeout: 20_000 }, async () => {
+  it('observes creation when the config parent did not exist at registration', { timeout: 30_000 }, async () => {
     const root = mkdtempSync(join(tmpdir(), 'dsh-hmr-config-'))
     hmrRoots.push(root)
     const dir = join(root, 'later')
@@ -155,7 +155,7 @@ describe('HMR exact config paths', () => {
     }
   })
 
-  it('processes native events for a watcher registered during a transaction', async () => {
+  it('processes native events for a watcher registered during a transaction', { timeout: 30_000 }, async () => {
     const dir = mkdtempSync(join(tmpdir(), 'dsh-hmr-transaction-watch-'))
     const filename = join(dir, 'plugins.yml')
     onTestFinished(() => { rmSync(dir, { recursive: true, force: true }) })

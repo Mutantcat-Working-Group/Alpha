@@ -287,7 +287,7 @@ describe('Remote Agent and Session lookup policy', () => {
       seq: 0,
       time: 1001,
       data: { target: 'next-turn', start: 0, inserted: [message] },
-    }] as SessionEvent[]
+    }] as unknown as SessionEvent[]
     providePersistence(ctx, {
       list: () => Promise.resolve([meta]),
       inspect: () => Promise.resolve({ meta, events }),

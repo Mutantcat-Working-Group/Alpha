@@ -243,7 +243,7 @@ describe('Session Client stream adapters', () => {
       { ...surfaceEvent(), surfaceOp: { op: 'replace', startSeq: 2, endSeq: 0 }, sourceEventSeqs: [2, 0] },
       { ...surfaceEvent('assistant/message'), data: { turn: 1, step: 1, message: {}, stream: [] } },
       { ...surfaceEvent('tool/result'), data: {
-        message: { content: [{ type: 'tool-result', content: [], isError: true }] },
+        message: { content: [{ type: 'tool-result', content: [], isError: true }], isError: true },
         error: { name: 'Error', code: 'FAILURE' }, meta: { extension: ['retained'] },
       } },
       { ...surfaceEvent('tool/result'), sourceEventSeqs: [0], data: {

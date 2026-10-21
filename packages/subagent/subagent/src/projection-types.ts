@@ -6,7 +6,12 @@
 
 import type { SessionId, SessionSeq } from '@mutantcat/dsh-session/types'
 
-/** One current direct-child discovery row materialized from parent facts. */
+/**
+ * One current direct-child discovery row materialized from parent facts.
+ * A migrated child whose descriptor is missing or unrecognized keeps the
+ * `unknown` mode, and an execution outside a local child Session records
+ * `external`; neither can be resumed locally.
+ */
 export type SubagentCatalogEntry =
   & {
     readonly id: SessionId
@@ -15,6 +20,8 @@ export type SubagentCatalogEntry =
   & (
     | { readonly mode: 'one-shot'; readonly label?: string }
     | { readonly mode: 'continuable'; readonly label: string }
+    | { readonly mode: 'unknown'; readonly label?: string }
+    | { readonly mode: 'external'; readonly label?: string }
   )
 
 /** Durable active-turn timing for one descriptor-backed child session. */

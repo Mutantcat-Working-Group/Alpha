@@ -270,17 +270,6 @@ interface ContinuableCreateSpec {
 
 `SubagentRuntime.listChildren(parentSessionId, signal?)` 通过优先使用在线 Session 的观察读取父会话的 `subagentCatalog` 视图，并在成功或失败时释放观察。它按父会话事件顺序返回直接子级条目，不读取子级日志，也不枚举 Session 语料库。查询失败直接传播；缺少目录投影时显式失败。浏览器条目从共享 projection store 派生成员关系，并从 Session 状态补充活动状态；control stream 推送完整目录更新。`listDescendants()` 保留语料库遍历、子级身份诊断和完整的 `hasChildren` 计算。[父目录 Agent Note](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 说明创建、fork 隔离、排序和持久化成本。
 
-```ts type-equiv
-/**
- * Authority under which one interrupt request is admitted. `user` carries the
- * durable direct-parent address a human client presented; `ancestor` carries
- * the exact live Agent object whose recorded lineage must contain the caller.
- */
-type SubagentInterruptAuthority =
-  | { readonly kind: 'user'; readonly parentSessionId: SessionId }
-  | { readonly kind: 'ancestor'; readonly agent: Agent }
-```
-
 ## 持久枚举
 
 `listChildren` 读取父级拥有的目录。`listDescendants` 通过语料中的身份枚举具有 Session 的子级。外部条目携带 `mode: 'external'`，不能打开子 Session 或接受后续消息。目录在创建时记录成员关系，不携带执行状态。完整结果交给调用方或父级完成通知。`list_agents` 只展示可继续子级，其活跃状态为 `running` 或 `inactive`；作用域与诊断信息见[控制工具](../../packages/subagent/tool-subagent-control/README.zh.md#list_agents)。
@@ -591,15 +580,23 @@ async drainContinuableDescendants(parents: readonly Agent[]): Promise<void>
 async drainContinuableChildren(parent: Agent, childIds: readonly SessionId[]): Promise<void>
 
 /**
- * Read the parent's durable direct-child catalog without loading or resuming an Agent.
- * The service owns and releases the live-preferred Session observation.
- * @param parentSessionId - parent whose direct children are requested.
- * @param signal - cancellation forwarded to the Session query.
- * @returns catalog children in parent event order.
- * @throws {@link SubagentError} when query or catalog projection is unavailable.
- * @throws SessionQueryError when the parent cannot be read or the query is cancelled.
+ * Enumerate the parent's direct session-backed subagents without loading or
+ * resuming an Agent. The Session query service supplies one live-preferred
+ * corpus and shared point observations; the projection cache supplies
+ * immutable descriptor hits without opening cold logs. The registered
+ * `subagent` projection remains the sole mode/label classifier.
+ *
+ * Every query receives `signal`, and the listing rechecks cancellation
+ * around each await. Read rejections that settle
+ * after an abort become a stable `SubagentError` with code `CANCELLED`.
+ * @param parentSessionId - parent session whose direct children are listed.
+ * @param signal - caller-owned cancellation forwarded to Session queries
+ *   and observed around every read await.
+ * @returns children and per-child diagnostics ordered by `createdAt`, then id.
+ * @throws {@link SubagentError} when the projection registry or the session
+ *   store is not mounted, or the caller cancels the listing.
  */
-listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentCatalogEntry[]>
+listChildren(parentSessionId: SessionId, signal?: AbortSignal): Promise<SubagentListEntry[]>
 
 /**
  * Enumerate the root's complete session-backed subagent tree in stable

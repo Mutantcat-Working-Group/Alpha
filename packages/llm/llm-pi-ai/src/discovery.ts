@@ -15,15 +15,17 @@
  *
  * OpenAI-compatible and Anthropic Messages protocols are interrogated through
  * their native model-listing endpoints. The parser accepts the standard
- * `data` array and the enriched `models` map some compatible gateways expose.
- * Every other protocol reports that it cannot be interrogated so the surface
- * falls back to hand-entry rather than guessing its response fields.
+ * `data` array and the enriched `models` map some compatible gateways expose,
+ * and carries the input modalities an entry discloses, so adopting a vision
+ * model pre-selects image input instead of leaving the route's text-only
+ * default. Every other protocol reports that it cannot be interrogated so the
+ * surface falls back to hand-entry rather than guessing its response fields.
  *
  * @module dsh-llm-pi-ai/discovery
  */
 
 import { INVALID_CREDENTIAL_CODE, LlmError, normalizeApiKey } from '@mutantcat/dsh-llm'
-import type { LlmDiscoveredModel, LlmModelDiscoveryOperation } from '@mutantcat/dsh-llm'
+import type { LlmDiscoveredModel, LlmModelDiscoveryOperation, ModelModality } from '@mutantcat/dsh-llm'
 import { attributionHeaders } from '@mutantcat/dsh-llm'
 import { catalogModels } from './catalog.ts'
 
@@ -68,6 +70,21 @@ interface ListingTopProvider {
   max_completion_tokens?: unknown
 }
 
+/** Per-entry modalities OpenRouter nests under `architecture`. */
+interface ListingArchitecture {
+  input_modalities?: unknown
+  inputModalities?: unknown
+}
+
+/**
+ * Capability flags a gateway may publish instead of a modality list. Only a
+ * positive vision flag is read: its absence means the entry said nothing about
+ * images, which is not the same as refusing them.
+ */
+interface ListingCapabilities {
+  vision?: unknown
+}
+
 /** One entry of a supported `GET /models` reply. */
 interface ListingEntry {
   id?: unknown
@@ -83,9 +100,16 @@ interface ListingEntry {
   max_tokens?: unknown
   max_output_tokens?: unknown
   maxTokens?: unknown
+  input_modalities?: unknown
+  inputModalities?: unknown
+  architecture?: ListingArchitecture | null
+  capabilities?: ListingCapabilities | null
   limit?: ListingLimit | null
   top_provider?: ListingTopProvider | null
 }
+
+/** The modalities an entry that declares only a vision flag accepts. */
+const VISION_MODALITIES: readonly ModelModality[] = ['text', 'image']
 
 /** A positive integer field of a listing entry, or `undefined` when absent or unusable. */
 function capacity(...candidates: readonly unknown[]): number | undefined {
@@ -99,6 +123,25 @@ function capacity(...candidates: readonly unknown[]): number | undefined {
 function label(...candidates: readonly unknown[]): string | undefined {
   for (const candidate of candidates) {
     if (typeof candidate === 'string' && candidate.length > 0) return candidate
+  }
+  return undefined
+}
+
+/**
+ * The modalities a listing entry declares, or `undefined` when it declares
+ * none. A name this build does not know is dropped rather than refused, so a
+ * gateway advertising an audio modality still yields the text and image
+ * declaration this build understands; a list naming only unknown modalities
+ * counts as no declaration at all, leaving the entry on the route's own
+ * default. Repeats are removed because a duplicate would fail the settings
+ * schema that stores the adopted row.
+ */
+function modalities(...candidates: readonly unknown[]): readonly ModelModality[] | undefined {
+  for (const candidate of candidates) {
+    if (!Array.isArray(candidate)) continue
+    const named = candidate.filter((entry): entry is ModelModality => entry === 'text' || entry === 'image')
+    const deduped = [...new Set(named)]
+    if (deduped.length > 0) return deduped
   }
   return undefined
 }
@@ -219,11 +262,20 @@ function readListing(body: unknown): LlmDiscoveredModel[] {
       entry?.limit?.output,
       entry?.top_provider?.max_completion_tokens,
     )
+    const declaredInput = modalities(
+      entry?.input_modalities,
+      entry?.inputModalities,
+      entry?.architecture?.input_modalities,
+      entry?.architecture?.inputModalities,
+    )
+    const inputModalities = declaredInput
+      ?? (entry?.capabilities?.vision === true ? VISION_MODALITIES : undefined)
     models.push({
       id,
       name,
       ...contextWindow === undefined ? {} : { contextWindow },
       ...maxTokens === undefined ? {} : { maxTokens },
+      ...inputModalities === undefined ? {} : { inputModalities: [...inputModalities] },
     })
   }
   return models

@@ -48,6 +48,7 @@ function state(overrides: Partial<ModelDirectoryState> = {}): ModelDirectoryStat
     failures: [],
     status: 'ready',
     error: null,
+    switchPending: false,
     ...overrides,
   }
 }
@@ -67,6 +68,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={vi.fn()}
       select={select}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -109,6 +111,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={vi.fn()}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -131,6 +134,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={vi.fn()}
       select={select}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -154,6 +158,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={vi.fn()}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -174,6 +179,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={load}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -198,6 +204,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={vi.fn()}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -234,6 +241,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={vi.fn()}
       select={select}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -260,6 +268,7 @@ describe('ModelSelect reasoning effort', () => {
         directory={createSnapshotStore(state())}
         load={vi.fn()}
         select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+        switchNow={vi.fn()}
         t={t}
       />)
       const trigger = screen.getByRole('button', { name: /选择模型/ })
@@ -307,6 +316,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={directory}
       load={vi.fn()}
       select={select}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -332,6 +342,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={createSnapshotStore(state())}
       load={vi.fn()}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -352,6 +363,7 @@ describe('ModelSelect reasoning effort', () => {
       directory={createSnapshotStore(state())}
       load={load}
       select={vi.fn().mockResolvedValue(undefined)}
+      switchNow={vi.fn()}
       t={t}
     />)
 
@@ -369,6 +381,7 @@ describe('ModelSelect keyboard walk', () => {
       directory={createSnapshotStore(state())}
       load={vi.fn()}
       select={select}
+      switchNow={vi.fn()}
       t={t}
     />)
     fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
@@ -428,6 +441,7 @@ describe('ModelSelect keyboard walk', () => {
       directory={createSnapshotStore(state())}
       load={vi.fn()}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
     const trigger = screen.getByRole('button', { name: /选择模型/ })
@@ -475,6 +489,7 @@ describe('ModelSelect keyboard walk', () => {
       directory={directory}
       load={vi.fn()}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
     const trigger = screen.getByRole('button', { name: /选择模型/ })
@@ -537,6 +552,7 @@ describe('ModelSelect keyboard walk', () => {
       directory={createSnapshotStore(state({ current: { provider: 'gone', model: 'gone' } }))}
       load={vi.fn()}
       select={vi.fn().mockResolvedValue({ ok: true, value: undefined })}
+      switchNow={vi.fn()}
       t={t}
     />)
     fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
@@ -544,5 +560,76 @@ describe('ModelSelect keyboard walk', () => {
     const rows = screen.getAllByRole('menuitemradio')
     expect(rows.every(row => row.getAttribute('aria-checked') === 'false')).toBe(true)
     expect(document.activeElement).toBe(rows[0])
+  })
+})
+
+describe('ModelSelect switch now', () => {
+  it('offers the cut only while the running turn still uses a superseded selection', () => {
+    const { unmount } = render(<ModelSelect
+      locked={false}
+      available
+      directory={createSnapshotStore(state())}
+      load={vi.fn()}
+      select={vi.fn()}
+      switchNow={vi.fn()}
+      t={t}
+    />)
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /^模型/ }))
+    // Nothing is pending for a session whose latest request already used the
+    // selection, so the pane is the plain list.
+    expect(screen.queryByRole('menuitem', { name: '立刻切换' })).toBeNull()
+    unmount()
+
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={createSnapshotStore(state({ switchPending: true }))}
+      load={vi.fn()}
+      select={vi.fn()}
+      switchNow={vi.fn()}
+      t={t}
+    />)
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /^模型/ }))
+    expect(screen.getByRole('menuitem', { name: '立刻切换' })).toBeTruthy()
+    expect(screen.getByText('停止当前生成，立刻改用 DeepSeek-V4-Flash 继续')).toBeTruthy()
+  })
+
+  it('cuts the running step with the parked selection and closes the pane', async () => {
+    const switchNow = vi.fn().mockResolvedValue({ ok: true, value: undefined })
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={createSnapshotStore(state({ switchPending: true }))}
+      load={vi.fn()}
+      select={vi.fn()}
+      switchNow={switchNow}
+      t={t}
+    />)
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /^模型/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '立刻切换' }))
+    expect(switchNow).toHaveBeenCalledExactlyOnceWith({
+      provider: 'deepseek-official',
+      model: 'deepseek-v4-flash',
+    })
+    // The action is about the transcript continuing, not the menu staying up.
+    await waitFor(() => { expect(screen.queryByRole('menu')).toBeNull() })
+  })
+
+  it('keeps the action inert while a selection is in flight', () => {
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={createSnapshotStore(state({ switchPending: true, status: 'selecting' }))}
+      load={vi.fn()}
+      select={vi.fn()}
+      switchNow={vi.fn()}
+      t={t}
+    />)
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /^模型/ }))
+    expect(screen.getByRole<HTMLButtonElement>('menuitem', { name: '立刻切换' }).disabled).toBe(true)
   })
 })

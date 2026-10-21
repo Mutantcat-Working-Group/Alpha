@@ -149,6 +149,10 @@ export class SessionCommandController {
             : { reasoningEffort: resolved.reasoningEffort }),
         }
         this.agents.selectForNextRequest(agent, selected)
+        // The selection is installed first, so the step admitted after the cut
+        // assembles its request from it. An idle or between-step Agent has no
+        // provider wait to cut and keeps the parked selection.
+        if (request.immediate === true) agent.interruptModelStep()
         try {
           await this.ctx.agentDefaultModel.saveSelection(selected)
         } catch (error) {

@@ -45,5 +45,3 @@ snapshot normalizer 会把 `childCreatedAt` 归零，因为它来自 process clo
 ## 后果
 
 Session observation 与 client snapshot 通过 `projections.values.subagentCatalog` 暴露直接子级列表。目录状态变化时，projection change feed 发布完整列表。每次 view 的成本为 O(D)，因此 D 次创建可能累计产生 O(D²) 的 view 工作量；这沿用现有 projection 机制。`listChildren()` 通过一次 live-preferred Session observation 读取父 projection；后代枚举使用 Session 语料库与子身份 projection。[Web projection 消费决策](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md) 说明浏览器加载与同步。
-
-[创建元数据排除决策](../simplification/2026-09-16-subagent-catalog-membership-only.zh.md) 说明目录事实为何不包含模型配置。

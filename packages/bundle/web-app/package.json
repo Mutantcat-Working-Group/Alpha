@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-web-app",
   "description": "The dsh browser-surface bundle: the web patch layer over dsh-base plus the runtime glue plugin (frontend dist serving, web-surface prompt, bash runtime variables, URL line)",
-  "version": "1.0.20261020",
+  "version": "1.0.20261021",
   "publishConfig": {
     "access": "public"
   },
@@ -83,6 +83,7 @@
     "@mutantcat/dsh-client-ui-plugin-manager": "workspace:^",
     "@mutantcat/dsh-client-ui-settings-plugin-inventory": "workspace:^",
     "@mutantcat/dsh-client-ui-settings-plugins": "workspace:^",
+    "@mutantcat/dsh-client-ui-settings-import-sessions": "workspace:^",
     "@mutantcat/dsh-client-ui-settings-unarchive-sessions": "workspace:^",
     "@mutantcat/dsh-client-ui-sidebar": "workspace:^",
     "@mutantcat/dsh-client-ui-sidebar-browser": "workspace:^",

@@ -57,6 +57,8 @@ const DeepSeekConfig = Schema.object({
   baseURL: Schema.string().pattern(/^https:\/\//),
   reasoningEffort: Schema.union(['off', 'low', 'high', 'max']),
   defaultContextWindow: Schema.number().step(1).min(1),
+  // The route-wide input fallback the editor hands undeclared models.
+  defaultInput: Schema.array(Schema.union(['text', 'image'])).default(['text', 'image']),
   models: Schema.array(Schema.object({
     id: Schema.string().required(),
     name: Schema.string(),
@@ -711,6 +713,35 @@ describe('ModelsSection', () => {
     ]])
   })
 
+  it('marks an undeclared model input from the route default input', async () => {
+    const namespace: SettingsNamespaceView = {
+      ...wireNamespaces()[0]!,
+      value: {
+        apiKeyEnv: 'DEEPSEEK_API_KEY',
+        defaultInput: ['text', 'image'],
+        models: DEFAULT_DEEPSEEK_MODELS,
+      },
+    }
+    const { face } = scriptedFace()
+    const { ProviderEditor } = await import('../src/client/ProviderEditor.tsx')
+    render(<ProviderEditor
+      provider="deepseek-official"
+      displayName="DeepSeek"
+      namespace={namespace}
+      schema={settingsSchema}
+      settingsPath={[]}
+      operations={operationsWith(face)}
+      t={t}
+      readOnly={false}
+      onClose={vi.fn()}
+    />)
+    fireEvent.click(screen.getByText(en.customized))
+    fireEvent.click(screen.getByLabelText(`${en.modelAdvanced} 1`))
+
+    const image = screen.getByLabelText<HTMLInputElement>(en.modelInputImage)
+    expect(image.checked).toBe(true)
+  })
+
   it('rejects duplicate DeepSeek model ids before writing', async () => {
     const { mutate } = await mountDeepSeekCard()
     fireEvent.click(screen.getByText(en.customized))
@@ -1063,6 +1094,31 @@ describe('ModelsSection', () => {
     />)
     expandRow(1)
     expect(screen.getAllByLabelText<HTMLInputElement>(en.modelInputImage)[0]?.checked).toBe(false)
+  })
+
+  it('pre-selects image input when an added model id names a vision family', () => {
+    const onChange = vi.fn()
+    const props = {
+      overridden: false,
+      defaultContextWindow: undefined,
+      defaultMaxTokens: undefined,
+      defaultInput: undefined,
+      t,
+      disabled: false,
+      onChange,
+      onReset: vi.fn(),
+    }
+    const { rerender } = render(<DeepSeekModelsEditor {...props} models={[{}]} />)
+    fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'deepseek-vl2' } })
+    expect(onChange).toHaveBeenLastCalledWith([{ id: 'deepseek-vl2', inputModalities: ['text', 'image'] }])
+
+    rerender(<DeepSeekModelsEditor {...props} models={[{ id: 'deepseek-vl2', inputModalities: ['text', 'image'] }]} />)
+    expandRow(1)
+    expect(screen.getByLabelText<HTMLInputElement>(en.modelInputImage).checked).toBe(true)
+
+    // Renaming to an id this rule does not recognize drops what it wrote.
+    fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'acme-large' } })
+    expect(onChange).toHaveBeenLastCalledWith([{ id: 'acme-large' }])
   })
 
   it('can empty and reset the model override, then clear optional fields without dropping hidden data', async () => {

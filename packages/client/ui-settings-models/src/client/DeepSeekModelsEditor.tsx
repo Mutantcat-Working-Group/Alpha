@@ -9,6 +9,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { IconPlusOutline16 } from '@mutantcat/dsh-client-ui-primitives'
 import type { en } from './locales.ts'
+import { idInputPatch } from './image-capability.ts'
 import { ModelRow } from './ModelRow.tsx'
 import styles from './ModelsSection.module.css'
 
@@ -175,6 +176,30 @@ export function DeepSeekModelsEditor(props: DeepSeekModelsEditorProps): ReactNod
     props.onChange(next)
   }
 
+  /**
+   * Write one row's id together with the input declaration that id
+   * pre-selects, so no render observes an id and an input hint that disagree.
+   */
+  const updateId = (index: number, value: string): void => {
+    const current = props.models[index]
+    const patch = idInputPatch({
+      field: 'inputModalities',
+      previousId: typeof current?.['id'] === 'string' ? current['id'] : '',
+      nextId: value,
+      declared: current?.['inputModalities'],
+    })
+    props.onChange(props.models.map((model, at) => {
+      const copy = { ...model }
+      if (at !== index) return copy
+      copy['id'] = value
+      for (const [key, modalities] of Object.entries(patch)) {
+        if (modalities === undefined) Reflect.deleteProperty(copy, key)
+        else copy[key] = modalities
+      }
+      return copy
+    }))
+  }
+
   const remove = (index: number): void => {
     setEditing((current) => {
       const next = new Map<string, string>()
@@ -284,7 +309,8 @@ export function DeepSeekModelsEditor(props: DeepSeekModelsEditorProps): ReactNod
                 contextWindow={capacityInput(model, index, 'contextWindow', props.defaultContextWindow)}
                 maxTokens={capacityInput(model, index, 'maxTokens', props.defaultMaxTokens)}
                 inputFallback={props.defaultInput}
-                onFieldChange={(field, value) => { update(index, field, value) }}
+                onIdChange={(value) => { updateId(index, value) }}
+                onNameChange={(value) => { update(index, 'name', value) }}
                 onIdBlur={(value) => {
                   const trimmed = value.trim()
                   if (trimmed !== value) update(index, 'id', trimmed)

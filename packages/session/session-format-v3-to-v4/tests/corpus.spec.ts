@@ -85,12 +85,13 @@ it('refuses recorded parent/child clock conflicts and migrates consistent copies
       }
     }
   }
-  expect(pairs).toBe(24)
+  expect(pairs).toBe(25)
   expect(withoutDescriptor).toBe(1)
   expect(conflicts.sort()).toEqual(EXPECTED_CONFLICTS)
 })
 
 const EXPECTED_CONFLICTS = [
+  'snapshots/sdk/subagent-activation-limit/session.1.v3.jsonl',
   'snapshots/sdk/subagent-continuable-inheritance/session.1.v3.jsonl',
   'snapshots/sdk/subagent-continuable/session.1.v3.jsonl',
   'snapshots/sdk/subagent-fork-in-process/session.1.v3.jsonl',

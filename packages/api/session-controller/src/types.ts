@@ -282,6 +282,13 @@ export interface SessionCreateValue {
 /** Session model-selection request. */
 export interface SessionSelectModelRequest extends ModelSelection {
   readonly sessionId: SessionId
+  /**
+   * Apply the selection to the running turn now: cut its in-flight model step
+   * short so the next step continues under this selection, instead of waiting
+   * for the current step or turn to reach the switch. Absent or false only
+   * parks the selection for the next request, which is the ordinary behavior.
+   */
+  readonly immediate?: boolean
 }
 
 /** Accepted model selection after Host resolution. */
@@ -360,6 +367,42 @@ export interface SessionCancelRequest {
 /** Receipt after cancellation is admitted to the live Agent. */
 export interface SessionCancelValue {
   readonly accepted: true
+}
+
+/** Adoption outcome of one Session discovered in a foreign Harness sessions root. */
+export type SessionImportHarnessStatus = 'imported' | 'already-present' | 'refused'
+
+/** One source Session's import outcome, isolated from its siblings' outcomes. */
+export interface SessionImportHarnessResult {
+  /** Absolute source generation path this outcome describes. */
+  readonly sourcePath: string
+  /** Source Session identity, absent when its header could not be read. */
+  readonly sessionId?: SessionId
+  readonly status: SessionImportHarnessStatus
+  /** Human-readable refusal detail; present exactly when `status` is `'refused'`. */
+  readonly reason?: string
+}
+
+/** Request for the explicit official-Harness chat-history import. */
+export interface SessionImportHarnessRequest {
+  /**
+   * Source sessions root to scan. Omission uses the deployment's configured
+   * `harnessSessionsRoot`; the operation never falls back on its own.
+   */
+  readonly sourceRoot?: string
+}
+
+/** Per-run import summary: the effective source root and one result per Session. */
+export interface SessionImportHarnessValue {
+  /** Source root this run actually scanned. */
+  readonly sourceRoot: string
+  /** One result per discovered source Session, in discovery order. */
+  readonly results: readonly SessionImportHarnessResult[]
+}
+
+/** Configured default source root for the official-Harness chat-history import. */
+export interface SessionImportHarnessSourceValue {
+  readonly sourceRoot: string
 }
 
 /** Request to open one path prepared by a Session-aware caller on the Host desktop. */

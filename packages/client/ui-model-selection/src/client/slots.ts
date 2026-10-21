@@ -23,4 +23,11 @@ export interface ModelSelectInjected {
    * @returns the Host outcome, or undefined when this Session cannot select a model.
    */
   select: (selection: ModelSelection) => Promise<RemoteResult<void> | undefined>
+  /**
+   * Apply a selection to the running turn now: the Host cuts the in-flight
+   * model step short, so the next step of the same turn continues under it.
+   * @param selection - model selection and optional adapter-owned effort.
+   * @returns the Host outcome, or undefined when this Session cannot select a model.
+   */
+  switchNow: (selection: ModelSelection) => Promise<RemoteResult<void> | undefined>
 }

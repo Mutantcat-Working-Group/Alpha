@@ -172,10 +172,6 @@ function systemMessage(text: string) {
 }
 
 describe('Trajectory conversation Definitions', () => {
-  it('addresses tool-call inspection with the persisted call identity', () => {
-    expect(trajectoryViewDefinition.toolCallFocus?.('call-1')).toBe('call-1')
-  })
-
   it('rejects developer history until presentation is implemented', () => {
     expect(() => assembler([at(0, 'developer/message', { turn: 1, step: 1, message: {
       id: 'developer', role: 'developer', source: { kind: 'tool-registry' },

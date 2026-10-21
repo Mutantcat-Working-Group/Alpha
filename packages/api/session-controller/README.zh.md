@@ -15,6 +15,7 @@ kind: "package-reference"
 - [使用本包](#use-this-package)
 - [Client 引用](#client-references)
 - [会话媒体引用](#session-media-references)
+- [Harness 聊天历史导入](#harness-chat-history-import)
 - [配置](#configuration)
 - [模型体验](#model-experience)
 - [已知限制与延期工作](#known-limitations-and-deferred-work)
@@ -56,6 +57,13 @@ Session 对象还承载本地提交回显：`session.beginSubmission` 在调用�
 
 当 `connection`、`fs` 与 `attachments` 均被组合时，`SessionMediaReferences` 在鉴权 `connection.fetch` 通道上挂载 `GET|HEAD /api/file?path=<绝对路径>`。它通过 `ctx.fs` 读取普通文件，包括已注册工作区之外的临时路径与远程提供方中的文件。目录包含关系与 MIME 类别均不限制访问；`mime-types` 提供响应类型，未知扩展名使用 `application/octet-stream`。GET 复用 `readBytes` 执行读取前及读取中的字节限制；HEAD 只读取元数据。所有文件均使用 `ctx.attachments.imageLimits.maxImageBytes`（通常为 20 MiB）；超过此上限返回 413。响应包含完整文件，忽略 Range，并携带 `private, no-store`、`nosniff` 与沙箱 CSP，使直接打开的 HTML/SVG 无法以 API 源身份执行脚本。客户端重写位于 `ui-chat`（`AssistantMarkdown`）；音视频文件响应已可用，Markdown 音视频播放器节点仍是独立工作。
 
+<a id="harness-chat-history-import"></a>
+## Harness 聊天历史导入
+
+`session.importHarnessSessions` 把官方 DeepSeek Harness 的聊天历史采纳进 Alpha 自己的 Session 存储，且仅在用户请求时执行。它读取 `harnessSessionsRoot` Config 字段指定的根目录，或某次请求覆盖的根目录，并且绝不写入该根目录：发现阶段为每个 Session 目录选出最高规范世代，还原阶段通过构建期静态的格式链迁移较旧世代，存储约定则在任何写入之前校验还原出的日志。采纳阶段把校验通过的当前格式事件复制进已挂载的 `ctx.sessionPersistence` 后端，因此目标根目录与物理编码仍归 Alpha 自己所有。
+
+每个被发现的 Session 返回一条结果——`imported`、`already-present`，或带原因的 `refused`。隔离以单个 Session 为单位，因此不可读或损坏的来源会话会被拒绝，而其同级会话仍会导入；重复运行不会采纳任何内容，并把每个 Session 报告为已存在。该操作从不监视、轮询或同步。`harnessSessionsRoot` 让 Client 用配置的默认值预填可编辑的来源根目录，而 Client 侧接口是 `harnessSessionsImport` 服务，其 `importSessions` 会在 Host 发布采纳结果后重新拉取 Session 列表。
+
 -----
 
 <a id="configuration"></a>
@@ -64,6 +72,7 @@ Session 对象还承载本地提交回显：`session.beginSubmission` 在调用�
 | 字段 | 默认值 | 含义 |
 |---|---:|---|
 | `nativeOpen` | 平台探测 | 是否能把 Session 工作区路径交给原生桌面打开器 |
+| `harnessSessionsRoot` | 官方 Harness 主目录下的 `sessions` | 显式 Harness 聊天历史导入所读取的来源 sessions 根目录 |
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#mutantcatdsh-api-session-controller)是所有受支持字段及其 JSDoc 的完整来源。
 

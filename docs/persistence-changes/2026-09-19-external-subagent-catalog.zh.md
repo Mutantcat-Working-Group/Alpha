@@ -28,7 +28,7 @@ baseline: false
 changes:
   - root: "event:subagent/catalog"
     previous: "2026-09-20-unknown-child-catalog"
-    after: "53750b9abf61efb7992b0aadc3e247ec927449c63266df28230fd1139f5590ac"
+    after: "ae1f7110feeec697b8cab42b68f7709aa7b3279764099dfb53c25890d2e5c871"
     decision: same-version
 ```
 

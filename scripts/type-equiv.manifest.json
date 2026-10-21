@@ -103,6 +103,16 @@
     },
     {
       "doc": "docs/subsystems/llm-streaming.md",
+      "symbol": "RequestUserInput",
+      "source": "packages/llm/llm/src/types.ts"
+    },
+    {
+      "doc": "docs/subsystems/llm-streaming.md",
+      "symbol": "RequestMessage",
+      "source": "packages/llm/llm/src/types.ts"
+    },
+    {
+      "doc": "docs/subsystems/llm-streaming.md",
       "symbol": "GenerateOptions",
       "source": "packages/llm/llm/src/types.ts"
     },

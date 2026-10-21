@@ -84,8 +84,14 @@ describe('Node preparation of Preview Session data', () => {
     const packed = packPreviewFixture(fixture.trees)
     const restored = restore(packed.files[`home/sessions/project/example/${sessionFormatLogFilename(currentVersion)}`])
     expect(restored.inheritedEventCount).toBe(0)
-    expect(restored.events).toEqual(mode === 'current-child' ? [{ type: 'subagent/catalog', seq: 0, time: 1,
-      data: { version: 0, childId: 'child', childCreatedAt: 2, mode: 'one-shot' } }] : [])
+    // The V4 migration keeps every supported direct child in the same root: a
+    // child whose descriptor is missing still becomes an unknown-mode fact.
+    const expected = mode === 'current-child'
+      ? [{ type: 'subagent/catalog', seq: 0, time: 1, data: { version: 0, childId: 'child', childCreatedAt: 2, mode: 'one-shot' } }]
+      : mode === 'missing-descriptor'
+        ? [{ type: 'subagent/catalog', seq: 0, time: 1, data: { version: 1, childId: 'child', childCreatedAt: 2, mode: 'unknown' } }]
+        : []
+    expect(restored.events).toEqual(expected)
     for (const [path, bytes] of Object.entries(original.files)) expect(packed.files[path], path).toEqual(bytes)
     expect(readFileSync(parent)).toEqual(before)
     expect(readFileSync(childPath)).toEqual(childBefore)

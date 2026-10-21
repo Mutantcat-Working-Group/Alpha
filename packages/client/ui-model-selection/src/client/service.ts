@@ -81,6 +81,7 @@ export class ModelDirectoryResolver extends Service {
       () => sessions.subagentAddress(sessionId) === undefined,
       this.catalog,
       binding.session.projections.faceOf('modelSelection'),
+      binding.session,
     )
     live.directories.set(binding, directory)
     // The composer cannot read this plugin (the dependency runs one way), so

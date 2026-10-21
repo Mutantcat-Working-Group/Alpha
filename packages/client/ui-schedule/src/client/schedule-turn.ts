@@ -105,9 +105,8 @@ function createdTask(match: ConversationMatch, call: ScheduleCall): ToolResultNo
   /* v8 ignore next -- The only call site reaches this after narrowing the same event to `tool/result`. */
   if (match.event.type !== 'tool/result') return undefined
   const message = match.event.data.message
-  const result = message.content[0]
   // A failed creation names no task, so its Turn renders no card.
-  if (result.isError === true) return undefined
+  if (message.isError === true) return undefined
   const settled: ToolResultNode = {
     kind: 'tool-result',
     seq: match.event.seq,
@@ -115,7 +114,7 @@ function createdTask(match: ConversationMatch, call: ScheduleCall): ToolResultNo
     callId: String(message.source.callId),
     call: { name: call.name, argsRaw: call.argsRaw },
     callTime: call.time,
-    content: result.content,
+    content: message.content,
     isError: false,
     subCalls: [],
   }

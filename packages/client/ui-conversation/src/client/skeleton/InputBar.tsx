@@ -222,6 +222,18 @@ export const InputBar = memo(function InputBar({
     if (rejected !== null) showToast(rejected)
   }, [subagent, addFiles, attachments, imageLimits, showToast, t])
 
+  // A dropped folder is not attachable — a folder has no bytes to upload — so
+  // its path enters the draft instead: at the caret while the editor holds a
+  // selection, at the end otherwise, which is the paste operation's own rule.
+  // The platform discloses a path for some drops only; the rest are named back
+  // to the user rather than silently discarded.
+  const intakePaths = useCallback((paths: readonly string[], unresolved: readonly string[]): void => {
+    // A continuable child exposes no draft intake at all, folders included.
+    if (keyboard === undefined || subagent !== null || locked || machineBusy) return
+    if (paths.length > 0) keyboard.paste(`${paths.join(' ')} `)
+    if (unresolved.length > 0) showToast(t('file.folderPathUnavailable', { name: unresolved[0] ?? '' }))
+  }, [keyboard, subagent, locked, machineBusy, showToast, t])
+
   const canAcceptDrop = subagent === null && !locked && !machineBusy && addFiles !== undefined
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -377,6 +389,7 @@ export const InputBar = memo(function InputBar({
           attachments,
           canAcceptDrop,
           onAddFiles: intakeFiles,
+          onDropPaths: intakePaths,
           onRemoveAttachment: (id) => { removeAttachment?.(id) },
           uploads,
           onRetryFile: (id) => { retryFileUpload?.(id) },

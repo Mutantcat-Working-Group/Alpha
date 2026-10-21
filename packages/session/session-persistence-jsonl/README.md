@@ -85,6 +85,10 @@ Historical body preparation completes the parent catalog through [V3→V4](../se
 
 Historical `stat` and `list` revisions require metadata work proportional to the root’s Session count. Fresh body preparation scans all selected headers and decodes direct-child bodies; memo reuse still scans membership and checks revisions. Read-only access never publishes an upgrade, so cold processes and evicted preparations repeat that work. Current V4 body reads and revisions avoid the historical corpus scan. See the [measured costs and diagnostic command](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.md#catalog-scan-measurements).
 
+### Reading another installation's root
+
+The `@mutantcat/dsh-session-persistence-jsonl/foreign` entry reads a sessions root this backend did not write, reusing the same path layout, physical framing, and format catalog. `listForeignSessionGenerations(root)` reports the highest canonical generation of every Session directory, resolves a same-version tie to the Zstandard artifact, and treats an absent root as no Sessions. `readForeignSessionHeader(generation)` restores one header to the installed format and refuses a generation whose header does not identify its own path; `readForeignSessionContent(header, corpus)` decodes the whole log into contiguous current events, taking a V3 parent's child evidence from the scanned corpus. Nothing in that entry writes, moves, or rewrites anything under the root it reads, and no migration publishes a successor there: adopting a foreign Session into another store belongs to the caller.
+
 -----
 
 <a id="understand-the-implementation"></a>
@@ -110,6 +114,7 @@ The default artifact is a standard concatenation of independent [Zstandard frame
 | [`src/index.ts`](src/index.ts) | Plugin entry: `Config` schema, the backend service class, and file storage primitives |
 | [`src/storage.ts`](src/storage.ts) | The JSONL handle, routed live-event buffer, in-process writer bookkeeping, listeners, teardown |
 | [`src/format.ts`](src/format.ts) | Log path derivation, header encoding, and current record scanning |
+| [`src/foreign.ts`](src/foreign.ts) | Read-only discovery, header restore, and current-format content restore for another installation's sessions root |
 | [`src/generation.ts`](src/generation.ts) | Single-pass historical restore, bounded stage encoding, source revision check, and exclusive successor publication |
 | [`src/migration-verifier.ts`](src/migration-verifier.ts) | Worker lifecycle for staged and competing-generation verification |
 | [`src/zstd.ts`](src/zstd.ts) | Zstandard frame compression, decoding, and frame scanning |

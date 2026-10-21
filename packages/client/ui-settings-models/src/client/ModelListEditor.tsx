@@ -19,6 +19,7 @@ import type { ReactNode } from 'react'
 import type { LlmDiscoveredModel } from '@mutantcat/dsh-api-remotes/client'
 import { Button, IconPlusOutline16, Modal } from '@mutantcat/dsh-client-ui-primitives'
 import { formatCapacity, parseCapacity } from './DeepSeekModelsEditor.tsx'
+import { idInputPatch, imageInputFor } from './image-capability.ts'
 import type { ModelsOperations } from './operations.ts'
 import type { DeepSeekModelDraft } from './DeepSeekModelsEditor.tsx'
 import type { en } from './locales.ts'
@@ -67,6 +68,12 @@ export interface ModelListEditorProps {
   models: readonly ModelDraft[]
   /** Installed provider whose catalog supplies defaults without endpoint I/O. */
   catalogProvider?: string | undefined
+  /**
+   * Reasoning levels a hand-declared route's rows may declare in
+   * `reasoningEfforts`, in escalation order; absent or empty shows no
+   * reasoning control, leaving a catalog model's levels to the catalog.
+   */
+  reasoningLevels?: readonly string[] | undefined
   /** Route input types for models absent from the installed catalog. */
   defaultInput?: readonly string[] | undefined
   /** Whether the user layer currently owns the whole array; absent on a create. */
@@ -122,14 +129,20 @@ function capacitySpelling(value: number | undefined): string {
   return value === undefined ? '' : formatCapacity(value)
 }
 
-/** Adopt a candidate, preserving disclosed capacities and input types. */
+/**
+ * Adopt a candidate, preserving disclosed capacities and input types. A
+ * listing that discloses no modalities still names the model, so an id of a
+ * known image-capable family adopts Image rather than the route's text-only
+ * default.
+ */
 function adopt(candidate: LlmDiscoveredModel): ModelDraft {
+  const input = candidate.inputModalities ?? imageInputFor(candidate.id)
   return {
     id: candidate.id,
     ...candidate.name === undefined ? {} : { name: candidate.name },
     ...candidate.contextWindow === undefined ? {} : { contextWindow: candidate.contextWindow },
     ...candidate.maxTokens === undefined ? {} : { maxTokens: candidate.maxTokens },
-    ...candidate.inputModalities === undefined ? {} : { input: [...candidate.inputModalities] },
+    ...input === undefined ? {} : { input: [...input] },
   }
 }
 
@@ -354,6 +367,7 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
             inputField="input"
             inputFallback={inputDefaults.get(textOf(model, 'id')) ?? props.defaultInput}
             inputLoading={catalogProvider !== undefined && catalog === undefined}
+            reasoningLevels={props.reasoningLevels}
             expanded={expanded.has(index)}
             disabled={disabled}
             t={t}
@@ -367,7 +381,18 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
               placeholder: CAPACITY_HINT.maxTokens,
               onChange: (text) => { editCapacity(index, 'maxTokens', text) },
             }}
-            onFieldChange={(field, value) => { patch(index, { [field]: value }) }}
+            onIdChange={(value) => {
+              patch(index, {
+                id: value,
+                ...idInputPatch({
+                  field: 'input',
+                  previousId: textOf(model, 'id'),
+                  nextId: value,
+                  declared: model['input'],
+                }),
+              })
+            }}
+            onNameChange={(value) => { patch(index, { name: value }) }}
             onChange={(next) => { onChange(models.map((row, at) => at === index ? next : row)) }}
             onToggle={() => { toggleExpanded(index) }}
             onRemove={() => {

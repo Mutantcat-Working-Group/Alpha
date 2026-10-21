@@ -50,7 +50,9 @@ describe.each(modes)('retired content in JSONL ($compression, $access)', ({ comp
   it.each([3, 4] as const)('preserves an unknown ignorable V%s payload without interpreting its content', async (version) => {
     const { ctx, path, bytes, event } = await stored(version, true, false)
     const handle = await ctx.sessionPersistence.open(id, access)
-    try { expect((await handle.read()).events).toEqual([event]) } finally { await handle.close() }
+    // Migration namespaces a historical extension type under its `plugin:` identity.
+    const expected = version === 3 ? { ...event, type: 'plugin:future/opaque' } : event
+    try { expect((await handle.read()).events).toEqual([expected]) } finally { await handle.close() }
     expect(await readFile(path)).toEqual(bytes)
   })
 })

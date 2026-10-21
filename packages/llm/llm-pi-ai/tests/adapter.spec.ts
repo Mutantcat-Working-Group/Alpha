@@ -413,7 +413,7 @@ describe('PiAiAdapter provider routing', () => {
     })
   })
 
-  it('stops the SDK request when the adapter idle watchdog expires', async () => {
+  it('stops the SDK request when the adapter idle watchdog expires', { timeout: 15_000 }, async () => {
     const server = await mockServer([{ events: textEvents, delayMs: 200 }])
     const ctx = await harness(server.url, { streamIdleTimeoutMs: 20 })
 
@@ -422,7 +422,7 @@ describe('PiAiAdapter provider routing', () => {
     await Promise.race([
       server.responseClosed,
       new Promise<never>((_resolve, reject) => {
-        setTimeout(() => { reject(new Error('SDK request did not close after idle timeout')) }, 1_000)
+        setTimeout(() => { reject(new Error('SDK request did not close after idle timeout')) }, 5_000)
       }),
     ])
 

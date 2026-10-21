@@ -86,6 +86,16 @@ interface Agent {
   cancel(cause: AgentCancelCause, options?: CancelOptions): void
 
   /**
+   * Cut the in-flight model step short without ending its turn. The delivered
+   * prefix is settled as an interrupted assistant message and the loop admits
+   * the next step, whose request assembles from whatever selection is
+   * installed by then — one way a mid-turn model switch applies immediately.
+   * @returns true when a model step was waiting on its provider; false when
+   * none is in flight (idle, maintenance, or a step running tools).
+   */
+  interruptModelStep(): boolean
+
+  /**
    * Resolve after the current whole-agent activity reaches quiescence. This
    * follows replacement work started before the observed driver retires,
    * but does not identify the settlement of any particular message.

@@ -319,9 +319,6 @@ export function resolveAdapterOptions(config: Config, environment?: LaunchEnviro
   if (defaultInput.length === 0) {
     throw new Error('llm-deepseek: defaultInput must name at least one modality')
   }
-  if (defaultInput.some(modality => !MODEL_MODALITIES.includes(modality))) {
-    throw new Error('llm-deepseek: defaultInput must contain only "text" and "image"')
-  }
   if (new Set(defaultInput).size !== defaultInput.length) {
     throw new Error('llm-deepseek: defaultInput must not contain duplicates')
   }

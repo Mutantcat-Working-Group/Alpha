@@ -89,6 +89,11 @@ export class ReactLoopAgent implements Agent {
   /** Process-local revision of assistant frames for this attached Session. */
   private assistantStreamRevision = 0
   private assistantAttemptCounter = 0
+  /**
+   * The in-flight model step's provider wait. Present only while a step awaits
+   * its provider, so an interrupt asked for between steps cuts nothing.
+   */
+  private stepInterrupt: AbortController | null = null
   private readonly systemPrompt: SystemPromptProjection
   /** Identities fully frozen by this loop; weak references do not retain replaced history. */
   private readonly frozenMessages = new WeakSet<Message>()
@@ -152,6 +157,13 @@ export class ReactLoopAgent implements Agent {
       if (this.phase.kind !== 'idle') this.phase.wakeRequested = false
     }
     if (this.phase.kind !== 'idle') this.phase.abort.abort(cause)
+  }
+
+  interruptModelStep(): boolean {
+    const step = this.stepInterrupt
+    if (step === null || step.signal.aborted) return false
+    step.abort()
+    return true
   }
 
   runMaintenance<T>(job: (signal: AbortSignal) => Promise<T>): Promise<T> {
@@ -377,7 +389,15 @@ export class ReactLoopAgent implements Agent {
         }
       }
       firstAttempt = false
-      const request = this.buildRequest(config, preparedCall, assembly.tools, startsRequestSeries, signal)
+      // Cutting this wait short keeps the turn: the delivered prefix settles as
+      // an interrupted assistant message and the loop admits the next step,
+      // which assembles its request from the selection installed meanwhile. The
+      // step interrupt reaches the provider by joining it into the request
+      // signal, so a provider still waiting on its first chunk is cut too.
+      const interrupt = new AbortController()
+      const request = this.buildRequest(
+        config, preparedCall, assembly.tools, startsRequestSeries, AbortSignal.any([signal, interrupt.signal]),
+      )
       const live = new AssistantStreamAttempt(
         this.session.id,
         ++this.assistantAttemptCounter,
@@ -390,17 +410,19 @@ export class ReactLoopAgent implements Agent {
       try {
         const stream = preparedCall?.stream(request) ?? this.loopCtx.llm.stream(request)
         signal.throwIfAborted()
+        this.stepInterrupt = interrupt
         live.start()
         started = true
         for await (const chunk of stream) {
           signal.throwIfAborted()
+          interrupt.signal.throwIfAborted()
           live.push(chunk)
         }
         signal.throwIfAborted()
       } catch (error: unknown) {
         if (!started) throw error
         try {
-          if (signal.aborted) {
+          if (signal.aborted || interrupt.signal.aborted) {
             const content = live.interruptedBlocks()
             if (content.length > 0) {
               live.settle('assistant/message', () => this.session.append('assistant/message', {
@@ -437,7 +459,12 @@ export class ReactLoopAgent implements Agent {
             { cause: error },
           )
         }
+        // A step interrupt is not a turn cancellation: the turn continues to
+        // its next step, which is what makes a mid-turn model switch apply now.
+        if (interrupt.signal.aborted && !signal.aborted) return null
         throw error
+      } finally {
+        if (this.stepInterrupt === interrupt) this.stepInterrupt = null
       }
       try {
         const finish = live.finish

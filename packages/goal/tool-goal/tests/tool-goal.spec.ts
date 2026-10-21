@@ -67,6 +67,7 @@ function stubAgent(rawId: string, supplied?: Session, suppliedCtx?: Context): St
       this.inbox.append('next-step', input)
     },
     cancel() {},
+    interruptModelStep: () => false,
     runMaintenance: task => task(new AbortController().signal),
     whenIdle() { return Promise.resolve() },
   }
