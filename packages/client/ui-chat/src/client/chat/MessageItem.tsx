@@ -7,7 +7,7 @@ import { fileExtension, FileTypeIcon, fileSizeText, JsonBlock, projectUserText, 
 import type { LlmFailureCode } from '@mutantcat/dsh-llm/error'
 import type { ChatNodeOwnerProps, ChatNodeViewProps, ChatViewSlotProps } from '../contract/slots.ts'
 import type { ChatKey } from '../locale.ts'
-import type { ModelRetryNode, TurnErrorNode, UserMessageNode } from '../contract/snapshot.ts'
+import type { ChatLocationNodeIndex, ChatNodeStore, ModelRetryNode, TurnErrorNode, UserMessageNode } from '../contract/snapshot.ts'
 import { CompactionItem } from './CompactionItem.tsx'
 import { ContextInjectionRow } from './ContextInjectionRow.tsx'
 import { MessageIconActions } from './MessageIconActions.tsx'
@@ -39,6 +39,21 @@ function contentParts(content: readonly unknown[]): {
     else rest.push(block)
   }
   return { text: texts.join(''), attachments, rest }
+}
+
+/** The raw sent text of one turn's user message, or empty when the turn has none. */
+function userTextOfTurn(
+  nodes: ChatNodeStore,
+  locations: ChatLocationNodeIndex,
+  targetTurn: number,
+): string {
+  for (const key of locations.getTurn(targetTurn)) {
+    const node = nodes.get(key)
+    if (node !== undefined && node.kind === 'user') {
+      return contentParts((node.data as UserMessageNode).content).text
+    }
+  }
+  return ''
 }
 
 function retrySeconds(milliseconds: number): number {
@@ -339,9 +354,30 @@ export function PendingSubmissionBubble({ submission, renderMessageImages, t }: 
 
 /** User and admitted-steering keyed Chat renderer. */
 export const UserMessageNodeView = memo(function UserMessageNodeView({
-  node, renderMessageImages, openFile, openSkill, t,
+  node, useChat, retractAt, renderMessageImages, openFile, openSkill, t,
 }: ChatNodeViewProps<'user' | 'steering'>) {
   const data = node.data
+  const location = node.location
+  const turn = location.kind === 'turn' || location.kind === 'step' ? location.turn.turn : undefined
+  const turns = useChat(s => s.timeline.turns)
+  const nodes = useChat(s => s.nodes)
+  const locations = useChat(s => s.locations)
+  // Retract forks to before the retracted turn: keep turns 1..target-1, whose
+  // cut boundary is turn(target-1)'s turn/end seq. "this" retracts this turn;
+  // "previous" retracts the turn before it.
+  const boundaryOf = (keepTurn: number): number | undefined => (
+    keepTurn >= 1 ? turns.get(keepTurn)?.end?.seq : undefined
+  )
+  const onRetract = (mode: 'this' | 'previous'): void => {
+    if (turn === undefined) return
+    const targetTurn = mode === 'this' ? turn : turn - 1
+    const boundarySeq = boundaryOf(targetTurn - 1)
+    if (boundarySeq === undefined) return
+    const seedText = mode === 'this'
+      ? contentParts(data.content).text
+      : userTextOfTurn(nodes, locations, targetTurn)
+    retractAt(boundarySeq, seedText)
+  }
   return (
     <UserStyleBubble
       content={data.content}
@@ -357,6 +393,11 @@ export const UserMessageNodeView = memo(function UserMessageNodeView({
           clock="start"
           className={css.actions}
           t={t}
+          onRetract={onRetract}
+          retractDisabled={{
+            this: turn === undefined || boundaryOf(turn - 1) === undefined,
+            previous: turn === undefined || boundaryOf(turn - 2) === undefined,
+          }}
         />
       )}
     />

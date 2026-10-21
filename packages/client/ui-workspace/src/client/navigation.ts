@@ -26,8 +26,9 @@ export interface UiWorkspace {
   /**
    * Select a Session and show its Conversation as one UI navigation action.
    * @param target - known Session identity or durable direct-parent subagent address to display.
+   * @param beforeOpen - optional preparation for the selected Session, run after its binding is retained and before the view switches.
    */
-  openSession(target: SessionTarget): void
+  openSession(target: SessionTarget, beforeOpen?: (sessionId: SessionId) => void): void
   /**
    * Connect a Workspace and open its Session unless a later navigation supersedes it.
    * @param workspaceId - target Workspace.
@@ -158,8 +159,8 @@ class UiWorkspaceService extends Service implements UiWorkspace {
     return attempt
   }
 
-  openSession(target: SessionTarget): void {
-    this.replaceMain(target, this.lifetime.signal)
+  openSession(target: SessionTarget, beforeOpen?: (sessionId: SessionId) => void): void {
+    this.replaceMain(target, this.lifetime.signal, beforeOpen)
   }
 
   async openWorkspace(workspaceId: WorkspaceId, beforeOpen?: (sessionId: SessionId) => void): Promise<void> {

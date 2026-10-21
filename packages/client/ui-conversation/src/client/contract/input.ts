@@ -10,6 +10,7 @@ import type { Context } from '@mutantcat/cordis'
 import type { InboxState } from '@mutantcat/dsh-agent/types'
 import type { ObservableSnapshot, SnapshotStore } from '@mutantcat/dsh-client-store'
 import type { Branded } from '@mutantcat/dsh-brand'
+import type { SessionId } from '@mutantcat/dsh-session/types'
 import type { ArbitrateKey, ArbitrateOutcome, Occurrence, ReferenceInsert, TokenSpan } from './draft-editor.ts'
 import type { InputSubmitMode } from './composer-submission.ts'
 
@@ -211,6 +212,15 @@ export interface SessionInput extends InputTarget {
 export interface SessionInputResolver {
   /** Resolve the facade for one session-scope ctx. */
   for(actx: Context): SessionInput
+  /**
+   * Resolve the resident facade by session id. The provide channel has
+   * normally created the shell already, so this covers direct id-addressed
+   * access — for example seeding a freshly forked session's draft before its
+   * composer mounts.
+   * @param id - session id whose binding is already retained.
+   * @returns the resident per-session facade.
+   */
+  shell(id: SessionId): SessionInput
 }
 
 /**

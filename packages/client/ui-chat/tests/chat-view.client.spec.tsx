@@ -269,6 +269,7 @@ function makeHarness(
     read: () => savedScroll,
   }
   const forkAt = vi.fn()
+  const retractAt = vi.fn()
   // Rows and the harness must observe the same chat-store instance.
   const chat = createChatStore().create()
   const transcriptView = createSnapshotStore<TranscriptViewMode>('compact')
@@ -411,6 +412,7 @@ function makeHarness(
     loadImage: vi.fn(() => Promise.reject(new Error('not used'))),
     chatScroll,
     forkAt,
+    retractAt,
     // Absent-service default; mention tests override with a real resolver.
     fileMentions: () => undefined,
     t,
@@ -437,7 +439,7 @@ function makeHarness(
     set, setSession: session.set, setChat: chatSource.set, ChatView, props,
     openFile, openSkill, loadOlder, loadThrough, openView,
     setOutline: (value: unknown) => { outlineValue = value },
-    chatScroll, forkAt, toolOwners,
+    chatScroll, forkAt, retractAt, toolOwners,
     setTranscriptView: (mode: TranscriptViewMode) => { transcriptView.set(mode) },
     setNodeRenderer: (renderer: React.ComponentProps<typeof ChatNodeSeat>['renderSlot']) => {
       nodeSlotOverride = renderer
@@ -1044,6 +1046,74 @@ describe('ChatView', () => {
     // The branch action sends the real turn/end seq (the exact inclusive
     // Host boundary), not the assistant node seq.
     expect(h.forkAt).toHaveBeenCalledWith(3)
+  })
+
+  it('retracts a turn from the user message menu, forking to before it and seeding the user text', () => {
+    const snapshot = chatSnapshotFixture({
+      nodes: [
+        userInTurn(1, 'first prompt', 1),
+        assistant(2, 'first response', 1),
+        userInTurn(4, 'second prompt', 2),
+        assistant(5, 'second response', 2),
+        userInTurn(7, 'third prompt', 3),
+        assistant(8, 'third response', 3),
+      ],
+      turnTimings: new Map([
+        [1, { startTime: 1_000, endTime: 3_000 }],
+        [2, { startTime: 4_000, endTime: 6_000 }],
+        [3, { startTime: 7_000, endTime: 9_000 }],
+      ]),
+      turnEnds: new Map([[1, 3], [2, 6], [3, 9]]),
+    })
+    const h = makeHarness({}, {}, snapshot)
+    const view = render(<h.ChatView {...h.props} />)
+
+    const thirdRow = view.getByText('third prompt').closest('[class*="userRow"]') as HTMLElement
+    const retractTrigger = within(thirdRow).getByRole('button', { name: '回退' })
+
+    // "回退一次" retracts this turn (3): fork to before it (keep 1..2, whose
+    // boundary is turn 2's turn/end seq) and seed this turn's user text.
+    fireEvent.click(retractTrigger)
+    fireEvent.click(view.getByRole('menuitem', { name: '回退一次' }))
+    expect(h.retractAt).toHaveBeenCalledWith(6, 'third prompt')
+
+    // "回退上一轮" retracts the previous turn (2): fork to before it (keep 1..1,
+    // boundary turn 1's turn/end seq) and seed the previous turn's user text.
+    fireEvent.click(retractTrigger)
+    fireEvent.click(view.getByRole('menuitem', { name: '回退上一轮' }))
+    expect(h.retractAt).toHaveBeenLastCalledWith(3, 'second prompt')
+  })
+
+  it('disables retract when no earlier completed turn precedes the target', () => {
+    const snapshot = chatSnapshotFixture({
+      nodes: [
+        userInTurn(1, 'first prompt', 1),
+        assistant(2, 'first response', 1),
+        userInTurn(4, 'second prompt', 2),
+        assistant(5, 'second response', 2),
+      ],
+      turnTimings: new Map([
+        [1, { startTime: 1_000, endTime: 3_000 }],
+        [2, { startTime: 4_000, endTime: 6_000 }],
+      ]),
+      turnEnds: new Map([[1, 3], [2, 6]]),
+    })
+    const h = makeHarness({}, {}, snapshot)
+    const view = render(<h.ChatView {...h.props} />)
+
+    // Turn 1 has no earlier turn to keep, so both retract modes are disabled.
+    const firstRow = view.getByText('first prompt').closest('[class*="userRow"]') as HTMLElement
+    fireEvent.click(within(firstRow).getByRole('button', { name: '回退' }))
+    expect((view.getByRole('menuitem', { name: '回退一次' }) as HTMLButtonElement).disabled).toBe(true)
+    expect((view.getByRole('menuitem', { name: '回退上一轮' }) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(within(firstRow).getByRole('button', { name: '回退' }))
+
+    // Turn 2: "回退一次" is live (turn 1 precedes it); "回退上一轮" would retract
+    // turn 1, leaving no earlier turn to keep, so it stays disabled.
+    const secondRow = view.getByText('second prompt').closest('[class*="userRow"]') as HTMLElement
+    fireEvent.click(within(secondRow).getByRole('button', { name: '回退' }))
+    expect((view.getByRole('menuitem', { name: '回退一次' }) as HTMLButtonElement).disabled).toBe(false)
+    expect((view.getByRole('menuitem', { name: '回退上一轮' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('keeps a later pending occurrence visible when it reuses a durable MessageId', () => {

@@ -170,6 +170,22 @@ export function apply(ctx: Context): void {
                 // Fork or child-title failure leaves the source view unchanged.
               })
           },
+          retractAt: (seq, seedText) => {
+            ctx.sessions.fork({ sessionId, atSeq: seq })
+              .then((childId) => {
+                // Seed the child's composer before it mounts, so the retracted
+                // turn's text lands in the input box the user switched to. The
+                // conversation service is read lazily: the Chat fiber does not
+                // require it, and a context without the composer simply keeps
+                // the fork-and-switch without seeding the draft.
+                ctx.uiWorkspace.openSession(childId, (id) => {
+                  ctx.get('conversation')?.input.shell(id).setDraft(seedText)
+                })
+              })
+              .catch(() => {
+                // Fork failure (no completed turn to cut from) leaves the source view unchanged.
+              })
+          },
         }
       },
     }, ChatView)

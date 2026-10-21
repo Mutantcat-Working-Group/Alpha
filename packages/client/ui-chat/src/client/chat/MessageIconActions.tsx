@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import {
-  IconBranchOutline16, IconCheckOutline16, IconCopyOutline16, Tooltip, writeClipboard,
+  IconBranchOutline16, IconCheckOutline16, IconCopyOutline16, IconEllipsisOutline16, Menu, Tooltip, writeClipboard,
 } from '@mutantcat/dsh-client-ui-primitives'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
 import { formatMessageClock } from './message-chrome.ts'
@@ -21,6 +21,10 @@ export interface MessageIconActionsProps {
   onBranch?: (() => void) | undefined
   /** The message is not a completed transcript tail, so branch stays visible but unavailable. */
   branchUnavailable?: boolean | undefined
+  /** Retract a turn by forking to before it; omission hides the retract menu. */
+  onRetract?: ((mode: RetractMode) => void) | undefined
+  /** Which retract modes are unavailable (no earlier completed turn to keep). */
+  retractDisabled?: { this: boolean; previous: boolean } | undefined
   /** Parent layout class composed onto the actions row. */
   className?: string | undefined
   /**
@@ -37,17 +41,21 @@ export interface MessageIconActionsProps {
   t: ChatViewSlotProps['t']
 }
 
+/** Which turn a retract action rewinds to. */
+export type RetractMode = 'this' | 'previous'
+
 /**
  * Copy / branch (/ clock) IconActions row shared by user and assistant chrome.
  * @param props - Copy text, event time, clock side, branch callback, className.
  * @returns The actions row element.
  */
 export function MessageIconActions({
-  text, time, clock, onBranch, branchUnavailable = false, className,
+  text, time, clock, onBranch, branchUnavailable = false, onRetract, retractDisabled, className,
   extraActions, usageAction, t,
 }: MessageIconActionsProps) {
   const day = useCalendarDay()
   const reasonId = useId()
+  const [retractOpen, setRetractOpen] = useState(false)
   // Same success chrome as CodeBlock: a short check swap after the write,
   // gated so re-clicks during the window neither re-copy nor stack timers.
   const [copied, setCopied] = useState(false)
@@ -87,6 +95,33 @@ export function MessageIconActions({
           {copied ? <IconCheckOutline16 /> : <IconCopyOutline16 />}
         </button>
       </Tooltip>
+      {onRetract !== undefined && (
+        <Menu
+          open={retractOpen}
+          onClose={() => { setRetractOpen(false) }}
+          items={[
+            { id: 'this', label: t('message.retract'), disabled: retractDisabled?.this ?? false },
+            { id: 'previous', label: t('message.retractPrevious'), disabled: retractDisabled?.previous ?? false },
+          ]}
+          onSelect={(id) => {
+            setRetractOpen(false)
+            if (id === 'this') onRetract('this')
+            else if (id === 'previous') onRetract('previous')
+          }}
+          portal
+          closeOnPointerLeave
+          anchor={(
+            <button
+              type="button"
+              className={css.action}
+              aria-label={t('message.retractMenu')}
+              onClick={(e) => { e.stopPropagation(); setRetractOpen(v => !v) }}
+            >
+              <IconEllipsisOutline16 />
+            </button>
+          )}
+        />
+      )}
       {extraActions}
       {onBranch !== undefined && (
         <Tooltip label={branchUnavailable ? t('message.branchUnavailable') : t('message.branch')} side="bottom">

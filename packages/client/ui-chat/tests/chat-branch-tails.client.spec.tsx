@@ -31,10 +31,20 @@ const renderMessageImages: AssistantMarkdownProps['renderMessageImages'] = () =>
 const RETRY_ID = 'retry-fixture' as Extract<ConversationNode, { kind: 'model-retry' }>['retryId']
 
 // Recency scans the whole transcript; a detached fixture is its own latest row.
+// It carries the snapshot members renderers may read (an empty timeline and
+// location index) so a keyed renderer that derives turn boundaries mounts. The
+// snapshot is a single cached object: `useSyncExternalStore` requires a stable
+// getSnapshot, and an uncached one loops once a renderer subscribes.
+const detachedSnapshot = {
+  order: [],
+  nodes: new Map(),
+  timeline: { turnOrder: [], turns: new Map() },
+  locations: new Map(),
+} as never
 const useDetachedChat: ChatNodeViewProps['useChat'] = bindSnapshotSelector({
   subscribe: () => () => {},
-  getSnapshot: () => ({ order: [], nodes: new Map() }),
-} as never)
+  getSnapshot: () => detachedSnapshot,
+})
 
 interface MessageItemProps {
   readonly node: ConversationNode

@@ -85,6 +85,13 @@ export interface ChatNodeOwnerProps {
   inspectCall: (callId: ToolCallId) => void
   forkAt: (seq: number) => void
   /**
+   * Retract a turn by forking the session to before it and switching to the
+   * child, seeding the retracted turn's user text into the child's composer.
+   * @param seq - boundary seq: the turn/end of the turn kept before the retracted turn.
+   * @param seedText - the retracted turn's user text restored into the input box.
+   */
+  retractAt: (seq: number, seedText: string) => void
+  /**
    * Session-authorized image loader, down-threaded from the Chat view so a
    * chat-node renderer can render the attachment presentation slot directly
    * with only the durable references plus this loader, instead of receiving a
@@ -154,6 +161,8 @@ export interface ChatViewInjected {
     read: () => ChatScrollPosition | null
   }
   forkAt: (seq: number) => void
+  /** Retract a turn: fork to before it, switch, and seed the retracted user text. */
+  retractAt: (seq: number, seedText: string) => void
   fileMentions: (owner: TurnTailOwnerProps) => MarkdownFileMentions | undefined
 }
 
