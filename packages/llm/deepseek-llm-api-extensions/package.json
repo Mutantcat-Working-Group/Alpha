@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-deepseek-llm-api-extensions",
   "description": "Additive request-field registry for the official DeepSeek LLM API adapter",
-  "version": "1.0.20261025",
+  "version": "1.0.20261026",
   "publishConfig": {
     "access": "public"
   },

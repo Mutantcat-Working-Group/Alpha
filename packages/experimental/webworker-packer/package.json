@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-experimental-webworker-packer",
   "description": "Build-time packer for the browser runtime's base VFS image and ordered data-overlay archives",
-  "version": "1.0.20261025",
+  "version": "1.0.20261026",
   "publishConfig": {
     "access": "public"
   },

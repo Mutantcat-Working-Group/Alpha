@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-settings-plugin-inventory",
   "description": "Read-only Cordis Loader inventory tab in Web Plugins settings",
-  "version": "1.0.20261025",
+  "version": "1.0.20261026",
   "publishConfig": {
     "access": "public"
   },
