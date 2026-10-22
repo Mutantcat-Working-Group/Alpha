@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-session-persistence",
   "description": "Abstract durable session persistence seam (ctx.sessionPersistence) for the Alpha",
-  "version": "1.0.20261024",
+  "version": "1.0.20261025",
   "publishConfig": {
     "access": "public"
   },

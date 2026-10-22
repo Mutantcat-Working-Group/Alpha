@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-api-session-controller",
   "description": "Session Remote commands, cold reads, and live control transport",
-  "version": "1.0.20261024",
+  "version": "1.0.20261025",
   "publishConfig": {
     "access": "public"
   },
