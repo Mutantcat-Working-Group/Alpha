@@ -64,6 +64,8 @@ References keep local Session data, scoped Contexts, and history streams alive, 
 
 One result is returned per discovered Session — `imported`, `already-present`, or `refused` with its cause. Isolation is per Session, so an unreadable or corrupt source Session is refused while its siblings still import, and a repeated run adopts nothing and reports every Session as already present. The operation never watches, polls, or synchronizes. `harnessSessionsRoot` lets a Client pre-fill its editable source root with the configured default, and the Client face is the `harnessSessionsImport` service, whose `importSessions` re-pulls the Session list once the Host has published what it adopted.
 
+When the source root is not a DeepSeek Harness tree, the import detects a foreign coding-agent format and converts it into Alpha's current-format events, with the same per-Session results and isolation: Codex (`sessions/YYYY/MM/DD/rollout-*.jsonl`), Claude Code (`projects/<project>/*.jsonl`), and Z.ai ZCode (the current SQLite store at `cli/db/db.sqlite`, opened read-only, and the legacy `v2/sessions/<workspaceHash>/<taskId>.json` snapshots). Detection keys off the root's directory structure, so the source root should be the tool's own data root (for ZCode, the `.zcode` directory).
+
 -----
 
 <a id="configuration"></a>

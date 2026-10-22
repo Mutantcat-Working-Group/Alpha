@@ -18,6 +18,7 @@
     "src/export-session-markdown.ts",
     "src/file-references.ts",
     "src/foreign-format-adapters.ts",
+    "src/zcode-sessions.ts",
     "src/history.ts",
     "src/import-harness-sessions.ts",
     "src/list.ts",

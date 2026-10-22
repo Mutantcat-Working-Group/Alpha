@@ -2,7 +2,7 @@
  * Multi-format foreign session import adapters.
  *
  * Detects the format of a foreign sessions root and converts foreign
- * sessions (Codex, Claude Code) into Alpha's session format. The DSH
+ * sessions (Codex, Claude Code, ZCode) into Alpha's session format. The DSH
  * format is handled by the existing `foreign.ts` module; this module
  * adds support for other AI coding tools.
  *
@@ -16,9 +16,10 @@ import { join } from 'node:path'
 import { SessionId, SessionLogOffset } from '@mutantcat/dsh-session'
 import type { SessionEvent, SessionHeader } from '@mutantcat/dsh-session'
 import { sessionFormatCatalog } from '@mutantcat/dsh-session-format-catalog'
+import { isZcodeRoot, listZcodeSessions, readZcodeSession } from './zcode-sessions.ts'
 
 /** Supported foreign session formats. */
-export type ForeignFormat = 'dsh' | 'codex' | 'claude'
+export type ForeignFormat = 'dsh' | 'codex' | 'claude' | 'zcode'
 
 /** One discovered foreign session file. */
 export interface ForeignSessionFile {
@@ -26,6 +27,12 @@ export interface ForeignSessionFile {
   readonly path: string
   /** Detected format. */
   readonly format: ForeignFormat
+  /**
+   * Session id within a store that holds many sessions in one file (the ZCode
+   * SQLite database). Omitted for one-file-per-session formats, which derive
+   * the id from the file itself.
+   */
+  readonly sessionId?: string
 }
 
 /** Converted foreign session content in Alpha's format. */
@@ -41,6 +48,7 @@ export interface ForeignSessionContent {
  * Checks for format-specific directory structures:
  * - Codex: `sessions/YYYY/MM/DD/rollout-*.jsonl`
  * - Claude: `projects/<project>/<session>.jsonl`
+ * - ZCode: `cli/db/db.sqlite` (current) or `v2/sessions/<workspaceHash>/` (legacy)
  * - DSH: `<project>/<session>/session.vN.jsonl` (handled by existing foreign.ts)
  *
  * @param root - absolute path to the foreign sessions root.
@@ -69,6 +77,11 @@ export async function detectForeignFormat(root: string): Promise<ForeignFormat> 
     }
   } catch { /* not claude */ }
 
+  // ZCode: current SQLite store or legacy snapshot tree
+  if (await isZcodeRoot(root)) {
+    return 'zcode'
+  }
+
   // Default to DSH format
   return 'dsh'
 }
@@ -93,6 +106,8 @@ export async function listForeignSessionFiles(
     await walkCodexSessions(join(root, 'sessions'), files, signal)
   } else if (format === 'claude') {
     await walkClaudeSessions(join(root, 'projects'), files, signal)
+  } else if (format === 'zcode') {
+    return listZcodeSessions(root, signal)
   }
 
   return files
@@ -158,6 +173,9 @@ export async function readForeignSession(
   signal?: AbortSignal,
 ): Promise<ForeignSessionContent> {
   signal?.throwIfAborted()
+  if (file.format === 'zcode') {
+    return readZcodeSession(file, signal)
+  }
   const content = await readFile(file.path, 'utf8')
   const lines = content.split('\n').filter(line => line.trim() !== '')
 
