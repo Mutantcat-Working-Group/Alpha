@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-file-reference",
   "description": "File-reference discovery contract and shared @file grammar",
-  "version": "1.0.20261026",
+  "version": "1.0.20261027",
   "publishConfig": {
     "access": "public"
   },

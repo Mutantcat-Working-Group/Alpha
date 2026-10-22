@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-persona",
   "description": "Composition-authored deployment persona section for the Alpha",
-  "version": "1.0.20261026",
+  "version": "1.0.20261027",
   "publishConfig": {
     "access": "public"
   },

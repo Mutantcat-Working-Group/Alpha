@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-settings-import-sessions",
   "description": "Harness chat-history import settings page: the official DeepSeek Harness sessions root with one explicit import action",
-  "version": "1.0.20261026",
+  "version": "1.0.20261027",
   "publishConfig": {
     "access": "public"
   },

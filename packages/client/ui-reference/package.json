@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-client-ui-reference",
   "description": "Unified Web @file and @session reference source",
-  "version": "1.0.20261026",
+  "version": "1.0.20261027",
   "publishConfig": {
     "access": "public"
   },
