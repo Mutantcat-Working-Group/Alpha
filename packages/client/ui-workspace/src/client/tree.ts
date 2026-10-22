@@ -52,6 +52,8 @@ export interface SessionNode {
   /** A Session-scoped UI consumer is awaiting this user. */
   pendingInteraction?: SessionPendingInteractionStatus
   running: boolean
+  /** Parked between steps: the turn stays open and its in-flight work keeps going. */
+  paused: boolean
   /** Running descendants connected through uninterrupted subagent-origin lineage. */
   runningSubagentCount: number
   /** Finished running while not selected and not yet opened (the green "done" reminder dot). */
@@ -89,6 +91,8 @@ export interface SearchResultNode {
   /** A Session-scoped UI consumer is awaiting this user. */
   pendingInteraction?: SessionPendingInteractionStatus
   running: boolean
+  /** Parked between steps: the turn stays open and its in-flight work keeps going. */
+  paused: boolean
   /** Running descendants connected through uninterrupted subagent-origin lineage. */
   runningSubagentCount: number
   /** Finished running while not selected and not yet opened (the green "done" reminder dot). */
@@ -314,6 +318,7 @@ function sessionNode(
     title: sessionTitle(s),
     blank: s.blank,
     running: status?.running ?? s.running,
+    paused: status?.paused ?? s.paused,
     runningSubagentCount: descendants.get(s.id)?.runningCount ?? 0,
     completed: status?.completionUnread === true,
     updatedAt: s.updatedAt,
@@ -486,6 +491,7 @@ export function deriveSearchResults(
         title: sessionTitle(summary),
         workspace: labelOf(summary),
         running: status?.running ?? summary.running,
+        paused: status?.paused ?? summary.paused,
         runningSubagentCount: descendants.get(summary.id)?.runningCount ?? 0,
         ...(pendingInteraction === undefined
           ? {}

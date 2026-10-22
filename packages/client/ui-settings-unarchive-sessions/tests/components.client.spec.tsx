@@ -20,7 +20,7 @@ const t = ((key: ArchivedSessionsLocaleKey, params?: Record<string, string | num
   )) as ArchivedSessionsSectionProps['t']
 
 function summary(id: string, title: string, updatedAt: number): SessionSummary {
-  return { id: sid(id), displayTitle: title, running: false, retainedBy: {}, blank: false, updatedAt }
+  return { id: sid(id), displayTitle: title, running: false, paused: false, retainedBy: {}, blank: false, updatedAt }
 }
 
 function sessionState(sessions: readonly SessionSummary[], phase: SessionListState['phase'] = 'ready'): SessionListState {

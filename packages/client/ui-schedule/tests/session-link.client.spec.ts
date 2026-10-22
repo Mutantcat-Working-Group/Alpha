@@ -13,7 +13,7 @@ function sessions(ids: SessionId[], rows: SessionId[]): SessionListState {
   return {
     ids,
     byId: Object.fromEntries(rows.map(row => [row, {
-      id: row, displayTitle: row, running: false, blank: false, updatedAt: 0, retainedBy: {},
+      id: row, displayTitle: row, running: false, paused: false, blank: false, updatedAt: 0, retainedBy: {},
     }] as const)),
     phase: 'ready', subagentsByParent: {}, jobsBySession: {},
   }

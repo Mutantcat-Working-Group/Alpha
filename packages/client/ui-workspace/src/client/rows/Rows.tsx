@@ -265,10 +265,12 @@ interface SessionStatus {
 
 /**
  * Session status presentation; pending interaction is primary and live activity
- * outranks completion reminders.
+ * outranks completion reminders. A parked turn is live activity: its turn stays
+ * open and its in-flight work keeps going, so it holds the ongoing seat rather
+ * than reading as idle.
  */
 function sessionStatuses(
-  node: Pick<SessionNode, 'pendingInteraction' | 'running' | 'runningSubagentCount' | 'completed'>,
+  node: Pick<SessionNode, 'pendingInteraction' | 'running' | 'paused' | 'runningSubagentCount' | 'completed'>,
   t: RowTranslate,
 ): readonly [SessionStatus, ...SessionStatus[]] {
   const subagents: SessionStatus | undefined = node.runningSubagentCount === 0
@@ -300,6 +302,10 @@ function sessionStatuses(
   if (pending !== undefined) return subagents === undefined ? [pending] : [pending, subagents]
   if (node.running) {
     const primary: SessionStatus = { state: 'ongoing', label: t('status.running') }
+    return subagents === undefined ? [primary] : [primary, subagents]
+  }
+  if (node.paused) {
+    const primary: SessionStatus = { state: 'paused', label: t('status.paused') }
     return subagents === undefined ? [primary] : [primary, subagents]
   }
   if (subagents !== undefined) return [subagents]

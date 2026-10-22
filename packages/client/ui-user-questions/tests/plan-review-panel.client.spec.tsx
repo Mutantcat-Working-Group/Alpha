@@ -51,7 +51,7 @@ const sessionState: SessionState = {
 }
 const sessionList = {
   ids: [SID],
-  byId: { [SID]: { id: SID, displayTitle: 'Session', running: false, retainedBy: {}, blank: false, updatedAt: 0 } },
+  byId: { [SID]: { id: SID, displayTitle: 'Session', running: false, paused: false, retainedBy: {}, blank: false, updatedAt: 0 } },
   phase: 'ready' as const,
   subagentsByParent: {},
   jobsBySession: {},

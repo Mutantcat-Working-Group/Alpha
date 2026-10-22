@@ -18,7 +18,7 @@ function titleSources() {
   const sessionId = 'session-title' as SessionId
   const sessions = createSnapshotStore<SessionListState>({
     ids: [sessionId],
-    byId: { [sessionId]: { id: sessionId, displayTitle: 'Test', running: false, retainedBy: { mainView: 1 }, blank: false, updatedAt: 1 } },
+    byId: { [sessionId]: { id: sessionId, displayTitle: 'Test', running: false, paused: false, retainedBy: { mainView: 1 }, blank: false, updatedAt: 1 } },
     phase: 'ready',
     subagentsByParent: {},
     jobsBySession: {},

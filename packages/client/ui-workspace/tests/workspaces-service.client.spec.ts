@@ -59,6 +59,7 @@ function summary(id: string, overrides: Partial<SessionSummary> = {}): SessionSu
     id: sid(id),
     displayTitle: id,
     running: false,
+    paused: false,
     blank: false,
     updatedAt: 0,
     ...overrides,

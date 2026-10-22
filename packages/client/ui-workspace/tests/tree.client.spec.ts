@@ -14,7 +14,7 @@ import { createWorkspaceViewStore } from '../src/client/stores.ts'
 const sid = (id: string) => id as SessionId
 const wid = (id: string) => id as WorkspaceId
 const summary = (id: string, updatedAt: number, cwd?: string): SessionSummary => ({
-  id: sid(id), displayTitle: id, running: false, blank: false,
+  id: sid(id), displayTitle: id, running: false, paused: false, blank: false,
   updatedAt, ...(cwd === undefined ? {} : { cwd }), retainedBy: {},
 })
 const list = (...items: SessionSummary[]): SessionListState => ({
@@ -42,7 +42,9 @@ const noAttention: SessionStatusSnapshot = new Map()
 const status = (
   pendingInteraction: SessionPendingInteraction | undefined,
   overrides: Partial<SessionStatus> = {},
-): SessionStatus => ({ running: undefined, pendingInteraction, completionUnread: false, ...overrides })
+): SessionStatus => ({
+  running: undefined, paused: false, pendingInteraction, completionUnread: false, ...overrides,
+})
 const archived = (...ids: string[]): readonly SessionId[] => ids.map(sid)
 
 describe('owningGroupKey', () => {
@@ -394,6 +396,7 @@ describe('deriveSearchResults', () => {
           title: 'Needle title',
           workspace: 'Alpha',
           running: false,
+          paused: false,
           runningSubagentCount: 0,
           pendingInteraction: 'plan-review',
           completed: false,
@@ -404,6 +407,7 @@ describe('deriveSearchResults', () => {
           title: 'Ordinary title',
           workspace: 'Needle Workspace',
           running: false,
+          paused: false,
           runningSubagentCount: 0,
           completed: false,
         },
@@ -412,6 +416,7 @@ describe('deriveSearchResults', () => {
           title: 'content-hit',
           workspace: 'c',
           running: false,
+          paused: false,
           runningSubagentCount: 0,
           completed: false,
           snippet: 'body needle excerpt',

@@ -51,6 +51,20 @@ function dragProps(overrides: Partial<RowDragProps> = {}): RowDragProps {
   }
 }
 
+/** Render one idle Session row; `over` overrides the derived node's facts. */
+function renderSessionRow(over: Partial<SessionNode> = {}) {
+  return render(
+    <SessionNodeItem
+      node={{
+        id: sid('s1'), title: 'One', blank: false, running: false, paused: false,
+        runningSubagentCount: 0, completed: false, updatedAt: 0, ...over,
+      }}
+      currentId={undefined} now={0} onOpen={vi.fn()}
+      onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} t={t}
+    />,
+  )
+}
+
 /** Install the async browser clipboard and restore its prior host shape. */
 function installClipboard(writeText: (text: string) => Promise<void>): () => void {
   const prior = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
@@ -77,7 +91,7 @@ function fireDrag(row: HTMLElement, kind: 'dragOver' | 'drop', clientY: number):
 describe('workspace browser rows', () => {
   it('keeps the leading status cell in the flat list, holding the seat while the row is idle', () => {
     const idle: SessionNode = {
-      id: sid('flat'), title: 'Flat Session', blank: false, running: false,
+      id: sid('flat'), title: 'Flat Session', blank: false, running: false, paused: false,
       runningSubagentCount: 0, completed: false, updatedAt: 0,
     }
     const renderSlot: RowRenderSlot = name => (name === 'sidebar.session.row.leading'
@@ -90,7 +104,7 @@ describe('workspace browser rows', () => {
     expect(cell?.className).toMatch(/slot/)
     expect(cell?.querySelector('[data-seat="sidebar.session.row.leading"]')).toBeTruthy()
 
-    view.rerender(<SessionNodeItem node={{ ...idle, running: true }} currentId={undefined} now={0}
+    view.rerender(<SessionNodeItem node={{ ...idle, running: true, paused: false }} currentId={undefined} now={0}
       onOpen={vi.fn()} onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} renderSlot={renderSlot} t={t} />)
     // A row that gains a state dot replaces the occupant in the same cell.
     expect(screen.getByText('Flat Session').previousElementSibling?.querySelector('[data-state="ongoing"]')).toBeTruthy()
@@ -103,7 +117,7 @@ describe('workspace browser rows', () => {
       id: sid('result'),
       title: 'Result title',
       workspace: 'Workspace context',
-      running: true,
+      running: true, paused: false,
       runningSubagentCount: 0,
       completed: false,
       snippet: 'matching message excerpt',
@@ -127,7 +141,7 @@ describe('workspace browser rows', () => {
   ] as const)('shows %s ahead of running in search results', (pendingInteraction, label) => {
     const result: SearchResultNode = {
       id: sid(pendingInteraction), title: 'Needs input', workspace: 'Project',
-      pendingInteraction, running: true, runningSubagentCount: 0, completed: false,
+      pendingInteraction, running: true, paused: false, runningSubagentCount: 0, completed: false,
     }
     render(<SearchResultItem result={result} currentId={undefined} onOpen={vi.fn()} t={t} />)
     const row = screen.getByRole('treeitem')
@@ -155,7 +169,7 @@ describe('workspace browser rows', () => {
 
   it('renders and opens a selected running Session row', () => {
     const node: SessionNode = {
-      id: sid('session'), title: 'Session', blank: false, running: true,
+      id: sid('session'), title: 'Session', blank: false, running: true, paused: false,
       runningSubagentCount: 0, completed: false, updatedAt: 0,
     }
     const onOpen = vi.fn()
@@ -175,7 +189,7 @@ describe('workspace browser rows', () => {
   it('reveals a clipped session title by scrolling it while the row is hovered', () => {
     const node: SessionNode = {
       id: sid('clipped'), title: 'A Session Title Long Enough To Be Clipped (1)', blank: false,
-      running: false, runningSubagentCount: 0, completed: false, updatedAt: 0,
+      running: false, paused: false, runningSubagentCount: 0, completed: false, updatedAt: 0,
     }
     render(
       <SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
@@ -204,7 +218,7 @@ describe('workspace browser rows', () => {
   it('returns a revealed title to its start in one step', () => {
     const node: SessionNode = {
       id: sid('instant-return'), title: 'A Session Title Long Enough To Be Clipped (1)', blank: false,
-      running: false, runningSubagentCount: 0, completed: false, updatedAt: 0,
+      running: false, paused: false, runningSubagentCount: 0, completed: false, updatedAt: 0,
     }
     render(
       <SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
@@ -223,42 +237,46 @@ describe('workspace browser rows', () => {
   })
 
   it('shows the green done dot only on a finished, unviewed session (live activity wins the slot)', () => {
-    const renderRow = (over: Partial<SessionNode>) => render(
-      <SessionNodeItem
-        node={{
-          id: sid('s1'), title: 'One', blank: false, running: false,
-          runningSubagentCount: 0, completed: false, updatedAt: 0, ...over,
-        }}
-        currentId={undefined} now={0} onOpen={vi.fn()}
-        onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} t={t}
-      />,
-    )
-    const stateDot = (view: ReturnType<typeof renderRow>) =>
+    const stateDot = (view: ReturnType<typeof renderSessionRow>) =>
       view.container.querySelector('[data-state]')
     // No completion reminder, not running: no state dot at all.
-    const plain = renderRow({})
+    const plain = renderSessionRow({})
     expect(stateDot(plain)).toBeNull()
     plain.unmount()
     // Completed while unviewed: the green done dot.
-    const done = renderRow({ completed: true })
+    const done = renderSessionRow({ completed: true })
     expect(done.container.querySelector('[data-state="done"]')).not.toBeNull()
     done.unmount()
     // Running wins the slot: the animated ongoing dot, no done dot.
-    const running = renderRow({ completed: true, running: true })
+    const running = renderSessionRow({ completed: true, running: true, paused: false })
     expect(running.container.querySelector('[data-state="ongoing"]')).not.toBeNull()
     expect(running.container.querySelector('[data-state="done"]')).toBeNull()
     running.unmount()
     // Descendant activity also wins until the last running descendant stops.
-    const delegated = renderRow({ completed: true, runningSubagentCount: 1 })
+    const delegated = renderSessionRow({ completed: true, runningSubagentCount: 1 })
     expect(delegated.container.querySelector('[data-state="ongoing"]')).not.toBeNull()
     expect(delegated.container.querySelector('[data-state="done"]')).toBeNull()
+  })
+
+  it('shows a parked turn as held rather than idle', () => {
+    // A parked turn is not running, but its row must not read as idle: the
+    // turn stays open and its in-flight work keeps going.
+    const parked = renderSessionRow({ paused: true })
+    expect(parked.container.querySelector('[data-state="paused"]')).not.toBeNull()
+    expect(screen.getByText('已暂停')).toBeTruthy()
+    expect(parked.container.querySelector('[data-state="done"]')).toBeNull()
+    parked.unmount()
+    // The held state still outranks the finished-but-unviewed reminder.
+    const parkedDone = renderSessionRow({ paused: true, completed: true })
+    expect(parkedDone.container.querySelector('[data-state="paused"]')).not.toBeNull()
+    expect(parkedDone.container.querySelector('[data-state="done"]')).toBeNull()
   })
 
   it('shows descendant activity without describing an idle parent as running', () => {
     vi.useFakeTimers()
     try {
       const node: SessionNode = {
-        id: sid('owner'), title: 'Delegating', blank: false, running: false,
+        id: sid('owner'), title: 'Delegating', blank: false, running: false, paused: false,
         runningSubagentCount: 2, completed: false, updatedAt: 0,
       }
       render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
@@ -280,7 +298,7 @@ describe('workspace browser rows', () => {
     vi.useFakeTimers()
     try {
       const node: SessionNode = {
-        id: sid('owner'), title: 'Delegating', blank: false, running: true,
+        id: sid('owner'), title: 'Delegating', blank: false, running: true, paused: false,
         runningSubagentCount: 1, completed: false, updatedAt: 0,
       }
       render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
@@ -302,7 +320,7 @@ describe('workspace browser rows', () => {
   it('keeps child activity as a secondary status while user attention is primary', () => {
     const node: SessionNode = {
       id: sid('owner'), title: 'Needs input', blank: false, pendingInteraction: 'question',
-      running: false, runningSubagentCount: 1, completed: false, updatedAt: 0,
+      running: false, paused: false, runningSubagentCount: 1, completed: false, updatedAt: 0,
     }
     render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
       onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} t={t} />)
@@ -316,7 +334,7 @@ describe('workspace browser rows', () => {
   it('shows the green done dot on a finished search result row', () => {
     render(<SearchResultItem
       result={{
-        id: sid('result'), title: 'Done', workspace: 'Workspace', running: false,
+        id: sid('result'), title: 'Done', workspace: 'Workspace', running: false, paused: false,
         runningSubagentCount: 0, completed: true,
       }}
       currentId={undefined} onOpen={vi.fn()} t={t}
@@ -448,7 +466,7 @@ describe('workspace browser rows', () => {
     vi.useFakeTimers()
     try {
       const node: SessionNode = {
-        id: sid('s-blank'), title: 'ignored', blank: true, running: false,
+        id: sid('s-blank'), title: 'ignored', blank: true, running: false, paused: false,
         runningSubagentCount: 0, completed: false, updatedAt: 0,
       }
       render(<SessionNodeItem node={node} currentId={node.id} now={0} onOpen={vi.fn()}
@@ -475,7 +493,7 @@ describe('workspace browser rows', () => {
     const onFork = vi.fn()
     const onArchive = vi.fn()
     const node: SessionNode = {
-      id: sid('s1'), title: 'One', blank: false, running: false,
+      id: sid('s1'), title: 'One', blank: false, running: false, paused: false,
       runningSubagentCount: 0, completed: false, updatedAt: 0,
     }
     render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={onOpen}
@@ -509,7 +527,7 @@ describe('workspace browser rows', () => {
     vi.useFakeTimers()
     try {
       const node: SessionNode = {
-        id: sid('s1'), title: 'Hovered', blank: false, running: true,
+        id: sid('s1'), title: 'Hovered', blank: false, running: true, paused: false,
         runningSubagentCount: 0, completed: false, updatedAt: 0,
       }
       render(<SessionNodeItem node={node} currentId={undefined} now={60_000} onOpen={vi.fn()}
@@ -541,7 +559,7 @@ describe('workspace browser rows', () => {
     try {
       const node: SessionNode = {
         id: sid(pendingInteraction), title: 'Needs input', blank: false,
-        pendingInteraction, running: true, runningSubagentCount: 0, completed: false,
+        pendingInteraction, running: true, paused: false, runningSubagentCount: 0, completed: false,
         updatedAt: 0,
       }
       const view = render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
@@ -551,7 +569,7 @@ describe('workspace browser rows', () => {
       expect(row.querySelector('[data-state="ongoing"]')).toBeNull()
       expect(screen.getByText(label)).toBeTruthy()
 
-      view.rerender(<SessionNodeItem node={{ ...node, running: false }} currentId={undefined} now={0}
+      view.rerender(<SessionNodeItem node={{ ...node, running: false, paused: false }} currentId={undefined} now={0}
         onOpen={vi.fn()} onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} t={t} />)
       expect(screen.getByRole('treeitem').querySelector('[data-state="warning"]')).toBeTruthy()
 
@@ -568,7 +586,7 @@ describe('workspace browser rows', () => {
     vi.useFakeTimers()
     try {
       const node: SessionNode = {
-        id: sid('s1'), title: 'Quiet', blank: false, running: false,
+        id: sid('s1'), title: 'Quiet', blank: false, running: false, paused: false,
         runningSubagentCount: 0, completed: false, updatedAt: 0,
       }
       render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
@@ -586,7 +604,7 @@ describe('workspace browser rows', () => {
     vi.useFakeTimers()
     try {
       const node: SessionNode = {
-        id: sid('s1'), title: 'Done', blank: false, running: false,
+        id: sid('s1'), title: 'Done', blank: false, running: false, paused: false,
         runningSubagentCount: 0, completed: true, updatedAt: 0,
       }
       render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
@@ -602,7 +620,7 @@ describe('workspace browser rows', () => {
 
   it('draggable row wires start/end and gates hover/drop on an active same-group drag', () => {
     const node: SessionNode = {
-      id: sid('s1'), title: 'Drag me', blank: false, running: false,
+      id: sid('s1'), title: 'Drag me', blank: false, running: false, paused: false,
       runningSubagentCount: 0, completed: false, updatedAt: 0,
     }
     const inactive = dragProps()
@@ -660,7 +678,7 @@ describe('session row seats', () => {
   }
 
   const idle: SessionNode = {
-    id: sid('idle'), title: 'Idle Session', blank: false, running: false,
+    id: sid('idle'), title: 'Idle Session', blank: false, running: false, paused: false,
     runningSubagentCount: 0, completed: false, updatedAt: 0,
   }
 
@@ -693,7 +711,7 @@ describe('session row seats', () => {
 
   it.each<[string, SessionNode, string]>([
     ['an unviewed completion (new message)', { ...idle, completed: true }, 'done'],
-    ['live activity', { ...idle, running: true }, 'ongoing'],
+    ['live activity', { ...idle, running: true, paused: false }, 'ongoing'],
     ['a pending approval', { ...idle, pendingInteraction: 'approval' as const }, 'warning'],
     ['a running subagent', { ...idle, runningSubagentCount: 2 }, 'ongoing'],
   ])('replaces the leading seat with the %s dot', (_label, node, state) => {

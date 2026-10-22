@@ -200,7 +200,7 @@ describe('chat row diff body', () => {
 describe('FileMutationRow diff card', () => {
   const list = () => createSnapshotStore<SessionListState>({
     ids: [SID],
-    byId: { [SID]: { id: SID, displayTitle: 'r', running: false, retainedBy: {}, blank: false, updatedAt: 0, cwd: '/w/app' } },
+    byId: { [SID]: { id: SID, displayTitle: 'r', running: false, paused: false, retainedBy: {}, blank: false, updatedAt: 0, cwd: '/w/app' } },
     phase: 'ready',
     subagentsByParent: {}, jobsBySession: {},
   })

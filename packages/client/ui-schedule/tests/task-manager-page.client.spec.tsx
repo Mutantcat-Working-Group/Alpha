@@ -92,7 +92,7 @@ const records = [at, every, after]
 const sessions: SessionListState = {
   ids: [...records, daily, weekly].map(record => record.sessionId),
   byId: Object.fromEntries([...records, daily, weekly].map(record => [record.sessionId, {
-    id: record.sessionId, displayTitle: record.sessionId, running: false, blank: false, updatedAt: 0, retainedBy: {},
+    id: record.sessionId, displayTitle: record.sessionId, running: false, paused: false, blank: false, updatedAt: 0, retainedBy: {},
   }] as const)),
   phase: 'ready', subagentsByParent: {}, jobsBySession: {},
 }

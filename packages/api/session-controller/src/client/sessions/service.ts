@@ -35,6 +35,12 @@ export interface SessionSummary {
   /** Coarse durable origin for navigation filtering; not a continuation capability. */
   origin?: 'subagent'
   running: boolean
+  /**
+   * Whether the turn is parked between steps. A parked turn is not running,
+   * but it is not idle either: the turn stays open and its in-flight work
+   * keeps going, so a row must keep its live seat.
+   */
+  paused: boolean
   /** Local ownership counts; Host metadata refreshes cannot overwrite them. */
   readonly retainedBy: SessionRetainInfo['retainedBy']
   /**
@@ -639,6 +645,7 @@ export class ClientSessions implements ISessions {
         id: entry.sessionId,
         displayTitle: displayTitleOf(entry.title, entry.cwd, entry.sessionId),
         running: entry.running,
+        paused: entry.paused ?? false,
         retainedBy: this.retentionSnapshot(entry.sessionId).retainedBy,
         blank: entry.blank,
         updatedAt: entry.updatedAt,
@@ -663,7 +670,8 @@ export class ClientSessions implements ISessions {
         if (summary === undefined) {
           byId[childId] = {
             id: childId, displayTitle, parentId: parentId as SessionId,
-            origin: 'subagent', running: child.activity === 'running', blank: false, updatedAt: 0,
+            origin: 'subagent', running: child.activity === 'running', paused: false,
+            blank: false, updatedAt: 0,
             retainedBy: this.retentionSnapshot(childId).retainedBy,
             ...(projectionValues === undefined ? {} : { projectionValues }),
             ...(title === undefined ? {} : { title }),
@@ -685,6 +693,7 @@ export class ClientSessions implements ISessions {
       byId[id] = {
         ...(previous ?? { id, displayTitle: id, updatedAt: 0 }),
         running: snapshot.running,
+        paused: snapshot.paused,
         retainedBy: record.retention.retainedBy,
         blank: snapshot.blank,
         ...(address === undefined ? {} : { parentId: address.parentSessionId, origin: 'subagent' }),

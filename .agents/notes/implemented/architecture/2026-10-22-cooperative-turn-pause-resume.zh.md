@@ -28,15 +28,19 @@ Status: implemented
 
 ### 宿主命令与客户端状态
 
-`SessionCommandController.pause()` 与 `resume()` 驱动一个实时普通 Agent 在各状态间转换，拒绝缺失的 Session（`session/not-found`）、子 agent 拥有的 Session（`agent-busy`）、`running` 之外的暂停（`session/not-running`）以及 `paused` 之外的继续（`session/not-paused`）。`api-session/status` 事件透传三态状态；客户端把 `paused` 映射为 `running=false, paused=true`，因此被停放的 composer 绝不会渲染为运行中。
+`SessionCommandController.pause()` 与 `resume()` 驱动一个实时普通 Agent 在各状态间转换，拒绝缺失的 Session（`session/not-found`）、子 agent 拥有的 Session（`agent-busy`）、`running` 之外的暂停（`session/not-running`）以及 `paused` 之外的继续（`session/not-paused`）。`api-session/status` 事件透传三态状态；客户端把 `paused` 映射为 `running=false, paused=true`，因此被停放的 composer 绝不会渲染为运行中。停放位同时作为 `running` 旁的 `paused` 位随 Session 列表传递，因为停放由事件建立，而列表是重连客户端唯一收到的基线；缺少它，一次重载就会把已停放的轮次读成空闲，并把它仍在运行的工作搁在那里。
 
 ### Web 控件
 
-对于带有空草稿或受阻草稿的运行中普通 Session，composer 保留其 Stop 座位不变。运行中的普通 Session 新增一个次要的「暂停」按钮；带有空草稿或受阻草稿的已暂停普通 Session 把主按钮变为「继续」。子 agent 的 composer 保留其现有的独立 Stop 按钮，不暴露「暂停」。
+对于带有空草稿或受阻草稿的运行中普通 Session，composer 保留其 Stop 座位。运行中的普通 Session 新增一个次要的「暂停」按钮；带有空草稿或受阻草稿的已暂停普通 Session 把主按钮变为「继续」并获得自己的 Stop 座位，因为已经在运行工具的步骤在轮次停放期间继续执行。子 agent 的 composer 保留其现有的独立 Stop 按钮，不暴露「暂停」。
+
+### 工作区行
+
+已停放的 Session 显示 `paused` 状态点——停放于单一亮度的进行中圆环——并带本地化的「已暂停」标签。这个静止圆环读作活跃，但不声称工作正在推进，并且与进行中圆点一样压过「已完成但未查看」提醒。
 
 ## 验证
 
-[`pause-resume.spec.ts`](../../../../packages/core/agent-loop/tests/pause-resume.spec.ts) 证明 `running` 轮次之外的无操作、停放—继续的完整往返、从暂停点之前的日志重新组装请求、恢复时排队输入的投递、第二次暂停的无操作，以及停放中 cancel 使轮次以已中止结束。[`commands-pause-resume.host.spec.ts`](../../../../packages/api/session-controller/tests/commands-pause-resume.host.spec.ts) 证明每一条被接受与被拒绝的宿主命令，包括缺失与子 agent 拥有的 Session。[`manager.client.spec.ts`](../../../../packages/api/session-controller/tests/manager.client.spec.ts) 固定三态状态到 running 与 paused 位的映射。[`input-bar.client.spec.tsx`](../../../../packages/client/ui-conversation/tests/input-bar.client.spec.tsx) 证明运行中 composer 上的「暂停」按钮与已暂停 composer 上的「继续」主按钮，并证明已暂停的 composer 不暴露「暂停」。
+[`pause-resume.spec.ts`](../../../../packages/core/agent-loop/tests/pause-resume.spec.ts) 证明 `running` 轮次之外的无操作、停放—继续的完整往返、从暂停点之前的日志重新组装请求、恢复时排队输入的投递、第二次暂停的无操作，以及停放中 cancel 使轮次以已中止结束。[`commands-pause-resume.host.spec.ts`](../../../../packages/api/session-controller/tests/commands-pause-resume.host.spec.ts) 证明每一条被接受与被拒绝的宿主命令，包括缺失与子 agent 拥有的 Session。[`manager.client.spec.ts`](../../../../packages/api/session-controller/tests/manager.client.spec.ts) 固定三态状态到 running 与 paused 位的映射。[`input-bar.client.spec.tsx`](../../../../packages/client/ui-conversation/tests/input-bar.client.spec.tsx) 证明运行中 composer 上的「暂停」按钮、已暂停 composer 上的「继续」主按钮、该「继续」主按钮旁的 Stop 座位，以及已暂停的 composer 不暴露「暂停」。[`ui-session.client.spec.ts`](../../../../packages/client/ui-session/tests/ui-session.client.spec.ts) 证明停放在 running→paused→running→idle 的流转后依然保留，并从列表基线播种，因此重连绝不会把已停放的轮次读成空闲。[`rows.client.spec.tsx`](../../../../packages/client/ui-workspace/tests/rows.client.spec.tsx) 证明已暂停的行显示静止圆环而非空闲圆点，并且仍然压过「已完成但未查看」提醒。[`state-dot.client.spec.tsx`](../../../../packages/client/ui-primitives/tests/state-dot.client.spec.tsx) 与 [`state-dot-styles.client.spec.ts`](../../../../packages/client/ui-primitives/tests/state-dot-styles.client.spec.ts) 证明 paused 圆环渲染八个单元格、没有逐单元格相位，也没有实心圆点规则。
 
 ## 考虑过的替代方案
 

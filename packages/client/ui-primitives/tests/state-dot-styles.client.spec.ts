@@ -16,8 +16,15 @@ describe('StateDot.module.css', () => {
     expect(css).toContain(`.dot[data-state='${state}']`)
   })
 
-  it('keeps ongoing on the animated matrix rather than a solid-dot rule', () => {
+  it('keeps ongoing and paused on the matrix rather than solid-dot rules', () => {
     expect(css).not.toContain(".dot[data-state='ongoing']")
+    expect(css).not.toContain(".dot[data-state='paused']")
     expect(css).toContain('@keyframes dsh-state-dot-chase')
+  })
+
+  it('holds the paused ring still instead of chasing it', () => {
+    // A parked turn keeps the ongoing color at one brightness: live, with
+    // nothing progressing.
+    expect(css).toMatch(/\.held \.cell \{\s*animation: none;\s*opacity: 0\.55;/)
   })
 })

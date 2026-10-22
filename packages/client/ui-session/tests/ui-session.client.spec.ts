@@ -135,6 +135,7 @@ function createSessionsBench(ctx: Context): SessionsBench {
           id,
           displayTitle: id,
           running: false,
+          paused: false,
           retainedBy: {},
           blank: false,
           updatedAt: 1,
@@ -535,6 +536,7 @@ describe('UiSession status', () => {
 
     expect(service.sessionStatus.getSnapshot().get(id)).toEqual({
       running: false,
+      paused: false,
       pendingInteraction: undefined,
       completionUnread: false,
     })
@@ -578,11 +580,42 @@ describe('UiSession status', () => {
     bench.emitStatus(id, 'idle')
     expect(service.sessionStatus.getSnapshot().get(id)).toEqual({
       running: false,
+      paused: false,
       pendingInteraction: undefined,
       completionUnread: true,
     })
     bench.list.update((draft) => { draft.phase = 'ready' })
     expect(service.sessionStatus.getSnapshot().has(id)).toBe(false)
+  })
+
+  it('keeps a parked turn live instead of folding it into idle', () => {
+    const ctx = new Context()
+    const bench = createSessionsBench(ctx)
+    const id = sessionId('s1')
+    bench.binding(id)
+    const service = createUiSession(ctx, bench)
+
+    bench.emitStatus(id, 'running')
+    expect(service.sessionStatus.getSnapshot().get(id)).toMatchObject({ running: true, paused: false })
+    // A parked turn is not running, but it is not idle either: the turn stays
+    // open and its in-flight work keeps going.
+    bench.emitStatus(id, 'paused')
+    expect(service.sessionStatus.getSnapshot().get(id)).toMatchObject({ running: false, paused: true })
+    bench.emitStatus(id, 'running')
+    expect(service.sessionStatus.getSnapshot().get(id)).toMatchObject({ running: true, paused: false })
+    bench.emitStatus(id, 'idle')
+    expect(service.sessionStatus.getSnapshot().get(id)).toMatchObject({ running: false, paused: false })
+  })
+
+  it('seeds the parked bit from the list baseline', () => {
+    const ctx = new Context()
+    const bench = createSessionsBench(ctx)
+    const id = sessionId('s1')
+    bench.binding(id)
+    bench.list.update((draft) => { draft.byId[id]!.paused = true })
+    const service = createUiSession(ctx, bench)
+
+    expect(service.sessionStatus.getSnapshot().get(id)?.paused).toBe(true)
   })
 })
 

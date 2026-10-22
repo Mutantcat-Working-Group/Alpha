@@ -315,7 +315,11 @@ export const InputBar = memo(function InputBar({
     : primaryPaused
       ? resume === undefined
       : empty || disabled || machineBusy || uploadsPending
-  const interruptible = running && continuable
+  // The separate Stop seat covers every live turn whose primary names another
+  // action: a running continuable child steers from its primary, and a parked
+  // ordinary turn resumes from its primary. A parked turn keeps running work
+  // in flight, so it never goes without a way out.
+  const interruptible = paused || (running && continuable)
   const primarySubmitMode = resolveSubmitMode(busyEnter, running, 'enter', steeringAvailable)
   const plainMessageDraft = !empty && input?.phase === 'plain' && !draft.trimStart().startsWith('/')
   const primaryLabel = primaryStops

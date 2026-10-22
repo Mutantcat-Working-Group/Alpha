@@ -112,6 +112,7 @@ export class ApiSessionList {
       sessionId: session.id,
       updatedAt: updatedAt(session.header, metadata),
       running: this.ctx.agents.get(session.id)?.status === 'running',
+      paused: this.ctx.agents.get(session.id)?.status === 'paused',
       blank: metadata?.blank ?? session.seq === 0,
       ...listFields(session.header),
       ...(projections === undefined ? {} : { projections }),
@@ -150,6 +151,9 @@ export class ApiSessionList {
       sessionId: header.id,
       updatedAt: updatedAt(header, metadata),
       running: false,
+      // A park is process-local and a relaunch turns one into an interrupted
+      // turn, so a cold Session is never parked.
+      paused: false,
       // A large, metadata-less, or inaccessible cache miss remains unknown and visible.
       blank: metadata?.blank ?? false,
       ...listFields(header),

@@ -9,6 +9,7 @@ import type {
   SessionSnapshot,
   UseProjection,
 } from '@mutantcat/dsh-api-session-controller/client'
+import type { ApiSessionStatus } from '@mutantcat/dsh-api-session-controller/types'
 import type { SessionId } from '@mutantcat/dsh-session/types'
 import type {} from '@mutantcat/dsh-api-remotes/client'
 import { notifySubscribers } from '@mutantcat/dsh-client-store'
@@ -58,6 +59,13 @@ export type SessionPendingInteraction =
 export interface SessionStatus {
   /** Latest known running state; absent until a baseline or event establishes it. */
   readonly running: boolean | undefined
+  /**
+   * Whether the Session's turn is parked between steps. A parked turn is not
+   * running, but it is not idle either: the turn stays open and its in-flight
+   * work keeps going, so a consumer must not read this as an absence of
+   * activity.
+   */
+  readonly paused: boolean
   /** Highest-precedence domain request currently awaiting user interaction. */
   readonly pendingInteraction: SessionPendingInteraction | undefined
   /** Whether an observed stop outside the main view still needs acknowledgement. */
@@ -281,6 +289,7 @@ export class UiSession extends Service {
   private readonly pendingDomains: RuntimePendingDomain[] = []
   private pendingSnapshot: ReadonlyMap<SessionId, SessionPendingInteractionBase> = new Map()
   private readonly running = new Map<SessionId, boolean>()
+  private readonly paused = new Set<SessionId>()
   private readonly completionUnread = new Set<SessionId>()
   private statusSnapshot: SessionStatusSnapshot = new Map()
   private readonly statusListeners = new Set<() => void>()
@@ -319,7 +328,7 @@ export class UiSession extends Service {
       const disposeList = sessions.list.subscribe(() => { this.publishMain() })
       const disposeStatus = sessions.list.subscribe(() => { this.reconcileStatus() })
       const disposeRemoteStatus = ctx.remote.$on('api-session/status', (sessionId, status) => {
-        this.observeRunning(sessionId, status === 'running')
+        this.observeStatus(sessionId, status)
       })
       this.publishMain()
       this.reconcileStatus()
@@ -489,6 +498,19 @@ export class UiSession extends Service {
     this.publishStatus()
   }
 
+  /**
+   * Apply one Agent lifecycle transition. A park keeps the Session live: the
+   * turn stays open between steps, so it is recorded instead of folded into
+   * the not-running case.
+   * @param sessionId - Session whose Agent state changed.
+   * @param status - current Agent lifecycle state.
+   */
+  private observeStatus(sessionId: SessionId, status: ApiSessionStatus): void {
+    if (status === 'paused') this.paused.add(sessionId)
+    else this.paused.delete(sessionId)
+    this.observeRunning(sessionId, status === 'running')
+  }
+
   private reconcileStatus(): void {
     const list = this.sessions.list.getSnapshot()
     const present = new Set(Object.keys(list.byId) as SessionId[])
@@ -498,6 +520,9 @@ export class UiSession extends Service {
       const previous = this.running.get(id)
       if (previous === undefined) this.running.set(id, row.running)
       else if (previous !== row.running) this.observeRunning(id, row.running)
+      // A park is event-established; the baseline can only introduce one, so a
+      // resume keeps clearing it through its own status event.
+      if (row.paused) this.paused.add(id)
       if ((row.retainedBy.mainView ?? 0) > 0) this.completionUnread.delete(id)
     }
     if (list.phase === 'ready') {
@@ -505,6 +530,9 @@ export class UiSession extends Service {
         if (present.has(id)) continue
         this.running.delete(id)
         this.completionUnread.delete(id)
+      }
+      for (const id of this.paused) {
+        if (!present.has(id)) this.paused.delete(id)
       }
     }
     this.publishStatus()
@@ -525,6 +553,7 @@ export class UiSession extends Service {
     for (const id of ids) {
       next.set(id, {
         running: this.running.get(id),
+        paused: this.paused.has(id),
         pendingInteraction: this.pendingSnapshot.get(id),
         completionUnread: this.completionUnread.has(id),
       })

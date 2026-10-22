@@ -65,6 +65,13 @@
   animation: dsh-state-dot-chase 1s infinite;
 }
 
+/* A parked turn keeps the ongoing ring's color but holds every cell at one
+ * brightness: the turn is live, nothing is progressing. */
+.held .cell {
+  animation: none;
+  opacity: 0.55;
+}
+
 @keyframes dsh-state-dot-chase {
   0%, 12.4% { opacity: 1; }
   12.5%, 24.9% { opacity: 0.6; }

@@ -26,7 +26,7 @@ const at: ScheduleCatalogEntry = {
 const other: ScheduleCatalogEntry = { ...at, id: 'task-other' as ScheduleId, title: 'Other metrics' }
 const sessions: SessionListState = {
   ids: [SESSION],
-  byId: { [SESSION]: { id: SESSION, displayTitle: SESSION, running: false, blank: false, updatedAt: 0, retainedBy: {} } },
+  byId: { [SESSION]: { id: SESSION, displayTitle: SESSION, running: false, paused: false, blank: false, updatedAt: 0, retainedBy: {} } },
   phase: 'ready', subagentsByParent: {}, jobsBySession: {},
 }
 const workspaces: WorkspaceSnapshot = { items: [], archivedSessionIds: [], state: 'idle', phase: 'ready', error: null }

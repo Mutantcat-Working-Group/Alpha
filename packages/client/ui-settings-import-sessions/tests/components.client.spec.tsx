@@ -13,7 +13,7 @@ afterEach(cleanup)
 const sid = (id: string): SessionId => id as SessionId
 
 function summary(id: string, title: string): SessionSummary {
-  return { id: sid(id), displayTitle: title, running: false, retainedBy: {}, blank: false, updatedAt: 0 }
+  return { id: sid(id), displayTitle: title, running: false, paused: false, retainedBy: {}, blank: false, updatedAt: 0 }
 }
 
 function sessionState(sessions: readonly SessionSummary[]): SessionListState {

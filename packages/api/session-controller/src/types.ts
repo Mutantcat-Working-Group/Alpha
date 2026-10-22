@@ -167,6 +167,12 @@ export interface SessionSummary {
   readonly sessionId: SessionId
   readonly updatedAt: number
   readonly running: boolean
+  /**
+   * Whether the Session's turn is parked between steps. A parked turn is not
+   * running, but it is not idle either: the turn stays open and its in-flight
+   * work keeps going. Absent from a Host that predates the field.
+   */
+  readonly paused?: boolean
   readonly blank: boolean
   readonly parentSessionId?: SessionId
   readonly origin?: 'subagent'

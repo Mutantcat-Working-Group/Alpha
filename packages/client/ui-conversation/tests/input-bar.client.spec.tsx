@@ -1007,6 +1007,25 @@ describe('running and lock semantics', () => {
     expect(pausedView.view.container.querySelector('button[aria-label="暂停"]')).toBeNull()
   })
 
+  it('a parked turn keeps a Stop seat beside its Resume primary', () => {
+    const resume = vi.fn()
+    const { view, stop } = bench({ running: false, paused: true, resume })
+
+    // The primary resumes the parked turn...
+    const primary = view.container.querySelector<HTMLButtonElement>('button[aria-label="继续"]')!
+    expect(primary).not.toBeNull()
+    expect(primary.disabled).toBe(false)
+    // ...and a separate seat terminates it, so a turn whose in-flight work
+    // keeps running is never stuck without a way out.
+    const stopButton = view.container.querySelector<HTMLButtonElement>('button[aria-label="停止生成"]')!
+    expect(stopButton).not.toBeNull()
+    expect(stopButton.disabled).toBe(false)
+
+    fireEvent.click(stopButton)
+    expect(stop).toHaveBeenCalledTimes(1)
+    expect(resume).not.toHaveBeenCalled()
+  })
+
   it('a parked turn swaps the primary glyph between play and send on the draft', () => {
     const resume = vi.fn()
     const sink = vi.fn(() => Promise.resolve({ kind: 'success' as const }))

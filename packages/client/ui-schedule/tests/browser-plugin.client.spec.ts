@@ -102,7 +102,7 @@ async function baseContext(
   ctx.provide('sidebarRight', { openTab: sidebar.openTab, tabsIn: sidebar.tabsIn } as never)
   const id = 'cold-original' as SessionId
   const sessions: SessionListState = {
-    ids: [id], byId: { [id]: { id, displayTitle: id, running: false, blank: false, updatedAt: 0, retainedBy: {} } },
+    ids: [id], byId: { [id]: { id, displayTitle: id, running: false, paused: false, blank: false, updatedAt: 0, retainedBy: {} } },
     phase: 'ready', subagentsByParent: {}, jobsBySession: {},
   }
   const workspaces: WorkspaceSnapshot = { items: [], archivedSessionIds: [], state: 'idle', phase: 'ready', error: null }

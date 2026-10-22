@@ -83,7 +83,7 @@ interface CatalogInflight {
 type SessionListMutation =
   | { kind: 'upsert'; summary: SessionSummary }
   | { kind: 'remove'; sessionId: SessionId }
-  | { kind: 'status'; sessionId: SessionId; running: boolean }
+  | { kind: 'status'; sessionId: SessionId; running: boolean; paused: boolean }
   | { kind: 'activity'; sessionId: SessionId; updatedAt: number }
   /** Local first-send flip: the sender clears blank without waiting for a host frame. */
   | { kind: 'engaged'; sessionId: SessionId }
@@ -242,12 +242,13 @@ export class SessionManager {
     if (session === undefined) {
       session = this.createSession(sessionId)
       this.sessions.set(sessionId, session)
-      // Sync the running and blank bits from the list snapshot into the new
-      // instance (consistency when the list precedes open).
+      // Sync the running, parked, and blank bits from the list snapshot into
+      // the new instance (consistency when the list precedes open).
       const summary = this.summaries.find(s => s.sessionId === sessionId)
       if (summary !== undefined) {
         session.handleBlank(summary.blank)
         session.handleRunning(summary.running)
+        session.handlePaused(summary.paused ?? false)
       } else {
         const address = this.addresses.get(sessionId)
         const child = address === undefined ? undefined : this.catalogs.get(address.parentSessionId)?.entries
@@ -416,12 +417,13 @@ export class SessionManager {
           this.summaries = mutations.reduce(applyMutation, baseline)
           this.listState = 'idle'
           this.listPhase = 'ready'
-          // Push running/blank bits down to instantiated Sessions (the list is the authoritative summary source).
+          // Push running, parked, and blank bits down to instantiated Sessions (the list is the authoritative summary source).
           for (const s of this.summaries) {
             const session = this.sessions.get(s.sessionId)
             if (session === undefined) continue
             session.handleBlank(s.blank)
             session.handleRunning(s.running)
+            session.handlePaused(s.paused ?? false)
           }
           // Seed each row's projection baseline into the per-session value
           // store (cold titles surface without opening the session). Per-key
@@ -661,11 +663,13 @@ export class SessionManager {
     const summary = this.summaries.find(candidate => candidate.sessionId === sessionId)
     const durableSubagent = summary?.origin === 'subagent' || this.addresses.has(sessionId)
     this.recordMutation(durableSubagent
-      ? { kind: 'status', sessionId, running: false }
+      ? { kind: 'status', sessionId, running: false, paused: false }
       : { kind: 'remove', sessionId })
     this.updateCatalogActivity(sessionId, false)
-    if (durableSubagent) this.sessions.get(sessionId)?.handleRunning(false)
-    else this.sessions.get(sessionId)?.handleRemoved()
+    if (durableSubagent) {
+      this.sessions.get(sessionId)?.handleRunning(false)
+      this.sessions.get(sessionId)?.handlePaused(false)
+    } else this.sessions.get(sessionId)?.handleRemoved()
     this.jobsBySession.delete(sessionId)
     if (!durableSubagent) this.projectionStores.delete(sessionId)
     const inflightCatalog = this.catalogInflight.get(sessionId)
@@ -692,7 +696,7 @@ export class SessionManager {
   handleSessionStatus(sessionId: SessionId, status: ApiSessionStatus): void {
     const running = status === 'running'
     const paused = status === 'paused'
-    this.recordMutation({ kind: 'status', sessionId, running })
+    this.recordMutation({ kind: 'status', sessionId, running, paused })
     const session = this.sessions.get(sessionId)
     session?.handleRunning(running)
     session?.handlePaused(paused)
@@ -882,10 +886,18 @@ function applyMutation(summaries: readonly SessionSummary[], mutation: SessionLi
       return summaries.filter(summary => summary.sessionId !== mutation.sessionId)
     case 'status':
       // running:true doubles as the cross-client blank flip (a blank session
-      // never runs, so the first running frame proves a message landed).
+      // never runs, so the first running frame proves a message landed). The
+      // park rides the same frame: a parked turn is not running, but it is
+      // not idle either, so the row keeps its live seat.
       return summaries.map(summary => summary.sessionId === mutation.sessionId
-        && (summary.running !== mutation.running || (mutation.running && summary.blank))
-        ? { ...summary, running: mutation.running, blank: summary.blank && !mutation.running }
+        && (summary.running !== mutation.running || (summary.paused ?? false) !== mutation.paused
+          || (mutation.running && summary.blank))
+        ? {
+          ...summary,
+          running: mutation.running,
+          paused: mutation.paused,
+          blank: summary.blank && !mutation.running,
+        }
         : summary)
     case 'activity':
       return summaries.map(summary => summary.sessionId === mutation.sessionId

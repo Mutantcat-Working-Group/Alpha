@@ -266,7 +266,7 @@ describe('imageCardModel', () => {
 describe('ReadImageRow keyed toolview', () => {
   const list = () => createSnapshotStore<SessionListState>({
     ids: [SID],
-    byId: { [SID]: { id: SID, displayTitle: 'r', running: false, blank: false, updatedAt: 0, cwd: '/w/app' } },
+    byId: { [SID]: { id: SID, displayTitle: 'r', running: false, paused: false, blank: false, updatedAt: 0, cwd: '/w/app' } },
     current: SID,
     phase: 'ready',
     subagentsByParent: {}, jobsBySession: {},

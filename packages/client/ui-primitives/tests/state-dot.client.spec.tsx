@@ -7,14 +7,14 @@ import type { StateDotState } from '@mutantcat/dsh-client-ui-primitives'
 afterEach(cleanup)
 
 describe('StateDot', () => {
-  it.each(['done', 'warning', 'ongoing', 'error', 'idle'] as const)('renders state %s as data-state', (state) => {
+  it.each(['done', 'warning', 'ongoing', 'error', 'idle', 'paused'] as const)('renders state %s as data-state', (state) => {
     const { container } = render(<StateDot state={state} />)
     const dot = container.firstElementChild as HTMLElement
     expect(dot.dataset['state']).toBe(state)
     expect(dot.getAttribute('aria-hidden')).toBe('true')
   })
 
-  it('solid states are spans; ongoing is an svg pixel matrix', () => {
+  it('solid states are spans; ongoing and paused are svg pixel matrices', () => {
     const { container, rerender } = render(<StateDot state="done" />)
     expect(container.firstElementChild?.tagName).toBe('SPAN')
     rerender(<StateDot state="ongoing" />)
@@ -25,6 +25,16 @@ describe('StateDot', () => {
     // Chase phase: every cell carries its own negative animation delay.
     const delays = [...cells].map(cell => (cell).style.animationDelay)
     expect(new Set(delays).size).toBe(8)
+  })
+
+  it('paused holds the ring still instead of chasing it', () => {
+    const { container } = render(<StateDot state="paused" />)
+    const ring = container.firstElementChild as SVGSVGElement
+    expect(ring.tagName).toBe('svg')
+    expect(ring.querySelectorAll('rect')).toHaveLength(8)
+    // Held: no per-cell phase, so every cell shares one static brightness.
+    const delays = [...ring.querySelectorAll('rect')].map(cell => cell.style.animationDelay)
+    expect(new Set(delays)).toEqual(new Set(['']))
   })
 
   it('sizes via the size prop in both shapes', () => {
@@ -40,7 +50,7 @@ describe('StateDot', () => {
 
   it('rejects unknown states at the type level', () => {
     const bad = (state: StateDotState) => state
-    // @ts-expect-error 'paused' is not one of the five states
-    expect(bad('paused')).toBe('paused')
+    // @ts-expect-error 'parked' is not one of the six states
+    expect(bad('parked')).toBe('parked')
   })
 })
