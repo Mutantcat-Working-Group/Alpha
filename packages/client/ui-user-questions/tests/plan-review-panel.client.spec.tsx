@@ -36,6 +36,7 @@ const sessionState: SessionState = {
   sessionId: SID,
   pendingSubmissions: [],
   running: false,
+  paused: false,
   subagent: null,
   removed: false,
   openState: 'open',

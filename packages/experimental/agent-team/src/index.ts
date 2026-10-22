@@ -221,7 +221,7 @@ export class TeamService extends TypertRemoteService {
    * @param targetName - durable teammate name.
    * @returns the target status sampled before cancellation.
    */
-  interrupt(caller: Agent, targetName: string): { previousStatus: 'running' | 'idle' | 'inactive' } {
+  interrupt(caller: Agent, targetName: string): { previousStatus: 'running' | 'paused' | 'idle' | 'inactive' } {
     return this.roster.interrupt(caller, targetName)
   }
 

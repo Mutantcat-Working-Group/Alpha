@@ -168,7 +168,7 @@ async waitForChange(caller: Agent, timeoutMs: number, signal: AbortSignal): Prom
  * @param targetName - durable teammate name.
  * @returns the target status sampled before cancellation.
  */
-interrupt(caller: Agent, targetName: string): { previousStatus: 'running' | 'idle' | 'inactive' }
+interrupt(caller: Agent, targetName: string): { previousStatus: 'running' | 'paused' | 'idle' | 'inactive' }
 
 /**
  * Resolve a caller without throwing, used by scoped-tool installation and observers.

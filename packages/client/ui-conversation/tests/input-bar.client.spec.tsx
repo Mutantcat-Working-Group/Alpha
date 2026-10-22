@@ -73,6 +73,9 @@ interface BenchOptions {
   }
   draft?: string
   running?: boolean
+  paused?: boolean
+  pause?: () => void
+  resume?: () => void
   subagent?: Exclude<SessionSnapshot['subagent'], null>
   disabled?: boolean
   inert?: boolean
@@ -121,6 +124,7 @@ function bench(over?: BenchOptions) {
   const lex = over?.lexicon
   const session = createSnapshotStore<SessionSnapshot>(snapshotOf({
     running: over?.running ?? false,
+    paused: over?.paused ?? false,
     subagent: over?.subagent ?? null,
     removed: over?.disabled ?? false,
     promptError: over?.promptError ?? null,
@@ -202,6 +206,8 @@ function bench(over?: BenchOptions) {
     useLexicon: bindSnapshotSelector(shell.lexicon),
     useMenuLauncher: bindSnapshotSelector(menuLauncher),
     stop,
+    pause: over?.pause ?? undefined,
+    resume: over?.resume ?? undefined,
     // Mirrors the real lookup chain (conversation namespace, then common).
     t: over?.t ?? makeTranslate(zh, commonZh),
     renderSlot,
@@ -979,6 +985,26 @@ describe('running and lock semantics', () => {
     expect(sink).toHaveBeenCalledWith('后续消息', [], 'queue', expect.any(AbortSignal))
     fireEvent.click(interruptButton!)
     expect(stop).toHaveBeenCalledTimes(1)
+  })
+
+  it('running ordinary session exposes a Pause button; paused empty composer makes the primary Resume', () => {
+    const pause = vi.fn()
+    const resume = vi.fn()
+
+    const runningView = bench({ running: true, pause, resume })
+    const pauseButton = runningView.view.container.querySelector<HTMLButtonElement>('button[aria-label="暂停"]')
+    expect(pauseButton).not.toBeNull()
+    expect(pauseButton!.disabled).toBe(false)
+    fireEvent.click(pauseButton!)
+    expect(pause).toHaveBeenCalledTimes(1)
+
+    const pausedView = bench({ running: false, paused: true, pause, resume })
+    const primary = pausedView.view.container.querySelector<HTMLButtonElement>('button[aria-label="继续"]')
+    expect(primary).not.toBeNull()
+    expect(primary!.disabled).toBe(false)
+    fireEvent.click(primary!)
+    expect(resume).toHaveBeenCalledTimes(1)
+    expect(pausedView.view.container.querySelector('button[aria-label="暂停"]')).toBeNull()
   })
 
   it('running continuable subagent Send follows the Steer preference like an ordinary session', () => {

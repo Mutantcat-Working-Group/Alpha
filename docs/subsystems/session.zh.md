@@ -887,6 +887,21 @@ workspaceDesktop(): { name: string; available: boolean; fileManager: 'finder' | 
 @Remote('cancel') cancel(request: SessionCancelRequest): SessionCancelValue
 
 /**
+ * Park one running Agent turn between steps; {@link resume} continues it from
+ * the pause point.
+ * @param request - Session whose running Agent turn is parked.
+ * @returns acknowledgement that pausing was requested.
+ */
+@Remote('pause') pause(request: SessionPauseRequest): SessionPauseValue
+
+/**
+ * Continue one paused Agent turn from the pause point.
+ * @param request - Session whose paused Agent turn is resumed.
+ * @returns acknowledgement that resuming was requested.
+ */
+@Remote('resume') resume(request: SessionResumeRequest): SessionResumeValue
+
+/**
  * Read the deployment's configured default source root for the official
  * DeepSeek Harness chat-history import.
  * @returns the configured foreign sessions root.
@@ -1177,9 +1192,9 @@ One Agent changed running state.
  * One Agent changed running state.
  * @mode emit
  * @param sessionId - Agent and Session identity.
- * @param running - whether the Agent is running.
+ * @param status - whether the Agent is idle, running, or paused between steps.
  */
-'api-session/status'(sessionId: SessionId, running: boolean): void
+'api-session/status'(sessionId: SessionId, status: ApiSessionStatus): void
 ```
 
 Types: [SessionId](core.zh.md)

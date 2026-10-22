@@ -208,6 +208,8 @@ declare module '@mutantcat/dsh-typert-protocol' {
     'session/steer-unavailable': { readonly itemId: MessageId }
     'session/title-invalid': { readonly sessionId: SessionId }
     'session/fork-unavailable': { readonly sessionId: SessionId }
+    'session/not-running': { readonly sessionId: SessionId }
+    'session/not-paused': { readonly sessionId: SessionId }
     'subagent/not-found': {
       readonly parentSessionId: SessionId
       readonly childSessionId: SessionId
@@ -368,6 +370,33 @@ export interface SessionCancelRequest {
 export interface SessionCancelValue {
   readonly accepted: true
 }
+
+/** Active-turn pause request. */
+export interface SessionPauseRequest {
+  readonly sessionId: SessionId
+}
+
+/** Receipt after pausing is admitted to the live Agent. */
+export interface SessionPauseValue {
+  readonly accepted: true
+}
+
+/** Paused-turn resume request. */
+export interface SessionResumeRequest {
+  readonly sessionId: SessionId
+}
+
+/** Receipt after resuming is admitted to the live Agent. */
+export interface SessionResumeValue {
+  readonly accepted: true
+}
+
+/**
+ * One Agent's externally visible running state for the GUI: `idle` when no
+ * driver is active, `running` while it drains a turn, and `paused` while a
+ * turn is parked between steps awaiting {@link SessionPauseRequest resume}.
+ */
+export type ApiSessionStatus = 'idle' | 'running' | 'paused'
 
 /** Adoption outcome of one Session discovered in a foreign Harness sessions root. */
 export type SessionImportHarnessStatus = 'imported' | 'already-present' | 'refused'
@@ -621,9 +650,9 @@ declare module '@mutantcat/cordis' {
      * One Agent changed running state.
      * @mode emit
      * @param sessionId - Agent and Session identity.
-     * @param running - whether the Agent is running.
+     * @param status - whether the Agent is idle, running, or paused between steps.
      */
-    'api-session/status'(sessionId: SessionId, running: boolean): void
+    'api-session/status'(sessionId: SessionId, status: ApiSessionStatus): void
     /**
      * One user-authored durable message advanced Session list activity.
      * @mode emit

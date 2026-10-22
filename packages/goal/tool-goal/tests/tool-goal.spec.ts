@@ -68,6 +68,8 @@ function stubAgent(rawId: string, supplied?: Session, suppliedCtx?: Context): St
     },
     cancel() {},
     interruptModelStep: () => false,
+    pause: () => {},
+    resume: () => {},
     runMaintenance: task => task(new AbortController().signal),
     whenIdle() { return Promise.resolve() },
   }

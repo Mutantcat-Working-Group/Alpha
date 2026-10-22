@@ -347,6 +347,8 @@ export function apply(ctx: Context, config: Config = Config({})): void {
           retryFileUpload: undefined,
           toggleCommandMenu: undefined,
           stop: undefined,
+          pause: undefined,
+          resume: undefined,
           hooks: {
             busyEnter: submissionPolicy.busyEnter,
             fileUploads: ABSENT_FILE_UPLOADS,
@@ -397,6 +399,16 @@ export function apply(ctx: Context, config: Config = Config({})): void {
         stop: () => {
           scopedConversation(sessions, sessionId).cancel().catch(() => {
             // Stop failure is published through Session promptError.
+          })
+        },
+        pause: () => {
+          scopedConversation(sessions, sessionId).pause().catch(() => {
+            // Pause failure is published through Session promptError.
+          })
+        },
+        resume: () => {
+          scopedConversation(sessions, sessionId).resume().catch(() => {
+            // Resume failure is published through Session promptError.
           })
         },
         hooks: {

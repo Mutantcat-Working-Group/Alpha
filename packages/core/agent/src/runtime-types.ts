@@ -112,10 +112,12 @@ export interface Inbox {
  * An agent's lifecycle state, emitted on every transition as `agent/status`:
  * `idle` means no driver is active; `running` begins when waking input starts
  * cancellable pre-step processing and lasts while the driver drains,
- * closes, or checkpoints turns. Disposal removes the agent from its registry;
- * it is not a third observable status.
+ * closes, or checkpoints turns. `paused` is a parked `running` turn between
+ * steps: the turn stays open and its prefix is settled, and `resume` continues
+ * it from the pause point. Disposal removes the agent from its registry;
+ * it is not a fourth observable status.
  */
-export type AgentStatus = 'idle' | 'running'
+export type AgentStatus = 'idle' | 'running' | 'paused'
 
 /** Whether and with which messages the loop enters a proposed step. */
 export type PreStepDecision =
@@ -200,6 +202,23 @@ declare module './types.ts' {
    * none is in flight (idle, maintenance, or a step running tools).
    */
     interruptModelStep(): boolean
+
+    /**
+     * Park the running turn between steps. The in-flight model step is cut so
+     * the park takes effect now (a step running tools parks at its next
+     * boundary); the turn stays open and its delivered prefix settles as an
+     * interrupted assistant message. {@link resume} continues the turn: the
+     * next step reassembles its request from the log up to the pause point.
+     * No-op outside a running turn or when already paused.
+     */
+    pause(): void
+
+    /**
+     * Continue a parked turn from the pause point. The loop resumes between
+     * steps and reassembles its next request from the log; queued input sent
+     * while parked is claimed by that step. No-op outside a paused turn.
+     */
+    resume(): void
 
     /**
    * Resolve after the current whole-agent activity reaches quiescence. This

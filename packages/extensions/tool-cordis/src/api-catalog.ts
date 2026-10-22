@@ -405,7 +405,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'one observed change or a timeout result.',
       },
       {
-        signature: 'interrupt(caller: Agent, targetName: string): { previousStatus: \'running\' | \'idle\' | \'inactive\' }',
+        signature: 'interrupt(caller: Agent, targetName: string): { previousStatus: \'running\' | \'paused\' | \'idle\' | \'inactive\' }',
         description: 'Interrupt one live teammate turn without clearing its pending inbox.',
         parameters: [{ name: 'caller', description: 'exact live Lead Agent.' }, { name: 'targetName', description: 'durable teammate name.' }],
         returns: 'the target status sampled before cancellation.',
@@ -1799,6 +1799,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Cancel one active Agent turn without dropping its pending inbox.',
         parameters: [{ name: 'request', description: 'Session whose active Agent turn is cancelled.' }],
         returns: 'acknowledgement that cancellation was requested.',
+      },
+      {
+        signature: '@Remote(\'pause\') pause(request: SessionPauseRequest): SessionPauseValue',
+        description: 'Park one running Agent turn between steps; resume continues it from the pause point.',
+        parameters: [{ name: 'request', description: 'Session whose running Agent turn is parked.' }],
+        returns: 'acknowledgement that pausing was requested.',
+      },
+      {
+        signature: '@Remote(\'resume\') resume(request: SessionResumeRequest): SessionResumeValue',
+        description: 'Continue one paused Agent turn from the pause point.',
+        parameters: [{ name: 'request', description: 'Session whose paused Agent turn is resumed.' }],
+        returns: 'acknowledgement that resuming was requested.',
       },
       {
         signature: '@Remote(\'harnessSessionsRoot\') harnessSessionsRoot(): SessionImportHarnessSourceValue',
@@ -3612,10 +3624,10 @@ export const EVENT_API: readonly EventApiEntry[] = [
   {
     name: 'api-session/status',
     mode: 'emit',
-    signature: '\'api-session/status\'(sessionId: SessionId, running: boolean): void',
+    signature: '\'api-session/status\'(sessionId: SessionId, status: ApiSessionStatus): void',
     summary: 'One Agent changed running state.',
     description: 'One Agent changed running state.',
-    parameters: [{ name: 'sessionId', description: 'Agent and Session identity.' }, { name: 'running', description: 'whether the Agent is running.' }],
+    parameters: [{ name: 'sessionId', description: 'Agent and Session identity.' }, { name: 'status', description: 'whether the Agent is idle, running, or paused between steps.' }],
   },
   {
     name: 'approval/request',
@@ -4167,7 +4179,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'AgentStatus',
-    declaration: 'export type AgentStatus = \'idle\' | \'running\';',
+    declaration: 'export type AgentStatus = \'idle\' | \'running\' | \'paused\';',
   },
   {
     name: 'AlphaNamespaceKey',
@@ -4184,6 +4196,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ApiSessionAgentResult',
     declaration: 'export type ApiSessionAgentResult = {\n    readonly agent: Agent;\n} | {\n    readonly error: ApiSessionAgentError;\n};',
+  },
+  {
+    name: 'ApiSessionStatus',
+    declaration: 'export type ApiSessionStatus = \'idle\' | \'running\' | \'paused\';',
   },
   {
     name: 'ApprovalOutcome',
@@ -6230,6 +6246,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface SessionPageRequest {\n    readonly address: SessionAddress;\n    readonly throughSeq: number;\n    readonly beforeSeq?: number;\n    readonly maxMessages?: number;\n}',
   },
   {
+    name: 'SessionPauseRequest',
+    declaration: 'export interface SessionPauseRequest {\n    readonly sessionId: SessionId;\n}',
+  },
+  {
+    name: 'SessionPauseValue',
+    declaration: 'export interface SessionPauseValue {\n    readonly accepted: true;\n}',
+  },
+  {
     name: 'SessionPersistenceCreateOptions',
     declaration: 'export interface SessionPersistenceCreateOptions {\n    readonly signal?: AbortSignal;\n    readonly inheritedEventCount?: SessionLogOffset;\n}',
   },
@@ -6324,6 +6348,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SessionResultRange',
     declaration: 'export interface SessionResultRange {\n    from?: number;\n    to?: number;\n}',
+  },
+  {
+    name: 'SessionResumeRequest',
+    declaration: 'export interface SessionResumeRequest {\n    readonly sessionId: SessionId;\n}',
+  },
+  {
+    name: 'SessionResumeValue',
+    declaration: 'export interface SessionResumeValue {\n    readonly accepted: true;\n}',
   },
   {
     name: 'SessionSearchCursor',
@@ -6847,7 +6879,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'TeamMemberView',
-    declaration: 'export interface TeamMemberView {\n    readonly id: SessionId;\n    readonly name: string;\n    readonly role: \'lead\' | \'teammate\';\n    readonly status: \'running\' | \'idle\' | \'inactive\' | \'provisioning\' | \'failed\';\n    readonly description?: string;\n    readonly provider?: string;\n    readonly context?: \'fresh\' | \'fork\';\n    readonly model?: string;\n    readonly diagnostics: string[];\n}',
+    declaration: 'export interface TeamMemberView {\n    readonly id: SessionId;\n    readonly name: string;\n    readonly role: \'lead\' | \'teammate\';\n    readonly status: \'running\' | \'paused\' | \'idle\' | \'inactive\' | \'provisioning\' | \'failed\';\n    readonly description?: string;\n    readonly provider?: string;\n    readonly context?: \'fresh\' | \'fork\';\n    readonly model?: string;\n    readonly diagnostics: string[];\n}',
   },
   {
     name: 'TeamMessageId',

@@ -64,6 +64,16 @@ export interface IConversation {
    */
   cancel(): Promise<void>
   /**
+   * Park the scoped session's running turn between steps.
+   * @returns completion; failures reject as in send.
+   */
+  pause(): Promise<void>
+  /**
+   * Continue the scoped session's parked turn from the pause point.
+   * @returns completion; failures reject as in send.
+   */
+  resume(): Promise<void>
+  /**
    * Pull one older history page for the scoped session.
    * @returns completion of the page pull.
    */
@@ -509,6 +519,20 @@ export class ConversationController extends Service implements IConversation {
     const session = this.scopedSession('cancel')
     const result = await session.cancel()
     if (!result.ok) throw new Error(`conversation.cancel failed: ${result.error.code}: ${result.error.message}`)
+  }
+
+  /** Park the scoped session's running turn between steps (failures land in promptError and reject, as in send). */
+  async pause(): Promise<void> {
+    const session = this.scopedSession('pause')
+    const result = await session.pause()
+    if (!result.ok) throw new Error(`conversation.pause failed: ${result.error.code}: ${result.error.message}`)
+  }
+
+  /** Continue the scoped session's parked turn from the pause point (failures land in promptError and reject, as in send). */
+  async resume(): Promise<void> {
+    const session = this.scopedSession('resume')
+    const result = await session.resume()
+    if (!result.ok) throw new Error(`conversation.resume failed: ${result.error.code}: ${result.error.message}`)
   }
 
   /** Pull one older history page for the scoped Session. */

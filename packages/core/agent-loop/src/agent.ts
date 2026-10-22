@@ -46,7 +46,7 @@ type Phase =
     lastTurn: number
     wakeRequested: boolean
   }
-  | { kind: 'running'; abort: AbortController; turn: number; step: number; wakeRequested: boolean }
+  | { kind: 'running'; abort: AbortController; turn: number; step: number; wakeRequested: boolean; paused: boolean }
 
 type StepEndReason = Extract<TurnEndReason, { kind: 'completed' | 'max-tokens' }>
 
@@ -94,6 +94,12 @@ export class ReactLoopAgent implements Agent {
    * its provider, so an interrupt asked for between steps cuts nothing.
    */
   private stepInterrupt: AbortController | null = null
+  /**
+   * The between-steps park gate while `paused`. Present only while the loop
+   * waits between steps, so a pause asked for outside a turn parks nothing.
+   * Resume or cancellation resolves it to wake the parked loop.
+   */
+  private pauseGate: PromiseWithResolvers<void> | null = null
   private readonly systemPrompt: SystemPromptProjection
   /** Identities fully frozen by this loop; weak references do not retain replaced history. */
   private readonly frozenMessages = new WeakSet<Message>()
@@ -117,7 +123,8 @@ export class ReactLoopAgent implements Agent {
   }
 
   get status(): AgentStatus {
-    return this.phase.kind === 'idle' || this.phase.kind === 'maintenance' ? 'idle' : 'running'
+    if (this.phase.kind === 'idle' || this.phase.kind === 'maintenance') return 'idle'
+    return this.phase.paused ? 'paused' : 'running'
   }
 
   /** Commit a phase and publish its externally visible status transition. */
@@ -156,6 +163,10 @@ export class ReactLoopAgent implements Agent {
       this.inbox.clear()
       if (this.phase.kind !== 'idle') this.phase.wakeRequested = false
     }
+    // Wake a parked loop so it observes the abort; a paused turn ends aborted.
+    const gate = this.pauseGate
+    this.pauseGate = null
+    gate?.resolve()
     if (this.phase.kind !== 'idle') this.phase.abort.abort(cause)
   }
 
@@ -164,6 +175,38 @@ export class ReactLoopAgent implements Agent {
     if (step === null || step.signal.aborted) return false
     step.abort()
     return true
+  }
+
+  /**
+   * Park the running turn between steps. The in-flight model step is cut so
+   * the park takes effect now (a step running tools parks at its next
+   * boundary); the turn stays open and its delivered prefix settles as an
+   * interrupted assistant message. {@link resume} continues the turn: the next
+   * step reassembles its request from the log up to the pause point. No-op
+   * outside a running turn or when already paused.
+   */
+  pause(): void {
+    if (this.phase.kind !== 'running' || this.phase.paused) return
+    // The gate is installed before the flag so a loop reaching the park always
+    // finds a gate to await.
+    this.pauseGate = Promise.withResolvers<void>()
+    this.phase.paused = true
+    this.interruptModelStep()
+    this.dispatch.emit('agent/status', { status: 'paused' })
+  }
+
+  /**
+   * Continue a parked turn from the pause point. The loop resumes between
+   * steps and reassembles its next request from the log; queued input sent
+   * while parked is claimed by that step. No-op outside a paused turn.
+   */
+  resume(): void {
+    if (this.phase.kind !== 'running' || !this.phase.paused) return
+    this.phase.paused = false
+    const gate = this.pauseGate
+    this.pauseGate = null
+    gate?.resolve()
+    this.dispatch.emit('agent/status', { status: 'running' })
   }
 
   runMaintenance<T>(job: (signal: AbortSignal) => Promise<T>): Promise<T> {
@@ -216,6 +259,7 @@ export class ReactLoopAgent implements Agent {
       turn: this.phase.lastTurn,
       step: 0,
       wakeRequested: false,
+      paused: false,
     })
     this.loopCtx.agents.withInitiator(this, () => this.kick()).then(driver.resolve, driver.reject)
   }
@@ -297,6 +341,12 @@ export class ReactLoopAgent implements Agent {
     let target: InboxTarget = 'next-turn'
     try {
       while (true) {
+        // Park between steps while paused; resume or cancellation resolves the
+        // gate. The next step reassembles its request from the log, so the turn
+        // continues from the pause point without re-sending its input.
+        while (phase.paused && !signal.aborted) {
+          await (this.pauseGate?.promise ?? Promise.resolve())
+        }
         signal.throwIfAborted()
         const step = phase.step + 1
         const decision = await this.preStep(target, { turn, step })

@@ -304,7 +304,7 @@ export function createAssembledRemote(options: AssembledRemoteOptions = {}): Ass
     summary.blank = false
     if (!summary.running) {
       summary.running = true
-      mock.streams.push('$events', { type: 'emit', event: 'api-session/status', args: [sessionId, true] })
+      mock.streams.push('$events', { type: 'emit', event: 'api-session/status', args: [sessionId, 'running'] })
     }
     const turnEvent = eventOf(sessionRecords.length, 'turn/start', { turn })
     const userEvent = eventOf(sessionRecords.length + 1, 'user/message', {

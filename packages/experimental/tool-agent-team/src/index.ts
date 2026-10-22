@@ -51,7 +51,7 @@ const MEMBER_VIEW_SCHEMA = {
     id: { type: 'string', required: true },
     name: { type: 'string', required: true },
     role: { type: 'string', required: true, enum: ['lead', 'teammate'] },
-    status: { type: 'string', required: true, enum: ['running', 'idle', 'inactive', 'provisioning', 'failed'] },
+    status: { type: 'string', required: true, enum: ['running', 'paused', 'idle', 'inactive', 'provisioning', 'failed'] },
     description: { type: 'string' },
     provider: { type: 'string' },
     context: { type: 'string', enum: ['fresh', 'fork'] },
@@ -118,7 +118,7 @@ const INTERRUPT_VALUE_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    previousStatus: { type: 'string', required: true, enum: ['running', 'idle', 'inactive'] },
+    previousStatus: { type: 'string', required: true, enum: ['running', 'paused', 'idle', 'inactive'] },
   },
 } as const
 

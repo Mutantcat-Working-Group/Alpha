@@ -71,6 +71,7 @@ function sessionSnapshot(overrides: Partial<TestSessionSnapshot> = {}): TestSess
     sessionId: SID,
     pendingSubmissions: [],
     running: false,
+    paused: false,
     removed: false,
     openState: 'open',
     openError: null,

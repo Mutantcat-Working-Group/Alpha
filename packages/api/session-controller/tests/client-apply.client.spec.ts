@@ -56,7 +56,7 @@ describe('Session Controller Client apply', () => {
       expect(sessions.list.getSnapshot().byId[sid('session-1')]).toMatchObject({ running: false, updatedAt: 1 })
     })
 
-    await emit(mock, 'api-session/status', sid('session-1'), true)
+    await emit(mock, 'api-session/status', sid('session-1'), 'running')
     await emit(mock, 'api-session/activity', sid('session-1'), 9)
     await emit(mock, 'api-session/error', sid('session-1'), 'agent failed')
     await vi.waitFor(() => {

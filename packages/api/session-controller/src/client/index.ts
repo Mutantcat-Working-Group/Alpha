@@ -119,8 +119,8 @@ export function apply(ctx: Context): void {
   new HarnessSessionsImport(ctx, remotes, sessions)
   ctx.remote.$on('api-session/added', (summary) => { sessions.handleSessionAdded(summary) })
   ctx.remote.$on('api-session/removed', (sessionId) => { sessions.handleSessionRemoved(sessionId) })
-  ctx.remote.$on('api-session/status', (sessionId, running) => {
-    sessions.handleSessionStatus(sessionId, running)
+  ctx.remote.$on('api-session/status', (sessionId, status) => {
+    sessions.handleSessionStatus(sessionId, status)
   })
   ctx.remote.$on('api-session/activity', (sessionId, updatedAt) => {
     sessions.handleSessionActivity(sessionId, updatedAt)

@@ -25,6 +25,8 @@ async function fakeAgent(ctx: Context, rawId: string): Promise<Agent> {
     send: () => {},
     followup: () => {}, steer: () => {}, inject: () => {}, cancel() {},
     interruptModelStep: () => false,
+    pause: () => {},
+    resume: () => {},
     runMaintenance: job => job(new AbortController().signal),
     whenIdle: () => Promise.resolve(),
   }

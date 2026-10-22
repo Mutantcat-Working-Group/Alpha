@@ -345,7 +345,7 @@ describe('Host Remote event routing', () => {
     expect(manager.getListSnapshot().items).toHaveLength(1)
 
     const session = manager.get(S1)
-    manager.handleSessionStatus(S1, true)
+    manager.handleSessionStatus(S1, 'running')
     expect(session.getSnapshot().running).toBe(true)
     expect(manager.getListSnapshot().items[0]?.running).toBe(true)
 
@@ -356,6 +356,25 @@ describe('Host Remote event routing', () => {
     expect(manager.getListSnapshot().items).toHaveLength(0)
     expect(session.getSnapshot().removed).toBe(true)
     expect(manager.get(S1)).toBe(session) // resident-instance rule survives removal
+  })
+
+  it('maps the tri-state agent status onto the running and paused bits', async ({ mock, remote }) => {
+    const manager = makeManager(mock, remote)
+    manager.handleSessionAdded(summary(S1, { blank: true }))
+    const session = manager.get(S1)
+
+    manager.handleSessionStatus(S1, 'running')
+    expect(session.getSnapshot().running).toBe(true)
+    expect(session.getSnapshot().paused).toBe(false)
+
+    manager.handleSessionStatus(S1, 'paused')
+    expect(session.getSnapshot().running).toBe(false)
+    expect(session.getSnapshot().paused).toBe(true)
+    expect(manager.getListSnapshot().items[0]?.running).toBe(false)
+
+    manager.handleSessionStatus(S1, 'running')
+    expect(session.getSnapshot().running).toBe(true)
+    expect(session.getSnapshot().paused).toBe(false)
   })
 })
 
@@ -420,7 +439,7 @@ describe('subagent catalogs', () => {
     ])
     expect(remote.session.prompt).not.toHaveBeenCalled()
     const listCalls = remote.subagents.list.mock.calls.length
-    manager.handleSessionStatus(S2, false)
+    manager.handleSessionStatus(S2, 'idle')
     expect(manager.getListSnapshot().subagentsByParent[S1]?.entries[0]).toMatchObject({
       kind: 'child', id: S2, activity: 'inactive',
     })
@@ -532,8 +551,8 @@ describe('subagent catalogs', () => {
     const manager = makeManager(mock, remote)
     const refresh = manager.refreshSubagents(root)
 
-    manager.handleSessionStatus(S1, false)
-    manager.handleSessionStatus(S2, true)
+    manager.handleSessionStatus(S1, 'idle')
+    manager.handleSessionStatus(S2, 'running')
     response.resolve(ok({
       entries: [
         {
@@ -790,7 +809,7 @@ describe('remaining branches', () => {
 
   it('ignores Host status and error events for sessions without an instance', ({ mock, remote }) => {
     const manager = makeManager(mock, remote)
-    manager.handleSessionStatus(S2, true)
+    manager.handleSessionStatus(S2, 'running')
     manager.handleSessionError(S2, '无实例')
   })
 
@@ -799,7 +818,7 @@ describe('remaining branches', () => {
     const manager = makeManager(mock, remote)
     await manager.refreshList()
     const before = manager.getListSnapshot()
-    manager.handleSessionStatus(S2, true)
+    manager.handleSessionStatus(S2, 'running')
     const after = manager.getListSnapshot()
     expect(after.items).not.toBe(before.items)
     const beforeS1 = before.items.find(e => e.sessionId === S1)
@@ -1006,8 +1025,8 @@ describe('running facts without UI reminders', () => {
     remote.session.list.mockReturnValueOnce(response.promise)
     const manager = makeManager(mock, remote)
     const refreshing = manager.refreshList()
-    manager.handleSessionStatus(S1, true)
-    manager.handleSessionStatus(S1, false)
+    manager.handleSessionStatus(S1, 'running')
+    manager.handleSessionStatus(S1, 'idle')
     response.resolve(ok({ items: [summary(S1)] }))
     await refreshing
     const entry = manager.getListSnapshot().items.find(item => item.sessionId === S1)

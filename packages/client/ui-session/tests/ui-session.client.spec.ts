@@ -8,6 +8,7 @@ import type {
   SessionRetainInfo,
   SessionSnapshot,
 } from '@mutantcat/dsh-api-session-controller/client'
+import type { ApiSessionStatus } from '@mutantcat/dsh-api-session-controller/types'
 import { MutableSessionEventSource } from '@mutantcat/dsh-api-session-controller/client'
 import { createSnapshotStore } from '@mutantcat/dsh-client-store'
 import type { HostObservable, RootStandardSourceContribution } from '@mutantcat/dsh-client-ui-slots'
@@ -30,7 +31,7 @@ interface SessionsBench {
   reference(binding: SessionBinding): SessionReference
   setMainView(id: SessionId, count: number): void
   setRetainInfo(id: SessionId, count: number): void
-  emitStatus(id: SessionId, running: boolean): void
+  emitStatus(id: SessionId, status: ApiSessionStatus): void
   release(id: SessionId): Promise<void>
 }
 
@@ -40,9 +41,9 @@ const roots: Context[] = []
 
 function createSessionsBench(ctx: Context): SessionsBench {
   roots.push(ctx)
-  let statusListener: ((id: SessionId, running: boolean) => void) | undefined
+  let statusListener: ((id: SessionId, status: ApiSessionStatus) => void) | undefined
   ctx.provide('remote', {
-    $on: (_event: string, listener: (id: SessionId, running: boolean) => void) => {
+    $on: (_event: string, listener: (id: SessionId, status: ApiSessionStatus) => void) => {
       statusListener = listener
       return () => {
         if (statusListener === listener) statusListener = undefined
@@ -91,6 +92,7 @@ function createSessionsBench(ctx: Context): SessionsBench {
         sessionId: id,
         pendingSubmissions: [],
         running: false,
+        paused: false,
         subagent: null,
         removed: false,
         openState: 'open',
@@ -171,9 +173,9 @@ function createSessionsBench(ctx: Context): SessionsBench {
         retainedBy: count === 0 ? {} : { mainView: count },
       })
     },
-    emitStatus(id, running) {
+    emitStatus(id, status) {
       if (statusListener === undefined) throw new Error('api-session/status is not subscribed')
-      statusListener(id, running)
+      statusListener(id, status)
     },
     async release(id) {
       bindings.delete(id)
@@ -544,23 +546,23 @@ describe('UiSession status', () => {
     expect(service.sessionStatus.getSnapshot().get(id)?.completionUnread).toBe(false)
     bench.setMainView(id, 0)
 
-    bench.emitStatus(id, true)
-    bench.emitStatus(id, false)
+    bench.emitStatus(id, 'running')
+    bench.emitStatus(id, 'idle')
     expect(service.sessionStatus.getSnapshot().get(id)?.completionUnread).toBe(true)
 
     bench.setMainView(id, 1)
     expect(service.sessionStatus.getSnapshot().get(id)?.completionUnread).toBe(false)
-    bench.emitStatus(id, true)
-    bench.emitStatus(id, false)
+    bench.emitStatus(id, 'running')
+    bench.emitStatus(id, 'idle')
     expect(service.sessionStatus.getSnapshot().get(id)?.completionUnread).toBe(false)
 
     bench.setMainView(id, 0)
-    bench.emitStatus(id, false)
+    bench.emitStatus(id, 'idle')
     expect(service.sessionStatus.getSnapshot().get(id)?.completionUnread).toBe(false)
-    bench.emitStatus(id, true)
-    bench.emitStatus(id, false)
+    bench.emitStatus(id, 'running')
+    bench.emitStatus(id, 'idle')
     expect(service.sessionStatus.getSnapshot().get(id)?.completionUnread).toBe(true)
-    bench.emitStatus(id, true)
+    bench.emitStatus(id, 'running')
     expect(service.sessionStatus.getSnapshot().get(id)?.completionUnread).toBe(false)
     expect(changed).toHaveBeenCalled()
     off()
@@ -573,7 +575,7 @@ describe('UiSession status', () => {
     bench.list.update((draft) => { draft.phase = 'pending' })
     const service = createUiSession(ctx, bench)
 
-    bench.emitStatus(id, false)
+    bench.emitStatus(id, 'idle')
     expect(service.sessionStatus.getSnapshot().get(id)).toEqual({
       running: false,
       pendingInteraction: undefined,

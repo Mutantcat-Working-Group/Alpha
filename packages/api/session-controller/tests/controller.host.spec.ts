@@ -108,7 +108,7 @@ describe('SessionController facade', () => {
       content: [{ type: 'text', text: 'browser prompt' }],
       source: { kind: 'user', rpcId: 'controller-rpc' as never },
     }), { surfaceOp: 'append' })
-    expect(status).toHaveBeenCalledWith(sessionId, true)
+    expect(status).toHaveBeenCalledWith(sessionId, 'running')
     expect(failure).toHaveBeenCalledWith(sessionId, expect.stringContaining('fixture failure'))
     expect(activity).toHaveBeenCalledWith(sessionId, expect.any(Number))
     session.append('request/header', {

@@ -201,7 +201,7 @@ export class TeamRoster {
    * @param targetName - durable teammate name.
    * @returns the target status sampled before cancellation.
    */
-  interrupt(caller: Agent, targetName: string): { previousStatus: 'running' | 'idle' | 'inactive' } {
+  interrupt(caller: Agent, targetName: string): { previousStatus: 'running' | 'paused' | 'idle' | 'inactive' } {
     const membership = this.membership(caller)
     if (membership.role !== 'lead') throw new TeamError('only the Team Lead can interrupt teammates', 'TEAM_LEAD_REQUIRED')
     const state = this.journal.state(membership.root)

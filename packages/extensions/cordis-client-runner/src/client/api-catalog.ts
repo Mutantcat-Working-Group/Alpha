@@ -343,7 +343,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       {
         signature: 'openSession(target: SessionTarget, beforeOpen?: (sessionId: SessionId) => void): void',
         description: 'Select a Session and show its Conversation as one UI navigation action.',
-        parameters: [{ name: 'target', description: 'known Session identity or durable direct-parent subagent address to display.' }, { name: 'beforeOpen', description: 'optional synchronous preparation for the selected Session, run after its binding is retained and before the view switches.' }],
+        parameters: [{ name: 'target', description: 'known Session identity or durable direct-parent subagent address to display.' }, { name: 'beforeOpen', description: 'optional preparation for the selected Session, run after its binding is retained and before the view switches.' }],
       },
       {
         signature: 'openWorkspace(workspaceId: WorkspaceId, beforeOpen?: (sessionId: SessionId) => void): Promise<void>',
@@ -632,7 +632,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ISession',
-    declaration: 'export interface ISession {\n    readonly sessionId: SessionId;\n    readonly projections: ProjectionsFace;\n    beginSubmission(input: BeginSubmissionInput): SubmissionHandle;\n    prompt(content: PromptContentPart[], mode: \'queue\' | \'steer\', signal?: AbortSignal, requestId?: SessionRequestId): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    readAttachment(attachmentId: AttachmentIdType): Promise<RemoteResult<{\n        attachment: ImageAttachmentRef;\n        data: Uint8Array;\n    }>>;\n    updateQueue(itemId: MessageId, action: QueueAction): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    cancel(): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    rename(title: string): Promise<RemoteResult<{\n        title: string;\n        seq: SessionSeq;\n    }>>;\n    loadOlder(): Promise<void>;\n    loadThrough(seq: SessionSeq): Promise<void>;\n    command(line: string): Promise<RemoteResult<{\n        matched: boolean;\n    }>>;\n}',
+    declaration: 'export interface ISession {\n    readonly sessionId: SessionId;\n    readonly projections: ProjectionsFace;\n    beginSubmission(input: BeginSubmissionInput): SubmissionHandle;\n    prompt(content: PromptContentPart[], mode: \'queue\' | \'steer\', signal?: AbortSignal, requestId?: SessionRequestId): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    readAttachment(attachmentId: AttachmentIdType): Promise<RemoteResult<{\n        attachment: ImageAttachmentRef;\n        data: Uint8Array;\n    }>>;\n    updateQueue(itemId: MessageId, action: QueueAction): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    cancel(): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    pause(): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    resume(): Promise<RemoteResult<{\n        accepted: true;\n    }>>;\n    rename(title: string): Promise<RemoteResult<{\n        title: string;\n        seq: SessionSeq;\n    }>>;\n    loadOlder(): Promise<void>;\n    loadThrough(seq: SessionSeq): Promise<void>;\n    command(line: string): Promise<RemoteResult<{\n        matched: boolean;\n    }>>;\n}',
   },
   {
     name: 'KeyedHooksSources',
@@ -756,7 +756,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'PromptError',
-    declaration: 'export interface PromptError {\n    readonly op: \'send\' | \'stop\';\n    readonly error: RemoteFailure;\n}',
+    declaration: 'export interface PromptError {\n    readonly op: \'send\' | \'stop\' | \'pause\' | \'resume\';\n    readonly error: RemoteFailure;\n}',
   },
   {
     name: 'PropsHooks',
@@ -908,7 +908,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'SessionSnapshot',
-    declaration: 'export interface SessionSnapshot {\n    readonly sessionId: SessionId;\n    readonly pendingSubmissions: readonly PendingSubmission[];\n    readonly running: boolean;\n    readonly subagent: {\n        readonly address: SubagentAddress;\n        readonly parentAvailable?: boolean;\n    } | null;\n    readonly removed: boolean;\n    readonly openState: OpenState;\n    readonly openError: RemoteFailure | null;\n    readonly hasMore: boolean;\n    readonly loadingOlder: boolean;\n    readonly promptError: PromptError | null;\n    readonly blank: boolean;\n    readonly lastAgentError: string | null;\n    readonly promptAttempted: boolean;\n    readonly awaitingFirstTurn: boolean;\n}',
+    declaration: 'export interface SessionSnapshot {\n    readonly sessionId: SessionId;\n    readonly pendingSubmissions: readonly PendingSubmission[];\n    readonly running: boolean;\n    readonly paused: boolean;\n    readonly subagent: {\n        readonly address: SubagentAddress;\n        readonly parentAvailable?: boolean;\n    } | null;\n    readonly removed: boolean;\n    readonly openState: OpenState;\n    readonly openError: RemoteFailure | null;\n    readonly hasMore: boolean;\n    readonly loadingOlder: boolean;\n    readonly promptError: PromptError | null;\n    readonly blank: boolean;\n    readonly lastAgentError: string | null;\n    readonly promptAttempted: boolean;\n    readonly awaitingFirstTurn: boolean;\n}',
   },
   {
     name: 'SessionStandardProps',

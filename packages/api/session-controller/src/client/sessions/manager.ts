@@ -5,6 +5,7 @@ import { SessionSeq, type SessionId, type SessionSeqCursor } from '@mutantcat/ds
 import type { SessionProjectionMap } from '@mutantcat/dsh-session-projection/types'
 import type { WorkspaceId } from '@mutantcat/dsh-workspace/types'
 import type {
+  ApiSessionStatus,
   SessionControlBaseline,
   SessionControlFrame,
   SessionSummary,
@@ -686,11 +687,15 @@ export class SessionManager {
   /**
    * Apply one live Agent running-state change.
    * @param sessionId - Session whose Agent state changed.
-   * @param running - current Agent running state.
+   * @param status - current Agent lifecycle state (idle, running, or paused).
    */
-  handleSessionStatus(sessionId: SessionId, running: boolean): void {
+  handleSessionStatus(sessionId: SessionId, status: ApiSessionStatus): void {
+    const running = status === 'running'
+    const paused = status === 'paused'
     this.recordMutation({ kind: 'status', sessionId, running })
-    this.sessions.get(sessionId)?.handleRunning(running)
+    const session = this.sessions.get(sessionId)
+    session?.handleRunning(running)
+    session?.handlePaused(paused)
     this.updateCatalogActivity(sessionId, running)
   }
 

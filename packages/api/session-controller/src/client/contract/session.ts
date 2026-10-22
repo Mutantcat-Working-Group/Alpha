@@ -111,6 +111,17 @@ export interface ISession {
    */
   cancel(): Promise<RemoteResult<{ accepted: true }>>
   /**
+   * Park the running turn between steps. Only ordinary Agents pause; a
+   * subagent address is rejected by the Host.
+   * @returns acceptance, or the business error.
+   */
+  pause(): Promise<RemoteResult<{ accepted: true }>>
+  /**
+   * Continue a parked turn from the pause point.
+   * @returns acceptance, or the business error.
+   */
+  resume(): Promise<RemoteResult<{ accepted: true }>>
+  /**
    * Rename this session (explicit user title; pins it against automatic
    * regeneration).
    * @param title - raw title text (the host normalizes acceptance).

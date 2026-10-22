@@ -90,6 +90,7 @@ function sessionSnapshot(openState: SessionSnapshot['openState']): SessionSnapsh
     sessionId: SESSION,
     pendingSubmissions: [],
     running: false,
+    paused: false,
     subagent: null,
     removed: false,
     openState,

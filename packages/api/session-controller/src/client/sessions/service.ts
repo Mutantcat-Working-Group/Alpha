@@ -408,7 +408,7 @@ export class ClientSessions implements ISessions {
 
   /**
    * Apply one remotely forwarded running-state change.
-   * @param args - Session identity and current Agent running state.
+   * @param args - Session identity and current Agent lifecycle state.
    */
   handleSessionStatus(...args: Parameters<SessionManager['handleSessionStatus']>): void {
     this.manager.handleSessionStatus(...args)

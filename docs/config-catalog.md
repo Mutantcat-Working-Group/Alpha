@@ -220,7 +220,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/api/session-controller/src/index.ts:77`](../packages/api/session-controller/src/index.ts)
+Source: [`packages/api/session-controller/src/index.ts:81`](../packages/api/session-controller/src/index.ts)
 
 <a id="mutantcatdsh-api-settings-controller"></a>
 

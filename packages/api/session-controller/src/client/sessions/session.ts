@@ -100,6 +100,8 @@ export class Session implements SessionFace {
   private readonly stopObservingInbox: () => void
   private readonly assistantStream = new ClientAssistantStream()
   private running = false
+  /** Whether the running turn is parked between steps awaiting resume. */
+  private paused = false
   private address: SubagentAddress | undefined
   private parentAvailable: boolean | undefined
   /**
@@ -346,6 +348,35 @@ export class Session implements SessionFace {
   }
 
   /**
+   * Park the running turn between steps. Only ordinary Agents pause; a
+   * subagent address is not routed (the Host rejects it). Failures land in
+   * promptError (same error-strip display slot).
+   * @returns the pause result.
+   */
+  async pause(): Promise<RemoteResult<{ accepted: true }>> {
+    const result = await this.remote.session.pause({ sessionId: this.sessionId })
+    if (!result.ok) {
+      this.promptError = { op: 'pause', error: result.error }
+      this.notifier.markDirty()
+    }
+    return result
+  }
+
+  /**
+   * Continue a parked turn from the pause point. Failures land in promptError
+   * (same error-strip display slot).
+   * @returns the resume result.
+   */
+  async resume(): Promise<RemoteResult<{ accepted: true }>> {
+    const result = await this.remote.session.resume({ sessionId: this.sessionId })
+    if (!result.ok) {
+      this.promptError = { op: 'resume', error: result.error }
+      this.notifier.markDirty()
+    }
+    return result
+  }
+
+  /**
    * Rename: contract session.rename 1:1. On success settle the 'title'
    * projection cell from the response's `{title, seq}` under the store's
    * higher-seq-wins rule (the push frame arriving later is a no-op replay),
@@ -508,6 +539,17 @@ export class Session implements SessionFace {
     if (running) this.firstPromptPendingTurn = false
     if (this.running === running) return
     this.running = running
+    this.notifier.markDirty()
+  }
+
+  /**
+   * Paused-bit relay from the host stream. A paused turn is parked between
+   * steps with its prefix settled; the running bit is already false.
+   * @param paused - the new paused state.
+   */
+  handlePaused(paused: boolean): void {
+    if (this.paused === paused) return
+    this.paused = paused
     this.notifier.markDirty()
   }
 
@@ -803,6 +845,7 @@ export class Session implements SessionFace {
       sessionId: this.sessionId,
       pendingSubmissions: this.pendingSubmissions,
       running: this.running,
+      paused: this.paused,
       subagent: this.address === undefined
         ? null
         : {

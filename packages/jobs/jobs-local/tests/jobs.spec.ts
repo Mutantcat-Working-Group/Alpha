@@ -44,6 +44,8 @@ function stubAgent(ctx: Context, rawId: string, presetScope?: ScopeKey): Agent {
     inject: () => {},
     cancel() {},
     interruptModelStep: () => false,
+    pause: () => {},
+    resume: () => {},
     runMaintenance: <T>(job: (signal: AbortSignal) => Promise<T>) => job(new AbortController().signal),
     whenIdle() { return Promise.resolve() },
   } satisfies Agent

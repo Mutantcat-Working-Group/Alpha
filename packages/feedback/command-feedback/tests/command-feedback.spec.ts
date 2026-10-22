@@ -45,6 +45,8 @@ function stubAgent(ctx: Context, id: string): { agent: Agent; session: Session }
     inject: () => {},
     cancel() { status = 'idle' },
     interruptModelStep: () => false,
+    pause: () => {},
+    resume: () => {},
     runMaintenance: task => task(new AbortController().signal),
     whenIdle() { return Promise.resolve() },
   }

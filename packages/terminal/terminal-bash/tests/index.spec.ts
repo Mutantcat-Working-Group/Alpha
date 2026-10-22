@@ -61,6 +61,8 @@ function agent(ctx: Context, cwd?: string): Agent {
     send: () => {},
     followup: () => {}, steer: () => {}, inject: () => {}, cancel() {},
     interruptModelStep: () => false,
+    pause: () => {},
+    resume: () => {},
     runMaintenance: task => task(new AbortController().signal),
     whenIdle: () => Promise.resolve(),
   }
@@ -664,6 +666,8 @@ describe('terminal-bash plugin shape', () => {
       send: () => {},
       followup: () => {}, steer: () => {}, inject: () => {}, cancel() {},
       interruptModelStep: () => false,
+      pause: () => {},
+      resume: () => {},
       runMaintenance: task => task(new AbortController().signal),
       whenIdle: () => Promise.resolve(),
     }
@@ -715,6 +719,8 @@ describe('terminal-bash plugin shape', () => {
       send: () => {},
       followup: () => {}, steer: () => {}, inject: () => {}, cancel() {},
       interruptModelStep: () => false,
+      pause: () => {},
+      resume: () => {},
       runMaintenance: task => task(new AbortController().signal),
       whenIdle: () => Promise.resolve(),
     }

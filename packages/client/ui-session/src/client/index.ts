@@ -318,8 +318,8 @@ export class UiSession extends Service {
     ctx.effect(() => {
       const disposeList = sessions.list.subscribe(() => { this.publishMain() })
       const disposeStatus = sessions.list.subscribe(() => { this.reconcileStatus() })
-      const disposeRemoteStatus = ctx.remote.$on('api-session/status', (sessionId, running) => {
-        this.observeRunning(sessionId, running)
+      const disposeRemoteStatus = ctx.remote.$on('api-session/status', (sessionId, status) => {
+        this.observeRunning(sessionId, status === 'running')
       })
       this.publishMain()
       this.reconcileStatus()

@@ -981,7 +981,7 @@ describe('blank mirror', () => {
     expect(b.svc.list.getSnapshot().byId[sid('s1')]).toMatchObject({ blank: true })
     using _reference = b.svc.retain(sid('s1'), { source: 'controllerOperation' })
     await _reference.ready
-    b.svc.handleSessionStatus(sid('s1'), true)
+    b.svc.handleSessionStatus(sid('s1'), 'running')
     await Promise.resolve()
     expect(b.svc.list.getSnapshot().byId[sid('s1')]).toMatchObject({ blank: false, running: true })
     // The instantiated Session mirrors the same flip.

@@ -46,6 +46,8 @@ function stubAgent(ctx: Context, rawId: string): Agent {
     send: () => {},
     followup: () => {}, steer: () => {}, inject: () => {}, cancel() {},
     interruptModelStep: () => false,
+    pause: () => {},
+    resume: () => {},
     runMaintenance: task => task(new AbortController().signal),
     whenIdle: () => Promise.resolve(),
   }

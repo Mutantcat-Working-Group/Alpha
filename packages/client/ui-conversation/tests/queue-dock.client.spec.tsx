@@ -52,7 +52,7 @@ interface TestSnapshot extends SessionSnapshot {
 
 function snapshotWith(queue: UserMessage[], nextStep: UserMessage[] = []): TestSnapshot {
   return {
-    sessionId: SID, running: true, removed: false, openState: 'open', openError: null,
+    sessionId: SID, running: true, paused: false, removed: false, openState: 'open', openError: null,
     hasMore: false, loadingOlder: false, promptError: null, blank: false, subagent: null,
     pendingSubmissions: [],
     lastAgentError: null, promptAttempted: true, awaitingFirstTurn: false,

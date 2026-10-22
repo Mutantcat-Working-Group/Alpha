@@ -49,8 +49,12 @@ import type {
   SessionOpenWorkspacePathValue,
   SessionPage,
   SessionPageRequest,
+  SessionPauseRequest,
+  SessionPauseValue,
   SessionPromptRequest,
   SessionPromptValue,
+  SessionResumeRequest,
+  SessionResumeValue,
   SessionRenameRequest,
   SessionRenameValue,
   SessionSearchRequest,
@@ -173,7 +177,7 @@ export class SessionController extends TypertRemoteService {
       ctx.emit('api-session/removed', session.id)
     })
     ctx.on('agent/status', ({ agent, status }) => {
-      ctx.emit('api-session/status', agent.id, status === 'running')
+      ctx.emit('api-session/status', agent.id, status)
     })
     ctx.on('agent/error', ({ agent, error }) => {
       ctx.emit('api-session/error', agent.id, errorChain(error))
@@ -400,6 +404,27 @@ export class SessionController extends TypertRemoteService {
   @Remote('cancel')
   cancel(request: SessionCancelRequest): SessionCancelValue {
     return this.commands.cancel(request)
+  }
+
+  /**
+   * Park one running Agent turn between steps; {@link resume} continues it from
+   * the pause point.
+   * @param request - Session whose running Agent turn is parked.
+   * @returns acknowledgement that pausing was requested.
+   */
+  @Remote('pause')
+  pause(request: SessionPauseRequest): SessionPauseValue {
+    return this.commands.pause(request)
+  }
+
+  /**
+   * Continue one paused Agent turn from the pause point.
+   * @param request - Session whose paused Agent turn is resumed.
+   * @returns acknowledgement that resuming was requested.
+   */
+  @Remote('resume')
+  resume(request: SessionResumeRequest): SessionResumeValue {
+    return this.commands.resume(request)
   }
 
   /**

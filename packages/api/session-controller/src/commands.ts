@@ -41,8 +41,12 @@ import type {
   SessionCreateValue,
   SessionForkRequest,
   SessionForkValue,
+  SessionPauseRequest,
+  SessionPauseValue,
   SessionPromptRequest,
   SessionPromptValue,
+  SessionResumeRequest,
+  SessionResumeValue,
   SessionRenameRequest,
   SessionRenameValue,
   SessionSelectModelRequest,
@@ -533,6 +537,58 @@ export class SessionCommandController {
     }
     agent.cancel({ kind: 'user' }, { keepInbox: true })
     return { accepted: true }
+  }
+
+  /**
+   * Park one live ordinary Agent's running turn between steps.
+   * @param request - Session whose running Agent turn is parked.
+   * @returns acknowledgement that pausing was requested.
+   */
+  pause(request: SessionPauseRequest): SessionPauseValue {
+    const agent = this.requireOrdinaryAgent(request.sessionId)
+    if (agent.status !== 'running') {
+      throw new RemoteError(
+        'session/not-running',
+        `session "${request.sessionId}" has no running turn to pause`,
+        { sessionId: request.sessionId },
+      )
+    }
+    agent.pause()
+    return { accepted: true }
+  }
+
+  /**
+   * Continue one live ordinary Agent's paused turn from the pause point.
+   * @param request - Session whose paused Agent turn is resumed.
+   * @returns acknowledgement that resuming was requested.
+   */
+  resume(request: SessionResumeRequest): SessionResumeValue {
+    const agent = this.requireOrdinaryAgent(request.sessionId)
+    if (agent.status !== 'paused') {
+      throw new RemoteError(
+        'session/not-paused',
+        `session "${request.sessionId}" has no paused turn to resume`,
+        { sessionId: request.sessionId },
+      )
+    }
+    agent.resume()
+    return { accepted: true }
+  }
+
+  /** Resolve a live ordinary Agent for a pause/resume operation, rejecting absent or subagent-owned Sessions. */
+  private requireOrdinaryAgent(sessionId: SessionId): Agent {
+    const agent = this.ctx.agents.get(sessionId)
+    if (agent === undefined) {
+      throw new RemoteError(
+        'session/not-found',
+        `session "${sessionId}" not found (not attached)`,
+        { sessionId },
+      )
+    }
+    if (hasApiSessionSubagentOwner(this.ctx, agent.session, agent)) {
+      throw apiSessionSubagentOwnershipError(sessionId)
+    }
+    return agent
   }
 
   private async resolveAgent(sessionId: SessionId): Promise<Agent> {

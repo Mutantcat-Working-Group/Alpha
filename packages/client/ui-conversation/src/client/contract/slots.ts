@@ -371,6 +371,10 @@ export interface ComposerBarInjected {
   retryFileUpload: ((id: DraftAttachmentId) => void) | undefined
   toggleCommandMenu: ((selection: EditSelection) => void) | undefined
   stop: (() => void) | undefined
+  /** Park the running turn between steps; absent without a session. */
+  pause: (() => void) | undefined
+  /** Continue a parked turn from the pause point; absent without a session. */
+  resume: (() => void) | undefined
   hooks: {
     /**
      * Live busy-state submission preference: the delivery mode plain Enter

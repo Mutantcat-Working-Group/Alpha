@@ -59,9 +59,9 @@ export interface PendingSubmission {
 /** History-open lifecycle of a Session event window. */
 export type OpenState = 'cold' | 'loading' | 'open' | 'error'
 
-/** Send/stop failure surfaced by Session consumers. */
+/** Send/stop/pause/resume failure surfaced by Session consumers. */
 export interface PromptError {
-  readonly op: 'send' | 'stop'
+  readonly op: 'send' | 'stop' | 'pause' | 'resume'
   readonly error: RemoteFailure
 }
 
@@ -71,6 +71,8 @@ export interface SessionSnapshot {
   /** Local prompt-submission echoes not yet observed as durable events or queue occurrences. */
   readonly pendingSubmissions: readonly PendingSubmission[]
   readonly running: boolean
+  /** Whether the running turn is parked between steps awaiting resume. */
+  readonly paused: boolean
   readonly subagent: {
     readonly address: SubagentAddress
     /** Absent until the direct-parent catalog resolves. */
