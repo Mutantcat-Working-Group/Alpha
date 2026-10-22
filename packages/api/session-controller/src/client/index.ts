@@ -116,7 +116,7 @@ export function apply(ctx: Context): void {
   const remotes = ctx.remote as unknown as SessionRemotes
   const connection = ctx.get('connection') as ConnectionHandle
   const sessions = new ClientSessions(ctx, remotes)
-  new HarnessSessionsImport(ctx, remotes, sessions)
+  ctx.reflect.provide('harnessSessionsImport', new HarnessSessionsImport(remotes, sessions))
   ctx.remote.$on('api-session/added', (summary) => { sessions.handleSessionAdded(summary) })
   ctx.remote.$on('api-session/removed', (sessionId) => { sessions.handleSessionRemoved(sessionId) })
   ctx.remote.$on('api-session/status', (sessionId, status) => {

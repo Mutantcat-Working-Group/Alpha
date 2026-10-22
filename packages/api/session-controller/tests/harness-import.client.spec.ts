@@ -3,8 +3,7 @@
  * one import call, and the Session-list refresh the adopted Sessions need.
  */
 
-import { Context } from '@mutantcat/cordis'
-import { onTestFinished, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { SessionImportHarnessValue } from '../src/types.ts'
 import { HarnessSessionsImport } from '../src/client/harness-import.ts'
 
@@ -19,11 +18,9 @@ function harness(session: {
   importHarnessSessions: (request: unknown) => Promise<unknown>
 }) {
   const refresh = vi.fn(async () => undefined)
-  const ctx = new Context()
-  onTestFinished(async () => { await ctx.fiber.dispose() })
   const remotes = { session } as never
   const sessions = { refresh } as never
-  return { face: new HarnessSessionsImport(ctx, remotes, sessions), refresh }
+  return { face: new HarnessSessionsImport(remotes, sessions), refresh }
 }
 
 describe('HarnessSessionsImport', () => {

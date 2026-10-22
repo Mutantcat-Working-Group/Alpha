@@ -1,6 +1,5 @@
 /** React-free Client face of the explicit official-Harness chat-history import. */
 
-import { Service, type Context } from '@mutantcat/cordis'
 import type { RemoteFailure } from '@mutantcat/dsh-typert-protocol'
 import type {} from '@mutantcat/dsh-api-session-controller/remote'
 import type { SessionRemotes } from './sessions/remotes.ts'
@@ -43,22 +42,24 @@ export interface IHarnessSessionsImport {
   exportSession(sessionId: string): Promise<string>
 }
 
-/** Owns the Client-side import call and the Session-list refresh it triggers. */
-export class HarnessSessionsImport extends Service implements IHarnessSessionsImport {
-  static inject = []
-
+/**
+ * Owns the Client-side import call and the Session-list refresh it triggers.
+ *
+ * A plain class rather than a Cordis `Service`: the owning plugin registers it
+ * with `ctx.reflect.provide`, so consumers receive this instance itself. A
+ * `Service` would hand every consumer a traceable proxy that rebinds
+ * `this.remotes` to the caller's context, and the `remote.session` associate
+ * lookup then resolves against a fiber that never injected it.
+ */
+export class HarnessSessionsImport implements IHarnessSessionsImport {
   /**
-   * @param ctx - Client root Context that registers the import face.
    * @param remotes - mounted Session Remotes carrying the import verbs.
    * @param sessions - Client Session list, refreshed after an adopted import.
    */
   constructor(
-    ctx: Context,
     private readonly remotes: SessionRemotes,
     private readonly sessions: ISessions,
-  ) {
-    super(ctx, 'harnessSessionsImport')
-  }
+  ) {}
 
   /** @inheritdoc */
   async sourceRoot(): Promise<string> {
