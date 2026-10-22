@@ -3,6 +3,8 @@
 import { Service, type Context } from '@mutantcat/cordis'
 import type { RemoteFailure } from '@mutantcat/dsh-typert-protocol'
 import type {} from '@mutantcat/dsh-api-session-controller/remote'
+import type { SessionRemotes } from './sessions/remotes.ts'
+import type { ISessions } from './contract/sessions.ts'
 import type {
   SessionImportHarnessRequest,
   SessionImportHarnessValue,
@@ -43,16 +45,24 @@ export interface IHarnessSessionsImport {
 
 /** Owns the Client-side import call and the Session-list refresh it triggers. */
 export class HarnessSessionsImport extends Service implements IHarnessSessionsImport {
-  static inject = ['remote', 'remote.session', 'sessions']
+  static inject = []
 
-  /** @param ctx - Client root Context carrying the Session Remote and Session list. */
-  constructor(ctx: Context) {
+  /**
+   * @param ctx - Client root Context that registers the import face.
+   * @param remotes - mounted Session Remotes carrying the import verbs.
+   * @param sessions - Client Session list, refreshed after an adopted import.
+   */
+  constructor(
+    ctx: Context,
+    private readonly remotes: SessionRemotes,
+    private readonly sessions: ISessions,
+  ) {
     super(ctx, 'harnessSessionsImport')
   }
 
   /** @inheritdoc */
   async sourceRoot(): Promise<string> {
-    const result = await this.ctx.remote.session.harnessSessionsRoot()
+    const result = await this.remotes.session.harnessSessionsRoot()
     if (!result.ok) throw commandError('source root read', result.error)
     return result.value.sourceRoot
   }
@@ -61,17 +71,17 @@ export class HarnessSessionsImport extends Service implements IHarnessSessionsIm
   async importSessions(
     request: SessionImportHarnessRequest,
   ): Promise<SessionImportHarnessValue> {
-    const result = await this.ctx.remote.session.importHarnessSessions(request)
+    const result = await this.remotes.session.importHarnessSessions(request)
     if (!result.ok) throw commandError('import', result.error)
     // The Host catalog changed outside this Client generation, so the
     // authoritative list must be re-pulled; there is no pushed increment.
-    await this.ctx.sessions.refresh()
+    await this.sessions.refresh()
     return result.value
   }
 
   /** @inheritdoc */
   async exportSession(sessionId: string): Promise<string> {
-    const result = await this.ctx.remote.session.exportSessionMarkdown({ sessionId })
+    const result = await this.remotes.session.exportSessionMarkdown({ sessionId })
     if (!result.ok) throw commandError('export', result.error)
     return result.value.markdown
   }

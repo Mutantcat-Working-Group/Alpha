@@ -20,10 +20,10 @@ function harness(session: {
 }) {
   const refresh = vi.fn(async () => undefined)
   const ctx = new Context()
-  ctx.provide('remote', { session } as never)
-  ctx.provide('sessions', { refresh } as never)
   onTestFinished(async () => { await ctx.fiber.dispose() })
-  return { face: new HarnessSessionsImport(ctx), refresh }
+  const remotes = { session } as never
+  const sessions = { refresh } as never
+  return { face: new HarnessSessionsImport(ctx, remotes, sessions), refresh }
 }
 
 describe('HarnessSessionsImport', () => {
