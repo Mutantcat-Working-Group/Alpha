@@ -1007,6 +1007,27 @@ describe('running and lock semantics', () => {
     expect(pausedView.view.container.querySelector('button[aria-label="暂停"]')).toBeNull()
   })
 
+  it('a parked turn swaps the primary glyph between play and send on the draft', () => {
+    const resume = vi.fn()
+    const sink = vi.fn(() => Promise.resolve({ kind: 'success' as const }))
+
+    // Parked and empty: the primary resumes, so it carries the play triangle.
+    const parked = bench({ running: false, paused: true, resume })
+    const playButton = parked.view.container.querySelector<HTMLButtonElement>('button[aria-label="继续"]')!
+    expect(playButton.querySelector('svg')!.innerHTML).toContain('M5.5 3.3L11.8 7.3')
+
+    // Parked with a draft: the primary sends, so it carries the send arrow and
+    // a click delivers the draft instead of resuming the parked turn.
+    const typed = bench({ running: false, paused: true, resume, draft: '接着上面的说' })
+    const sendButton = typed.view.container.querySelector<HTMLButtonElement>('button[aria-label="发送消息"]')!
+    expect(sendButton).not.toBeNull()
+    expect(sendButton.querySelector('svg')!.innerHTML).toContain('M8.3125 0.980183')
+    fireEvent.click(sendButton)
+    expect(typed.sink).toHaveBeenCalledWith('接着上面的说', [], 'queue', expect.any(AbortSignal))
+    expect(resume).not.toHaveBeenCalled()
+    expect(sink).not.toHaveBeenCalled()
+  })
+
   it('running continuable subagent Send follows the Steer preference like an ordinary session', () => {
     const subagent = {
       address: {

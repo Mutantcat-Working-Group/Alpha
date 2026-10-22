@@ -302,7 +302,10 @@ export const InputBar = memo(function InputBar({
   // claimed command nor a `/` line headed for adjudication — so it never
   // describes a delivery the click cannot or does not perform; every other
   // state keeps plain Send. A continuable child keeps Send primary and
-  // exposes Stop independently.
+  // exposes Stop independently. The glyph names the click's action in every
+  // state — stop square, play triangle over a parked turn, send arrow — so a
+  // draft typed over a parked turn reads as Send and delivers instead of
+  // resuming.
   const primaryStops = running && subagent === null && (empty || blocked !== undefined)
   // A parked ordinary turn resumes from its primary button; a running one stops.
   const primaryPaused = paused && subagent === null && (empty || blocked !== undefined)
@@ -513,6 +516,10 @@ export const InputBar = memo(function InputBar({
                 {primaryStops ? (
                   <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
                     <rect x="3" y="3" width="10" height="10" rx="3" fill="currentColor" />
+                  </svg>
+                ) : primaryPaused ? (
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
+                    <path d="M5.5 3.3L11.8 7.3Q12.7 8 11.8 8.7L5.5 12.7Q4.8 12.7 4.8 12L4.8 4Q4.8 3.3 5.5 3.3Z" fill="currentColor" />
                   </svg>
                 ) : (
                   <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
