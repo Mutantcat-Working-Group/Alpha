@@ -155,8 +155,13 @@ export class SessionCommandController {
         this.agents.selectForNextRequest(agent, selected)
         // The selection is installed first, so the step admitted after the cut
         // assembles its request from it. An idle or between-step Agent has no
-        // provider wait to cut and keeps the parked selection.
-        if (request.immediate === true) agent.interruptModelStep()
+        // provider wait to cut and keeps the parked selection. A parked turn
+        // has no generation running to stop either, so the cut releases the
+        // park instead: the turn the user asked to continue now continues, and
+        // its next step assembles from the selection just installed.
+        if (request.immediate === true) {
+          if (!agent.interruptModelStep() && agent.status === 'paused') agent.resume()
+        }
         try {
           await this.ctx.agentDefaultModel.saveSelection(selected)
         } catch (error) {

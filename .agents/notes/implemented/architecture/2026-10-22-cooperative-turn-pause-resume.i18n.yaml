@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-22-cooperative-turn-pause-resume.md
-2026-10-22-cooperative-turn-pause-resume.md: 5a915aaa5b6dcb5e077395a89b4fa05c1c30b599
-2026-10-22-cooperative-turn-pause-resume.zh.md: 376bf97e8f66288678a42be8b1917122bdda27c7
+2026-10-22-cooperative-turn-pause-resume.md: 76d643cc82e8d0c275ed4620cb5f455f62c89666
+2026-10-22-cooperative-turn-pause-resume.zh.md: c16d963ab5ba34e47cda2c4ede7650ba18f232f9

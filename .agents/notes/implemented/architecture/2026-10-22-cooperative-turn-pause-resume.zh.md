@@ -56,5 +56,6 @@ Status: implemented
 
 - `Agent` 接口新增 `pause()` 与 `resume()`；每个实现方与测试桩都提供它们。
 - `AgentStatus` 新增 `paused`；宿主与客户端状态路径透传三态，客户端将其映射为 `running=false, paused=true`。
+- 由于被停放的轮次上报 `running=false`，凡是只读 `running` 的活跃度判定在停放期间都是错的。工作区行的活跃 seat、composer 的 Stop 座位，以及模型目录的「立刻切换」行与其宿主侧切断，都曾按此前的二态编写，都不得不学会 `paused`；新的消费方若把 `running` 当作「轮次活跃」，也必须同时读 `paused`。
 - 存活超过其进程的停放轮次在重新加载时变为被打断的轮次，与进程本地范围一致；没有任何持久状态另有主张。
 - 暂停与继续是普通 Session 的控件；子 agent 拥有的 Session 以 `agent-busy` 拒绝它们，与既有的中断权限边界一致。

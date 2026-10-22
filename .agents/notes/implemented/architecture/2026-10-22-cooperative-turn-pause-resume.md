@@ -56,5 +56,6 @@ A parked Session shows the `paused` StateDot — the ongoing ring held at one br
 
 - The `Agent` interface grows `pause()` and `resume()`; every implementer and test stub supplies them.
 - `AgentStatus` gains `paused`; the host and client status paths carry the tri-state through, and the client maps it to `running=false, paused=true`.
+- Because a parked turn reports `running=false`, every liveness decision that reads `running` alone is wrong while a turn is parked. The workspace row's live seat, the composer's Stop seat, and the model directory's Switch-now row with its Host-side cut were each written against the earlier binary status and each had to learn `paused`; a new consumer of `running` as "the turn is live" reads `paused` too.
 - A parked turn that outlives its process becomes interrupted on reload, consistent with the process-local scope; no durable state claims otherwise.
 - Pause and resume are ordinary-session controls; subagent-owned Sessions reject them with `agent-busy`, matching the existing interrupt authority boundary.

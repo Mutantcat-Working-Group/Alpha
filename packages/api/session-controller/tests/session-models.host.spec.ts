@@ -8,7 +8,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Context } from '@mutantcat/cordis'
 import AgentRegistry, { agentEvents } from '@mutantcat/dsh-agent'
-import type { Agent } from '@mutantcat/dsh-agent'
+import type { Agent, AgentStatus } from '@mutantcat/dsh-agent'
 import AttachmentStore from '@mutantcat/dsh-attachment'
 import LlmRuntime, { LlmAdapter, ReasoningEffortId } from '@mutantcat/dsh-llm'
 import type {
@@ -533,6 +533,38 @@ describe('Web session model selection', () => {
     // An idle Agent has no provider wait to cut, so the call is a no-op but the
     // selection still lands for the next request.
     expect(interrupt).toHaveBeenCalledTimes(1)
+    await ctx.fiber.dispose()
+  })
+
+  it('releases the park when the selection is applied immediately to a parked turn', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    const remote = createSessionTestRemote(ctx, {
+      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+      cwd: '/tmp',
+    })
+    // pause() already cut this turn's provider wait, so the cut has nothing to
+    // abort — but the turn the user asked to continue must continue, so the
+    // cut releases the park instead and the next step assembles from the
+    // selection just installed.
+    ;(agent as { status: AgentStatus }).status = 'paused'
+    const resume = vi.fn()
+    ;(agent as { resume: () => void }).resume = resume
+
+    const selected = expectValue(await remote.selectModel(request({
+      sessionId,
+      provider: 'deepseek-official',
+      model: 'private-preview',
+      immediate: true,
+    })))
+
+    expect(selected.selected).toEqual({
+      provider: 'deepseek-official',
+      model: 'private-preview',
+      reasoningEffort: 'high',
+    })
+    expect(resume).toHaveBeenCalledTimes(1)
+    expect(currentSelection(ctx, sessionId))
+      .toEqual({ provider: 'deepseek-official', model: 'private-preview', reasoningEffort: 'high' })
     await ctx.fiber.dispose()
   })
 

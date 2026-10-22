@@ -45,10 +45,11 @@ export interface ModelDirectoryState {
   error: string | null
   /**
    * Whether "switch now" applies: the durable fold holds a selection the latest
-   * request did not use yet while this Session runs, so the in-flight turn is
-   * still generating with the previous model. False from the moment that
-   * request records the selection — the ordinary way a switch takes effect —
-   * and false while idle, when the next step or turn consumes it on its own.
+   * request did not use yet while this Session's turn is still live — running
+   * or parked between steps — so the in-flight turn is still generating with
+   * the previous model. False from the moment that request records the
+   * selection — the ordinary way a switch takes effect — and false while idle,
+   * when the next step or turn consumes it on its own.
    */
   switchPending: boolean
 }
@@ -126,8 +127,10 @@ export class ModelDirectory {
   /**
    * Apply a selection to the running turn now instead of parking it: the Host
    * installs the selection and cuts the in-flight model step short, so the next
-   * step of the same turn continues under it. An idle Session, or one between
-   * model steps, just keeps the parked selection.
+   * step of the same turn continues under it. A parked turn has no provider
+   * wait left to cut, so the Host releases the park instead and the next step
+   * continues under the selection. An idle Session, or one between model steps,
+   * just keeps the parked selection.
    * @param selection - provider, provider-owned model id, and optional adapter-owned effort.
    * @returns the selection outcome, including the original Remote failure.
    */
@@ -266,12 +269,17 @@ export class ModelDirectory {
    * replaced. A Session that has recorded no request yet reports its pending
    * selection as `next` with no `lastUsed`, and the first request it admits
    * uses that selection — so an unrecorded request never offers the cut.
+   *
+   * A parked turn still offers it: the Host reports a park as
+   * `running=false, paused=true`, the turn stays open with its in-flight work
+   * going, and the fold still holds a selection that turn has not used.
    * @param projected - durable model selection fold, or undefined while unread.
-   * @returns true only while this Session runs with a superseded selection.
+   * @returns true only while a live turn runs with a superseded selection.
    */
   private isSwitchPending(projected: ModelSelectionProjection | undefined): boolean {
     if (projected === undefined || projected.lastUsed === null) return false
-    if (!this.live.getSnapshot().running) return false
+    const live = this.live.getSnapshot()
+    if (!live.running && !live.paused) return false
     return !sameSelection(projected.next, projected.lastUsed)
   }
 }
