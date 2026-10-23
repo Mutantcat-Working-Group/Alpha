@@ -189,7 +189,7 @@ async function bench(): Promise<{
 }
 
 describe('Harness import gateway', () => {
-  it('reports the configured source root and imports an explicit one on request', async () => {
+  it('reports the configured source root and installed sources, and imports an explicit root on request', async () => {
     const targetRoot = await directory('dsh-explore-import-gateway-')
     const target = await mount(targetRoot)
     const remote = createSessionTestRemote(target, {
@@ -201,6 +201,14 @@ describe('Harness import gateway', () => {
     expect(configured.ok).toBe(true)
     if (!configured.ok) throw new Error('expected a configured source root')
     expect(configured.value.sourceRoot).toBe(configuredHarnessSessionsRoot())
+
+    // Which Agents the picker offers depends on the Host machine, so only each
+    // entry's shape is checked here; the catalog itself is pinned by
+    // agent-session-sources.host.spec.ts.
+    const installed = await remote.harnessSessionSources()
+    expect(installed.ok).toBe(true)
+    if (!installed.ok) throw new Error('expected an installed-source list')
+    expect(installed.value.sources.every(source => source.sourceRoot.length > 0)).toBe(true)
 
     const missing = join(targetRoot, 'absent-source')
     const imported = await remote.importHarnessSessions({ sourceRoot: missing })

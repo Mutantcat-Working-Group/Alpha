@@ -23,9 +23,10 @@ const CONNECTION_PACKAGE = '@mutantcat/dsh-client-connection'
 const IMPORT_SESSIONS_PACKAGE = '@mutantcat/dsh-client-ui-settings-import-sessions'
 
 describe('session-management import face over the mounted namespaces', () => {
-  it('answers source-root, import, and export reads from a consumer fiber', async () => {
+  it('answers source-root, source-list, import, and export reads from a consumer fiber', async () => {
     const mock = RemoteMock.create().load(remoteDefaultResponses)
       .unary('session/harnessSessionsRoot', ok({ sourceRoot: '/source/sessions' }))
+      .unary('session/harnessSessionSources', ok({ sources: [{ agent: 'dsh', sourceRoot: '/source/sessions' }] }))
       .unary('session/importHarnessSessions', ok({ sourceRoot: '/source/sessions', results: [] }))
       .unary('session/exportSessionMarkdown', ok({ markdown: '# Transcript' }))
     const roster = webApp.closure([IMPORT_SESSIONS_PACKAGE])
@@ -46,6 +47,7 @@ describe('session-management import face over the mounted namespaces', () => {
 
     interface PendingReads {
       sourceRoot: Promise<string>
+      sources: Promise<unknown>
       imported: Promise<unknown>
       exported: Promise<string>
     }
@@ -55,6 +57,7 @@ describe('session-management import face over the mounted namespaces', () => {
       apply: (consumerCtx) => {
         pending = {
           sourceRoot: consumerCtx.harnessSessionsImport.sourceRoot(),
+          sources: consumerCtx.harnessSessionsImport.sessionSources(),
           imported: consumerCtx.harnessSessionsImport.importSessions({ sourceRoot: '/source/sessions' }),
           exported: consumerCtx.harnessSessionsImport.exportSession('session-1'),
         }
@@ -63,6 +66,7 @@ describe('session-management import face over the mounted namespaces', () => {
 
     expect(pending).toBeDefined()
     await expect(pending!.sourceRoot).resolves.toBe('/source/sessions')
+    await expect(pending!.sources).resolves.toEqual({ sources: [{ agent: 'dsh', sourceRoot: '/source/sessions' }] })
     await expect(pending!.imported).resolves.toEqual({ sourceRoot: '/source/sessions', results: [] })
     await expect(pending!.exported).resolves.toBe('# Transcript')
   })

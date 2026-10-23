@@ -440,6 +440,23 @@ export interface SessionImportHarnessSourceValue {
   readonly sourceRoot: string
 }
 
+/** One Agent whose session store this import can adopt. */
+export type SessionImportHarnessAgent = 'dsh' | 'codex' | 'claude' | 'zcode'
+
+/** One installed Agent's session store, as the import source picker offers it. */
+export interface SessionImportHarnessAgentSource {
+  /** Agent identity, which also names the store's on-disk format. */
+  readonly agent: SessionImportHarnessAgent
+  /** Sessions root the import reads for this Agent. */
+  readonly sourceRoot: string
+}
+
+/** Agent session stores installed on the Host machine. */
+export interface SessionImportHarnessSourcesValue {
+  /** One entry per installed Agent, in catalog order. */
+  readonly sources: readonly SessionImportHarnessAgentSource[]
+}
+
 /** Request to open one path prepared by a Session-aware caller on the Host desktop. */
 export interface SessionOpenWorkspacePathRequest {
   /** File-manager navigation when requested; omission uses the default application. */

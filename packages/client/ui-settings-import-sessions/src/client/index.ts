@@ -69,7 +69,7 @@ export function apply(ctx: ClientContext): void {
 
   const t = ctx.locale.bind(NS)
   const injected = (): ImportSessionsSectionInjected => ({
-    sourceRoot: () => ctx.harnessSessionsImport.sourceRoot(),
+    sessionSources: () => ctx.harnessSessionsImport.sessionSources(),
     importSessions: request => ctx.harnessSessionsImport.importSessions(request),
     exportSession: async (sessionId, title) => {
       const markdown = await ctx.harnessSessionsImport.exportSession(sessionId)

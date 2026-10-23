@@ -43,6 +43,7 @@ import type {
   SessionImportHarnessRequest,
   SessionImportHarnessSourceValue,
   SessionImportHarnessValue,
+  SessionImportHarnessSourcesValue,
   SessionListRequest,
   SessionListValue,
   SessionOpenWorkspacePathRequest,
@@ -435,6 +436,17 @@ export class SessionController extends TypertRemoteService {
   @Remote('harnessSessionsRoot')
   harnessSessionsRoot(): SessionImportHarnessSourceValue {
     return { sourceRoot: this.harnessImport.sourceRoot }
+  }
+
+  /**
+   * List the Agent session stores installed on the Host machine, so a picker
+   * offers only what exists. Discovery reads directory presence only; no
+   * Session is opened.
+   * @returns one entry per installed Agent, plus the configured root.
+   */
+  @Remote('harnessSessionSources')
+  harnessSessionSources(): Promise<SessionImportHarnessSourcesValue> {
+    return this.harnessImport.listSources()
   }
 
   /**

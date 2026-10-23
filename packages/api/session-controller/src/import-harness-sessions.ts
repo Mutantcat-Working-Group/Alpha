@@ -31,11 +31,13 @@ import {
   readForeignSession,
   type ForeignFormat,
 } from './foreign-format-adapters.ts'
+import { listAgentSessionSources } from './agent-session-sources.ts'
 import { RemoteError } from '@mutantcat/dsh-typert-protocol'
 import type {
   SessionImportHarnessRequest,
   SessionImportHarnessResult,
   SessionImportHarnessValue,
+  SessionImportHarnessSourcesValue,
 } from './types.ts'
 
 /** Official DeepSeek Harness home directory name; Alpha's own home is `.alpha`. */
@@ -107,6 +109,16 @@ export class HarnessSessionImport {
     const requested = request.sourceRoot?.trim()
     if (requested === undefined || requested === '') return this.configuredSourceRoot
     return resolve(expandHomePath(requested))
+  }
+
+  /**
+   * List the Agent session stores installed on this machine, so a picker offers
+   * only what exists. Discovery reads directory presence only; no Session is
+   * opened.
+   * @returns one entry per installed Agent, with Alpha's own store first.
+   */
+  listSources(): Promise<SessionImportHarnessSourcesValue> {
+    return listAgentSessionSources(this.configuredSourceRoot)
   }
 
   /**

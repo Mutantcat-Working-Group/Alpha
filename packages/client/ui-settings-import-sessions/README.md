@@ -1,5 +1,5 @@
 ---
-description: "Import-sessions Settings page for the alpha web client: the official DeepSeek Harness sessions directory as an editable source root with one explicit Import action and a per-session result list."
+description: "Import-sessions Settings page for the alpha web client: one dropdown of the Agent session stores installed on the Host machine, one explicit Import action, and a per-session result list."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-The **Import sessions** Settings page brings the official DeepSeek Harness chat history into Alpha. It shows the source sessions directory, pre-filled from the deployment configuration, lets the user edit it, and runs one import on request. Afterwards it lists one row per discovered session — imported, already present, or refused with the Host's reason — plus a count summary. Nothing runs until the button is pressed: there is no watcher, no polling, and no background sync.
+The **Import sessions** Settings page brings other Agents' chat history into Alpha. Opening the page asks the Host which Agent session stores this machine has installed and lists them in one dropdown, Alpha's own store first, so only detected installations appear. Picking an entry and pressing **Import** runs one import from that store. Afterwards it lists one row per discovered session — imported, already present, or refused with the Host's reason — plus a count summary. Nothing runs until the button is pressed: there is no watcher, no polling, and no background sync.
 
 ## Table of Contents
 
@@ -25,11 +25,11 @@ The **Import sessions** Settings page brings the official DeepSeek Harness chat 
 <a id="use-this-package"></a>
 ## Use this package
 
-Open Settings and select **Import sessions**, then press **Import**. Mount `@mutantcat/dsh-client-ui-settings-import-sessions` in a Web composition that already provides the settings shell, the locale runtime, and a plugin publishing the `harnessSessionsImport` service; the page registers its own navigation entry and needs no configuration of its own.
+Open Settings and select **Import sessions**, pick the Agent whose history you want, then press **Import**. Mount `@mutantcat/dsh-client-ui-settings-import-sessions` in a Web composition that already provides the settings shell, the locale runtime, and a plugin publishing the `harnessSessionsImport` service; the page registers its own navigation entry and needs no configuration of its own.
 
-### Choosing the source directory
+### Choosing the source Agent
 
-The source directory field starts with the deployment's configured Harness sessions root, which defaults to the official DeepSeek Harness home's `sessions` directory. Editing the field changes the root for the next import only; leaving it blank falls back to the configured default, which is never the working directory. The page is read-only over this directory: it copies what it adopts into Alpha's own store and never moves, rewrites, or deletes anything there.
+The dropdown names the Agent session stores installed on the machine the Host runs on, discovered under the user's home directory. Alpha's own entry reads the deployment-configured Harness sessions root, which defaults to the official DeepSeek Harness home's `sessions` directory, so a configured root outside that default stays the one this import opens. The foreign entries cover the layouts those Agents write — Codex's `~/.codex` directory, Claude Code's `~/.claude/projects`, and ZCode's `~/.zcode` directory — and each appears only while its installation is present, so a store that is not installed is never offered. The page is read-only over every store it opens: it copies what it adopts into Alpha's own store and never moves, rewrites, or deletes anything there.
 
 ### Reading the results
 
@@ -47,19 +47,19 @@ The page is one localized `settings.section` contribution with id `import-sessio
 
 ### Registration and data sources
 
-`apply()` registers the locale namespace, binds it, and uses `ctx.slots.inject()` to contribute the section, so a late or restored slot declaration still reaches it. The registration closes over `ctx.harnessSessionsImport`: `sourceRoot()` reads the configured default for the pre-filled field, and `importSessions()` runs the import and refreshes the Session list. The page owns no store, no transport, and no refresh logic of its own; it holds the field text, the in-flight state, and the last result as component-local state.
+`apply()` registers the locale namespace, binds it, and uses `ctx.slots.inject()` to contribute the section, so a late or restored slot declaration still reaches it. The registration closes over `ctx.harnessSessionsImport`: `sessionSources()` lists the installed Agents and the root each one reads, and `importSessions()` runs the import and refreshes the Session list. The page owns no store, no transport, and no refresh logic of its own; it holds the discovered Agents, the picked root, the in-flight state, and the last result as component-local state.
 
 ### Failure handling
 
-A rejected configured-root read or a rejected import call renders the failure message and returns the page to an idle, usable state, so the user can correct the root and try again. Per-session refusals are data, not errors: they arrive inside the successful result and never abort the run.
+A rejected discovery read or a rejected import call renders the failure message and returns the page to an idle, usable state, so the user can pick another Agent and try again. Per-session refusals are data, not errors: they arrive inside the successful result and never abort the run.
 
 ### Source map
 
 | File | Role |
 |---|---|
 | [`src/index.ts`](src/index.ts) | Host loader entry: the page is browser-only, so the plugin body is empty |
-| [`src/client/index.ts`](src/client/index.ts) | Browser plugin: locale namespace, section registration, injected source-root and import calls |
-| [`src/client/ImportSessionsSection.tsx`](src/client/ImportSessionsSection.tsx) | The page component: source-root field, Import action, progress, result rows |
+| [`src/client/index.ts`](src/client/index.ts) | Browser plugin: locale namespace, section registration, injected discovery and import calls |
+| [`src/client/ImportSessionsSection.tsx`](src/client/ImportSessionsSection.tsx) | The page component: source-Agent dropdown, Import action, progress, result rows |
 | [`src/client/locales.ts`](src/client/locales.ts) | Chinese and English dictionaries for every visible and accessible string |
 | [`src/client/ImportSessionsSection.module.css`](src/client/ImportSessionsSection.module.css) | Page styles |
 
@@ -72,7 +72,7 @@ A rejected configured-root read or a rejected import call renders the failure me
 
 These pages cover the operation behind the button, the store it writes to, and the format it migrates from.
 
-- [Session Controller](../../api/session-controller/README.md) — the `session.importHarnessSessions` Remote, the `harnessSessionsRoot` Config field, and the client `harnessSessionsImport` face this page reads.
+- [Session Controller](../../api/session-controller/README.md) — the `session.importHarnessSessions` and `session.harnessSessionSources` Remotes, the `harnessSessionsRoot` Config field, and the client `harnessSessionsImport` face this page reads.
 - [session-persistence-jsonl](../../session/session-persistence-jsonl/README.md) — the read-only foreign sessions-root reader that discovers and restores source generations.
 - [Session subsystem](../../../docs/subsystems/session.md) — the durable Session store the adopted sessions land in.
 

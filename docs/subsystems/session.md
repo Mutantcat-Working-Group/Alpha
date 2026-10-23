@@ -905,6 +905,14 @@ workspaceDesktop(): { name: string; available: boolean; fileManager: 'finder' | 
 @Remote('harnessSessionsRoot') harnessSessionsRoot(): SessionImportHarnessSourceValue
 
 /**
+ * List the Agent session stores installed on the Host machine, so a picker
+ * offers only what exists. Discovery reads directory presence only; no
+ * Session is opened.
+ * @returns one entry per installed Agent, plus the configured root.
+ */
+@Remote('harnessSessionSources') harnessSessionSources(): Promise<SessionImportHarnessSourcesValue>
+
+/**
  * Import the official DeepSeek Harness chat history into Alpha's own store.
  * Read-only over the source root, idempotent, and isolated per Session; it
  * never watches or synchronizes on its own.

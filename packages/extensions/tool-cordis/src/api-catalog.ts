@@ -1819,6 +1819,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'the configured foreign sessions root.',
       },
       {
+        signature: '@Remote(\'harnessSessionSources\') harnessSessionSources(): Promise<SessionImportHarnessSourcesValue>',
+        description: 'List the Agent session stores installed on the Host machine, so a picker offers only what exists. Discovery reads directory presence only; no Session is opened.',
+        parameters: [],
+        returns: 'one entry per installed Agent, plus the configured root.',
+      },
+      {
         signature: '@Remote(\'importHarnessSessions\') importHarnessSessions( request: SessionImportHarnessRequest, signal: AbortSignal, ): Promise<SessionImportHarnessValue>',
         description: 'Import the official DeepSeek Harness chat history into Alpha\'s own store. Read-only over the source root, idempotent, and isolated per Session; it never watches or synchronizes on its own.',
         parameters: [{ name: 'request', description: 'optional source-root override.' }, { name: 'signal', description: 'caller cancellation for reads, migration, and publication.' }],
@@ -6162,12 +6168,24 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type SessionId = Branded<\'SessionId\'>;',
   },
   {
+    name: 'SessionImportHarnessAgent',
+    declaration: 'export type SessionImportHarnessAgent = \'dsh\' | \'codex\' | \'claude\' | \'zcode\';',
+  },
+  {
+    name: 'SessionImportHarnessAgentSource',
+    declaration: 'export interface SessionImportHarnessAgentSource {\n    readonly agent: SessionImportHarnessAgent;\n    readonly sourceRoot: string;\n}',
+  },
+  {
     name: 'SessionImportHarnessRequest',
     declaration: 'export interface SessionImportHarnessRequest {\n    readonly sourceRoot?: string;\n}',
   },
   {
     name: 'SessionImportHarnessResult',
     declaration: 'export interface SessionImportHarnessResult {\n    readonly sourcePath: string;\n    readonly sessionId?: SessionId;\n    readonly status: SessionImportHarnessStatus;\n    readonly reason?: string;\n}',
+  },
+  {
+    name: 'SessionImportHarnessSourcesValue',
+    declaration: 'export interface SessionImportHarnessSourcesValue {\n    readonly sources: readonly SessionImportHarnessAgentSource[];\n}',
   },
   {
     name: 'SessionImportHarnessSourceValue',

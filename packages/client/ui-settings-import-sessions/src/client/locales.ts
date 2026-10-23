@@ -3,9 +3,13 @@
 /** Simplified Chinese dictionary and key source of truth. */
 export const zh = {
   nav: '会话管理',
-  sourceRoot: '来源目录',
-  sourceRootHint: '官方 DeepSeek Harness 的 sessions 目录',
-  readingSourceRoot: '正在读取来源目录…',
+  sourceAgent: '来源 Agent',
+  'agent.dsh': 'DeepSeek Harness',
+  'agent.codex': 'Codex',
+  'agent.claude': 'Claude Code',
+  'agent.zcode': 'ZCode',
+  readingSources: '正在检测已安装的 Agent…',
+  noAgents: '未检测到已安装的 Agent。',
   import: '导入',
   importing: '正在导入…',
   emptyResults: '来源目录中没有会话。',
@@ -34,9 +38,13 @@ export type ImportSessionsLocaleKey = keyof typeof zh
 /** English dictionary checked against the Chinese key set. */
 export const en = {
   nav: 'Session management',
-  sourceRoot: 'Source directory',
-  sourceRootHint: 'The official DeepSeek Harness sessions directory',
-  readingSourceRoot: 'Reading the source directory…',
+  sourceAgent: 'Source Agent',
+  'agent.dsh': 'DeepSeek Harness',
+  'agent.codex': 'Codex',
+  'agent.claude': 'Claude Code',
+  'agent.zcode': 'ZCode',
+  readingSources: 'Detecting installed Agents…',
+  noAgents: 'No installed Agent detected.',
   import: 'Import',
   importing: 'Importing…',
   emptyResults: 'The source directory holds no sessions.',

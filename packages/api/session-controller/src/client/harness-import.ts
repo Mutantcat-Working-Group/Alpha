@@ -7,6 +7,7 @@ import type { ISessions } from './contract/sessions.ts'
 import type {
   SessionImportHarnessRequest,
   SessionImportHarnessValue,
+  SessionImportHarnessSourcesValue,
 } from '../types.ts'
 
 declare module '@mutantcat/cordis' {
@@ -27,6 +28,11 @@ export interface IHarnessSessionsImport {
    * @returns the configured foreign sessions root.
    */
   sourceRoot(): Promise<string>
+  /**
+   * List the Agent session stores installed on the Host machine.
+   * @returns one entry per installed Agent, plus the configured root.
+   */
+  sessionSources(): Promise<SessionImportHarnessSourcesValue>
   /**
    * Import every Session found under one source root, then refresh the Client
    * Session list so the adopted Sessions appear in navigation.
@@ -66,6 +72,13 @@ export class HarnessSessionsImport implements IHarnessSessionsImport {
     const result = await this.remotes.session.harnessSessionsRoot()
     if (!result.ok) throw commandError('source root read', result.error)
     return result.value.sourceRoot
+  }
+
+  /** @inheritdoc */
+  async sessionSources(): Promise<SessionImportHarnessSourcesValue> {
+    const result = await this.remotes.session.harnessSessionSources()
+    if (!result.ok) throw commandError('session source discovery', result.error)
+    return result.value
   }
 
   /** @inheritdoc */
