@@ -71,6 +71,7 @@
   "dependencies": {
     "@mutantcat/dsh-brand": "workspace:^",
     "@mutantcat/dsh-deque": "workspace:^",
+    "@mutantcat/dsh-session-format-catalog": "workspace:^",
     "@mutantcat/schemastery": "workspace:^",
     "mime-types": "^3.0.2",
     "zod": "^4.4.3"
