@@ -671,8 +671,10 @@ jobs:
   # Every other lane in this workflow runs Node, so a regression in the Rust
   # shell would otherwise first surface in the release build. The check needs
   # neither a pnpm install nor a bundled runtime: the frontend the build
-  # embeds is checked in under src-tauri/frontend, and the sidecar the bundle
-  # table names is resolved by the packer rather than by this compile.
+  # embeds is checked in under src-tauri/frontend. The packer is the only
+  # thing that ever downloads the sidecar named by the bundle table, but
+  # tauri-build's codegen asserts every externalBin path exists before it
+  # compiles, so the check stages a stand-in for it.
   windows-rust-check:
     if: github.event_name == 'pull_request'
     runs-on: >-
@@ -702,6 +704,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-check-
       - uses: dtolnay/rust-toolchain@stable
+      # tauri-build asserts every externalBin path exists and copies it beside
+      # the crate output before a single crate compiles, and the only thing
+      # that ever puts a real Node sidecar there is prepare:tauri-runtime,
+      # which needs the whole workspace payload. A check never launches the
+      # shell, so a stand-in file is enough and keeps this lane free of pnpm.
+      - name: Stage the sidecar path the build script validates
+        shell: pwsh
+        run: |
+          $sidecar = 'apps/desktop/src-tauri/bin/node-x86_64-pc-windows-msvc.exe'
+          New-Item -ItemType Directory -Force (Split-Path -Parent $sidecar) | Out-Null
+          Set-Content -LiteralPath $sidecar -Value 'placeholder for prepare:tauri-runtime to replace'
       - name: Check the desktop shell
         shell: pwsh
         run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
