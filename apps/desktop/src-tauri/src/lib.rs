@@ -17,6 +17,9 @@
 //! document in this window receives an initialization script that installs the
 //! `dshDesktopBoot` bridge and the gate itself.
 //!
+//! The same bridge reports a session the engine no longer accepts, so the shell navigates the
+//! window back to the engine and mints a fresh one from the launch token only it holds.
+//!
 //! Once the first engine is up, a watchdog supervises the engine for the rest of the session.
 //! It watches the host process, probes the engine's request loop, and replaces the host when
 //! either stops answering, so a machine that was suspended or had its lid closed never leaves
@@ -69,6 +72,8 @@ const MAX_WAKE_PROBES: u32 = 3;
 const MAX_HOST_RESTARTS: u32 = 4;
 /// Window event through which the Web client reports a failed boot to the shell.
 const BOOT_FAILED_EVENT: &str = "alpha-boot-failed";
+/// Window event the engine's denial page reports a lost session through.
+const UNAUTHORIZED_EVENT: &str = "alpha-unauthorized";
 /// Window event the loader page observes for startup failures.
 const FATAL_EVENT: &str = "alpha-fatal";
 
@@ -84,7 +89,8 @@ const LOADER_READ_TIMEOUT_MS: u64 = 500;
 /// The shell resolves the readiness promise once it holds the engine payload, either by
 /// carrying the payload into the document before navigation or by resolving the deferred
 /// after the document loaded. The client reports its own failures back through a window
-/// event so the shell can present them outside the Web page.
+/// event so the shell can present them outside the Web page, and reports a session the
+/// engine denies so the shell can navigate the window back to the engine.
 const BOOT_BRIDGE: &str = r#"(() => {
   const resolved = Promise.withResolvers();
   const global = globalThis;
@@ -99,6 +105,13 @@ const BOOT_BRIDGE: &str = r#"(() => {
       const api = global.__TAURI__;
       if (api !== undefined && api.event !== undefined && typeof api.event.emit === "function") {
         void Promise.resolve(api.event.emit("alpha-boot-failed", { message: String(message) }))
+          .catch(() => {});
+      }
+    },
+    unauthorized: (href) => {
+      const api = global.__TAURI__;
+      if (api !== undefined && api.event !== undefined && typeof api.event.emit === "function") {
+        void Promise.resolve(api.event.emit("alpha-unauthorized", { href: String(href) }))
           .catch(() => {});
       }
     },
@@ -138,6 +151,13 @@ struct EngineLaunch {
 #[derive(Default, Clone)]
 struct Supervision(Arc<AtomicBool>);
 
+/// Engine URL the shell last navigated to.
+///
+/// The URL carries the launch token of the host that is still serving, so it is the one
+/// address that re-establishes a session the engine no longer accepts.
+#[derive(Default)]
+struct EngineUrl(Mutex<Option<Url>>);
+
 /// Boot payload handed to the Web client; written by the host reader before navigation.
 type BootPayload = Arc<Mutex<Option<Value>>>;
 
@@ -164,6 +184,12 @@ struct HostEvent {
 #[derive(Deserialize)]
 struct BootFailurePayload {
     message: Option<String>,
+}
+
+/// One window event the engine's denial page reports when its session is gone.
+#[derive(Deserialize)]
+struct UnauthorizedPayload {
+    href: Option<String>,
 }
 
 /// Save one Markdown transcript through a native save dialog.
@@ -213,6 +239,7 @@ pub fn run() {
         .setup(|app| {
             app.manage(HostState::default());
             app.manage(Supervision::default());
+            app.manage(EngineUrl::default());
             let handle = app.handle().clone();
             match resolve_launch(&handle) {
                 Ok((node, runtime, project)) => {
@@ -467,6 +494,28 @@ fn build_window(
         let reporter = failure_handle.clone();
         failure_handle.run_on_main_thread(move || report_fatal(&reporter, &message)).ok();
     });
+    let unauthorized_handle = handle.clone();
+    window.listen(UNAUTHORIZED_EVENT, move |event: Event| {
+        // The engine denies a browser navigation that carries no session cookie, and only
+        // the shell holds the launch token that establishes one. The host that answered
+        // readiness last is still serving, so navigating to it again mints a fresh session.
+        let denied = serde_json::from_str::<UnauthorizedPayload>(event.payload())
+            .ok()
+            .and_then(|reported| reported.href)
+            .unwrap_or_default();
+        let held = unauthorized_handle
+            .try_state::<EngineUrl>()
+            .and_then(|state| state.0.lock().ok().and_then(|slot| slot.clone()));
+        let Some(target) = held else { return };
+        eprintln!("alpha: engine denied {denied}; reopening {target}");
+        let reporter = unauthorized_handle.clone();
+        let _ = unauthorized_handle.run_on_main_thread(move || {
+            let Some(window) = reporter.get_webview_window("main") else { return };
+            if let Err(error) = window.navigate(target) {
+                report_fatal(&reporter, &format!("Alpha could not reopen its engine: {error}"));
+            }
+        });
+    });
     Ok(window)
 }
 
@@ -484,6 +533,13 @@ fn start_engine(
 ) -> Result<Url, String> {
     let reports = spawn_host(handle, launch)?;
     let url = await_ready(&reports)?;
+    // A document the engine denies must be able to return to the host that answered, so the
+    // shell keeps the URL that carries this host's launch token.
+    if let Some(state) = handle.try_state::<EngineUrl>() {
+        if let Ok(mut slot) = state.0.lock() {
+            *slot = Some(url.clone());
+        }
+    }
     let held = payload_object(&url);
     let target = url.clone();
     let navigator = window.clone();

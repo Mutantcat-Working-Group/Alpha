@@ -17,6 +17,7 @@ const COOKIE_PREFIX = 'dsh-auth-'
 const COOKIE_PAYLOAD_VERSION = 1
 const STORED_SECRET_VERSION = 1
 const BASE64URL_PATTERN = /^[A-Za-z0-9_-]*$/
+const UNAUTHORIZED_MESSAGE = 'alpha web authentication required; reopen the URL printed by alpha web.'
 const PROCESS_LAUNCH_TOKENS = new WeakMap<object, string>()
 
 interface StoredSecretPayload {
@@ -75,6 +76,11 @@ function requestAuthority(headers: ConnectionTrustRequest['headers']): string | 
   } catch {
     return undefined
   }
+}
+
+/** Whether a request is a browser document navigation rather than a probe, script, or command-line call. */
+function isDocumentNavigation(req: ConnectionIndexRequest): boolean {
+  return req.method !== 'HEAD' && header(req.headers, 'sec-fetch-dest') === 'document'
 }
 
 function canonicalSecret(value: unknown): Buffer | undefined {
@@ -178,6 +184,21 @@ async function initializeSecret(credentials: CredentialProvider): Promise<Buffer
 }
 
 /**
+ * Minimal HTML document a browser navigation receives when its session is gone.
+ *
+ * The desktop shell installs `dshDesktopBoot` in every document of its window, so this
+ * page reports the denial to the shell, which alone holds the launch token and can
+ * re-navigate. Without that bridge the page stays a readable denial.
+ * @returns the denial document, carrying no launch token.
+ */
+function unauthorizedDocument(): string {
+  return '<!doctype html><html><body>'
+    + `<p>${UNAUTHORIZED_MESSAGE}</p>`
+    + '<script>globalThis.dshDesktopBoot?.unauthorized(location.href)</script>'
+    + '</body></html>'
+}
+
+/**
  * Process launch-token exchange and persistent signed-cookie verification.
  * Connection loads the credential provider's signing secret during activation
  * and retains it for synchronous request authentication.
@@ -232,7 +253,7 @@ export class BrowserAuth {
   /**
    * Authenticate an index request. A valid root query token mints the cookie
    * and redirects to clean `/`; a valid cookie lets the caller serve the
-   * index; every other request receives the same minimal 401 response.
+   * index; every other request receives a 401 that reports the denial.
    * @param req - incoming root or configured-index request.
    * @param res - response owned when this method returns false.
    * @returns true only when the caller may serve index.html.
@@ -302,12 +323,16 @@ export class BrowserAuth {
   }
 
   private writeUnauthorized(req: ConnectionIndexRequest, res: ConnectionIndexResponse): void {
+    // A browser navigation renders whatever the engine answers, so an unauthenticated one
+    // reports itself to the desktop shell, which can re-navigate with its launch token.
+    // Probes, scripts, and command-line callers keep the plain text body.
+    const navigation = isDocumentNavigation(req)
     res.writeHead(401, {
       'cache-control': 'no-store',
-      'content-type': 'text/plain; charset=utf-8',
+      'content-type': navigation ? 'text/html; charset=utf-8' : 'text/plain; charset=utf-8',
     })
     res.end(req.method === 'HEAD'
       ? undefined
-      : 'alpha web authentication required; reopen the URL printed by alpha web.\n')
+      : navigation ? unauthorizedDocument() : `${UNAUTHORIZED_MESSAGE}\n`)
   }
 }
