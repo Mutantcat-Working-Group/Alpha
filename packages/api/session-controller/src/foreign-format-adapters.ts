@@ -12,10 +12,11 @@
  */
 
 import { readdir, readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { SessionId, SessionLogOffset } from '@mutantcat/dsh-session'
 import type { SessionEvent, SessionHeader } from '@mutantcat/dsh-session'
 import { sessionFormatCatalog } from '@mutantcat/dsh-session-format-catalog'
+import { jsonString, parseJsonlRecord } from './json-records.ts'
 import { isZcodeRoot, listZcodeSessions, readZcodeSession } from './zcode-sessions.ts'
 
 /** Supported foreign session formats. */
@@ -191,60 +192,36 @@ function convertCodexSession(
   sourcePath: string,
   signal?: AbortSignal,
 ): ForeignSessionContent {
-  let sessionId = ''
-  let createdAt = Date.now()
-  let cwd = ''
-  const events: SessionEvent[] = []
-  let seq = 0
+  const session = newJsonlSession()
 
-  for (const line of lines) {
-    signal?.throwIfAborted()
-    let record: Record<string, unknown>
-    try {
-      record = JSON.parse(line)
-    } catch { continue }
-
+  forEachJsonlRecord(lines, (record) => {
     const type = record['type'] as string
     const payload = record['payload'] as Record<string, unknown> | undefined
 
     if (type === 'session_meta' && payload) {
-      sessionId = (payload['session_id'] as string) ?? (payload['id'] as string) ?? ''
-      const ts = record['timestamp'] as string | undefined
-      if (ts) createdAt = new Date(ts).getTime()
-      cwd = (payload['cwd'] as string) ?? ''
+      session.sessionId = jsonString(payload['session_id']) ?? jsonString(payload['id']) ?? ''
+      const ts = jsonString(record['timestamp'])
+      if (ts) session.createdAt = new Date(ts).getTime()
+      session.cwd = jsonString(payload['cwd']) ?? ''
     } else if (type === 'response_item' && payload) {
-      const event = convertCodexResponseItem(payload, seq, sourcePath)
-      if (event) {
-        events.push(event)
-        seq++
-      }
+      const event = convertCodexResponseItem(payload, session.events.length)
+      if (event) session.events.push(event)
     }
+  }, signal)
+
+  if (session.sessionId === '') {
+    // A rollout name carries the session UUID the writer used everywhere else.
+    const fileName = sessionIdFromFileName(sourcePath)
+    session.sessionId = fileName.match(CODEX_SESSION_UUID)?.[1] ?? fileName
   }
 
-  if (sessionId === '') {
-    // Derive a session ID from the filename
-    const basename = sourcePath.split('/').pop() ?? ''
-    const uuidMatch = basename.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/)
-    sessionId = uuidMatch?.[1] ?? basename.replace(/\.jsonl$/, '')
-  }
-
-  const header: SessionHeader = {
-    version: sessionFormatCatalog.currentVersion as SessionHeader['version'],
-    id: SessionId(sessionId),
-    createdAt,
-    ...cwd === '' ? {} : { cwd },
-    isSeeded: false,
-    delegationDepth: 0,
-  }
-
-  return { header, events, inheritedEventCount: SessionLogOffset(0) }
+  return foreignContent(session.sessionId, session.createdAt, session.cwd, session.events)
 }
 
 /** Convert one Codex response_item to an Alpha event, or null to skip. */
 function convertCodexResponseItem(
   payload: Record<string, unknown>,
   seq: number,
-  _sourcePath: string,
 ): SessionEvent | undefined {
   const role = payload['role'] as string | undefined
   const content = payload['content']
@@ -252,18 +229,7 @@ function convertCodexResponseItem(
   if (role === 'user' || role === 'assistant') {
     const textContent = extractTextContent(content)
     if (textContent === '') return undefined
-    return {
-      type: role === 'user' ? 'user/message' : 'assistant/message',
-      data: {
-        message: {
-          role,
-          content: [{ type: 'text', text: textContent }],
-          source: role === 'user' ? { kind: 'user' } : { kind: 'assistant' },
-          id: `imported-${seq}`,
-        },
-      },
-      surfaceOp: 'append',
-    } as unknown as SessionEvent
+    return importedMessageEvent(role, textContent, seq)
   }
 
   return undefined
@@ -275,68 +241,33 @@ function convertClaudeSession(
   sourcePath: string,
   signal?: AbortSignal,
 ): ForeignSessionContent {
-  let sessionId = ''
-  let createdAt = Date.now()
-  let cwd = ''
-  const events: SessionEvent[] = []
-  let seq = 0
+  const session = newJsonlSession()
 
-  for (const line of lines) {
-    signal?.throwIfAborted()
-    let record: Record<string, unknown>
-    try {
-      record = JSON.parse(line)
-    } catch { continue }
-
+  forEachJsonlRecord(lines, (record) => {
     const type = record['type'] as string
 
     if (type === 'user' || type === 'assistant') {
       const message = record['message'] as Record<string, unknown> | undefined
-      if (!message) continue
+      if (!message) return
 
-      if (sessionId === '') {
-        sessionId = (record['sessionId'] as string) ?? ''
-        const ts = record['timestamp'] as string | undefined
-        if (ts) createdAt = new Date(ts).getTime()
-        cwd = (record['cwd'] as string) ?? ''
+      if (session.sessionId === '') {
+        session.sessionId = jsonString(record['sessionId']) ?? ''
+        const ts = jsonString(record['timestamp'])
+        if (ts) session.createdAt = new Date(ts).getTime()
+        session.cwd = jsonString(record['cwd']) ?? ''
       }
 
       const role = message['role'] as string
-      const content = message['content']
-      const textContent = extractTextContent(content)
-      if (textContent === '') continue
+      const textContent = extractTextContent(message['content'])
+      if (textContent === '') return
 
-      events.push({
-        type: role === 'user' ? 'user/message' : 'assistant/message',
-        data: {
-          message: {
-            role,
-            content: [{ type: 'text', text: textContent }],
-            source: role === 'user' ? { kind: 'user' } : { kind: 'assistant' },
-            id: `imported-${seq}`,
-          },
-        },
-        surfaceOp: 'append',
-      } as unknown as SessionEvent)
-      seq++
+      session.events.push(importedMessageEvent(role, textContent, session.events.length))
     }
-  }
+  }, signal)
 
-  if (sessionId === '') {
-    const basename = sourcePath.split('/').pop() ?? ''
-    sessionId = basename.replace(/\.jsonl$/, '')
-  }
+  if (session.sessionId === '') session.sessionId = sessionIdFromFileName(sourcePath)
 
-  const header: SessionHeader = {
-    version: sessionFormatCatalog.currentVersion as SessionHeader['version'],
-    id: SessionId(sessionId),
-    createdAt,
-    ...cwd === '' ? {} : { cwd },
-    isSeeded: false,
-    delegationDepth: 0,
-  }
-
-  return { header, events, inheritedEventCount: SessionLogOffset(0) }
+  return foreignContent(session.sessionId, session.createdAt, session.cwd, session.events)
 }
 
 /** Extract text content from various content formats. */
@@ -357,4 +288,116 @@ function extractTextContent(content: unknown): string {
     return parts.join('\n')
   }
   return ''
+}
+
+/** What one foreign JSONL adapter collects while walking a session file. */
+interface JsonlSession {
+  /** The id to import the session under, empty until a record carried one. */
+  sessionId: string
+  /** When the session started, until a record carried a timestamp. */
+  createdAt: number
+  /** The working directory the foreign writer recorded, if any. */
+  cwd: string
+  /** The converted events, in the order the foreign writer wrote them. */
+  events: SessionEvent[]
+}
+
+/** The starting point every foreign JSONL session is read into. */
+function newJsonlSession(): JsonlSession {
+  return { sessionId: '', createdAt: Date.now(), cwd: '', events: [] }
+}
+
+/**
+ * Hands every parsed line of a foreign JSONL session to a visitor.
+ *
+ * Foreign writers append to these files and never rewrite them, so a
+ * truncated final line is normal and is skipped rather than reported.
+ *
+ * @param lines - the non-empty lines of one foreign session file.
+ * @param visit - called once per line that carried a JSON object.
+ * @param signal - optional cancellation.
+ */
+function forEachJsonlRecord(
+  lines: readonly string[],
+  visit: (record: Record<string, unknown>) => void,
+  signal?: AbortSignal,
+): void {
+  for (const line of lines) {
+    signal?.throwIfAborted()
+    const record = parseJsonlRecord(line)
+    if (record) visit(record)
+  }
+}
+
+/**
+ * Wrap one imported message as an Alpha session event.
+ *
+ * Only the role decides which of the two message surfaces an event lands on,
+ * so a role the foreign writer spelled anything other than `user` arrives as
+ * an assistant message.
+ *
+ * @param role - the foreign writer's role label.
+ * @param text - the flattened text of the message.
+ * @param seq - the event index within the imported session.
+ * @returns the event to append to the imported log.
+ */
+function importedMessageEvent(role: string, text: string, seq: number): SessionEvent {
+  return {
+    type: role === 'user' ? 'user/message' : 'assistant/message',
+    data: {
+      message: {
+        role,
+        content: [{ type: 'text', text }],
+        source: role === 'user' ? { kind: 'user' } : { kind: 'assistant' },
+        id: `imported-${seq}`,
+      },
+    },
+    surfaceOp: 'append',
+  } as unknown as SessionEvent
+}
+
+/** Session UUID a Codex rollout file name is built around. */
+const CODEX_SESSION_UUID = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/
+
+/**
+ * Derive a session id from a foreign session file name.
+ *
+ * A writer that recorded no id inside the file still names the file after the
+ * session, which leaves the name as the last resort.
+ *
+ * @param sourcePath - absolute path of the foreign session file.
+ * @returns the file name without its `.jsonl` suffix.
+ */
+function sessionIdFromFileName(sourcePath: string): string {
+  return basename(sourcePath).replace(/\.jsonl$/, '')
+}
+
+/**
+ * Build the converted session both JSONL adapters return.
+ *
+ * The header carries only what the foreign writer recorded, so a session
+ * discovered without a working directory omits it instead of importing an
+ * empty one.
+ *
+ * @param sessionId - the id to import the session under.
+ * @param createdAt - when the foreign session started.
+ * @param cwd - the working directory the foreign writer recorded, if any.
+ * @param events - the converted events in foreign order.
+ * @returns the converted content with nothing inherited from an earlier log.
+ */
+function foreignContent(
+  sessionId: string,
+  createdAt: number,
+  cwd: string,
+  events: SessionEvent[],
+): ForeignSessionContent {
+  const header: SessionHeader = {
+    version: sessionFormatCatalog.currentVersion as SessionHeader['version'],
+    id: SessionId(sessionId),
+    createdAt,
+    ...cwd === '' ? {} : { cwd },
+    isSeeded: false,
+    delegationDepth: 0,
+  }
+  return { header, events, inheritedEventCount: SessionLogOffset(0) }
 }

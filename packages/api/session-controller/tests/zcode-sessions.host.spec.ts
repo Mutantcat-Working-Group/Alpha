@@ -71,7 +71,7 @@ function writeSqliteStore(dbPath: string, sessions: readonly SqlSession[]): void
 /** The events of one converted session, as plain records. */
 async function eventsOf(file: { path: string; sessionId?: string }): Promise<Record<string, unknown>[]> {
   const content = await readZcodeSession({ path: file.path, format: 'zcode', ...(file.sessionId === undefined ? {} : { sessionId: file.sessionId }) })
-  return content.events as unknown as Record<string, unknown>[]
+  return content.events
 }
 
 describe('zcode detection', () => {

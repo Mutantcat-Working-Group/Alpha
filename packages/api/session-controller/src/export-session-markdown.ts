@@ -8,7 +8,6 @@
 
 import type { Context } from '@mutantcat/cordis'
 import type { SessionEvent, SessionId } from '@mutantcat/dsh-session'
-import type { SessionPersistence } from '@mutantcat/dsh-session-persistence'
 import { RemoteError } from '@mutantcat/dsh-typert-protocol'
 
 /** One exported message in the Markdown transcript. */
@@ -31,7 +30,7 @@ export async function exportSessionMarkdown(
   sessionId: SessionId,
   signal: AbortSignal,
 ): Promise<string> {
-  const persistence = ctx.get('sessionPersistence') as SessionPersistence | undefined
+  const persistence = ctx.get('sessionPersistence')
   if (persistence === undefined) {
     throw new RemoteError('gateway/internal', 'no session-persistence backend is mounted', {})
   }

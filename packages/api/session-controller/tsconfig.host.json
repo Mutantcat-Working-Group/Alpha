@@ -21,6 +21,7 @@
     "src/zcode-sessions.ts",
     "src/history.ts",
     "src/import-harness-sessions.ts",
+    "src/json-records.ts",
     "src/list.ts",
     "src/media-references.ts",
     "src/model-selection-projection.ts",

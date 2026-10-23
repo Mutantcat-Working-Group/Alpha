@@ -14,15 +14,20 @@
  *
  * The current store is opened read-only so importing never mutates the user's
  * ZCode database. Both generations are discovered from the same root.
+ *
+ * `node:sqlite` is imported inside the functions that open the store rather
+ * than at module scope, so a process that never imports a ZCode session never
+ * loads the module and never prints its experimental warning on Node 22.
  * @module @mutantcat/dsh-api-session-controller/zcode-sessions
  */
 
 import { readdir, readFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
+import type { DatabaseSync } from 'node:sqlite'
 import { SessionId, SessionLogOffset } from '@mutantcat/dsh-session'
 import type { SessionEvent, SessionHeader } from '@mutantcat/dsh-session'
 import { sessionFormatCatalog } from '@mutantcat/dsh-session-format-catalog'
+import { asObject, parseJsonObject } from './json-records.ts'
 import type { ForeignSessionContent, ForeignSessionFile } from './foreign-format-adapters.ts'
 
 /** Current ZCode session store, relative to the ZCode data root. */
@@ -45,6 +50,7 @@ const WORKSPACE_HASH = /^[0-9a-f]{12}$/
  */
 export async function isZcodeRoot(root: string): Promise<boolean> {
   try {
+    const { DatabaseSync } = await import('node:sqlite')
     new DatabaseSync(join(root, SQLITE_DB), { readOnly: true }).close()
     return true
   } catch { /* no readable current store */ }
@@ -101,6 +107,7 @@ async function listSqliteSessions(
   files: ForeignSessionFile[],
   signal?: AbortSignal,
 ): Promise<void> {
+  const { DatabaseSync } = await import('node:sqlite')
   let db: DatabaseSync
   try {
     db = new DatabaseSync(dbPath, { readOnly: true })
@@ -146,11 +153,12 @@ async function listLegacySessions(
 }
 
 /** Convert one SQLite-backed session to Alpha's format. */
-function readSqliteSession(
+async function readSqliteSession(
   dbPath: string,
   sessionId: string,
   signal?: AbortSignal,
-): ForeignSessionContent {
+): Promise<ForeignSessionContent> {
+  const { DatabaseSync } = await import('node:sqlite')
   const db = new DatabaseSync(dbPath, { readOnly: true })
   try {
     const session = db
@@ -279,19 +287,4 @@ function buildHeader(id: string, createdAt: number, cwd: string): SessionHeader 
     isSeeded: false,
     delegationDepth: 0,
   }
-}
-
-/** Parse a JSON string into a plain object, or `{}` when it is not an object. */
-function parseJsonObject(text: string): Record<string, unknown> {
-  try {
-    const parsed: unknown = JSON.parse(text)
-    return asObject(parsed)
-  } catch { return {} }
-}
-
-/** Narrow an unknown value to a plain object, else `{}`. */
-function asObject(value: unknown): Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : {}
 }
