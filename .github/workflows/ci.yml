@@ -668,6 +668,44 @@ jobs:
           packages/workflow/tool-ralph/tests/integration.spec.ts
           packages/subprocess/subprocess-local/tests/process-exit.spec.ts
 
+  # Every other lane in this workflow runs Node, so a regression in the Rust
+  # shell would otherwise first surface in the release build. The check needs
+  # neither a pnpm install nor a bundled runtime: the frontend the build
+  # embeds is checked in under src-tauri/frontend, and the sidecar the bundle
+  # table names is resolved by the packer rather than by this compile.
+  windows-rust-check:
+    if: github.event_name == 'pull_request'
+    runs-on: >-
+      ${{ vars.DSH_CI_FAILOVER_WINDOWS == 'blacksmith' && 'blacksmith-16vcpu-windows-2025'
+          || vars.DSH_CI_FAILOVER_WINDOWS == 'selfhosted'
+          && github.event.pull_request.user.login != 'dependabot[bot]'
+          && fromJSON('["self-hosted", "dsh-win-ci", "windows"]')
+          || 'windows-2025' }}
+    name: windows rust / shell check
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      # A cold check compiles the whole Tauri dependency tree. The in-house pool
+      # keeps its tool caches on the VM, and saving from it would poison the
+      # hosted cache namespace with self-hosted entries — the same guard the
+      # pnpm store restore carries.
+      - uses: actions/cache@v4
+        if: vars.DSH_CI_FAILOVER_WINDOWS != 'selfhosted' || github.event.pull_request.user.login == 'dependabot[bot]'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            apps/desktop/src-tauri/target
+          key: ${{ runner.os }}-cargo-check-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-check-
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check the desktop shell
+        shell: pwsh
+        run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+
   windows-observational:
     if: github.event_name == 'pull_request'
     continue-on-error: true
@@ -716,9 +754,10 @@ jobs:
   # Single stable required check for branch protection: require "all checks
   # passed" instead of enumerating matrix legs whose names change as lanes and
   # node versions evolve. Every blocking job in THIS workflow must be listed in
-  # `needs`. Native Windows build and process checks are required; Wine and
-  # the deferred Python runtime targets live in ci-master.yml and do not
-  # participate in this PR verdict. `needs` cannot cross workflow files.
+  # `needs`. Native Windows build and process checks are required, and so is
+  # the Rust check that compiles the desktop shell; Wine and the deferred
+  # Python runtime targets live in ci-master.yml and do not participate in
+  # this PR verdict. `needs` cannot cross workflow files.
   # An explicit status function runs the verdict after failed/skipped needs
   # without keeping a cancelled workflow alive for an obsolete verdict.
   all-checks-passed:
@@ -738,7 +777,7 @@ jobs:
           && github.event.pull_request.user.login != 'dependabot[bot]'
           && fromJSON('["self-hosted", "linux", "x64", "vm-backup"]')
           || 'ubuntu-latest' }}
-    needs: [node-24, node-24-coverage, node-24-bench, node-24-consumers, node-compat, python-sdk, python-runtime, windows-build, windows-native-tests]
+    needs: [node-24, node-24-coverage, node-24-bench, node-24-consumers, node-compat, python-sdk, python-runtime, windows-build, windows-native-tests, windows-rust-check]
     if: ${{ !cancelled() && github.event_name == 'pull_request' }}
     steps:
       - name: Fail if any needed job did not succeed

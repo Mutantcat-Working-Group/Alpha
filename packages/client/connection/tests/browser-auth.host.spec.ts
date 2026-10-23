@@ -62,6 +62,7 @@ function createAuth(
 function request(url: string, authority = '127.0.0.1:3080', init?: {
   cookie?: string
   method?: string
+  secFetchDest?: string
 }): ConnectionIndexRequest {
   return {
     method: init?.method ?? 'GET',
@@ -69,6 +70,7 @@ function request(url: string, authority = '127.0.0.1:3080', init?: {
     headers: {
       host: authority,
       ...init?.cookie === undefined ? {} : { cookie: init.cookie },
+      ...init?.secFetchDest === undefined ? {} : { 'sec-fetch-dest': init.secFetchDest },
     },
   }
 }
@@ -152,6 +154,8 @@ describe('BrowserAuth', () => {
       request('/?token=wrong'),
       request('/?token=wrong&token=again'),
       request('/index.html?token=wrong'),
+      request('/', '127.0.0.1:3080', { secFetchDest: 'document', method: 'HEAD' }),
+      request('/', '127.0.0.1:3080', { secFetchDest: 'empty' }),
       request(auth.authenticatedUrl('http://127.0.0.1:3080'), '127.0.0.1:3080', { method: 'HEAD' }),
     ]) {
       const denied = response()
@@ -165,6 +169,23 @@ describe('BrowserAuth', () => {
         ? undefined
         : 'alpha web authentication required; reopen the URL printed by alpha web.\n')
     }
+  })
+
+  it('answers a browser document navigation with a page that reports the denial to the shell', async () => {
+    const auth = await createAuth(new RecordCredentials())
+    const denied = response()
+    expect(auth.authorizeIndex(
+      request('/', '127.0.0.1:3080', { secFetchDest: 'document' }),
+      denied.value,
+    )).toBe(false)
+    expect(denied.state.status).toBe(401)
+    expect(denied.state.headers).toEqual({
+      'cache-control': 'no-store',
+      'content-type': 'text/html; charset=utf-8',
+    })
+    expect(denied.state.body).toContain('alpha web authentication required; reopen the URL printed by alpha web.')
+    expect(denied.state.body).toContain('globalThis.dshDesktopBoot?.unauthorized(location.href)')
+    expect(denied.state.body).not.toContain('token=')
   })
 
   it('rejects tampering, expiry, future issuance, and a longer lifetime than configured', async () => {
