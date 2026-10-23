@@ -114,10 +114,16 @@ export function apply(ctx: Context, config: AcpConfig): void {
    * neither starts sessions unselected so the loop fails loud.
    * @returns the resolved default selection, or undefined when none exists.
    */
-  const deploymentSelection = (): ModelSelection | undefined => {
+  const deploymentSelection = async (): Promise<ModelSelection | undefined> => {
     if (config.provider !== undefined && config.model !== undefined) {
       return { provider: config.provider, model: config.model }
     }
+    // Sibling rows mount concurrently, so the settings section backing the user
+    // default can still be installing when a client's first session/new lands.
+    // Await the settled tree before reading it, as the headless runner does,
+    // or an unselected agent reaches the loop with no {{model}} to bind.
+    const loader = ctx.get('loader') as LoaderReadiness | undefined
+    await loader?.await()
     return agentDefaultModel.currentSelection() ?? undefined
   }
 
@@ -218,7 +224,7 @@ export function apply(ctx: Context, config: AcpConfig): void {
       // deployment that configures a roster has to join one here first
       // (@mutantcat/dsh-agent-presets README, "Composing a child agent").
       let record: AcpSession
-      const selection = deploymentSelection()
+      const selection = await deploymentSelection()
       try {
         record = await AcpSession.create(ctx, {
           sessionId,
@@ -270,7 +276,7 @@ export function apply(ctx: Context, config: AcpConfig): void {
           throw invalidParams(`session cwd does not match: ${params.cwd}`)
         }
         let record: AcpSession
-        const selection = deploymentSelection()
+        const selection = await deploymentSelection()
         try {
           record = await AcpSession.resume(ctx, {
             sessionId,
@@ -466,6 +472,11 @@ function agentOptions(selection: ModelSelection | undefined): { provider?: strin
 interface SessionListCursor {
   createdAt: number
   sessionId: string
+}
+
+/** Settlement signal of the application tree, named without the loader dependency. */
+interface LoaderReadiness {
+  await(): Promise<unknown>
 }
 
 /** Resolve and validate the deployment-owned session page limit. */
