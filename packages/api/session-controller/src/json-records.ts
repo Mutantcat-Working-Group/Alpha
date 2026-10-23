@@ -8,7 +8,11 @@
  * @module @mutantcat/dsh-api-session-controller/json-records
  */
 
-/** Narrow an unknown value to a plain object, else `{}`. */
+/**
+ * Narrow an unknown value to a plain object, else `{}`.
+ * @param value - the raw field value, of whatever JSON type the writer emitted.
+ * @returns the object, or `{}` when the value is not one.
+ */
 export function asObject(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
