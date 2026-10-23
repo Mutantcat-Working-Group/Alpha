@@ -46,6 +46,7 @@ import type {
   SessionImportHarnessRequest,
   SessionImportHarnessSourceValue,
   SessionImportHarnessValue,
+  SessionImportHarnessSourcesValue,
   SessionListRequest,
   SessionListValue,
   SessionOpenWorkspacePathRequest,
@@ -79,6 +80,7 @@ export interface TestSessionRemote {
   updateQueue(request: SessionUpdateQueueRequest): Promise<RemoteResult<SessionUpdateQueueValue>>
   cancel(request: SessionCancelRequest): Promise<RemoteResult<SessionCancelValue>>
   harnessSessionsRoot(): Promise<RemoteResult<SessionImportHarnessSourceValue>>
+  harnessSessionSources(): Promise<RemoteResult<SessionImportHarnessSourcesValue>>
   importHarnessSessions(
     request: SessionImportHarnessRequest,
     signal?: AbortSignal,
@@ -361,6 +363,7 @@ export function createSessionTestRemote(
     updateQueue: request => remoteResult(() => direct.updateQueue(request)),
     cancel: request => remoteResult(() => direct.cancel(request)),
     harnessSessionsRoot: () => remoteResult(() => direct.harnessSessionsRoot()),
+    harnessSessionSources: () => remoteResult(() => direct.harnessSessionSources()),
     importHarnessSessions: (request, signal = new AbortController().signal) => remoteResult(
       () => direct.importHarnessSessions(request, signal),
       signal,

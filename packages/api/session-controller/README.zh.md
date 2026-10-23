@@ -62,7 +62,7 @@ Session 对象还承载本地提交回显：`session.beginSubmission` 在调用�
 
 `session.importHarnessSessions` 把官方 DeepSeek Harness 的聊天历史采纳进 Alpha 自己的 Session 存储，且仅在用户请求时执行。它读取 `harnessSessionsRoot` Config 字段指定的根目录，或某次请求覆盖的根目录，并且绝不写入该根目录：发现阶段为每个 Session 目录选出最高规范世代，还原阶段通过构建期静态的格式链迁移较旧世代，存储约定则在任何写入之前校验还原出的日志。采纳阶段把校验通过的当前格式事件复制进已挂载的 `ctx.sessionPersistence` 后端，因此目标根目录与物理编码仍归 Alpha 自己所有。
 
-每个被发现的 Session 返回一条结果——`imported`、`already-present`，或带原因的 `refused`。隔离以单个 Session 为单位，因此不可读或损坏的来源会话会被拒绝，而其同级会话仍会导入；重复运行不会采纳任何内容，并把每个 Session 报告为已存在。该操作从不监视、轮询或同步。`harnessSessionsRoot` 让 Client 用配置的默认值预填可编辑的来源根目录，而 Client 侧接口是 `harnessSessionsImport` 服务，其 `importSessions` 会在 Host 发布采纳结果后重新拉取 Session 列表。
+每个被发现的 Session 返回一条结果——`imported`、`already-present`，或带原因的 `refused`。隔离以单个 Session 为单位，因此不可读或损坏的来源会话会被拒绝，而其同级会话仍会导入；重复运行不会采纳任何内容，并把每个 Session 报告为已存在。该操作从不监视、轮询或同步。`harnessSessionSources` 列出 Host 机器上已安装的 Agent 会话存储——Alpha 自己的存储取自配置的根目录，外加标记目录存在的每个外来 Agent——使选择器只提供真实存在的选项。Client 侧接口是 `harnessSessionsImport` 服务，其 `sessionSources` 读取该列表，其 `importSessions` 会在 Host 发布采纳结果后重新拉取 Session 列表。
 
 -----
 

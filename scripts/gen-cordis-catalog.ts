@@ -388,6 +388,7 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
   SessionImportHarnessRequest: 'session.md',
   SessionImportHarnessValue: 'session.md',
   SessionImportHarnessSourceValue: 'session.md',
+  SessionImportHarnessSourcesValue: 'session.md',
   SessionModels: 'session.md',
   SessionModelsRequest: 'session.md',
   SessionPage: 'session.md',

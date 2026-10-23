@@ -2,7 +2,11 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { SessionListState, SessionSummary } from '@mutantcat/dsh-api-session-controller/client'
-import type { SessionImportHarnessValue } from '@mutantcat/dsh-api-session-controller/types'
+import type {
+  SessionImportHarnessAgentSource,
+  SessionImportHarnessValue,
+  SessionImportHarnessSourcesValue,
+} from '@mutantcat/dsh-api-session-controller/types'
 import type { SessionId } from '@mutantcat/dsh-session/types'
 import { ImportSessionsSection } from '../src/client/ImportSessionsSection.tsx'
 import type { ImportSessionsSectionProps } from '../src/client/ImportSessionsSection.tsx'
@@ -38,17 +42,18 @@ function value(results: SessionImportHarnessValue['results']): SessionImportHarn
 }
 
 function props(options: {
-  configured?: string
-  sourceRoot?: () => Promise<string>
+  sources?: readonly SessionImportHarnessAgentSource[]
+  sessionSources?: ImportSessionsSectionProps['sessionSources']
   importSessions?: ImportSessionsSectionProps['importSessions']
   exportSession?: ImportSessionsSectionProps['exportSession']
   archiveSession?: ImportSessionsSectionProps['archiveSession']
   sessions?: SessionListState
   useSessions?: ImportSessionsSectionProps['useSessions']
 } = {}): ImportSessionsSectionProps {
+  const sources = options.sources ?? [{ agent: 'dsh' as const, sourceRoot: '/source/sessions' }]
   return {
     t,
-    sourceRoot: options.sourceRoot ?? (async () => options.configured ?? '/source/sessions'),
+    sessionSources: options.sessionSources ?? (async () => ({ sources })),
     importSessions: options.importSessions ?? (async () => value([])),
     exportSession: options.exportSession ?? (async () => {}),
     archiveSession: options.archiveSession ?? (async () => {}),
@@ -58,18 +63,26 @@ function props(options: {
 }
 
 describe('ImportSessionsSection', () => {
-  it('prefills the configured source root and imports that root on request', async () => {
+  it('selects the first installed Agent and imports its sessions on request', async () => {
     const importSessions = vi.fn(async () => value([
       { sourcePath: '/source/sessions/project/one', sessionId: sid('one'), status: 'imported' as const },
     ]))
-    render(<ImportSessionsSection {...props({ configured: '/configured/sessions', importSessions })} />)
+    render(<ImportSessionsSection {...props({
+      sources: [
+        { agent: 'dsh', sourceRoot: '/configured/sessions' },
+        { agent: 'codex', sourceRoot: '/home/.codex' },
+      ],
+      importSessions,
+    })} />)
 
-    const field = await screen.findByLabelText(en.sourceRoot) as HTMLInputElement
-    await waitFor(() => { expect(field.value).toBe('/configured/sessions') })
+    const picker = await screen.findByLabelText(en.sourceAgent) as HTMLSelectElement
+    await waitFor(() => { expect(picker.value).toBe('/configured/sessions') })
 
     fireEvent.click(screen.getByRole('button', { name: en.import }))
 
     await waitFor(() => { expect(importSessions).toHaveBeenCalledWith({ sourceRoot: '/configured/sessions' }) })
+    expect(screen.getByRole('option', { name: en['agent.dsh'] })).toBeTruthy()
+    expect(screen.getByRole('option', { name: en['agent.codex'] })).toBeTruthy()
     expect(await screen.findByText(en['status.imported'])).toBeTruthy()
     expect(screen.getByText(en.resultSession.replace('{id}', 'one'))).toBeTruthy()
     expect(screen.getByText(en.summary
@@ -77,18 +90,20 @@ describe('ImportSessionsSection', () => {
       .replace('{alreadyPresent}', '0').replace('{refused}', '0'))).toBeTruthy()
   })
 
-  it('imports the root the user edits and omits an emptied field', async () => {
+  it('imports the Agent the user picks', async () => {
     const importSessions = vi.fn(async () => value([]))
-    render(<ImportSessionsSection {...props({ importSessions })} />)
+    render(<ImportSessionsSection {...props({
+      sources: [
+        { agent: 'dsh', sourceRoot: '/source/sessions' },
+        { agent: 'claude', sourceRoot: '/home/.claude' },
+      ],
+      importSessions,
+    })} />)
 
-    const field = await screen.findByLabelText(en.sourceRoot) as HTMLInputElement
-    fireEvent.change(field, { target: { value: '/elsewhere/sessions' } })
+    const picker = await screen.findByLabelText(en.sourceAgent) as HTMLSelectElement
+    fireEvent.change(picker, { target: { value: '/home/.claude' } })
     fireEvent.click(screen.getByRole('button', { name: en.import }))
-    await waitFor(() => { expect(importSessions).toHaveBeenCalledWith({ sourceRoot: '/elsewhere/sessions' }) })
-
-    fireEvent.change(field, { target: { value: '   ' } })
-    fireEvent.click(screen.getByRole('button', { name: en.import }))
-    await waitFor(() => { expect(importSessions).toHaveBeenLastCalledWith({}) })
+    await waitFor(() => { expect(importSessions).toHaveBeenCalledWith({ sourceRoot: '/home/.claude' }) })
   })
 
   it('reports an empty source directory and a refusal reason', async () => {
@@ -99,7 +114,7 @@ describe('ImportSessionsSection', () => {
       ]),
     })} />)
 
-    await screen.findByLabelText(en.sourceRoot)
+    await screen.findByLabelText(en.sourceAgent)
     fireEvent.click(screen.getByRole('button', { name: en.import }))
 
     expect(await screen.findByText(en['status.refused'])).toBeTruthy()
@@ -112,17 +127,25 @@ describe('ImportSessionsSection', () => {
   it('shows the empty-source message when the scan finds nothing', async () => {
     render(<ImportSessionsSection {...props()} />)
 
-    await screen.findByLabelText(en.sourceRoot)
+    await screen.findByLabelText(en.sourceAgent)
     fireEvent.click(screen.getByRole('button', { name: en.import }))
 
     expect(await screen.findByText(en.emptyResults)).toBeTruthy()
+  })
+
+  it('offers no import and names the cause when no Agent is installed', async () => {
+    render(<ImportSessionsSection {...props({ sources: [] })} />)
+
+    expect(await screen.findByText(en.noAgents)).toBeTruthy()
+    expect(screen.queryByText(en.readingSources)).toBeNull()
+    expect(screen.getByRole('button', { name: en.import }).hasAttribute('disabled')).toBe(true)
   })
 
   it('surfaces a failed call and stays usable', async () => {
     const importSessions = vi.fn(async () => { throw new Error('gateway unavailable') })
     render(<ImportSessionsSection {...props({ importSessions })} />)
 
-    await screen.findByLabelText(en.sourceRoot)
+    await screen.findByLabelText(en.sourceAgent)
     fireEvent.click(screen.getByRole('button', { name: en.import }))
 
     expect(await screen.findByText(en.failed.replace('{message}', 'gateway unavailable'))).toBeTruthy()
@@ -134,41 +157,46 @@ describe('ImportSessionsSection', () => {
       importSessions: async () => { throw 'gateway offline' },
     })} />)
 
-    await screen.findByLabelText(en.sourceRoot)
+    await screen.findByLabelText(en.sourceAgent)
     fireEvent.click(screen.getByRole('button', { name: en.import }))
 
     expect(await screen.findByText(en.failed.replace('{message}', 'gateway offline'))).toBeTruthy()
   })
 
-  it('ignores a configured-root read that settles after the page unmounts', async () => {
-    const settles: Array<{ done: (value: string) => void; fail: (reason: unknown) => void }> = []
-    const pending = (): Promise<string> => new Promise<string>((done, fail) => {
-      settles.push({ done, fail })
-    })
-    const resolved = render(<ImportSessionsSection {...props({ sourceRoot: pending })} />)
-    const rejected = render(<ImportSessionsSection {...props({ sourceRoot: pending })} />)
+  it('ignores a discovery read that settles after the page unmounts', async () => {
+    const settles: Array<{
+      done: (value: SessionImportHarnessSourcesValue) => void
+      fail: (reason: unknown) => void
+    }> = []
+    const pending = (): Promise<SessionImportHarnessSourcesValue> =>
+      new Promise<SessionImportHarnessSourcesValue>((done, fail) => {
+        settles.push({ done, fail })
+      })
+    const resolved = render(<ImportSessionsSection {...props({ sessionSources: pending })} />)
+    const rejected = render(<ImportSessionsSection {...props({ sessionSources: pending })} />)
     resolved.unmount()
     rejected.unmount()
 
-    settles[0]!.done('/configured/sessions')
+    settles[0]!.done({ sources: [{ agent: 'dsh', sourceRoot: '/configured/sessions' }] })
     settles[1]!.fail(new Error('remote session unavailable'))
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(screen.queryByLabelText(en.sourceRoot)).toBeNull()
+    expect(screen.queryByLabelText(en.sourceAgent)).toBeNull()
   })
 
-  it('surfaces a failed configured-root read and lets the user type one instead', async () => {
+  it('surfaces a failed discovery read and offers no import', async () => {
     const importSessions = vi.fn(async () => value([]))
     render(<ImportSessionsSection {...props({
-      sourceRoot: async () => { throw new Error('remote session unavailable') },
+      sessionSources: async () => { throw new Error('remote session unavailable') },
       importSessions,
     })} />)
 
     expect(await screen.findByText(en.failed.replace('{message}', 'remote session unavailable'))).toBeTruthy()
-    const field = screen.getByLabelText(en.sourceRoot) as HTMLInputElement
-    fireEvent.change(field, { target: { value: '/typed/sessions' } })
-    fireEvent.click(screen.getByRole('button', { name: en.import }))
-    await waitFor(() => { expect(importSessions).toHaveBeenCalledWith({ sourceRoot: '/typed/sessions' }) })
+    // Discovery named no Agent, so neither the picker nor the import is offered.
+    const picker = screen.getByLabelText(en.sourceAgent) as HTMLSelectElement
+    expect(picker.hasAttribute('disabled')).toBe(true)
+    expect(screen.getByRole('button', { name: en.import }).hasAttribute('disabled')).toBe(true)
+    expect(importSessions).not.toHaveBeenCalled()
   })
 
   it('exports a listed session with its id and title', async () => {

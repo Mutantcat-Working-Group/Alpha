@@ -20,16 +20,18 @@ async function bench() {
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
   ctx.provide('locale', locale)
-  const sourceRoot = vi.fn(async () => '/source/sessions')
+  const sessionSources = vi.fn(async () => ({
+    sources: [{ agent: 'dsh' as const, sourceRoot: '/source/sessions' }],
+  }))
   const importSessions = vi.fn(async (): Promise<SessionImportHarnessValue> => ({
     sourceRoot: '/source/sessions',
     results: [],
   }))
   const exportSession = vi.fn(async () => '# Export')
   const archiveSession = vi.fn(async () => {})
-  ctx.provide('harnessSessionsImport', { sourceRoot, importSessions, exportSession })
+  ctx.provide('harnessSessionsImport', { sessionSources, importSessions, exportSession })
   ctx.provide('uiWorkspace', { archiveSession })
-  return { ctx, slots: ctx.get('slots') as SlotRegistry, locale, sourceRoot, importSessions, exportSession, archiveSession }
+  return { ctx, slots: ctx.get('slots') as SlotRegistry, locale, sessionSources, importSessions, exportSession, archiveSession }
 }
 
 function declare(slots: SlotRegistry): () => void {
@@ -63,10 +65,12 @@ describe('ui-settings-import-sessions browser plugin', () => {
     expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('Session management')
 
     const injected = (entry.inject as unknown as () => ImportSessionsSectionInjected)()
-    await expect(injected.sourceRoot()).resolves.toBe('/source/sessions')
+    await expect(injected.sessionSources()).resolves.toEqual({
+      sources: [{ agent: 'dsh', sourceRoot: '/source/sessions' }],
+    })
     await expect(injected.importSessions({ sourceRoot: '/other/sessions' }))
       .resolves.toMatchObject({ sourceRoot: '/source/sessions' })
-    expect(b.sourceRoot).toHaveBeenCalled()
+    expect(b.sessionSources).toHaveBeenCalled()
     expect(b.importSessions).toHaveBeenCalledWith({ sourceRoot: '/other/sessions' })
     await b.ctx.fiber.dispose()
   })

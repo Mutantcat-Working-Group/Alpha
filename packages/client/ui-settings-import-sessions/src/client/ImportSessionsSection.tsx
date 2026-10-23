@@ -2,9 +2,10 @@
  * Session management Settings page: foreign session import plus local session
  * management (archive and Markdown export).
  *
- * The import section reads the configured source root and imports foreign
- * sessions. The local session section lists the current app's sessions with
- * archive and export actions.
+ * The import section discovers which Agent session stores are installed on the
+ * Host machine, offers them in one dropdown, and imports the picked store. The
+ * local session section lists the current app's sessions with archive and
+ * export actions.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@mutantcat/dsh-client-ui-primitives'
@@ -13,16 +14,18 @@ import type {
   SessionImportHarnessRequest,
   SessionImportHarnessResult,
   SessionImportHarnessValue,
+  SessionImportHarnessAgentSource,
+  SessionImportHarnessSourcesValue,
 } from '@mutantcat/dsh-api-session-controller/types'
 import css from './ImportSessionsSection.module.css'
 
 /** Registration-side face used by the page. */
 export interface ImportSessionsSectionInjected {
   /**
-   * Read the deployment's configured default source sessions root.
-   * @returns the configured foreign sessions root.
+   * List the Agent session stores installed on the Host machine.
+   * @returns one entry per installed Agent, with Alpha's own store first.
    */
-  sourceRoot: () => Promise<string>
+  sessionSources: () => Promise<SessionImportHarnessSourcesValue>
   /**
    * Import every Session under one source root, then refresh the Session list.
    * @param request - optional source-root override.
@@ -49,6 +52,14 @@ export type ImportSessionsSectionProps =
   & InjectFace<ImportSessionsSectionInjected>
 
 type Translate = ImportSessionsSectionProps['t']
+
+/** One source Agent's presentation label key. */
+const AGENT_KEY: Readonly<Record<SessionImportHarnessAgentSource['agent'], 'agent.dsh' | 'agent.codex' | 'agent.claude' | 'agent.zcode'>> = {
+  dsh: 'agent.dsh',
+  codex: 'agent.codex',
+  claude: 'agent.claude',
+  zcode: 'agent.zcode',
+}
 
 /** One import outcome's presentation label key. */
 const STATUS_KEY: Readonly<Record<SessionImportHarnessResult['status'], 'status.imported' | 'status.alreadyPresent' | 'status.refused'>> = {
@@ -100,25 +111,27 @@ function messageOf(reason: unknown): string {
  * @returns the settings page element tree.
  */
 export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactNode {
-  const { t, sourceRoot, importSessions, exportSession, archiveSession, useSessions } = props
-  const [root, setRoot] = useState('')
+  const { t, sessionSources, importSessions, exportSession, archiveSession, useSessions } = props
+  const [sources, setSources] = useState<readonly SessionImportHarnessAgentSource[]>([])
+  const [selected, setSelected] = useState('')
   const [ready, setReady] = useState(false)
   const [running, setRunning] = useState(false)
   const [value, setValue] = useState<SessionImportHarnessValue | undefined>(undefined)
   const [error, setError] = useState<string | undefined>(undefined)
   const [exporting, setExporting] = useState<string | undefined>(undefined)
   const sessions = useSessions(state => state)
-  // The inject face is rebuilt per registration, so the one-shot read of the
-  // configured default must not re-run when its identity changes.
-  const readSourceRoot = useRef(sourceRoot)
-  readSourceRoot.current = sourceRoot
+  // The inject face is rebuilt per registration, so the one-shot discovery must
+  // not re-run when its identity changes.
+  const readSources = useRef(sessionSources)
+  readSources.current = sessionSources
 
   useEffect(() => {
     let cancelled = false
-    readSourceRoot.current().then(
-      (configured) => {
+    readSources.current().then(
+      (discovered) => {
         if (cancelled) return
-        setRoot(configured)
+        setSources(discovered.sources)
+        setSelected(discovered.sources[0]?.sourceRoot ?? '')
         setReady(true)
       },
       (reason: unknown) => {
@@ -131,11 +144,10 @@ export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactN
   }, [])
 
   const runImport = (): void => {
-    const requested = root.trim()
     setRunning(true)
     setError(undefined)
     setValue(undefined)
-    void importSessions(requested === '' ? {} : { sourceRoot: requested }).then(
+    void importSessions({ sourceRoot: selected }).then(
       (result) => {
         setValue(result)
         setRunning(false)
@@ -174,29 +186,36 @@ export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactN
   return (
     <div className={css.section}>
       {/* Import section */}
-      <label className={css.field} htmlFor="import-sessions-source-root">
-        <span className={css.label}>{t('sourceRoot')}</span>
-        <input
-          id="import-sessions-source-root"
-          type="text"
-          value={root}
-          placeholder={t('sourceRootHint')}
-          aria-label={t('sourceRoot')}
-          disabled={running}
-          onChange={(event) => { setRoot(event.currentTarget.value) }}
-        />
-      </label>
-      {!ready ? <p className={css.status}>{t('readingSourceRoot')}</p> : null}
-      <div className={css.action}>
+      <div className={css.picker}>
+        <label className={css.field} htmlFor="import-sessions-source-agent">
+          <span className={css.label}>{t('sourceAgent')}</span>
+          <select
+            id="import-sessions-source-agent"
+            className={`${css.input} ${css.selectInput}`}
+            value={selected}
+            aria-label={t('sourceAgent')}
+            disabled={running || sources.length === 0}
+            onChange={(event) => { setSelected(event.currentTarget.value) }}
+          >
+            {sources.map(source => (
+              <option key={source.agent} value={source.sourceRoot}>
+                {t(AGENT_KEY[source.agent])}
+              </option>
+            ))}
+          </select>
+        </label>
         <Button
           variant="primary"
           size="sm"
-          disabled={running || !ready}
+          disabled={running || !ready || sources.length === 0}
           onClick={runImport}
         >
           {running ? t('importing') : t('import')}
         </Button>
       </div>
+      {!ready
+        ? <p className={css.status}>{t('readingSources')}</p>
+        : sources.length === 0 ? <p className={css.status}>{t('noAgents')}</p> : null}
       {running ? <p className={css.status} role="status">{t('importing')}</p> : null}
       {error === undefined ? null : <p className={css.error}>{t('failed', { message: error })}</p>}
       {value === undefined ? null : (
