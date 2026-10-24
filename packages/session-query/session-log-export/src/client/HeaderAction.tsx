@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { IconDownloadOutline16, IconEllipsisOutline16, Menu } from '@mutantcat/dsh-client-ui-primitives'
+import { IconDownloadOutline16, IconEllipsisOutline16, IconListPenOutline16, Menu } from '@mutantcat/dsh-client-ui-primitives'
 import { SessionLogDownloadDialog, type SessionLogDownloadDialogProps } from './Dialog.tsx'
 import css from './HeaderAction.module.css'
 
@@ -10,10 +10,23 @@ import css from './HeaderAction.module.css'
  * @returns the persistent Header action and Session-scoped dialog.
  */
 export function SessionLogDownloadHeaderAction(props: SessionLogDownloadDialogProps): ReactNode {
-  const { sessionId, useSessionLogDownload, request, t } = props
+  const { sessionId, useSessionLogDownload, useSessions, request, exportMarkdown, t } = props
   const entry = useSessionLogDownload(state => state.bySession[String(sessionId)])
   const busy = entry?.status === 'downloading'
+  const title = useSessions(state => state.byId[sessionId]?.displayTitle) ?? String(sessionId)
   const [open, setOpen] = useState(false)
+  const [exporting, setExporting] = useState(false)
+
+  const runMarkdownExport = (): void => {
+    setExporting(true)
+    void exportMarkdown(sessionId, title).then(
+      () => { setExporting(false) },
+      (reason: unknown) => {
+        setExporting(false)
+        console.warn('session Markdown export rejected:', reason)
+      },
+    )
+  }
 
   return (
     <>
@@ -22,10 +35,14 @@ export function SessionLogDownloadHeaderAction(props: SessionLogDownloadDialogPr
         align="end"
         dense
         onClose={() => { setOpen(false) }}
-        items={[{ id: 'download', label: t('menu.download'), icon: <IconDownloadOutline16 />, disabled: busy }]}
-        onSelect={() => {
+        items={[
+          { id: 'download', label: t('menu.download'), icon: <IconDownloadOutline16 />, disabled: busy },
+          { id: 'markdown', label: t('menu.exportMarkdown'), icon: <IconListPenOutline16 />, disabled: exporting },
+        ]}
+        onSelect={(id) => {
           setOpen(false)
-          void request(sessionId)
+          if (id === 'markdown') runMarkdownExport()
+          else void request(sessionId)
         }}
         anchor={(
           <button

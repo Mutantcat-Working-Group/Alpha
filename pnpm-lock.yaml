@@ -9251,6 +9251,9 @@ importers:
       '@mutantcat/dsh-agent':
         specifier: workspace:^
         version: link:../../core/agent
+      '@mutantcat/dsh-api-session-controller':
+        specifier: workspace:^
+        version: link:../../api/session-controller
       '@mutantcat/dsh-attachment':
         specifier: workspace:^
         version: link:../../attachment/attachment

@@ -19,20 +19,30 @@ function bindSessionExport(controller: SessionLogDownloadController) {
   }
 }
 
-function bench() {
+interface BenchOptions {
+  summary?: { displayTitle?: string }
+  exportMarkdown?: (sessionId: SessionId, title: string) => Promise<void>
+}
+
+function bench(options: BenchOptions = {}) {
   const controller = new SessionLogDownloadController(async () => new Response('zip'), vi.fn())
   const request = vi.fn((sessionId: SessionId) => controller.download(sessionId))
   const dismiss = vi.fn((sessionId: SessionId) => { controller.dismiss(sessionId) })
   const useSessionLogDownload = bindSessionExport(controller)
+  const useSessions = <T,>(select: (state: { byId: Record<string, { displayTitle?: string } | undefined> }) => T): T =>
+    select({ byId: { [SID]: options.summary } })
+  const exportMarkdown = options.exportMarkdown ?? vi.fn(async () => {})
   const props = {
     sessionId: SID,
     useSessionLogDownload,
+    useSessions,
     request,
     dismiss,
+    exportMarkdown,
     t: (key: keyof typeof en): string => en[key],
   } as unknown as SessionLogDownloadDialogProps
   const view = render(<SessionLogDownloadHeaderAction {...props} />)
-  return { controller, request, view }
+  return { controller, request, view, exportMarkdown }
 }
 
 afterEach(cleanup)
@@ -69,8 +79,10 @@ describe('Session export Header action', () => {
     b.view.rerender(<SessionLogDownloadHeaderAction {...({
       sessionId: SID,
       useSessionLogDownload,
+      useSessions: () => undefined,
       request: (sessionId: SessionId) => controller.download(sessionId),
       dismiss: (sessionId: SessionId) => { controller.dismiss(sessionId) },
+      exportMarkdown: vi.fn(async () => {}),
       t: (key: keyof typeof en): string => en[key],
     } as unknown as SessionLogDownloadDialogProps)} />)
 
@@ -84,5 +96,41 @@ describe('Session export Header action', () => {
     await download
     await waitFor(() => { expect(button.getAttribute('aria-busy')).toBe('false') })
     expect((item as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('exports the Session as Markdown and holds the row until the save settles', async () => {
+    let release!: () => void
+    const pending = new Promise<void>((resolve) => { release = resolve })
+    const exportMarkdown = vi.fn((_sessionId: SessionId, _title: string) => pending)
+    const b = bench({ summary: { displayTitle: 'Export header' }, exportMarkdown })
+    fireEvent.click(b.view.getByRole('button', { name: 'More actions' }))
+    fireEvent.click(b.view.getByRole('menuitem', { name: 'Export to Markdown' }))
+    expect(b.exportMarkdown).toHaveBeenCalledWith(SID, 'Export header')
+
+    // Selection closes the menu, so the in-flight state is read from a reopened list.
+    fireEvent.click(b.view.getByRole('button', { name: 'More actions' }))
+    const item = b.view.getByRole('menuitem', { name: 'Export to Markdown' }) as HTMLButtonElement
+    expect(item.disabled).toBe(true)
+    release()
+    await pending
+    await waitFor(() => { expect(item.disabled).toBe(false) })
+  })
+
+  it('names the Markdown file after the Session id when the header has no title', async () => {
+    const b = bench()
+    fireEvent.click(b.view.getByRole('button', { name: 'More actions' }))
+    fireEvent.click(b.view.getByRole('menuitem', { name: 'Export to Markdown' }))
+    expect(b.exportMarkdown).toHaveBeenCalledWith(SID, String(SID))
+  })
+
+  it('restores the Markdown row after a rejected export', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const b = bench({ exportMarkdown: vi.fn(async () => { throw new Error('save failed') }) })
+    fireEvent.click(b.view.getByRole('button', { name: 'More actions' }))
+    fireEvent.click(b.view.getByRole('menuitem', { name: 'Export to Markdown' }))
+    await waitFor(() => { expect(warn).toHaveBeenCalled() })
+    fireEvent.click(b.view.getByRole('button', { name: 'More actions' }))
+    expect((b.view.getByRole('menuitem', { name: 'Export to Markdown' }) as HTMLButtonElement).disabled).toBe(false)
+    warn.mockRestore()
   })
 })

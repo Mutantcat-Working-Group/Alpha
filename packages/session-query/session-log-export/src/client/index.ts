@@ -2,6 +2,8 @@
 
 import type { Context as ClientContext } from '@mutantcat/cordis'
 import type { SessionId } from '@mutantcat/dsh-session/types'
+// Type-only: pulls the `harnessSessionsImport` Context merge the Markdown export calls.
+import type {} from '@mutantcat/dsh-api-session-controller/client'
 import type {} from '@mutantcat/dsh-client-locale/client'
 import type {} from '@mutantcat/dsh-client-ui-commands/client'
 import type {} from '@mutantcat/dsh-client-ui-conversation/client'
@@ -26,7 +28,44 @@ declare module '@mutantcat/dsh-client-ui-slots' {
 
 export type { SessionLogDownloadEntry, SessionLogDownloadState } from './controller.ts'
 
-export const inject = ['slots', 'locale']
+/* jscpd:ignore-start -- per-consumer copy of the desktop save-bridge seam that
+   ui-settings-import-sessions owns; the two plugins bundle independently and
+   change on their own schedules. */
+/** Desktop bridge seam that shows a native save dialog; absent in the browser. */
+interface DesktopSaveBridge {
+  dshDesktopBoot?: {
+    saveMarkdown?: (filename: string, content: string) => Promise<string | null>
+  }
+}
+
+/** Trigger a browser download of one text blob. */
+function downloadText(filename: string, text: string): void {
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Save one Markdown transcript: a native save dialog in the desktop shell, a browser download otherwise.
+ * @param filename - default file name offered by the save dialog.
+ * @param markdown - transcript body to write.
+ */
+async function saveMarkdown(filename: string, markdown: string): Promise<void> {
+  const bridge = (globalThis as DesktopSaveBridge).dshDesktopBoot
+  if (bridge?.saveMarkdown !== undefined) {
+    await bridge.saveMarkdown(filename, markdown)
+    return
+  }
+  downloadText(filename, markdown)
+}
+/* jscpd:ignore-end */
+
+/** Services required by the Header contribution and the Markdown export. */
+export const inject = ['slots', 'locale', 'harnessSessionsImport']
 
 /**
  * Provide the download controller and mount its modal into the Session Header.
@@ -48,6 +87,10 @@ export function apply(ctx: ClientContext): void {
       hooks: { sessionLogDownload: controller.store },
       request: (sessionId: SessionId) => controller.download(sessionId),
       dismiss: (sessionId: SessionId) => { controller.dismiss(sessionId) },
+      exportMarkdown: async (sessionId: SessionId, title: string) => {
+        const markdown = await ctx.harnessSessionsImport.exportSession(String(sessionId))
+        await saveMarkdown(`${title}.md`, markdown)
+      },
     }),
   }, SessionLogDownloadHeaderAction))
 }

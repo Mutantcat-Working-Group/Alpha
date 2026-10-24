@@ -10,6 +10,13 @@ export interface SessionLogDownloadDialogInjected {
   hooks: { sessionLogDownload: ObservableSnapshot<SessionLogDownloadState> }
   request: (sessionId: SessionId) => Promise<void>
   dismiss: (sessionId: SessionId) => void
+  /**
+   * Export one Session as a Markdown transcript and save it.
+   * @param sessionId - Session to export.
+   * @param title - Session title the download filename derives from.
+   * @returns after the transcript is saved or the save is cancelled.
+   */
+  exportMarkdown: (sessionId: SessionId, title: string) => Promise<void>
 }
 
 export type SessionLogDownloadDialogProps =

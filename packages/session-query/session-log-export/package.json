@@ -49,6 +49,7 @@
   "devDependencies": {
     "@mutantcat/cordis": "workspace:^",
     "@mutantcat/cordis-plugin-loader": "workspace:^",
+    "@mutantcat/dsh-api-session-controller": "workspace:^",
     "@mutantcat/dsh-agent": "workspace:^",
     "@mutantcat/dsh-attachment": "workspace:^",
     "@mutantcat/dsh-client-connection": "workspace:^",
@@ -70,6 +71,7 @@
   "dsh": {
     "client": {
       "inject": [
+        "@mutantcat/dsh-api-session-controller",
         "@mutantcat/dsh-client-locale",
         "@mutantcat/dsh-client-ui-commands",
         "@mutantcat/dsh-client-ui-conversation",

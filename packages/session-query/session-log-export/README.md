@@ -1,5 +1,5 @@
 ---
-description: "Web Session-log ZIP export: Host streaming, the authenticated download route, the Session Header action, and the /export command."
+description: "Web session-log export: Host streaming, the authenticated download route, the Session Header action, the /export command, and the Markdown transcript export."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-session-log-export` lets the Web interface download a session's full history: a `Download session log` menu item under the Session Header's more-actions button and an `/export` slash command both hand the session tree — the session, its sub-sessions, and attachments — to the browser as a ZIP download. The package owns the Host archive stream, its authenticated Fetch route, and the browser controls and feedback. The browser chooses the download destination. Setup and usage come first; implementation details follow.
+`dsh-session-log-export` lets the Web interface download a session's full history: a `Download session log` menu item under the Session Header's more-actions button and an `/export` slash command both hand the session tree — the session, its sub-sessions, and attachments — to the browser as a ZIP download. The same menu also carries `Export to Markdown`, which writes the session's user and assistant messages as a Markdown transcript. The package owns the Host archive stream, its authenticated Fetch route, and the browser controls and feedback. The browser chooses the download destination. Setup and usage come first; implementation details follow.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ English | [中文](README.zh.md)
 <a id="use-this-package"></a>
 ## Use this package
 
-Use this package when the Web bundle should let users export a session log. It requires Connection, the command registry, Session query and persistence, and attachments. Mount the plugin, then choose `Download session log` from the Session Header's more-actions menu or type `/export`; the browser downloads `dsh-session-<id>.zip`.
+Use this package when the Web bundle should let users export a session log. It requires Connection, the command registry, Session query and persistence, and attachments. Mount the plugin, then choose `Download session log` from the Session Header's more-actions menu or type `/export`; the browser downloads `dsh-session-<id>.zip`. Choose `Export to Markdown` from the same menu to save the session's messages as `<title>.md`; the desktop shell shows a native save dialog, and a plain browser download happens otherwise.
 
 ### When to choose it
 
@@ -38,7 +38,7 @@ Choose it for a Web deployment that needs user-facing session export with a visi
   name: '@mutantcat/dsh-session-log-export'
 ```
 
-The Web bundle mounts the package with Connection, `dsh-commands`, `dsh-client-ui-commands`, and `dsh-client-ui-conversation`.
+The Web bundle mounts the package with Connection, `dsh-commands`, `dsh-client-ui-commands`, and `dsh-client-ui-conversation`. The Markdown export additionally reads the session controller (`dsh-api-session-controller`), which the Web bundle mounts alongside it.
 
 ### Configuration
 
@@ -75,7 +75,7 @@ This section explains how the package wires the export control and points at the
 
 ### Design split
 
-The package has two halves. The Host half ([`src/index.ts`](src/index.ts)) registers the `/export` command and contributes the exact `GET`/`HEAD /api/session.export` Fetch route to Connection; [`src/archive.ts`](src/archive.ts) builds the bounded ZIP stream. The browser half ([`src/client/index.ts`](src/client/index.ts)) provides the shared download controller and UI, and observes `command/executed` so only the submitting browser starts a download.
+The package has two halves. The Host half ([`src/index.ts`](src/index.ts)) registers the `/export` command and contributes the exact `GET`/`HEAD /api/session.export` Fetch route to Connection; [`src/archive.ts`](src/archive.ts) builds the bounded ZIP stream. The browser half ([`src/client/index.ts`](src/client/index.ts)) provides the shared download controller and UI, and observes `command/executed` so only the submitting browser starts a download. The Markdown menu item reads the transcript through the session controller and saves it through the desktop shell's save dialog when that bridge is present, falling back to a browser download.
 
 ### Download flow
 
