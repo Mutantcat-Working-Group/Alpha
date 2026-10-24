@@ -2,8 +2,8 @@
 // running, through the shipped Web composition and real HTTP/SSE wire. A
 // text-plus-image submission queues as one occurrence whose dock row renders
 // the durable thumbnail, survives a stop as parked work, and delivers as the
-// next turn's user message with its image intact — while the session log holds
-// only durable attachment references, never base64.
+// turn after the waking send with its image intact — while the session log
+// holds only durable attachment references, never base64.
 import { existsSync } from 'node:fs'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -66,7 +66,7 @@ describe('web e2e: queued image submission', () => {
     if (failures.length > 1) throw new AggregateError(failures, 'queued-image teardown failed')
   })
 
-  it.skipIf(MODE === 'record')('queues a text-plus-image submission with a thumbnail and delivers it as the next turn', async () => {
+  it.skipIf(MODE === 'record')('queues a text-plus-image submission with a thumbnail and delivers it after the waking send', async () => {
     overrideDir = await mkdtemp(join(tmpdir(), 'dsh-web-queued-image-'))
     const readyFile = join(overrideDir, '.hang-ready')
     const overridePath = join(overrideDir, 'replay.override.json')
@@ -144,8 +144,8 @@ describe('web e2e: queued image submission', () => {
       await cleanup()
     }
 
-    // Stop parks the accepted queue; the next waking send delivers the image
-    // message first (FIFO), then its own text as the following turn.
+    // Stop parks the accepted queue; the waking send leads the parked image
+    // message, which keeps its place as the turn after the waking text.
     await page.getByRole('button', { name: 'Stop generating' }).click()
     await firstSettled
     await expect.poll(() => page.getByRole('button', { name: 'Stop generating' }).count()).toBe(0)
@@ -155,7 +155,7 @@ describe('web e2e: queued image submission', () => {
     await input.fill('Continue with the queued comparison')
     await input.press('Enter')
     await settled
-    // The queued image message and the waking text run as two further turns;
+    // The waking text and the queued image message run as two further turns;
     // wait for both to end so the final snapshot never captures a mid-reply
     // frame (the aborted first turn precedes them).
     await expect.poll(

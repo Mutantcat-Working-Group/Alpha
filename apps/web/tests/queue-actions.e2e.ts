@@ -1,7 +1,8 @@
 // Keyless browser coverage for pending queue actions through the shipped Web
 // composition and real HTTP/SSE wire. Replay overrides park consecutive turns
 // so the page can edit and remove exact occurrences, then stop the active turn
-// while proving the preserved Queue advances in FIFO order.
+// while proving the preserved Queue keeps its relative order behind the waking
+// send that leads it.
 import { existsSync } from 'node:fs'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -290,9 +291,10 @@ describe('web e2e: queue row actions', () => {
     await settled
     await expect.poll(() => turnEndReasons(sessionEvents), { timeout: 15_000 })
       .toEqual(['aborted', 'completed', 'completed', 'completed'])
+    // The waking send leads the parked items, which keep their relative order.
     expect(sessionEvents.flatMap(event => event.type === 'user/message' && event.data.source.kind === 'user'
       ? event.data.content.flatMap(block => block.type === 'text' ? [block.text] : [])
-      : [])).toEqual([ACTIVE_PROMPT, EDITED, TAIL, WAKE])
+      : [])).toEqual([ACTIVE_PROMPT, WAKE, EDITED, TAIL])
     await expect.poll(() => page.locator('[data-queue-dock]').count()).toBe(0)
     expect(tripwire.pageErrors).toEqual([])
     expect(tripwire.warnings).toEqual([])

@@ -142,7 +142,9 @@ interface Agent {
 
   /**
    * Queue an ordinary follow-up turn and wake the driver. The item becomes the
-   * sole ordinary message of its own turn.
+   * sole ordinary message of its own turn. A follow-up sent while the driver is
+   * idle and next-turn work survived a cancelled run leads that work: the new
+   * prompt runs first and the survivors keep their relative order.
    * @param message - identified prompt content and the source that supplied it.
    */
   followup(message: UserMessage): void

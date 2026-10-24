@@ -17,10 +17,16 @@
 - text: Reply with a one-sentence description of event sourcing, then stop. {{clock}}
 - button "Copy":
   - img
-- button "Context injection @mutantcat/dsh-system-prompt":
+- button "Retract":
+  - img
+- button "Context injection runtime-context":
   - img
   - img
-  - text: Context injection @mutantcat/dsh-system-prompt
+  - text: Context injection runtime-context
+- button "Context injection skill-catalog":
+  - img
+  - img
+  - text: Context injection skill-catalog
 - paragraph: partial
 - status: Thinking…
 - list:
@@ -31,6 +37,8 @@
       - img
     - button "Remove queued message":
       - img
+    - button "Raise priority" [disabled]:
+      - img
     - button "Steer queued message":
       - img
 - textbox "Cmd/Ctrl+Enter steers all queued messages"
@@ -40,4 +48,5 @@
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
+- button "Pause"
 - button "Stop generating"

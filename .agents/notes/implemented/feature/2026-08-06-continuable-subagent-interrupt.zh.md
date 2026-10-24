@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-`ctx.subagents.interrupt(targetSessionId, authority)` 只停止在线目标的当前轮次。管理器原语同步完成鉴权，调用现有的 `Agent.cancel(cause, { keepInbox: true })`，然后返回 `void`——fire-and-return：保证取消信号已发出，但不等待目标完全停稳。其余一切不变：不 dispose Activation、不释放 handle、不级联后代、不清空 inbox，也不改动 `AgentLoop` 或 `CancelOptions`。由于 `keepInbox` 让尚未领取的待处理队列停在 idle，中断绝不会自动启动下一个排队的 follow-up；已被领取进入中断轮次的工作属于该轮次，不会重新入队。被中断的 driver 进入 idle 后，一次显式唤醒发送会按保留的 FIFO 顺序恢复。
+`ctx.subagents.interrupt(targetSessionId, authority)` 只停止在线目标的当前轮次。管理器原语同步完成鉴权，调用现有的 `Agent.cancel(cause, { keepInbox: true })`，然后返回 `void`——fire-and-return：保证取消信号已发出，但不等待目标完全停稳。其余一切不变：不 dispose Activation、不释放 handle、不级联后代、不清空 inbox，也不改动 `AgentLoop` 或 `CancelOptions`。由于 `keepInbox` 让尚未领取的待处理队列停在 idle，中断绝不会自动启动下一个排队的 follow-up；已被领取进入中断轮次的工作属于该轮次，不会重新入队。被中断的 driver 进入 idle 后，一次显式唤醒发送领先被暂停的队列，而被暂停的队列保持其相对顺序（[轮次被终止后的唤醒发送](../bug-fix/2026-10-24-waking-send-leads-parked-queue.zh.md)）。
 
 授权是一个封闭的双变体 union，刻意比投递权限更宽，因为停止一个轮次是幂等的且不投递任何内容：
 
@@ -31,7 +31,7 @@ Host RPC `subagent.interrupt` 接收 continuable 的 `SubagentAddress` 并返回
 
 **顺手把 `send_message`／`followup` 权限扩展到 ancestor。** 投递向对话注入内容且不幂等；其确切直接 parent 权限保持不变。只有中断获得更宽的 ancestor 与基于地址的用户授权。
 
-**中断后自动恢复被暂停的队列。** 在中止 A 后立即启动排队的 follow-up B 会让中断看起来被忽略，并夺走人类重新引导 child 的窗口。暂停到显式唤醒发送为止，让停止可观察且 FIFO 顺序完整。
+**中断后自动恢复被暂停的队列。** 在中止 A 后立即启动排队的 follow-up B 会让中断看起来被忽略，并夺走人类重新引导 child 的窗口。暂停到显式唤醒发送为止，让停止可观察且被暂停的队列保持原有顺序。
 
 ## 后果
 
@@ -45,4 +45,4 @@ Host RPC `subagent.interrupt` 接收 continuable 的 `SubagentAddress` 并返回
 
 ## 测试
 
-`packages/subagent/subagent/tests/continuation.spec.ts` 中的核心覆盖证明了持久化 `turn/end` 中止、队列先暂停后按 FIFO 恢复、后代不受影响、两种授权及其取消 cause、self/sibling/stale/非 ancestor 拒绝、absent/一次性/disposal 竞态 no-op，以及 `keepInbox` 循环行为不变。`packages/subagent/subagent/tests/control.spec.ts` 中的 Remote 覆盖证明 Remote 只调用核心原语（不读 agents/目录/历史）、映射 `subagent-unauthorized` 与 `internal`，并执行 continuable 模式围栏；`packages/api/session-controller/tests/transport.host.spec.ts` 固定传输校验。`packages/api/session-controller/tests/session.client.spec.ts` 中的客户端覆盖固定按地址路由的 `Session.cancel()`；InputBar 套件覆盖独立的 Send 与 Stop 操作、parent 离线时锁定输入区和 Send 的状态，以及只读 composer selector 的运行例外。keyless 组装 Web 场景（`apps/web/tests/subagent-interrupt.e2e.ts`、`subagent-interrupt-ui.e2e.ts`）通过多条 replay hang 条目保持多个真实 child 轮次打开，端到端证明 parent 离线时从 UI 到 RPC 的中止路径、Send 入队、follow-up 暂停以及 FIFO 恢复。`packages/subagent/tool-subagent-control/tests` 中的工具覆盖证明直接与更深 ancestor 以 `parent` cause 中断并暂停队列、self/sibling/陌生调用方被拒绝且不触碰目标、目标不存在时 no-op 且不冷恢复，以及 descendants 列表的 pre-order 位置；keyless ACP 快照通过组装应用，针对一个已结算的 child 执行 `list_agents({ scope: 'descendants' })` 与 `interrupt_agent`，同时已录制的请求 header 仍固定这两个 schema。
+`packages/subagent/subagent/tests/continuation.spec.ts` 中的核心覆盖证明了持久化 `turn/end` 中止、队列先暂停后由唤醒发送领先、后代不受影响、两种授权及其取消 cause、self/sibling/stale/非 ancestor 拒绝、absent/一次性/disposal 竞态 no-op，以及 `keepInbox` 循环行为不变。`packages/subagent/subagent/tests/control.spec.ts` 中的 Remote 覆盖证明 Remote 只调用核心原语（不读 agents/目录/历史）、映射 `subagent-unauthorized` 与 `internal`，并执行 continuable 模式围栏；`packages/api/session-controller/tests/transport.host.spec.ts` 固定传输校验。`packages/api/session-controller/tests/session.client.spec.ts` 中的客户端覆盖固定按地址路由的 `Session.cancel()`；InputBar 套件覆盖独立的 Send 与 Stop 操作、parent 离线时锁定输入区和 Send 的状态，以及只读 composer selector 的运行例外。keyless 组装 Web 场景（`apps/web/tests/subagent-interrupt.e2e.ts`、`subagent-interrupt-ui.e2e.ts`）通过多条 replay hang 条目保持多个真实 child 轮次打开，端到端证明 parent 离线时从 UI 到 RPC 的中止路径、Send 入队、follow-up 暂停以及唤醒发送领先它。`packages/subagent/tool-subagent-control/tests` 中的工具覆盖证明直接与更深 ancestor 以 `parent` cause 中断并暂停队列、self/sibling/陌生调用方被拒绝且不触碰目标、目标不存在时 no-op 且不冷恢复，以及 descendants 列表的 pre-order 位置；keyless ACP 快照通过组装应用，针对一个已结算的 child 执行 `list_agents({ scope: 'descendants' })` 与 `interrupt_agent`，同时已录制的请求 header 仍固定这两个 schema。

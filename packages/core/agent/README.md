@@ -46,6 +46,8 @@ await handle.dispose()   // stops the loop, unregisters, removes the session, un
 
 The handle's methods route identified user-role messages into the agent's inbox. `followup()` queues an ordinary next-turn prompt and wakes the driver; `steer()` submits next-step input and wakes it; `inject()` adds model-facing context without waking the driver, so it lands in the next admitted step. `cancel(cause)` aborts the active activity and, unless `keepInbox` is set, clears pending work; `whenIdle()` resolves after the whole agent reaches quiescence.
 
+A follow-up sent while the driver is idle and next-turn work survived a cancelled run leads that work: the new prompt runs first and the survivors keep their relative order, so the message a user sends after pressing stop is not stuck behind the queue it interrupted. Behind a live or parked turn, input still appends, and `inbox.raise()` remains the explicit way to reorder pending work.
+
 ```text
 handle.agent.followup({
   content: [{ type: 'text', text: 'Summarize this workspace.' }],

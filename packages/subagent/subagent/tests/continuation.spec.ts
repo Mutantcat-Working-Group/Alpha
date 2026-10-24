@@ -3638,12 +3638,12 @@ describe('SubagentRuntime.interrupt', () => {
     expect(child.status).toBe('idle')
     expect(ctx.agents.get(started.childId)).toBe(child)
 
-    // A host can wake a resident child through Agent directly; the parked items
-    // still run before the new message in the existing FIFO order.
+    // A host can wake a resident child through Agent directly; the new message
+    // leads the parked items, which keep their relative order.
     child.followup(createUserMessage({ content: message('waking D'), source: { kind: 'user' } }))
     await waitNoActivation(ctx, started.childId)
     const loaded = await loadStoredSession(ctx.sessionPersistence, started.childId)
-    expect(userTexts(loaded.events)).toEqual(['child task', 'parked B', 'parked C', 'waking D'])
+    expect(userTexts(loaded.events)).toEqual(['child task', 'waking D', 'parked B', 'parked C'])
     const turnEnds = loaded.events
       .filter(event => event.type === 'turn/end')
       .map(event => (event).data.reason.kind)

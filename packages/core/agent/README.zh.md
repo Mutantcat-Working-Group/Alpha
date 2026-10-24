@@ -46,6 +46,8 @@ await handle.dispose()   // stops the loop, unregisters, removes the session, un
 
 句柄的方法把带标识的 user 角色消息路由进 agent 的收件箱。`followup()` 排队一条普通的下一个轮次提示词并唤醒驱动器；`steer()` 提交下一步输入并唤醒它；`inject()` 添加面向模型的上下文但不唤醒驱动器，因此它落在下一个被接纳的步骤中。`cancel(cause)` 中止当前活动，并在未设置 `keepInbox` 时清除待处理工作；`whenIdle()` 会在整个 agent 达到完全停稳后完成。
 
+当驱动器处于 idle、且有下一个轮次的工作在一次被终止的运行后残留时，随后发送的 `followup()` 会排到这些残留项之前：新提示词先执行，残留项保持彼此相对顺序，这样用户按下停止后新发的消息不会卡在它自己打断的队列后面。在活动或被暂停的轮次之后，输入仍然追加到队尾；`inbox.raise()` 仍是显式调整待处理工作顺序的手段。
+
 ```text
 handle.agent.followup({
   content: [{ type: 'text', text: 'Summarize this workspace.' }],

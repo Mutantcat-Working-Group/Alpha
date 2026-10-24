@@ -2,8 +2,8 @@
 // continuable child. The child holds its model turn open through a replay
 // hang entry; the browser proves Send and Stop coexist, the parent-offline
 // disabled-Send-with-Stop composer, the subagents/interruptByParent
-// (never session.cancel) transport, the parked follow-up, and the FIFO resume
-// on a waking send.
+// (never session.cancel) transport, the parked follow-up, and a waking send
+// that leads the parked queue.
 //
 // Replay-binding note: only the PRIMARY script can hang, and scripts bind by
 // first-call order, so the child issues the composition's first model call
@@ -99,13 +99,14 @@ describe.skipIf(MODE === 'record')('web e2e: composer interrupt for a running co
     const readyFile = join(sidecarRoot, 'hang-ready')
     rearmedReadyFile = join(sidecarRoot, 'hang-rearmed-ready')
     // The child claims this whole-script replacement: the offline and online
-    // interrupt paths each hold one turn, then the parked and waking turns settle.
+    // interrupt paths each hold one turn, then the waking and parked turns
+    // settle.
     await writeFile(join(sidecarRoot, 'replay.override.json'), JSON.stringify([
       { kind: 'hang', readyFile },
       { kind: 'hang', readyFile: rearmedReadyFile },
+      textCompletion(WAKING_ANSWER),
       textCompletion(REARMED_ANSWER),
       textCompletion(PARKED_ANSWER),
-      textCompletion(WAKING_ANSWER),
     ]))
     await writeFile(
       join(sidecarRoot, 'session.jsonl'),
@@ -262,7 +263,7 @@ describe.skipIf(MODE === 'record')('web e2e: composer interrupt for a running co
     }
   }, 60_000)
 
-  it('interrupts through subagents/interruptByParent, parks the follow-up, and resumes it FIFO', async () => {
+  it('interrupts through subagents/interruptByParent, parks the follow-up, and lets a waking send lead it', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-subagent-interrupt-flow'))
     // Reselect the child with the truthful catalog: parent available again.
     await page.getByRole('navigation', { name: 'Session hierarchy' })
@@ -323,7 +324,8 @@ describe.skipIf(MODE === 'record')('web e2e: composer interrupt for a running co
     expect(child!.session.snapshotEvents().filter(event => event.type === 'turn/start')).toHaveLength(2)
     await page.getByRole('button', { name: 'Send message' }).waitFor({ timeout: 15_000 })
 
-    // Only the waking send resumes the parked queue, FIFO, to settlement.
+    // Only the waking send resumes the parked queue, and it leads the parked
+    // work, which keeps the order it was queued in.
     await input.fill(WAKING)
     await input.press('Enter')
     await expect.poll(() => page.getByText(REARMED_ANSWER, { exact: true }).count(), { timeout: 30_000 }).toBe(1)
@@ -340,7 +342,7 @@ describe.skipIf(MODE === 'record')('web e2e: composer interrupt for a running co
       : [])
     expect(userTexts[0]).toBe(INITIAL)
     expect(userTexts[1]).toMatch(/^Your parent agent id is .+send_message\(\{ agent_id: /)
-    expect(userTexts.slice(2)).toEqual([REARM, REARM_WAKE, EDITED_FOLLOWUP, WAKING])
+    expect(userTexts.slice(2)).toEqual([REARM_WAKE, WAKING, REARM, EDITED_FOLLOWUP])
     const turnEndKinds = events
       .filter(event => event.type === 'turn/end')
       .map(event => event.data.reason.kind)

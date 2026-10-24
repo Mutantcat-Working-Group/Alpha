@@ -10,7 +10,7 @@ import { ToolCallId, createUserMessage, expandAssistantStream } from '@mutantcat
 import { describe, expect, it } from 'vitest'
 import { Context } from '@mutantcat/cordis'
 import LlmRuntime from '@mutantcat/dsh-llm'
-import SessionStore, { Session, SessionId, SessionLogOffset, TurnEndReason } from '@mutantcat/dsh-session'
+import SessionStore, { Session, SessionId, SessionLogOffset, TurnEndReason, UserMessage } from '@mutantcat/dsh-session'
 import SystemPrompt from '@mutantcat/dsh-system-prompt'
 import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH } from '@mutantcat/dsh-tools'
 import AgentRegistry, { type Agent } from '@mutantcat/dsh-agent'
@@ -54,6 +54,11 @@ function userTexts(agent: Agent): string[] {
     .filter(e => e.type === 'user/message')
     .flatMap(e => e.type === 'user/message' ? e.data.content : [])
     .flatMap(b => b.type === 'text' ? [b.text] : [])
+}
+
+/** The text of one still-pending message (to assert queue order before it runs). */
+function textOf(message: UserMessage): string[] {
+  return message.content.flatMap(block => block.type === 'text' ? [block.text] : [])
 }
 
 describe('Agent.cancel()', () => {
@@ -102,7 +107,7 @@ describe('Agent.cancel()', () => {
     expect(adapter.requests).toHaveLength(1)
   })
 
-  it('cancel({ keepInbox: true }) parks queued work after an active turn aborts', async () => {
+  it('cancel({ keepInbox: true }) lets a follow-up sent after the abort lead the parked work', async () => {
     const adapter = new MockAdapter([
       'hang',
       textResponse('preserved reply'),
@@ -124,8 +129,40 @@ describe('Agent.cancel()', () => {
     const idle = waitForIdle(ctx, agent)
     send(agent, 'wake it')
     await idle
-    expect(userTexts(agent)).toEqual(['active', 'preserved', 'wake it'])
+    // The wake is the prompt the user is waiting on after pressing stop, so it
+    // runs ahead of the queue the aborted turn left behind.
+    expect(userTexts(agent)).toEqual(['active', 'wake it', 'preserved'])
     expect(adapter.requests).toHaveLength(3)
+  })
+
+  it('a follow-up after the abort leads every parked message without reordering them', async () => {
+    const adapter = new MockAdapter([
+      'hang',
+      textResponse('wake reply'),
+      textResponse('first reply'),
+      textResponse('second reply'),
+    ])
+    const ctx = await harness(adapter)
+    const agent = await ctx.agentLoop.create(SessionId('lead-all-survivors'), { provider: 'mock', model: 'mock' })
+
+    send(agent, 'active')
+    await new Promise(resolve => setTimeout(resolve, 30))
+    send(agent, 'first')
+    send(agent, 'second')
+    agent.cancel({ kind: 'user' }, { keepInbox: true })
+    await agent.whenIdle()
+
+    expect(userTexts(agent)).toEqual(['active'])
+    expect(agent.inbox.nextTurn.flatMap(textOf)).toEqual(['first', 'second'])
+
+    const idle = waitForIdle(ctx, agent)
+    send(agent, 'wake it')
+    await idle
+    // The wake moves to the front once: the survivors keep the order they were
+    // queued in rather than each shifting a single slot.
+    expect(userTexts(agent)).toEqual(['active', 'wake it', 'first', 'second'])
+    expect(adapter.requests).toHaveLength(4)
+    expect(agent.inbox.nextTurn).toHaveLength(0)
   })
 
   it('cancel({ keepInbox: true }) latches a waking send landing in the abort-to-idle window', async () => {
