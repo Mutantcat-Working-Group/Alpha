@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-component-picker"
+description = "Allow the Web client to open and close the temporary component-picker webview."
+commands.allow = ["start_component_picker", "cancel_component_picker"]

@@ -42,7 +42,11 @@ The package has no configuration. A custom Web composition mounts its Host compa
 
 Client plugins can open a tab through `ctx.sidebarRight.openTab('browser', { params: { url } })`. The optional URL passes the same validation as address-bar input before navigation.
 
-The toolbar provides Back, Forward, Reload, Go, Open in system browser, and a rightmost per-tab sandbox toggle. Disabling the sandbox is temporary and displays a warning. The external action accepts a known HTTP(S) target. The tab title is the Web host.
+The toolbar provides Back, Forward, Reload, Go, Open in system browser, a per-tab sandbox toggle, and a component-picking button. Disabling the sandbox is temporary and displays a warning. The external action accepts a known HTTP(S) target. The tab title is the Web host.
+
+### Component picking (Desktop)
+
+Desktop enables the component-picking button for a loaded page; Web leaves it disabled, because an iframe cannot read a cross-origin document. Starting the mode places a native child view over the page. Moving the pointer outlines the element under it; clicking one leaves the mode and attaches a plain-text document to the current composer. Escape or a right-click leaves the mode without attaching anything. The document records the page URL and title, tag, XPath, CSS selector, DOM depth, sibling index, parent chain, bounding rectangle, attributes, selected computed styles, visible text, and outer HTML.
 
 -----
 
@@ -67,6 +71,10 @@ Web records toolbar submissions and typed tab opens. A navigation state machine 
 Each tab receives one `BrowserController` class. Its public commands are `loadUrl`, `goBack`, `goForward`, and `reload`; address validation and history mutation stay behind that object. Its `BrowserNavigation` class owns the serializable URL state machine. The `BrowserFrame` interface owns transient sandbox and document state plus carrier operations, and `IframeImpl` implements that interface for the current iframe carrier. Slot injection exposes keyed frame state through `useBrowserFrame` and supplies plain callbacks, so the React body receives neither the controller nor an observable source; it keeps only the editable draft and iframe DOM.
 
 The controller interface does not depend on iframe APIs. A future `NativeWebViewImpl` can implement `BrowserFrame` while owning `<webview>` attachment and target identity. That deferred carrier is documented in the same Sidebar Browser decision, but is not registered or tested today.
+
+### Component picker carrier
+
+Component picking reads the page outside the iframe. The toolbar reports the iframe rectangle to the native shell, which opens one temporary child webview at that position, injects the picker script, and closes the child once the result arrives. A picked element reports through a private navigation origin that the shell intercepts before the URL commits, and the encoded document reaches the Web client as an event. The Web client then asks `IConversation.attachTextDocument` to admit the document as a composer attachment. `BrowserFrame` carries the picker mode beside the sandbox and document state.
 
 </details>
 
@@ -102,7 +110,8 @@ The isolation policy deliberately gives up some browser compatibility:
 - Browsers conceal many iframe failures for security: DNS, TLS, mixed-content, CSP, and `X-Frame-Options` failures may emit `load` or no actionable event instead of `error`. The load-failure notice is best-effort.
 - Browser history survives body remounts and ordinary page reloads, but closing the tab or unloading `ui-sidebar-right` aborts its occurrence and removes the stored history bucket.
 - Local files are rejected and remain owned by Document Preview.
-- The proposed native `<webview>` carrier, per-tab cookie partitions, native history, and target-specific CDP connection are not implemented.
+- Component picking is Desktop-only, and it describes the picked page's top document: content inside a nested frame or shadow root is reported through the element that hosts it. Web shows the button disabled.
+- The proposed native `<webview>` tab carrier, per-tab cookie partitions, native history, and target-specific CDP connection are not implemented; component picking uses its own temporary child webview, which closes with the mode.
 
 <a id="dev-note"></a>
 ### Dev Note

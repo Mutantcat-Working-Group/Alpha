@@ -16,6 +16,8 @@ export interface BrowserFrameState {
   readonly document: BrowserDocument | undefined
   readonly sandboxed: boolean
   readonly loadFailed: boolean
+  /** Component-picker mode for this tab occurrence. */
+  readonly picker: 'inactive' | 'active' | 'failed'
 }
 
 /** Browser rendering operations shared by Web and future native implementations. */
@@ -30,6 +32,12 @@ export interface BrowserFrame extends HostObservable<BrowserFrameState> {
   reportLoaded(revision: number): void
   /** @param revision - rendered document revision whose carrier reported an error. */
   reportLoadFailed(revision: number): void
+  /** Enter component-picker mode. */
+  startPicker(): void
+  /** Leave component-picker mode. */
+  stopPicker(): void
+  /** Publish a picker startup or attachment failure. */
+  failPicker(): void
 }
 
 /** Owns transient iframe and sandbox-toggle state independently from URL navigation. */
@@ -38,6 +46,7 @@ export class IframeImpl implements BrowserFrame {
     document: undefined,
     sandboxed: true,
     loadFailed: false,
+    picker: 'inactive',
   })
 
   /**
@@ -94,5 +103,24 @@ export class IframeImpl implements BrowserFrame {
     const current = this.store.getSnapshot()
     if (current.document?.revision !== revision || current.loadFailed) return
     this.store.set({ ...current, loadFailed: true })
+  }
+
+  /** Enter component-picker mode. */
+  startPicker(): void {
+    const current = this.store.getSnapshot()
+    if (current.picker === 'active') return
+    this.store.set({ ...current, picker: 'active' })
+  }
+
+  /** Leave component-picker mode. */
+  stopPicker(): void {
+    const current = this.store.getSnapshot()
+    if (current.picker === 'inactive') return
+    this.store.set({ ...current, picker: 'inactive' })
+  }
+
+  /** Publish a picker startup or attachment failure. */
+  failPicker(): void {
+    this.store.set({ ...this.store.getSnapshot(), picker: 'failed' })
   }
 }

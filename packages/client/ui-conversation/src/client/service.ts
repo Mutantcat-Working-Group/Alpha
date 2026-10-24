@@ -78,6 +78,14 @@ export interface IConversation {
    * @returns completion of the page pull.
    */
   loadOlder(): Promise<void>
+  /**
+   * Attach one plain-text document to the target session's current composer.
+   * @param sessionId - target Agent-scope identity.
+   * @param filename - attachment display name.
+   * @param text - attachment contents.
+   * @returns whether the composer accepted the attachment.
+   */
+  attachTextDocument(sessionId: SessionId, filename: string, text: string): boolean
 }
 
 /** Create one browser-only image draft descriptor; only its id enters input state. */
@@ -538,6 +546,28 @@ export class ConversationController extends Service implements IConversation {
   /** Pull one older history page for the scoped Session. */
   async loadOlder(): Promise<void> {
     await this.scopedSession('loadOlder').loadOlder()
+  }
+
+  /**
+   * Attach one plain-text document to the target session's current composer.
+   * @param sessionId - target Agent-scope identity.
+   * @param filename - attachment display name.
+   * @param text - attachment contents.
+   * @returns whether the composer accepted the attachment.
+   */
+  attachTextDocument(sessionId: SessionId, filename: string, text: string): boolean {
+    const binding = this.requireSessions().binding(sessionId)
+    if (binding === undefined) return false
+    const drafts = this.createDrafts(sessionId, [
+      new File([text], filename, { type: 'text/plain;charset=utf-8' }),
+    ])
+    const [draft] = drafts
+    if (draft === undefined) return false
+    if (!this.input.shell(sessionId).addAttachments([draft.id])) {
+      this.releaseDraftAttachments(drafts)
+      return false
+    }
+    return true
   }
 
   /** Resolve the caller scope's session face or throw on root contexts. */

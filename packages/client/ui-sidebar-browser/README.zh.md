@@ -42,7 +42,11 @@ kind: "package-reference"
 
 Client 插件可以调用 `ctx.sidebarRight.openTab('browser', { params: { url } })` 打开 tab。可选 URL 会在导航前接受与地址栏输入相同的校验。
 
-工具栏提供后退、前进、刷新、前往、在系统浏览器中打开，以及最右侧的逐 tab sandbox 开关。关闭 sandbox 是临时选择，并会显示警告。外部打开接受已知的 HTTP(S) 目标。tab 标题显示 Web 主机名。
+工具栏提供后退、前进、刷新、前往、在系统浏览器中打开、逐 tab 的 sandbox 开关，以及选取组件按钮。关闭 sandbox 是临时选择，并会显示警告。外部打开接受已知的 HTTP(S) 目标。tab 标题显示 Web 主机名。
+
+### 选取组件（Desktop）
+
+Desktop 会为已加载的页面启用选取组件按钮；Web 保持禁用，因为 iframe 无法读取跨域文档。进入该模式会在页面之上放置一个原生子视图。移动指针会框出指针下的元素；点击某个元素会退出该模式，并把一份纯文本文档附加到当前 composer。按 Escape 或点击鼠标右键会退出该模式且不附加任何内容。该文档记录页面 URL 与标题、标签、XPath、CSS selector、DOM 深度、同级索引、父链、外接矩形、属性、部分计算样式、可见文本与外层 HTML。
 
 -----
 
@@ -67,6 +71,10 @@ Web 记录 toolbar 提交和 typed tab 打开。导航状态机把每个受控 r
 每个 tab 获得一个 `BrowserController` class。它的公开命令只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；地址校验与 history 变更均由该对象封装。它的 `BrowserNavigation` class 拥有可序列化的 URL 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只保留可编辑草稿与 iframe DOM。
 
 Controller 接口不依赖 iframe API。未来的 `NativeWebViewImpl` 可以实现 `BrowserFrame`，并持有 `<webview>` attachment 与 target identity。该延期载体记录在同一份 Sidebar Browser 决策中，当前不注册也不测试。
+
+### 选取组件载体
+
+选取组件在 iframe 之外读取页面。toolbar 把 iframe 矩形交给原生 shell，shell 在该位置打开一个临时 child webview、注入选取脚本，并在结果到达后关闭该 child。被选中的元素通过一个私有导航 origin 回报，shell 在 URL 提交前拦截它，并以 event 形式把编码后的文档交给 Web 客户端。Web 客户端随后调用 `IConversation.attachTextDocument` 把该文档作为 composer 附件接管。`BrowserFrame` 与 sandbox、document 状态并列持有选取模式。
 
 </details>
 
@@ -102,7 +110,8 @@ Controller 接口不依赖 iframe API。未来的 `NativeWebViewImpl` 可以实�
 - 出于安全原因，浏览器会隐藏很多 iframe 失败：DNS、TLS、mixed-content、CSP 与 `X-Frame-Options` 失败可能触发 `load`，也可能不提供可操作 event，而不是触发 `error`。加载失败 notice 只能作为 best-effort 提示。
 - Browser history 会跨 body 重挂载与普通页面刷新保留，但关闭 tab 或卸载 `ui-sidebar-right` 会中止其 occurrence 并删除已存储的 history bucket。
 - 本地文件会被拒绝，并继续由 Document Preview 负责。
-- 拟议的原生 `<webview>` 载体、per-tab Cookie partition、原生 history 和 target-specific CDP 连接尚未实现。
+- 选取组件仅在 Desktop 可用，并且描述被选页面的顶层 document：嵌套 frame 或 shadow root 中的内容会通过承载它的元素回报。Web 上该按钮显示为禁用。
+- 拟议的原生 `<webview>` tab 载体、per-tab Cookie partition、原生 history 和 target-specific CDP 连接尚未实现；选取组件使用自己临时的 child webview，并随该模式一起关闭。
 
 <a id="dev-note"></a>
 ### 开发备注

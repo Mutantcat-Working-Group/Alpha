@@ -39,14 +39,16 @@ use std::time::{Duration, Instant, SystemTime};
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
 
-use serde::Deserialize;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::Engine;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tauri::path::BaseDirectory;
 use tauri::webview::PageLoadEvent;
 use tauri::webview::PageLoadPayload;
 use tauri::{
-    AppHandle, Emitter, Event, Listener, Manager, RunEvent, WebviewUrl, WebviewWindow,
-    WebviewWindowBuilder,
+    AppHandle, Emitter, Event, Listener, LogicalPosition, LogicalSize, Manager, RunEvent,
+    Webview, WebviewBuilder, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use url::Url;
@@ -76,6 +78,190 @@ const BOOT_FAILED_EVENT: &str = "alpha-boot-failed";
 const UNAUTHORIZED_EVENT: &str = "alpha-unauthorized";
 /// Window event the loader page observes for startup failures.
 const FATAL_EVENT: &str = "alpha-fatal";
+/// Event through which a component-picker result reaches the Web client.
+const COMPONENT_PICKER_EVENT: &str = "alpha-component-picker";
+/// Label prefix of the temporary component-picker child webview.
+const COMPONENT_PICKER_LABEL: &str = "component-picker";
+/// Navigations intercepted from the component-picker child webview.
+const COMPONENT_PICKER_ORIGIN: &str = "https://component-picker.alpha.invalid";
+/// Result fields carried in a component-picker navigation.
+const COMPONENT_PICKER_INPUT: &str = "input";
+/// Maximum encoded result accepted from the child webview.
+const COMPONENT_PICKER_RESULT_LIMIT: usize = 512 * 1024;
+
+/// Picker script installed only in the temporary child webview.
+const COMPONENT_PICKER_SCRIPT: &str = r#"
+(() => {
+  if (window.self !== window.top) return;
+  if (globalThis.__ALPHA_COMPONENT_PICKER__) return;
+  globalThis.__ALPHA_COMPONENT_PICKER__ = true;
+
+  const outline = document.createElement("div");
+  outline.setAttribute("data-alpha-component-picker-outline", "");
+  Object.assign(outline.style, {
+    position: "fixed",
+    zIndex: "2147483647",
+    pointerEvents: "none",
+    display: "none",
+    border: "2px solid #3b82f6",
+    background: "rgba(59, 130, 246, 0.12)",
+    boxSizing: "border-box",
+  });
+  let previousCursor = "";
+  const mount = () => {
+    if (document.documentElement === null) return;
+    previousCursor = document.documentElement.style.cursor;
+    document.documentElement.style.cursor = "crosshair";
+    document.documentElement.append(outline);
+  };
+  if (document.documentElement === null) addEventListener("DOMContentLoaded", mount, { once: true });
+  else mount();
+
+  const text = (value, limit) => String(value ?? "").slice(0, limit);
+  const xpath = (node) => {
+    const parts = [];
+    for (let current = node; current instanceof Element; current = current.parentElement) {
+      const index = current.parentElement
+        ? [...current.parentElement.children].filter(child => child.tagName === current.tagName).indexOf(current) + 1
+        : 1;
+      parts.unshift(`${current.tagName.toLowerCase()}[${String(index)}]`);
+    }
+    return `/${parts.join("/")}`;
+  };
+  const cssPath = (node) => {
+    const parts = [];
+    for (let current = node; current instanceof Element; current = current.parentElement) {
+      const id = current.id ? `#${CSS.escape(current.id)}` : "";
+      const classes = [...current.classList].slice(0, 2).map(value => `.${CSS.escape(value)}`).join("");
+      const sameTag = current.parentElement
+        ? [...current.parentElement.children].filter(child => child.tagName === current.tagName)
+        : [];
+      const position = sameTag.length > 1
+        ? `:nth-of-type(${String(sameTag.indexOf(current) + 1)})`
+        : "";
+      parts.unshift(`${current.tagName.toLowerCase()}${id}${classes}${position}`);
+    }
+    return parts.join(" > ");
+  };
+  const parentChain = (node) => {
+    const chain = [];
+    for (let current = node.parentElement, depth = 1; current !== null; current = current.parentElement, depth += 1) {
+      chain.push(`${depth}: ${current.tagName.toLowerCase()}${current.id ? `#${current.id}` : ""}`);
+      if (chain.length === 12) break;
+    }
+    return chain;
+  };
+  const encode = (value) => {
+    const bytes = new TextEncoder().encode(value);
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  };
+  const describe = (node) => {
+    const rect = node.getBoundingClientRect();
+    const styles = getComputedStyle(node);
+    const attributes = Object.fromEntries([...node.attributes].map(attribute => [attribute.name, attribute.value]));
+    const siblingIndex = node.parentElement
+      ? [...node.parentElement.children].indexOf(node) + 1
+      : 1;
+    const selectedStyles = {};
+    for (const key of [
+      "display", "position", "width", "height", "margin", "padding", "color", "background-color",
+      "font-family", "font-size", "font-weight", "line-height", "border", "border-radius", "opacity",
+      "overflow", "z-index",
+    ]) selectedStyles[key] = styles.getPropertyValue(key);
+    const lines = [
+      "Alpha Component Selection",
+      `URL: ${location.href}`,
+      `Title: ${document.title}`,
+      `Tag: ${node.tagName.toLowerCase()}`,
+      `XPath: ${xpath(node)}`,
+      `CSS Selector: ${cssPath(node)}`,
+      `DOM Depth: ${parentChain(node).length}`,
+      `Sibling Index: ${String(siblingIndex)}`,
+      "Parent Chain:",
+      ...parentChain(node).map(value => `  ${value}`),
+      `Bounding Rectangle: x=${String(rect.x)}, y=${String(rect.y)}, width=${String(rect.width)}, height=${String(rect.height)}`,
+      "Attributes:",
+      ...Object.entries(attributes).map(([key, value]) => `  ${key}=${text(value, 500)}`),
+      "Computed Styles:",
+      ...Object.entries(selectedStyles).map(([key, value]) => `  ${key}: ${String(value)}`),
+      `Visible Text: ${text(node.innerText, 4000)}`,
+      "Outer HTML:",
+      text(node.outerHTML, 12000),
+    ];
+    return lines.join("\n");
+  };
+  const targetFrom = (event) => {
+    const node = document.elementFromPoint(event.clientX, event.clientY);
+    return node instanceof Element ? node : undefined;
+  };
+  const draw = (node) => {
+    if (node === undefined) {
+      outline.style.display = "none";
+      return;
+    }
+    const rect = node.getBoundingClientRect();
+    outline.style.display = "block";
+    outline.style.left = `${String(rect.left)}px`;
+    outline.style.top = `${String(rect.top)}px`;
+    outline.style.width = `${String(rect.width)}px`;
+    outline.style.height = `${String(rect.height)}px`;
+  };
+  const teardown = () => {
+    outline.remove();
+    if (document.documentElement !== null) document.documentElement.style.cursor = previousCursor;
+    removeEventListener("mousemove", onMove, true);
+    removeEventListener("click", onClick, true);
+    removeEventListener("contextmenu", onContextMenu, true);
+    removeEventListener("keydown", onKeyDown, true);
+    removeEventListener("mousedown", swallow, true);
+    removeEventListener("pointerdown", swallow, true);
+    removeEventListener("dragstart", swallow, true);
+  };
+  const finish = (url) => {
+    teardown();
+    location.href = url;
+  };
+  const cancel = () => {
+    finish("https://component-picker.alpha.invalid/cancel");
+  };
+  function onMove(event) {
+    draw(targetFrom(event));
+  }
+  function onClick(event) {
+    const node = targetFrom(event);
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (node === undefined) return;
+    finish(`https://component-picker.alpha.invalid/selection?input=${encode(describe(node))}`);
+  }
+  function onContextMenu(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    cancel();
+  }
+  function onKeyDown(event) {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    cancel();
+  }
+  // The overlay stays out of hit testing, so the page keeps its own hover state
+  // while these capture listeners run before any page listener.
+  function swallow(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+  addEventListener("mousemove", onMove, true);
+  addEventListener("click", onClick, true);
+  addEventListener("contextmenu", onContextMenu, true);
+  addEventListener("keydown", onKeyDown, true);
+  addEventListener("mousedown", swallow, true);
+  addEventListener("pointerdown", swallow, true);
+  addEventListener("dragstart", swallow, true);
+})();
+"#;
 
 /// Status code the engine answers for a request that carries no session cookie.
 const ENGINE_UNAUTHORIZED: u16 = 401;
@@ -123,6 +309,40 @@ const BOOT_BRIDGE: &str = r#"(() => {
       return Promise.resolve(
         api.core.invoke("save_markdown", { filename: String(filename), content: String(content) })
       );
+    },
+    startComponentPicker: (request) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.core === undefined || typeof api.core.invoke !== "function") {
+        return Promise.reject(new Error("native component picker unavailable"));
+      }
+      return Promise.resolve(api.core.invoke("start_component_picker", {
+        request: {
+          requestId: String(request.requestId),
+          url: String(request.url),
+          x: Number(request.x),
+          y: Number(request.y),
+          width: Number(request.width),
+          height: Number(request.height),
+        },
+      }));
+    },
+    cancelComponentPicker: (requestId) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.core === undefined || typeof api.core.invoke !== "function") {
+        return Promise.reject(new Error("native component picker unavailable"));
+      }
+      return Promise.resolve(api.core.invoke("cancel_component_picker", {
+        requestId: String(requestId),
+      }));
+    },
+    onComponentPicker: (listener) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.event === undefined || typeof api.event.listen !== "function") {
+        return Promise.resolve(() => {});
+      }
+      return Promise.resolve(api.event.listen("alpha-component-picker", (event) => {
+        listener(event.payload);
+      }));
     },
   };
 })();
@@ -192,6 +412,45 @@ struct UnauthorizedPayload {
     href: Option<String>,
 }
 
+/// One request from the Web client to start the native component picker.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ComponentPickerRequest {
+    request_id: String,
+    url: String,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+}
+
+/// Active component-picker child webview owned by the shell.
+#[derive(Default)]
+struct ComponentPickerState(Mutex<ComponentPickerActive>);
+
+/// One temporary picker webview and the request it reports for.
+#[derive(Default)]
+struct ComponentPickerActive {
+    /// Monotonic counter that keeps every picker label unique.
+    sequence: u64,
+    /// Request the live webview reports for.
+    request_id: Option<String>,
+    /// Live child webview, absent while no picker runs.
+    webview: Option<Webview>,
+}
+
+/// One result emitted to the Web client after the child webview closes.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ComponentPickerResult {
+    request_id: String,
+    status: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    message: Option<String>,
+}
+
 /// Save one Markdown transcript through a native save dialog.
 ///
 /// The dialog runs on a blocking worker because the native file dialog spins its own
@@ -225,6 +484,192 @@ async fn save_markdown(
     }
 }
 
+/// Close the active component-picker child webview.
+///
+/// Labels are never reused, so only the request that owns the live webview can
+/// close it; a navigation left over from an earlier request never clears the
+/// picker that replaced it.
+/// @param state - shell-owned active picker.
+/// @param request_id - owning request, or `None` to close whichever picker runs.
+/// @returns whether a child webview was closed.
+fn close_component_picker(state: &ComponentPickerState, request_id: Option<&str>) -> bool {
+    let mut active = match state.0.lock() {
+        Ok(active) => active,
+        Err(_) => return false,
+    };
+    if request_id.is_some_and(|expected| active.request_id.as_deref() != Some(expected)) {
+        return false;
+    }
+    active.request_id = None;
+    let webview = active.webview.take();
+    drop(active);
+    match webview {
+        Some(webview) => {
+            // `Webview::close` re-enters the event loop when the caller already runs on
+            // the main thread, and callers here include the child webview's own
+            // navigation callback. Deferring the close keeps the controller alive until
+            // wry has finished reading that navigation event's arguments.
+            tauri::async_runtime::spawn(async move {
+                let _ = webview.close();
+            });
+            true
+        }
+        None => false,
+    }
+}
+
+/// Emit one component-picker result to the Web client.
+/// @param app - application handle that owns the main window.
+/// @param request_id - request the result belongs to.
+/// @param status - `selected`, `cancelled`, or `error`.
+/// @param text - selected component description, present only on success.
+/// @param message - failure detail, present only on failure.
+fn emit_component_picker_result(
+    app: &AppHandle,
+    request_id: &str,
+    status: &'static str,
+    text: Option<String>,
+    message: Option<String>,
+) {
+    let _ = app.emit(
+        COMPONENT_PICKER_EVENT,
+        ComponentPickerResult { request_id: request_id.to_string(), status, text, message },
+    );
+}
+
+/// Start one temporary child webview over the Browser iframe.
+///
+/// The child is isolated from the main window's boot bridge and reports its
+/// result by navigating to the picker's private origin, which the navigation
+/// handler intercepts before the URL is committed.
+/// @param app - application handle that owns the main window.
+/// @param state - shell-owned active picker.
+/// @param request - target URL, iframe rectangle, and request identity.
+/// @returns an acknowledgement after the child webview is created.
+#[tauri::command]
+async fn start_component_picker(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, ComponentPickerState>,
+    request: ComponentPickerRequest,
+) -> Result<(), String> {
+    if request.request_id.is_empty() {
+        return Err("component picker: requestId is empty".to_string());
+    }
+    if !request.x.is_finite()
+        || !request.y.is_finite()
+        || !request.width.is_finite()
+        || !request.height.is_finite()
+        || request.width <= 0.0
+        || request.height <= 0.0
+    {
+        return Err("component picker: iframe rectangle is invalid".to_string());
+    }
+    let target = Url::parse(&request.url).map_err(|error| error.to_string())?;
+    if target.scheme() != "http" && target.scheme() != "https" {
+        return Err("component picker: only HTTP(S) URLs are supported".to_string());
+    }
+    close_component_picker(&state, None);
+    let label = {
+        let mut active = state
+            .0
+            .lock()
+            .map_err(|_| "component picker: state lock poisoned".to_string())?;
+        active.sequence = active.sequence.saturating_add(1);
+        format!("{COMPONENT_PICKER_LABEL}-{}", active.sequence)
+    };
+    let window = app
+        .get_window("main")
+        .ok_or_else(|| "component picker: main window unavailable".to_string())?;
+    let event_request_id = request.request_id.clone();
+    let handle = app.clone();
+    let webview = window
+        .add_child(
+            WebviewBuilder::new(label, WebviewUrl::External(target))
+            .initialization_script(COMPONENT_PICKER_SCRIPT)
+            .on_navigation(move |url| {
+                if url.as_str().starts_with(&format!("{COMPONENT_PICKER_ORIGIN}/cancel")) {
+                    close_component_picker(
+                        &handle.state::<ComponentPickerState>(),
+                        Some(&event_request_id),
+                    );
+                    emit_component_picker_result(&handle, &event_request_id, "cancelled", None, None);
+                    return false;
+                }
+                let prefix = format!("{COMPONENT_PICKER_ORIGIN}/selection?");
+                if !url.as_str().starts_with(&prefix) {
+                    return true;
+                }
+                let encoded = url
+                    .query_pairs()
+                    .find_map(|(key, value)| (key == COMPONENT_PICKER_INPUT).then(|| value.into_owned()))
+                    .unwrap_or_default();
+                close_component_picker(
+                    &handle.state::<ComponentPickerState>(),
+                    Some(&event_request_id),
+                );
+                match (encoded.len() <= COMPONENT_PICKER_RESULT_LIMIT)
+                    .then(|| URL_SAFE_NO_PAD.decode(encoded.as_bytes()).ok())
+                    .flatten()
+                {
+                    Some(bytes) => match String::from_utf8(bytes) {
+                        Ok(text) => emit_component_picker_result(
+                            &handle,
+                            &event_request_id,
+                            "selected",
+                            Some(text),
+                            None,
+                        ),
+                        Err(_) => emit_component_picker_result(
+                            &handle,
+                            &event_request_id,
+                            "error",
+                            None,
+                            "component picker: result is not UTF-8",
+                        ),
+                    },
+                    None => emit_component_picker_result(
+                        &handle,
+                        &event_request_id,
+                        "error",
+                        None,
+                        "component picker: result is malformed or too large",
+                    ),
+                }
+                false
+            }),
+            LogicalPosition::new(request.x, request.y),
+            LogicalSize::new(request.width, request.height),
+        )
+        .map_err(|error| error.to_string())?;
+    // The child webview must own the keyboard so Escape reaches the picker script.
+    if let Err(error) = webview.set_focus() {
+        let _ = webview.close();
+        return Err(format!("component picker: focus failed: {error}"));
+    }
+    {
+        let mut active = state
+            .0
+            .lock()
+            .map_err(|_| "component picker: state lock poisoned".to_string())?;
+        active.request_id = Some(request.request_id);
+        active.webview = Some(webview);
+    }
+    Ok(())
+}
+
+/// Cancel the active component picker for one request.
+/// @param state - shell-owned active picker.
+/// @param request_id - request identity echoed by the Web client.
+/// @returns an acknowledgement once the active picker is closed.
+#[tauri::command]
+fn cancel_component_picker(
+    state: tauri::State<'_, ComponentPickerState>,
+    request_id: String,
+) -> Result<(), String> {
+    close_component_picker(&state, Some(&request_id));
+    Ok(())
+}
+
 /// Build and run the Alpha desktop shell.
 pub fn run() {
     tauri::Builder::default()
@@ -235,11 +680,16 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![save_markdown])
+        .invoke_handler(tauri::generate_handler![
+            save_markdown,
+            start_component_picker,
+            cancel_component_picker
+        ])
         .setup(|app| {
             app.manage(HostState::default());
             app.manage(Supervision::default());
             app.manage(EngineUrl::default());
+            app.manage(ComponentPickerState::default());
             let handle = app.handle().clone();
             match resolve_launch(&handle) {
                 Ok((node, runtime, project)) => {
@@ -256,6 +706,9 @@ pub fn run() {
                 // The watchdog must not relaunch a host the shell is deliberately stopping.
                 if let Some(supervision) = handle.try_state::<Supervision>() {
                     supervision.0.store(true, Ordering::Relaxed);
+                }
+                if let Some(picker) = handle.try_state::<ComponentPickerState>() {
+                    close_component_picker(&picker, None);
                 }
                 stop_current_host(handle);
             }
@@ -468,6 +921,14 @@ fn build_window(
     // A document loaded after the first navigation still needs the payload the shell holds,
     // because the initialization script alone only sees one carried into that document.
     .on_page_load(move |loaded: WebviewWindow, page: PageLoadPayload<'_>| {
+        // A document that replaces the one that positioned the picker must not
+        // leave the child webview behind, because nothing can place it again.
+        if page.event() == PageLoadEvent::Started {
+            if let Some(picker) = loaded.app_handle().try_state::<ComponentPickerState>() {
+                close_component_picker(&picker, None);
+            }
+            return;
+        }
         if page.event() != PageLoadEvent::Finished {
             return;
         }

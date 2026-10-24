@@ -42,6 +42,7 @@ async function boot() {
   ctx.provide('sidebarRightTabs', tabs as never)
   ctx.provide('slots', slots as never)
   ctx.provide('locale', locale as never)
+  ctx.provide('conversation', { attachTextDocument: vi.fn(() => true) } as never)
   const fiber = ctx.plugin({ inject: [...inject], apply })
   await fiber.await()
   return { tabs, registered, dictionaries, fiber }
@@ -50,6 +51,12 @@ async function boot() {
 describe('ui-sidebar-browser apply', () => {
   it('keeps the Host Loader entry inert', () => {
     expect(hostApply).not.toThrow()
+  })
+
+  it('fails loudly when the conversation service is unavailable', () => {
+    const ctx = new Context()
+    ctx.provide('locale', { bind: vi.fn(() => (key: string) => key) } as never)
+    expect(() => { apply(ctx) }).toThrow('ui-sidebar-browser: conversation service unavailable')
   })
 
   it('registers a multi-instance builtin and its body and title', async () => {

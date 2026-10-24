@@ -4,6 +4,7 @@ import type { FormEvent, ReactNode } from 'react'
 import {
   IconChevronLeftOutline14,
   IconChevronRightOutline14,
+  IconInspectOutline12,
   IconLinkOutline14,
   IconRefreshOutline14,
   IconRightUpOutline16,
@@ -21,7 +22,9 @@ import css from './Browser.module.css'
 /** Fixed Web iframe sandbox; popups escape the sandbox while top navigation remains absent. */
 export const WEB_BROWSER_SANDBOX = 'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox'
 
-const INITIAL_BROWSER_FRAME: BrowserFrameState = { document: undefined, sandboxed: true, loadFailed: false }
+const INITIAL_BROWSER_FRAME: BrowserFrameState = {
+  document: undefined, sandboxed: true, loadFailed: false, picker: 'inactive',
+}
 
 function SandboxPolicyIcon({ sandboxed }: { readonly sandboxed: boolean }): ReactNode {
   return (
@@ -58,7 +61,7 @@ function useBrowserDraft(
 export function BrowserBody(props: BrowserBodyProps): ReactNode {
   const {
     goBack, goForward, loadUrl, mount, reload, reportLoaded, reportLoadFailed, toggleSandbox,
-    useBrowserFrame, useStore, useTabInfo, t,
+    pickerAvailable, startPicker, stopPicker, useBrowserFrame, useStore, useTabInfo, t,
   } = props
   const { tab } = useTabInfo()
   const state = useStore(snapshot => snapshot.byTab[tab.id]) ?? BrowserNavigation.empty()
@@ -67,6 +70,7 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
   const current = BrowserNavigation.current(state)
   const [draft, setDraft] = useBrowserDraft(current?.url ?? initialUrl.current, state.request?.revision)
   const [mountCount, setMountCount] = useState(0)
+  const iframe = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
     mount(tab.id, tab.signal, window.location.origin, initialState.current)
@@ -85,13 +89,28 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
   }, [loadUrl, mountCount, reload, tab.id])
 
   const frameState = useBrowserFrame(tab.id) ?? INITIAL_BROWSER_FRAME
-  const { document, sandboxed, loadFailed } = frameState
+  const { document, sandboxed, loadFailed, picker } = frameState
 
   const navigationUnknown = state.navigation.status === 'unknown'
   const externalUrl = navigationUnknown ? undefined : current?.url
   const submit = (event: FormEvent): void => { event.preventDefault(); loadUrl(tab.id, draft) }
   const failure = state.failure === undefined ? undefined : failureText(state.failure.reason, t)
   const placeholder = current === undefined ? t('start') : t('loading')
+  const pickerUnavailable = !pickerAvailable
+    || document === undefined
+    || navigationUnknown
+    || externalUrl === undefined
+  const pickerLabel = picker === 'active' ? t('picker.stop') : t('picker.start')
+
+  const togglePicker = (): void => {
+    if (picker === 'active') {
+      stopPicker(tab.id)
+      return
+    }
+    const rect = iframe.current?.getBoundingClientRect()
+    if (rect === undefined) return
+    startPicker(tab.id, { x: rect.x, y: rect.y, width: rect.width, height: rect.height })
+  }
 
   return (
     <div className={css.root}>
@@ -131,13 +150,24 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
           disabled={mountCount === 0}
           onClick={() => { toggleSandbox(tab.id) }}
         ><SandboxPolicyIcon sandboxed={sandboxed} /></button>
+        <button
+          type="button"
+          className={`${css.tool} ${picker === 'active' ? css.pickerActive : ''}`}
+          aria-label={pickerUnavailable ? t('picker.unavailable') : pickerLabel}
+          title={pickerUnavailable ? t('picker.unavailable') : pickerLabel}
+          aria-pressed={picker === 'active'}
+          disabled={pickerUnavailable || mountCount === 0}
+          onClick={togglePicker}
+        ><IconInspectOutline12 size={14} /></button>
       </form>
       {!sandboxed && <div className={css.sandboxWarning} role="status">{t('sandbox.warning')}</div>}
       {loadFailed && <div className={css.failure} role="status">{t('web.loadFailed')}</div>}
+      {picker === 'failed' && <div className={css.failure} role="alert">{t('picker.failed')}</div>}
       {failure !== undefined && <div className={css.failure} role="alert">{failure}</div>}
       {document === undefined
         ? <div className={css.start}>{placeholder}</div>
         : <iframe
+          ref={iframe}
           key={`${document.target.url}:${String(document.revision)}`}
           className={css.frame}
           src={document.src}

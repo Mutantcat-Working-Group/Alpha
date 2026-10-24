@@ -38,4 +38,37 @@ describe('IframeImpl', () => {
     expect(listener).toHaveBeenCalled()
     unsubscribe()
   })
+
+  it('tracks component-picker mode for the tab occurrence', () => {
+    const changed = vi.fn<(sandboxed: boolean) => void>()
+    const loaded = vi.fn<(revision: number) => void>()
+    const frame = new IframeImpl(changed, loaded)
+    const listener = vi.fn()
+    frame.subscribe(listener)
+
+    expect(frame.getSnapshot().picker).toBe('inactive')
+    frame.stopPicker()
+    expect(listener).not.toHaveBeenCalled()
+
+    frame.startPicker()
+    expect(frame.getSnapshot().picker).toBe('active')
+    frame.startPicker()
+    expect(frame.getSnapshot().picker).toBe('active')
+
+    frame.failPicker()
+    expect(frame.getSnapshot().picker).toBe('failed')
+    frame.stopPicker()
+    expect(frame.getSnapshot().picker).toBe('inactive')
+
+    frame.failPicker()
+    frame.setDocument({
+      target: { kind: 'https' as const, url: 'https://example.test/', title: 'example.test' },
+      src: 'https://example.test/',
+      revision: 7,
+    })
+    expect(frame.getSnapshot().picker).toBe('failed')
+    frame.stopPicker()
+    expect(frame.getSnapshot().picker).toBe('inactive')
+    expect(listener).toHaveBeenCalled()
+  })
 })

@@ -1,6 +1,7 @@
 /** Register the HTTP(S) Browser tab type in the right Sidebar. */
 import type { Context } from '@mutantcat/cordis'
 import type {} from '@mutantcat/dsh-client-locale/client'
+import type {} from '@mutantcat/dsh-client-ui-conversation/client'
 import type {} from '@mutantcat/dsh-client-ui-renderer/client'
 import type {} from '@mutantcat/dsh-client-ui-session/client'
 import type {} from '@mutantcat/dsh-client-ui-sidebar-right/client'
@@ -27,18 +28,20 @@ declare module '@mutantcat/dsh-client-ui-sidebar-right/client' {
 }
 
 /** Required Browser services. */
-export const inject = ['slots', 'locale', 'sidebarRightTabs']
+export const inject = ['slots', 'locale', 'sidebarRightTabs', 'conversation']
 
 /** Register the Browser type, localized guide entry, body, and title. */
 export function apply(ctx: Context): void {
   const namespace = 'sidebarBrowser'
   const t = ctx.locale.bind(namespace)
+  const conversation = ctx.get('conversation')
+  if (conversation === undefined) throw new Error('ui-sidebar-browser: conversation service unavailable')
   const store = createBrowserStore()
   ctx.effect(() => ctx.locale.register(namespace, { zh, en }), 'ui-sidebar-browser.copy')
   ctx.effect(() => ctx.sidebarRightTabs.register(browserDefinition(t)), 'ui-sidebar-browser.type')
   ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
     name: 'sidebar.right.pane.tab', key: BROWSER_ID, locale: namespace, store,
-    inject: (_sessionId, actions) => createBrowserControllers(actions),
+    inject: (sessionId, actions) => createBrowserControllers(actions, sessionId, conversation),
   }, BrowserBody)), 'ui-sidebar-browser.body')
   ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab.title', () => ctx.slots.register({
     name: 'sidebar.right.pane.tab.title', key: BROWSER_ID, store,

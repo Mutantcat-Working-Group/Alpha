@@ -467,6 +467,55 @@ describe('ConversationController', () => {
     await b.runtime.dispose()
   })
 
+  it('attaches a picker text document to the target composer as a file draft', async () => {
+    const b = await bench()
+    const session = b.runtime.sessions.binding('s1')!.session
+    const uploadFile = vi.fn((_file: Blob | Uint8Array, name?: string) => Promise.resolve({
+      ok: true as const,
+      value: {
+        receiptId: `receipt-${name}` as never,
+        file: { attachmentId: `file-${name}` as never, name: name ?? 'file', bytes: 1 },
+      },
+    }))
+    ;(session as { uploadFile?: unknown }).uploadFile = uploadFile
+    expect(b.root.attachTextDocument(session.sessionId, 'component.md', '# Save')).toBe(true)
+    const [id] = b.shell.snapshot.attachmentIds
+    expect(id).toBeDefined()
+    const [draft] = b.root.resolveDraftAttachments([id!])
+    expect(draft?.kind).toBe('file')
+    const file = (draft as { file: File }).file
+    expect(file.name).toBe('component.md')
+    expect(file.type).toBe('text/plain;charset=utf-8')
+    expect(uploadFile.mock.calls[0]?.[0]).toBe(file)
+    await b.runtime.dispose()
+  })
+
+  it('refuses a picker attachment when the target session has no binding', async () => {
+    const b = await bench()
+    expect(b.root.attachTextDocument('missing' as SessionId, 'component.md', '# Save')).toBe(false)
+    expect(b.root.resolveDraftAttachments(b.shell.snapshot.attachmentIds)).toEqual([])
+    await b.runtime.dispose()
+  })
+
+  it('releases a refused picker attachment and aborts its upload', async () => {
+    const b = await bench()
+    const session = b.runtime.sessions.binding('s1')!.session
+    ;(session as { uploadFile?: unknown }).uploadFile = vi.fn(
+      (_file: Blob | Uint8Array, _name?: string, signal?: AbortSignal) => new Promise((resolve) => {
+        signal?.addEventListener('abort', () => { resolve({ ok: false, error: { message: 'aborted' } }) })
+      }),
+    )
+    const refusal = vi.spyOn(b.shell, 'addAttachments').mockReturnValue(false)
+    try {
+      expect(b.root.attachTextDocument(session.sessionId, 'component.md', '# Save')).toBe(false)
+    } finally {
+      refusal.mockRestore()
+    }
+    expect(b.shell.snapshot.attachmentIds).toEqual([])
+    expect(b.root.fileUploads.getSnapshot()).toEqual({})
+    await b.runtime.dispose()
+  })
+
   it('fails loudly from the root scope, on an unbound session, or without Client Sessions', async () => {
     const b = await bench()
     await expect(b.root.send('x')).rejects.toThrow(/requires a session scope/)
