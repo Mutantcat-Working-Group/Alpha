@@ -10,12 +10,14 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1 1 auto;
   min-width: 0;
 }
 
+/* Grid rather than a flex line, so the dropdown fills the row's free width
+   while the import button keeps its intrinsic width. */
 .picker {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: flex-end;
   gap: 10px;
 }
@@ -28,7 +30,6 @@
 
 .input {
   width: 100%;
-  max-width: 360px;
   height: 32px;
   padding: 0 12px;
   border: 0.5px solid var(--dsw-alias-border-l2);
