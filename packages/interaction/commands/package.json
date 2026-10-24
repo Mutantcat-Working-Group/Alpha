@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-commands",
   "description": "Plugin-owned human command registry for Alpha UIs",
-  "version": "1.0.20261031",
+  "version": "1.0.20261101",
   "publishConfig": {
     "access": "public"
   },

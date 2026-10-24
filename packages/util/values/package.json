@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-util-values",
   "description": "Duplicate-install-safe value primitives for the Alpha",
-  "version": "1.0.20261031",
+  "version": "1.0.20261101",
   "publishConfig": {
     "access": "public"
   },

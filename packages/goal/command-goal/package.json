@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-command-goal",
   "description": "Human-facing slash command for persisted same-session goals",
-  "version": "1.0.20261031",
+  "version": "1.0.20261101",
   "publishConfig": {
     "access": "public"
   },
