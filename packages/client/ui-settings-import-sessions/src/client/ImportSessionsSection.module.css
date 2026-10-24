@@ -6,20 +6,19 @@
   max-width: 760px;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
 /* Grid rather than a flex line, so the dropdown fills the row's free width
-   while the import button keeps its intrinsic width. */
+   while the import button keeps its intrinsic width. The caption spans both
+   columns, so the select and the import button share the control row and
+   centering puts the button's midline on the select's midline. */
 .picker {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: flex-end;
-  gap: 10px;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.pickerCaption {
+  grid-column: 1 / -1;
 }
 
 .label {

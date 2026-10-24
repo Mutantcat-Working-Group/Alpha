@@ -187,23 +187,23 @@ export function ImportSessionsSection(props: ImportSessionsSectionProps): ReactN
     <div className={css.section}>
       {/* Import section */}
       <div className={css.picker}>
-        <label className={css.field} htmlFor="import-sessions-source-agent">
-          <span className={css.label}>{t('sourceAgent')}</span>
-          <select
-            id="import-sessions-source-agent"
-            className={`${css.input} ${css.selectInput}`}
-            value={selected}
-            aria-label={t('sourceAgent')}
-            disabled={running || sources.length === 0}
-            onChange={(event) => { setSelected(event.currentTarget.value) }}
-          >
-            {sources.map(source => (
-              <option key={source.agent} value={source.sourceRoot}>
-                {t(AGENT_KEY[source.agent])}
-              </option>
-            ))}
-          </select>
+        <label className={`${css.label} ${css.pickerCaption}`} htmlFor="import-sessions-source-agent">
+          {t('sourceAgent')}
         </label>
+        <select
+          id="import-sessions-source-agent"
+          className={`${css.input} ${css.selectInput}`}
+          value={selected}
+          aria-label={t('sourceAgent')}
+          disabled={running || sources.length === 0}
+          onChange={(event) => { setSelected(event.currentTarget.value) }}
+        >
+          {sources.map(source => (
+            <option key={source.agent} value={source.sourceRoot}>
+              {t(AGENT_KEY[source.agent])}
+            </option>
+          ))}
+        </select>
         <Button
           variant="primary"
           size="sm"
