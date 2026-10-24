@@ -440,7 +440,7 @@ struct ComponentPickerActive {
 }
 
 /// One result emitted to the Web client after the child webview closes.
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ComponentPickerResult {
     request_id: String,
@@ -624,7 +624,7 @@ async fn start_component_picker(
                             &event_request_id,
                             "error",
                             None,
-                            "component picker: result is not UTF-8",
+                            Some("component picker: result is not UTF-8".to_string()),
                         ),
                     },
                     None => emit_component_picker_result(
@@ -632,7 +632,7 @@ async fn start_component_picker(
                         &event_request_id,
                         "error",
                         None,
-                        "component picker: result is malformed or too large",
+                        Some("component picker: result is malformed or too large".to_string()),
                     ),
                 }
                 false
