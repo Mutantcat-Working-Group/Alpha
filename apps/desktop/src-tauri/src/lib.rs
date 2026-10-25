@@ -280,6 +280,21 @@ const LOADER_READ_TIMEOUT_MS: u64 = 500;
 const BOOT_BRIDGE: &str = r#"(() => {
   const resolved = Promise.withResolvers();
   const global = globalThis;
+  if (global.self === global.top) {
+    const editableTarget = (event) => {
+      const path = typeof event.composedPath === "function" ? event.composedPath() : [event.target];
+      return path.some((node) =>
+        node instanceof global.HTMLInputElement
+        || node instanceof global.HTMLTextAreaElement
+        || (node instanceof global.HTMLElement && node.isContentEditable)
+      );
+    };
+    global.addEventListener("keydown", (event) => {
+      // The window history contains the loader document; a Backspace default
+      // action outside an editable target would replay boot.
+      if (event.key === "Backspace" && !editableTarget(event)) event.preventDefault();
+    }, true);
+  }
   global.__DSH_ALPHA_READY__ = resolved;
   global.__DSH_BOOT_READY__ = global.__DSH_BOOT_READY__ ?? Promise.withResolvers();
   const carried = global.__DSH_ALPHA_PAYLOAD__;

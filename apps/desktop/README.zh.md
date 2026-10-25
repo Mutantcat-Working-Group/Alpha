@@ -8,7 +8,7 @@ Alpha 是完整 alpha Web 应用外的一层 Tauri 壳。壳窗口先打开内�
 
 Host 是不带子进程 IPC 通道的 Node sidecar，通过 stdout 和 stdin 上的换行分隔 JSON 报告就绪并接收命令。Host argv 依次指定 staged 运行时目录、以每用户应用数据目录作为工作目录、主运行时、解析模式 `runtime`、内置 pnpm 入口和私有 Node bin 目录。打包后的应用把 sidecar 放在 `Contents/MacOS/node`，staged 载荷放在 `Contents/Resources/runtime`；[lib.rs](src-tauri/src/lib.rs) 的 `resolve_launch` 定位这两者，`node_sidecar` 同时接受开发构建留下的带目标后缀的文件名。
 
-启动按固定顺序进行。主窗口先打开内置加载页。Host 读取线程等待携带引擎地址的 `ready` 事件，或携带原因的 `fatal` 事件。就绪后，壳把启动载荷（引擎的 stream 来源）写入窗口槽位和当前文档，等待引擎端口接受 TCP 连接，然后把窗口导航到引擎地址。引擎提供的文档已经渲染好自身的注入表，因此载体不再重放它。窗口内每个文档还会收到一个初始化脚本，安装 `dshDesktopBoot` 桥及其就绪门；页面加载钩子会把已持有的载荷再次发布给之后加载的文档。Web 客户端先等待 `dshDesktopBoot.ready()` 再启动，并通过 `alpha-boot-failed` 窗口事件上报自己的启动失败，由壳在 Web 页面之外展示。
+启动按固定顺序进行。主窗口先打开内置加载页。Host 读取线程等待携带引擎地址的 `ready` 事件，或携带原因的 `fatal` 事件。就绪后，壳把启动载荷（引擎的 stream 来源）写入窗口槽位和当前文档，等待引擎端口接受 TCP 连接，然后把窗口导航到引擎地址。引擎提供的文档已经渲染好自身的注入表，因此载体不再重放它。窗口内每个文档还会收到一个初始化脚本，安装 `dshDesktopBoot` 桥及其就绪门；页面加载钩子会把已持有的载荷再次发布给之后加载的文档。该脚本还会取消可编辑目标之外的退格键默认行为，使窗口无法从引擎文档退回加载页。Web 客户端先等待 `dshDesktopBoot.ready()` 再启动，并通过 `alpha-boot-failed` 窗口事件上报自己的启动失败，由壳在 Web 页面之外展示。
 
 引擎不再接受的会话通过重新导航来修复，而不是重启任何东西。没有有效 cookie 的浏览器导航会得到一份 401 的极简 HTML 页面，其脚本调用 `dshDesktopBoot.unauthorized(location.href)`；壳监听这个 `alpha-unauthorized` 事件，读取 host 上报就绪时记录的引擎地址，再把窗口导航回去。该地址携带仍在服务的 host 的启动令牌，因此这次导航会重新签发 cookie，应用随之重新加载。
 
