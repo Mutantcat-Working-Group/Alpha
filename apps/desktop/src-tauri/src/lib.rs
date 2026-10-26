@@ -628,7 +628,9 @@ fn emit_picker_navigation(app: &AppHandle, request_id: &str, url: &Url) {
 /// @returns the live child webview, or `None` when no document is open.
 fn browser_document(app: &AppHandle, key: &str) -> Option<Webview> {
     let documents = app.try_state::<BrowserDocumentState>()?;
-    documents.0.lock().ok()?.documents.get(key).cloned()
+    // The guard must be named so it releases before the registry handle drops.
+    let registered = documents.0.lock().ok()?;
+    registered.documents.get(key).cloned()
 }
 
 /// Withdraw the component picker one Browser document hosted.
