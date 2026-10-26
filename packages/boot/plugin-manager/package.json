@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-plugin-manager",
   "description": "Current-profile plugin and bundle management shared by dsh CLI, Web and agent tools",
-  "version": "1.0.20261105",
+  "version": "1.0.20261106",
   "publishConfig": {
     "access": "public"
   },

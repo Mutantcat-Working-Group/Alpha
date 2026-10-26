@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-subprocess",
   "description": "Subprocess seam (ctx.subprocess) for the Alpha — managed process groups, bounded spill-backed output, and escalated kills behind one abstract service",
-  "version": "1.0.20261105",
+  "version": "1.0.20261106",
   "publishConfig": {
     "access": "public"
   },
