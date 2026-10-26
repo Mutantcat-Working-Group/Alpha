@@ -68,7 +68,7 @@ Web 记录 toolbar 提交和 typed tab 打开。导航状态机把每个受控 r
 
 ### 原生载体（Desktop）
 
-当 shell 暴露 browser-document bridge 时，Desktop 用原生 child webview 渲染当前文档。body 用一个占位 div 替换 iframe，把该矩形上报给 shell，并通过 `ResizeObserver` 与 window resize event 保持其最新；关闭该 tab occurrence 会关闭该 child webview。顶层 child webview 不受 `X-Frame-Options` 或 CSP `frame-ancestors` 指令约束，因此拒绝 iframe 嵌入的页面也能渲染。
+当 shell 暴露 browser-document bridge 时，Desktop 用原生 child webview 渲染当前文档。body 用一个占位 div 替换 iframe，把该矩形上报给 shell，并在文档打开期间每帧重新测量该矩形，因此只发生位移的载体仍能把 child webview 留在其上方；关闭该 tab occurrence 会关闭该 child webview。顶层 child webview 不受 `X-Frame-Options` 或 CSP `frame-ancestors` 指令约束，因此拒绝 iframe 嵌入的页面也能渲染。
 
 shell 把每次完成的导航作为该载体所持 revision 的一次 load 上报，同一个导航状态机消费该上报。页面发起的 popup 在 shell 处被拒绝，并带着目标 URL 上报，客户端通过 `window.open` 打开该 URL。该载体不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。shell 拒绝打开载体时，该文档回到 iframe。
 

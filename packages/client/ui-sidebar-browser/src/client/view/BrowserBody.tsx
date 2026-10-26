@@ -35,6 +35,13 @@ function carrierRect(node: HTMLElement | null): BrowserCarrierRect | undefined {
   return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
 }
 
+/** Report whether a measured rectangle repeats the one the shell already holds. */
+function sameCarrierRect(rect: BrowserCarrierRect, placed: BrowserCarrierRect | undefined): boolean {
+  return placed !== undefined
+    && rect.x === placed.x && rect.y === placed.y
+    && rect.width === placed.width && rect.height === placed.height
+}
+
 function SandboxPolicyIcon({ sandboxed }: { readonly sandboxed: boolean }): ReactNode {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -106,33 +113,36 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
   const { document, sandboxed, loadFailed, nativeFailed, picker } = frameState
   const nativeDocument = document !== undefined && !nativeFailed && nativeAvailable ? document : undefined
 
+  // The shell places one child webview over the carrier, so the carrier rectangle is the
+  // single source of that placement. A ResizeObserver reports size changes only, and the
+  // sidebar slides on a transform, which moves the carrier without resizing it; the window
+  // resize event covers neither. Measuring each frame is the only channel that follows
+  // every geometry change, and an unchanged rectangle costs no shell traffic.
   useEffect(() => {
     if (nativeDocument === undefined) return
-    const rect = carrierRect(host())
-    if (rect === undefined) return
-    openNativeDocument(tab.id, nativeDocument.target.url, rect)
-    return () => { closeNativeDocument(tab.id) }
-  }, [closeNativeDocument, nativeDocument, openNativeDocument, tab.id])
-
-  useEffect(() => {
-    if (nativeDocument === undefined) return
+    let frame = 0
+    let opened = false
+    let placed: BrowserCarrierRect | undefined
     const sync = (): void => {
       const rect = carrierRect(host())
-      if (rect !== undefined) moveNativeDocument(tab.id, rect)
+      if (rect !== undefined) {
+        if (!opened) {
+          opened = true
+          placed = rect
+          openNativeDocument(tab.id, nativeDocument.target.url, rect)
+        } else if (!sameCarrierRect(rect, placed)) {
+          placed = rect
+          moveNativeDocument(tab.id, rect)
+        }
+      }
+      frame = requestAnimationFrame(sync)
     }
-    // The carrier renders beside every open native document, so its element is
-    // attached by the time this effect runs.
-    const node = host()
-    /* v8 ignore next -- the carrier renders beside every open native document, so its element is attached before this effect runs. */
-    if (node === null) return
-    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(sync)
-    observer?.observe(node)
-    window.addEventListener('resize', sync)
+    frame = requestAnimationFrame(sync)
     return () => {
-      observer?.disconnect()
-      window.removeEventListener('resize', sync)
+      cancelAnimationFrame(frame)
+      closeNativeDocument(tab.id)
     }
-  }, [moveNativeDocument, nativeDocument, tab.id])
+  }, [closeNativeDocument, moveNativeDocument, nativeDocument, openNativeDocument, tab.id])
 
   const navigationUnknown = state.navigation.status === 'unknown'
   const externalUrl = navigationUnknown ? undefined : current?.url

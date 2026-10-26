@@ -70,10 +70,10 @@ function documentBridge() {
 }
 
 /** jsdom reports zero-sized geometry for every element, so carriers need a measured rectangle. */
-function stubRect(): void {
+function stubRect(x = 10, y = 20, width = 300, height = 200): void {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
-    x: 10, y: 20, width: 300, height: 200,
-    top: 20, left: 10, right: 310, bottom: 220, toJSON: () => ({}),
+    x, y, width, height,
+    top: y, left: x, right: x + width, bottom: y + height, toJSON: () => ({}),
   })
 }
 
@@ -380,40 +380,48 @@ describe('BrowserBody', () => {
     expect(mounted.view.queryByText(zh['sandbox.warning'])).toBeNull()
   })
 
-  it('moves and closes the native carrier as the sidebar geometry changes', async () => {
-    class FakeResizeObserver implements ResizeObserver {
-      static latest: FakeResizeObserver | undefined
-      readonly observe = vi.fn()
-      readonly unobserve = vi.fn()
-      readonly disconnect = vi.fn()
-      constructor(private readonly callback: ResizeObserverCallback) {
-        FakeResizeObserver.latest = this
-      }
+  it('opens the native carrier once the carrier element becomes measurable', async () => {
+    const carrier = documentBridge()
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull() })
+    // The pane is still laying out, so the carrier has no rectangle to report yet.
+    expect(carrier.open).not.toHaveBeenCalled()
 
-      fire(): void {
-        this.callback([], this)
-      }
-    }
-    vi.stubGlobal('ResizeObserver', FakeResizeObserver)
+    stubRect()
+    await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
+    expect(carrier.open.mock.calls[0]![0]).toMatchObject({
+      key: 'tab', url: 'https://example.com/one', x: 10, y: 20, width: 300, height: 200,
+    })
+  })
+
+  it('moves and closes the native carrier as the sidebar geometry changes', async () => {
     stubRect()
     const carrier = documentBridge()
     const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
     await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
-    const observer = FakeResizeObserver.latest
-    if (observer === undefined) throw new Error('expected the carrier to observe its size')
-    const node = mounted.view.container.querySelector('[data-sidebar-browser-carrier]')
-    expect(observer.observe).toHaveBeenCalledWith(node)
 
-    act(() => { observer.fire() })
-    expect(carrier.move).toHaveBeenCalledOnce()
-    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: 'tab', x: 10, y: 20, width: 300, height: 200 })
-
-    act(() => { window.dispatchEvent(new Event('resize')) })
-    expect(carrier.move).toHaveBeenCalledTimes(2)
+    stubRect(10, 20, 420, 200)
+    await waitFor(() => { expect(carrier.move).toHaveBeenCalledOnce() })
+    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: 'tab', x: 10, y: 20, width: 420, height: 200 })
 
     mounted.view.unmount()
-    expect(observer.disconnect).toHaveBeenCalledOnce()
     expect(carrier.close).toHaveBeenCalledWith('tab')
+  })
+
+  it('repositions the native carrier when the sidebar only moves it', async () => {
+    stubRect()
+    const carrier = documentBridge()
+    mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
+
+    // The sidebar slides on a transform, which moves the carrier without resizing it.
+    stubRect(10, 64, 300, 200)
+    await waitFor(() => { expect(carrier.move).toHaveBeenCalledOnce() })
+    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: 'tab', x: 10, y: 64, width: 300, height: 200 })
+
+    // An unchanged rectangle costs no further shell traffic.
+    await new Promise((resolve) => { setTimeout(resolve, 60) })
+    expect(carrier.move).toHaveBeenCalledOnce()
   })
 
   it('returns the document to the iframe when the native carrier refuses it', async () => {
@@ -427,37 +435,18 @@ describe('BrowserBody', () => {
     expect(carrier.close).toHaveBeenCalledWith('tab')
   })
 
-  it('moves the native carrier from the window resize listener without a ResizeObserver', async () => {
-    stubRect()
-    vi.stubGlobal('ResizeObserver', undefined)
-    const carrier = documentBridge()
-    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
-    await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
-
-    expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull()
-    expect(carrier.move).not.toHaveBeenCalled()
-    act(() => { window.dispatchEvent(new Event('resize')) })
-    expect(carrier.move).toHaveBeenCalledOnce()
-  })
-
-  it('does nothing when the native carrier has no measurable rectangle', async () => {
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(undefined as unknown as DOMRect)
-    const carrier = documentBridge()
-    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
-    await waitFor(() => { expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull() })
-
-    expect(carrier.open).not.toHaveBeenCalled()
-  })
-
-  it('does nothing when the native carrier rectangle has no area', async () => {
+  it('keeps the native carrier closed when its rectangle has no area', async () => {
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
-      x: 10, y: 20, width: 0, height: 0,
-      top: 20, left: 10, right: 10, bottom: 20, toJSON: () => ({}),
+      x: 10, y: 20, width: 300, height: 0,
+      top: 20, left: 10, right: 310, bottom: 20, toJSON: () => ({}),
     })
     const carrier = documentBridge()
     const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
     await waitFor(() => { expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull() })
+    // Let the frame loop measure the collapsed carrier before asserting it opened nothing.
+    await new Promise((resolve) => { setTimeout(resolve, 60) })
 
     expect(carrier.open).not.toHaveBeenCalled()
+    expect(carrier.move).not.toHaveBeenCalled()
   })
 })

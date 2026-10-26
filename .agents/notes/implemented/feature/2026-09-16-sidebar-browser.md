@@ -41,7 +41,7 @@ Address editing is available in every state. An invalid draft reports an address
 
 ## Desktop native carrier
 
-The Desktop shell opens one child webview per Browser tab occurrence at the rectangle the React body reports for its placeholder div, and the body keeps that rectangle current through a `ResizeObserver` and the window resize event. Closing the tab occurrence closes the child webview. A top-level child webview is not subject to `X-Frame-Options` or a CSP `frame-ancestors` directive, so a page that refuses iframe embedding still renders.
+The Desktop shell opens one child webview per Browser tab occurrence at the rectangle the React body reports for its placeholder div, and the body re-measures that rectangle every animation frame while the document is open. Closing the tab occurrence closes the child webview. A top-level child webview is not subject to `X-Frame-Options` or a CSP `frame-ancestors` directive, so a page that refuses iframe embedding still renders.
 
 The shell reports each completed navigation as a load for the revision the carrier holds, and `BrowserNavigation` consumes that report through the same state machine the iframe load feeds. A page-initiated popup is denied at the shell and reported with its target URL, which the client opens through `window.open`. The carrier keeps no page identity across a body remount, isolates no cookies per tab, and exposes no debugging target. A refused open marks the frame and returns the document to the iframe. The component picker measures the carrier rectangle, so picking works over the native carrier as well as over the iframe.
 

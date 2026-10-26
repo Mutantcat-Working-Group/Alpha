@@ -68,7 +68,7 @@ Web records toolbar submissions and typed tab opens. A navigation state machine 
 
 ### Native carrier (Desktop)
 
-Desktop renders the current document in a native child webview when the shell exposes the browser-document bridge. The body replaces the iframe with a placeholder div, reports that rectangle to the shell, and keeps it current through a `ResizeObserver` and the window resize event; closing the tab occurrence closes the child webview. A top-level child webview is not subject to `X-Frame-Options` or a CSP `frame-ancestors` directive, so a page that refuses iframe embedding still renders.
+Desktop renders the current document in a native child webview when the shell exposes the browser-document bridge. The body replaces the iframe with a placeholder div, reports that rectangle to the shell, and re-measures it every animation frame while the document is open, so a carrier that only moves still keeps the child webview over it; closing the tab occurrence closes the child webview. A top-level child webview is not subject to `X-Frame-Options` or a CSP `frame-ancestors` directive, so a page that refuses iframe embedding still renders.
 
 The shell reports each completed navigation as a load for the revision the carrier holds, and the same navigation state machine consumes that report. A page-initiated popup is denied at the shell and reported with its target URL, which the client opens through `window.open`. The carrier keeps no page identity across a body remount, isolates no cookies per tab, and exposes no debugging target. When the shell refuses to open the carrier, the document returns to the iframe.
 
