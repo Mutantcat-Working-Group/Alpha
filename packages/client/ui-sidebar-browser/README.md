@@ -46,7 +46,7 @@ The toolbar provides Back, Forward, Reload, Go, Open in system browser, a per-ta
 
 ### Component picking (Desktop)
 
-Desktop enables the component-picking button for a loaded page; Web leaves it disabled, because an iframe cannot read a cross-origin document. Starting the mode places a native child view over the page. Moving the pointer outlines the element under it; clicking one leaves the mode and attaches a plain-text document to the current composer. Escape or a right-click leaves the mode without attaching anything. The document records the page URL and title, tag, XPath, CSS selector, DOM depth, sibling index, parent chain, bounding rectangle, attributes, selected computed styles, visible text, and outer HTML. The picker measures whichever carrier holds the page, so it works over the native child webview as well as over the iframe.
+Desktop enables the component-picking button for a loaded page; Web leaves it disabled, because an iframe cannot read a cross-origin document. Starting the mode runs the picker script inside the webview that already renders the page, so the page never reloads; when no native carrier holds the tab, the shell opens one temporary child webview over the iframe instead. Moving the pointer outlines the element under it; clicking one leaves the mode and attaches a plain-text document to the current composer. Escape or a right-click leaves the mode without attaching anything. The document records the page URL and title, tag, XPath, CSS selector, DOM depth, sibling index, parent chain, bounding rectangle, attributes, selected computed styles, visible text, and outer HTML.
 
 -----
 
@@ -80,7 +80,7 @@ The controller interface does not depend on iframe APIs. `openNativeDocument`, `
 
 ### Component picker carrier
 
-Component picking reads the page outside the iframe. The toolbar reports the iframe rectangle to the native shell, which opens one temporary child webview at that position, injects the picker script, and closes the child once the result arrives. A picked element reports through a private navigation origin that the shell intercepts before the URL commits, and the encoded document reaches the Web client as an event. The Web client then asks `IConversation.attachTextDocument` to admit the document as a composer attachment. `BrowserFrame` carries the picker mode beside the sandbox and document state.
+Component picking reads the page outside the iframe. The toolbar reports the iframe rectangle and the tab key to the native shell. When a native carrier already renders the tab, the shell evaluates the picker script into that webview, so the page keeps its loaded state; otherwise the shell opens one temporary child webview at that position and injects the script there. A picked element reports through a private navigation origin that the shell intercepts before the URL commits, and the encoded document reaches the Web client as an event. The Web client then asks `IConversation.attachTextDocument` to admit the document as a composer attachment. `BrowserFrame` carries the picker mode beside the sandbox and document state.
 
 </details>
 
@@ -117,7 +117,7 @@ The isolation policy deliberately gives up some browser compatibility:
 - Browser history survives body remounts and ordinary page reloads, but closing the tab or unloading `ui-sidebar-right` aborts its occurrence and removes the stored history bucket.
 - Local files are rejected and remain owned by Document Preview.
 - Component picking is Desktop-only, and it describes the picked page's top document: content inside a nested frame or shadow root is reported through the element that hosts it. Web shows the button disabled.
-- The Desktop native carrier is one child webview per tab occurrence, so it keeps no page identity across a body remount, isolates no cookies per tab, and exposes no debugging target. Per-tab cookie partitions, native history, and a target-specific CDP connection remain deferred, as does the per-tab native view object that would own attachment, detachment, and target identity; component picking uses its own temporary child webview, which closes with the mode.
+- The Desktop native carrier is one child webview per tab occurrence, so it keeps no page identity across a body remount, isolates no cookies per tab, and exposes no debugging target. Per-tab cookie partitions, native history, and a target-specific CDP connection remain deferred, as does the per-tab native view object that would own attachment, detachment, and target identity; component picking reuses that carrier when one is open and otherwise falls back to its own temporary child webview, which closes with the mode.
 
 <a id="dev-note"></a>
 ### Dev Note

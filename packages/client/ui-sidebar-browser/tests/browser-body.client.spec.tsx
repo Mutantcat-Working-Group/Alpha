@@ -22,6 +22,7 @@ const SESSION = 'session' as SessionId
 
 interface PickerRequest {
   readonly requestId: string
+  readonly key: string
   readonly url: string
   readonly x: number
   readonly y: number
@@ -326,6 +327,7 @@ describe('BrowserBody', () => {
     fireEvent.click(button)
     await waitFor(() => { expect(picker.start).toHaveBeenCalledOnce() })
     expect(picker.start.mock.calls[0]![0]).toMatchObject({
+      key: 'tab',
       url: 'https://example.com/one', x: 10, y: 20, width: 300, height: 200,
     })
     await waitFor(() => {

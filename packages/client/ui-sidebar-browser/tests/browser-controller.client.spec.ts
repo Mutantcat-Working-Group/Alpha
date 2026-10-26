@@ -37,6 +37,7 @@ function conversationStub(accept = true) {
 
 interface PickerRequest {
   readonly requestId: string
+  readonly key: string
   readonly url: string
   readonly x: number
   readonly y: number
@@ -310,6 +311,7 @@ describe('BrowserController', () => {
     const request = stub.start.mock.calls[0]![0]
     expect(randomUUID).toHaveBeenCalled()
     expect(request.requestId).toBe('00000000-0000-4000-8000-000000000000')
+    expect(request.key).toBe('tab')
   })
 
   it('refuses invalid picker rectangles before opening the native picker', () => {

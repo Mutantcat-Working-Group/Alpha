@@ -73,6 +73,7 @@ export interface BrowserDocumentEvent {
 interface ComponentPickerBridge {
   readonly startComponentPicker: (request: {
     readonly requestId: string
+    readonly key: string
     readonly url: string
     readonly x: number
     readonly y: number
@@ -219,19 +220,21 @@ export class BrowserController {
     const requestId = randomUUID()
     this.pickerRequestId = requestId
     this.frame.startPicker()
-    void this.pick(bridge, requestId, rect, document.target.url)
+    void this.pick(bridge, requestId, rect, document.target.url, documentKey(this.options.tabId))
     return true
   }
 
   /**
    * Subscribe before opening the child webview, so a cancel that arrives
    * during startup cannot outrun the listener that consumes it.
+   * @param key - native carrier registry key identifying the webview that picks.
    */
   private async pick(
     bridge: ComponentPickerBridge,
     requestId: string,
     rect: BrowserCarrierRect,
     url: string,
+    key: string,
   ): Promise<void> {
     try {
       const unsubscribe = await bridge.onComponentPicker((result) => { this.pickerResult(result) })
@@ -240,7 +243,7 @@ export class BrowserController {
         return
       }
       this.pickerUnsubscribe = unsubscribe
-      await bridge.startComponentPicker({ requestId, url, ...rect })
+      await bridge.startComponentPicker({ requestId, url, key, ...rect })
     } catch {
       this.failPicker(requestId)
     }

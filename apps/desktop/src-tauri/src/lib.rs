@@ -94,12 +94,15 @@ const BROWSER_DOCUMENT_EVENT: &str = "alpha-browser-document";
 /// Label prefix of the persistent Browser document child webview.
 const BROWSER_DOCUMENT_LABEL: &str = "browser-document";
 
-/// Picker script installed only in the temporary child webview.
+/// Picker script installed in whichever webview carries the picked page.
+///
+/// The script installs once per document and re-arms on every later evaluation,
+/// so a picker can start again without reloading the page it picks from.
 const COMPONENT_PICKER_SCRIPT: &str = r#"
 (() => {
   if (window.self !== window.top) return;
-  if (globalThis.__ALPHA_COMPONENT_PICKER__) return;
-  globalThis.__ALPHA_COMPONENT_PICKER__ = true;
+  const existing = globalThis.__ALPHA_COMPONENT_PICKER__;
+  if (existing !== undefined) { existing.start(); return; }
 
   const outline = document.createElement("div");
   outline.setAttribute("data-alpha-component-picker-outline", "");
@@ -119,9 +122,6 @@ const COMPONENT_PICKER_SCRIPT: &str = r#"
     document.documentElement.style.cursor = "crosshair";
     document.documentElement.append(outline);
   };
-  if (document.documentElement === null) addEventListener("DOMContentLoaded", mount, { once: true });
-  else mount();
-
   const text = (value, limit) => String(value ?? "").slice(0, limit);
   const xpath = (node) => {
     const parts = [];
@@ -214,8 +214,10 @@ const COMPONENT_PICKER_SCRIPT: &str = r#"
     outline.style.height = `${String(rect.height)}px`;
   };
   const teardown = () => {
+    running = false;
     outline.remove();
     if (document.documentElement !== null) document.documentElement.style.cursor = previousCursor;
+    removeEventListener("DOMContentLoaded", mount);
     removeEventListener("mousemove", onMove, true);
     removeEventListener("click", onClick, true);
     removeEventListener("contextmenu", onContextMenu, true);
@@ -252,21 +254,38 @@ const COMPONENT_PICKER_SCRIPT: &str = r#"
     event.stopImmediatePropagation();
     cancel();
   }
-  // The overlay stays out of hit testing, so the page keeps its own hover state
-  // while these capture listeners run before any page listener.
   function swallow(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
   }
-  addEventListener("mousemove", onMove, true);
-  addEventListener("click", onClick, true);
-  addEventListener("contextmenu", onContextMenu, true);
-  addEventListener("keydown", onKeyDown, true);
-  addEventListener("mousedown", swallow, true);
-  addEventListener("pointerdown", swallow, true);
-  addEventListener("dragstart", swallow, true);
+  let running = false;
+  // The overlay stays out of hit testing, so the page keeps its own hover state
+  // while these capture listeners run before any page listener.
+  const start = () => {
+    if (running) return;
+    running = true;
+    addEventListener("mousemove", onMove, true);
+    addEventListener("click", onClick, true);
+    addEventListener("contextmenu", onContextMenu, true);
+    addEventListener("keydown", onKeyDown, true);
+    addEventListener("mousedown", swallow, true);
+    addEventListener("pointerdown", swallow, true);
+    addEventListener("dragstart", swallow, true);
+    if (document.documentElement === null) addEventListener("DOMContentLoaded", mount, { once: true });
+    else mount();
+  };
+  const stop = () => {
+    if (!running) return;
+    running = false;
+    teardown();
+  };
+  globalThis.__ALPHA_COMPONENT_PICKER__ = { start, stop };
+  start();
 })();
 "#;
+
+/// Call that withdraws a picker running inside a live Browser document.
+const COMPONENT_PICKER_STOP_CALL: &str = "globalThis.__ALPHA_COMPONENT_PICKER__?.stop()";
 
 /// Status code the engine answers for a request that carries no session cookie.
 const ENGINE_UNAUTHORIZED: u16 = 401;
@@ -338,6 +357,7 @@ const BOOT_BRIDGE: &str = r#"(() => {
       return Promise.resolve(api.core.invoke("start_component_picker", {
         request: {
           requestId: String(request.requestId),
+          key: String(request.key ?? ""),
           url: String(request.url),
           x: Number(request.x),
           y: Number(request.y),
@@ -484,6 +504,8 @@ struct UnauthorizedPayload {
 #[serde(rename_all = "camelCase")]
 struct ComponentPickerRequest {
     request_id: String,
+    /// Tab key of the Browser document the picker runs over, when one is open.
+    key: String,
     url: String,
     x: f64,
     y: f64,
@@ -504,6 +526,8 @@ struct ComponentPickerActive {
     request_id: Option<String>,
     /// Live child webview, absent while no picker runs.
     webview: Option<Webview>,
+    /// Tab key of the Browser document hosting the picker, absent for a child webview.
+    document_key: Option<String>,
 }
 
 /// One result emitted to the Web client after the child webview closes.
@@ -551,26 +575,140 @@ async fn save_markdown(
     }
 }
 
-/// Close the active component-picker child webview.
+/// Whether one navigation belongs to the component picker's private origin.
+/// @param url - navigation the carrier intercepted.
+/// @returns whether the picker script produced the navigation.
+fn is_component_picker_navigation(url: &Url) -> bool {
+    url.as_str().starts_with(&format!("{COMPONENT_PICKER_ORIGIN}/"))
+}
+
+/// Report one intercepted component-picker navigation to the Web client.
+///
+/// Every carrier reports through the same private origin, so the decoding is
+/// shared and the navigation itself is never committed.
+/// @param app - application handle that owns the main window.
+/// @param request_id - request the navigation belongs to.
+/// @param url - intercepted navigation on the picker's private origin.
+fn emit_picker_navigation(app: &AppHandle, request_id: &str, url: &Url) {
+    if url.as_str().starts_with(&format!("{COMPONENT_PICKER_ORIGIN}/cancel")) {
+        emit_component_picker_result(app, request_id, "cancelled", None, None);
+        return;
+    }
+    let encoded = url
+        .query_pairs()
+        .find_map(|(key, value)| (key == COMPONENT_PICKER_INPUT).then(|| value.into_owned()))
+        .unwrap_or_default();
+    match (encoded.len() <= COMPONENT_PICKER_RESULT_LIMIT)
+        .then(|| URL_SAFE_NO_PAD.decode(encoded.as_bytes()).ok())
+        .flatten()
+    {
+        Some(bytes) => match String::from_utf8(bytes) {
+            Ok(text) => emit_component_picker_result(app, request_id, "selected", Some(text), None),
+            Err(_) => emit_component_picker_result(
+                app,
+                request_id,
+                "error",
+                None,
+                Some("component picker: result is not UTF-8".to_string()),
+            ),
+        },
+        None => emit_component_picker_result(
+            app,
+            request_id,
+            "error",
+            None,
+            Some("component picker: result is malformed or too large".to_string()),
+        ),
+    }
+}
+
+/// Live Browser document child webview for one tab key.
+/// @param app - application handle that owns the document registry.
+/// @param key - tab key the document was opened for.
+/// @returns the live child webview, or `None` when no document is open.
+fn browser_document(app: &AppHandle, key: &str) -> Option<Webview> {
+    let documents = app.try_state::<BrowserDocumentState>()?;
+    documents.0.lock().ok()?.documents.get(key).cloned()
+}
+
+/// Withdraw the component picker one Browser document hosted.
+///
+/// A document that is replaced or closed takes the picker with it, and the Web
+/// client has already cleared its own picker state by then.
+/// @param app - application handle that owns the picker session.
+/// @param key - tab key whose document webview went away.
+fn withdraw_document_picker(app: &AppHandle, key: &str) {
+    let Some(picker) = app.try_state::<ComponentPickerState>() else { return };
+    let hosted = picker
+        .0
+        .lock()
+        .ok()
+        .is_some_and(|active| active.document_key.as_deref() == Some(key));
+    if hosted {
+        close_component_picker(&picker, None);
+    }
+}
+
+/// Re-arm the component picker inside one Browser document that just loaded.
+///
+/// A picker lives in the document that was open when it started, so a document
+/// that navigated while it ran must have the picker installed again.
+/// @param app - application handle that owns the picker session.
+/// @param key - tab key of the document webview that finished loading.
+fn rearm_component_picker(app: &AppHandle, key: &str) {
+    let Some(picker) = app.try_state::<ComponentPickerState>() else { return };
+    let webview = picker.0.lock().ok().and_then(|active| {
+        (active.document_key.as_deref() == Some(key))
+            .then(|| active.webview.clone())
+            .flatten()
+    });
+    if let Some(webview) = webview {
+        let _ = webview.eval(COMPONENT_PICKER_SCRIPT);
+    }
+}
+
+/// Request identity of the component picker one Browser document hosts.
+///
+/// A navigation a document webview intercepts reports for the request that started
+/// the picker, so the identity is read under the lock the picker session owns
+/// before that lock is taken again to stop the picker.
+/// @param app - application handle that owns the picker session.
+/// @param key - tab key whose document webview intercepted the navigation.
+/// @returns the live request identity, or `None` when that document hosts no picker.
+fn document_picker_request(app: &AppHandle, key: &str) -> Option<String> {
+    let picker = app.try_state::<ComponentPickerState>()?;
+    picker.0.lock().ok().and_then(|active| {
+        (active.document_key.as_deref() == Some(key))
+            .then(|| active.request_id.clone())
+            .flatten()
+    })
+}
+
+/// Close the active component picker, whichever webview carries it.
 ///
 /// Labels are never reused, so only the request that owns the live webview can
 /// close it; a navigation left over from an earlier request never clears the
-/// picker that replaced it.
+/// picker that replaced it. A picker hosted inside a Browser document stops the
+/// script rather than destroying the page that hosts it.
 /// @param state - shell-owned active picker.
 /// @param request_id - owning request, or `None` to close whichever picker runs.
-/// @returns whether a child webview was closed.
-fn close_component_picker(state: &ComponentPickerState, request_id: Option<&str>) -> bool {
+fn close_component_picker(state: &ComponentPickerState, request_id: Option<&str>) {
     let mut active = match state.0.lock() {
         Ok(active) => active,
-        Err(_) => return false,
+        Err(_) => return,
     };
     if request_id.is_some_and(|expected| active.request_id.as_deref() != Some(expected)) {
-        return false;
+        return;
     }
     active.request_id = None;
     let webview = active.webview.take();
+    let hosted = active.document_key.take().is_some();
     drop(active);
     match webview {
+        // The hosting document keeps its page; only the script inside it stops.
+        Some(webview) if hosted => {
+            let _ = webview.eval(COMPONENT_PICKER_STOP_CALL);
+        }
         Some(webview) => {
             // `Webview::close` re-enters the event loop when the caller already runs on
             // the main thread, and callers here include the child webview's own
@@ -579,9 +717,8 @@ fn close_component_picker(state: &ComponentPickerState, request_id: Option<&str>
             tauri::async_runtime::spawn(async move {
                 let _ = webview.close();
             });
-            true
         }
-        None => false,
+        None => {}
     }
 }
 
@@ -604,15 +741,18 @@ fn emit_component_picker_result(
     );
 }
 
-/// Start one temporary child webview over the Browser iframe.
+/// Start the component picker over the page a Browser document already renders.
 ///
-/// The child is isolated from the main window's boot bridge and reports its
-/// result by navigating to the picker's private origin, which the navigation
-/// handler intercepts before the URL is committed.
+/// A live Browser document for the request's tab key hosts the picker in place:
+/// the script is evaluated into the webview that already renders the page, so the
+/// page never reloads. Without one, a temporary child webview opens over the
+/// Browser iframe. Either carrier is isolated from the main window's boot bridge
+/// and reports its result by navigating to the picker's private origin, which the
+/// navigation handler intercepts before the URL is committed.
 /// @param app - application handle that owns the main window.
 /// @param state - shell-owned active picker.
-/// @param request - target URL, iframe rectangle, and request identity.
-/// @returns an acknowledgement after the child webview is created.
+/// @param request - tab key, target URL, iframe rectangle, and request identity.
+/// @returns an acknowledgement once the picker is running.
 #[tauri::command]
 async fn start_component_picker(
     app: tauri::AppHandle,
@@ -636,6 +776,24 @@ async fn start_component_picker(
         return Err("component picker: only HTTP(S) URLs are supported".to_string());
     }
     close_component_picker(&state, None);
+    // A live Browser document for this tab key picks in place: the script is evaluated
+    // into the webview that already renders the page, so nothing reloads.
+    if let Some(webview) = browser_document(&app, &request.key) {
+        if let Err(error) = webview.set_focus() {
+            return Err(format!("component picker: focus failed: {error}"));
+        }
+        if let Err(error) = webview.eval(COMPONENT_PICKER_SCRIPT) {
+            return Err(format!("component picker: install failed: {error}"));
+        }
+        let mut active = state
+            .0
+            .lock()
+            .map_err(|_| "component picker: state lock poisoned".to_string())?;
+        active.request_id = Some(request.request_id);
+        active.document_key = Some(request.key);
+        active.webview = Some(webview);
+        return Ok(());
+    }
     let label = {
         let mut active = state
             .0
@@ -677,56 +835,19 @@ async fn start_component_picker(
             WebviewBuilder::new(label, WebviewUrl::External(target))
             .initialization_script(COMPONENT_PICKER_SCRIPT)
             .on_navigation(move |url| {
-                if url.as_str().starts_with(&format!("{COMPONENT_PICKER_ORIGIN}/cancel")) {
-                    close_component_picker(
-                        &handle.state::<ComponentPickerState>(),
-                        Some(&event_request_id),
-                    );
-                    emit_component_picker_result(&handle, &event_request_id, "cancelled", None, None);
-                    return false;
-                }
-                let prefix = format!("{COMPONENT_PICKER_ORIGIN}/selection?");
-                if !url.as_str().starts_with(&prefix) {
+                if !is_component_picker_navigation(url) {
                     return true;
                 }
-                let encoded = url
-                    .query_pairs()
-                    .find_map(|(key, value)| (key == COMPONENT_PICKER_INPUT).then(|| value.into_owned()))
-                    .unwrap_or_default();
                 close_component_picker(
                     &handle.state::<ComponentPickerState>(),
                     Some(&event_request_id),
                 );
-                match (encoded.len() <= COMPONENT_PICKER_RESULT_LIMIT)
-                    .then(|| URL_SAFE_NO_PAD.decode(encoded.as_bytes()).ok())
-                    .flatten()
-                {
-                    Some(bytes) => match String::from_utf8(bytes) {
-                        Ok(text) => emit_component_picker_result(
-                            &handle,
-                            &event_request_id,
-                            "selected",
-                            Some(text),
-                            None,
-                        ),
-                        Err(_) => emit_component_picker_result(
-                            &handle,
-                            &event_request_id,
-                            "error",
-                            None,
-                            Some("component picker: result is not UTF-8".to_string()),
-                        ),
-                    },
-                    None => emit_component_picker_result(
-                        &handle,
-                        &event_request_id,
-                        "error",
-                        None,
-                        Some("component picker: result is malformed or too large".to_string()),
-                    ),
-                }
+                emit_picker_navigation(&handle, &event_request_id, url);
                 false
-            }),
+            })
+            // wry maps this to AppKit's `acceptFirstMouse:`. Its default spends
+            // the first click on an inactive window merely activating Alpha.
+            .accept_first_mouse(true),
             position,
             size,
         )
@@ -903,6 +1024,9 @@ async fn open_browser_document(
         let sequence = registry.sequence;
         let previous = registry.documents.remove(&request.key);
         drop(registry);
+        // The replacement takes the key, so a picker the old document hosted loses
+        // the webview its script runs in.
+        withdraw_document_picker(&app, &request.key);
         if let Some(previous) = previous {
             // Deferring the close keeps the controller alive until wry has finished
             // reading this command's arguments, matching the picker's own close.
@@ -922,6 +1046,7 @@ async fn open_browser_document(
                         if payload.event() != PageLoadEvent::Finished {
                             return;
                         }
+                        rearm_component_picker(&emitter, &key);
                         let _ = emitter.emit(
                             BROWSER_DOCUMENT_EVENT,
                             BrowserDocumentEvent { key: key.clone(), status: "loaded", url: None },
@@ -942,7 +1067,27 @@ async fn open_browser_document(
                         );
                         tauri::webview::NewWindowResponse::Deny
                     }
-                }),
+                })
+                .on_navigation({
+                    let handle = app.clone();
+                    let key = request.key.clone();
+                    move |url| {
+                        if !is_component_picker_navigation(url) {
+                            return true;
+                        }
+                        if let Some(request_id) = document_picker_request(&handle, &key) {
+                            close_component_picker(
+                                &handle.state::<ComponentPickerState>(),
+                                Some(&request_id),
+                            );
+                            emit_picker_navigation(&handle, &request_id, url);
+                        }
+                        false
+                    }
+                })
+                // wry maps this to AppKit's `acceptFirstMouse:`. Its default spends
+                // the first click on an inactive window merely activating Alpha.
+                .accept_first_mouse(true),
             position,
             size,
         )
@@ -992,12 +1137,16 @@ fn move_browser_document(
     Ok(())
 }
 
-/// Close one native Browser document child webview.
+/// Close one native Browser document child webview, withdrawing a picker it hosted.
+///
+/// A document that hosted the component picker takes the picker with it; the Web
+/// client has already cleared its own picker state by then.
 /// @param state - shell-owned registry of live document webviews.
 /// @param key - tab key the child webview was opened for.
 /// @returns an acknowledgement once the child webview is closed.
 #[tauri::command]
 fn close_browser_document(
+    app: tauri::AppHandle,
     state: tauri::State<'_, BrowserDocumentState>,
     key: String,
 ) -> Result<(), String> {
@@ -1007,6 +1156,7 @@ fn close_browser_document(
         .map_err(|_| "browser document: state lock poisoned".to_string())?
         .documents
         .remove(&key);
+    withdraw_document_picker(&app, &key);
     if let Some(webview) = webview {
         tauri::async_runtime::spawn(async move {
             let _ = webview.close();

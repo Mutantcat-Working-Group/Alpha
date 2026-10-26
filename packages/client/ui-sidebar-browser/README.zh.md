@@ -46,7 +46,7 @@ Client 插件可以调用 `ctx.sidebarRight.openTab('browser', { params: { url }
 
 ### 选取组件（Desktop）
 
-Desktop 会为已加载的页面启用选取组件按钮；Web 保持禁用，因为 iframe 无法读取跨域文档。进入该模式会在页面之上放置一个原生子视图。移动指针会框出指针下的元素；点击某个元素会退出该模式，并把一份纯文本文档附加到当前 composer。按 Escape 或点击鼠标右键会退出该模式且不附加任何内容。该文档记录页面 URL 与标题、标签、XPath、CSS selector、DOM 深度、同级索引、父链、外接矩形、属性、部分计算样式、可见文本与外层 HTML。选取会测量当前承载页面的载体，因此在原生 child webview 上与在 iframe 上同样有效。
+Desktop 会为已加载的页面启用选取组件按钮；Web 保持禁用，因为 iframe 无法读取跨域文档。进入该模式会在已经承载页面的 webview 中执行选取脚本，页面不会重新加载；当该 tab 没有原生载体时，shell 改为在 iframe 之上打开一个临时 child webview。移动指针会框出指针下的元素；点击某个元素会退出该模式，并把一份纯文本文档附加到当前 composer。按 Escape 或点击鼠标右键会退出该模式且不附加任何内容。该文档记录页面 URL 与标题、标签、XPath、CSS selector、DOM 深度、同级索引、父链、外接矩形、属性、部分计算样式、可见文本与外层 HTML。
 
 -----
 
@@ -80,7 +80,7 @@ Controller 接口不依赖 iframe API。`openNativeDocument`、`moveNativeDocume
 
 ### 选取组件载体
 
-选取组件在 iframe 之外读取页面。toolbar 把 iframe 矩形交给原生 shell，shell 在该位置打开一个临时 child webview、注入选取脚本，并在结果到达后关闭该 child。被选中的元素通过一个私有导航 origin 回报，shell 在 URL 提交前拦截它，并以 event 形式把编码后的文档交给 Web 客户端。Web 客户端随后调用 `IConversation.attachTextDocument` 把该文档作为 composer 附件接管。`BrowserFrame` 与 sandbox、document 状态并列持有选取模式。
+选取组件在 iframe 之外读取页面。toolbar 把 iframe 矩形与 tab key 交给原生 shell：该 tab 已有原生载体时，shell 直接在承载页面的 webview 中执行选取脚本，页面保持已加载状态；否则 shell 在该位置打开一个临时 child webview 并注入脚本。被选中的元素通过一个私有导航 origin 回报，shell 在 URL 提交前拦截它，并以 event 形式把编码后的文档交给 Web 客户端。Web 客户端随后调用 `IConversation.attachTextDocument` 把该文档作为 composer 附件接管。`BrowserFrame` 与 sandbox、document 状态并列持有选取模式。
 
 </details>
 
@@ -117,7 +117,7 @@ Controller 接口不依赖 iframe API。`openNativeDocument`、`moveNativeDocume
 - Browser history 会跨 body 重挂载与普通页面刷新保留，但关闭 tab 或卸载 `ui-sidebar-right` 会中止其 occurrence 并删除已存储的 history bucket。
 - 本地文件会被拒绝，并继续由 Document Preview 负责。
 - 选取组件仅在 Desktop 可用，并且描述被选页面的顶层 document：嵌套 frame 或 shadow root 中的内容会通过承载它的元素回报。Web 上该按钮显示为禁用。
-- Desktop 原生载体是每个 tab occurrence 一个 child webview，因此它不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。per-tab Cookie partition、原生 history 和 target-specific CDP 连接仍然延期，持有 attachment、detach 与 target identity 的 per-tab 原生视图对象同样延期；选取组件使用自己临时的 child webview，并随该模式一起关闭。
+- Desktop 原生载体是每个 tab occurrence 一个 child webview，因此它不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。per-tab Cookie partition、原生 history 和 target-specific CDP 连接仍然延期，持有 attachment、detach 与 target identity 的 per-tab 原生视图对象同样延期；选取组件在已有原生载体时复用它，否则退回自己临时的 child webview，并随该模式一起关闭。
 
 <a id="dev-note"></a>
 ### 开发备注
