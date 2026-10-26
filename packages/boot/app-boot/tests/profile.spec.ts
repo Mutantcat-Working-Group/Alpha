@@ -15,6 +15,7 @@ import { withFileLock } from '@mutantcat/dsh-atomic-write'
 import { afterAll, describe, expect, it } from 'vitest'
 import {
   composeEntries,
+  dropUninstalledBundles,
   healProfilesModuleFallback,
   healIsolatedProfileModuleFallback,
   initProfile,
@@ -263,6 +264,51 @@ describe('resolveBundleDir', () => {
     writeFileSync(join(dir, 'index.js'), '')
     writeFileSync(join(dir, 'cordis.patch.yml'), '[]\n')
     expect(resolveBundleDir('t', 'sealed-bundle', anchor, profileDir)).toBe(dir)
+  })
+})
+
+describe('dropUninstalledBundles', () => {
+  /** Stage a profile directory whose manifest selects the given bundles. */
+  function stageSelection(bundles: readonly string[]): string {
+    const dir = tmp()
+    writeProfileManifest(dir, { name: 'desktop', dsh: { profile: { bundles: [...bundles] } } })
+    return dir
+  }
+
+  /** Install one bundle package inside a profile directory's own node_modules. */
+  function stageProfileBundle(dir: string, name: string): void {
+    const bundleDir = join(dir, 'node_modules', name)
+    mkdirSync(bundleDir, { recursive: true })
+    writeFileSync(join(bundleDir, 'package.json'), JSON.stringify({ name, version: '0.0.0' }))
+  }
+
+  it('drops bundles neither anchor carries, keeps the rest, and reports them in manifest order', () => {
+    const anchor = stageInstallation({ 'in-box': {} })
+    const dir = stageSelection(['in-box', 'gone-second', 'gone-first'])
+    expect(dropUninstalledBundles('t', dir, anchor)).toEqual(['gone-second', 'gone-first'])
+    expect(readProfileManifest('t', dir).dsh?.profile?.bundles).toEqual(['in-box'])
+  })
+
+  it('keeps a bundle the installation supplies and one only the profile supplies', () => {
+    const anchor = stageInstallation({ 'in-box': {} })
+    const dir = stageSelection(['in-box', 'profile-only', 'gone'])
+    stageProfileBundle(dir, 'profile-only')
+    expect(dropUninstalledBundles('t', dir, anchor)).toEqual(['gone'])
+    expect(readProfileManifest('t', dir).dsh?.profile?.bundles).toEqual(['in-box', 'profile-only'])
+  })
+
+  it('leaves a complete selection and its manifest untouched', () => {
+    const anchor = stageInstallation({ 'in-box': {} })
+    const dir = stageSelection(['in-box'])
+    const before = readFileSync(join(dir, 'package.json'), 'utf8')
+    expect(dropUninstalledBundles('t', dir, anchor)).toEqual([])
+    expect(readFileSync(join(dir, 'package.json'), 'utf8')).toBe(before)
+  })
+
+  it('reports nothing for a manifest without a bundle selection', () => {
+    const dir = tmp()
+    writeProfileManifest(dir, { name: 'bare' })
+    expect(dropUninstalledBundles('t', dir, stageInstallation({}))).toEqual([])
   })
 })
 

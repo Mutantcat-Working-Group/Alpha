@@ -65,6 +65,8 @@ The product UI retains Web actions, including "Open In..." through the shared au
 
 Fatal startup opens one native dialog naming the cause; there is no automatic plugin-recovery transaction and no startup timeout heuristic. A failure dialog naming a former host process means a leftover host refused the stop request; quitting Alpha and ending the stale sidecar clears it.
 
+One narrow repair precedes that dialog. Before loading the Desktop profile, the Host removes selected bundles whose package the installation and the profile no longer resolve and reports each removal, so an interrupted package operation cannot leave a selection that fails every boot while a watchdog restart replays it. Installed packages and every other manifest field are untouched.
+
 ## Develop
 
 The complete release chain prepares the monorepo first, then stages the runtime, and finally invokes the Tauri bundler:

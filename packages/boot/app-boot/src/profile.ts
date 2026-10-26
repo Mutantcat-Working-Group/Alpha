@@ -856,14 +856,50 @@ function packageDirFromAnchor(
 export function resolveBundleDir(
   binName: string, packageName: string, installAnchor: string, profileDir: string,
 ): string {
-  for (const anchor of [installAnchor, join(profileDir, 'package.json')]) {
-    const dir = packageDirFromAnchor(anchor, packageName)
-    if (dir !== undefined) return dir
-  }
+  const dir = bundlePackageDir(packageName, installAnchor, profileDir)
+  if (dir !== undefined) return dir
   throw new Error(
     `${binName}: cannot resolve profile bundle ${JSON.stringify(packageName)} from the alpha installation or ${profileDir}; `
     + `run 'alpha plugin --profile ${basename(profileDir)} install' if its dependency is not installed`,
   )
+}
+
+/** Resolve one bundle package from either anchor, or undefined when neither carries it. */
+function bundlePackageDir(packageName: string, installAnchor: string, profileDir: string): string | undefined {
+  for (const anchor of [installAnchor, join(profileDir, 'package.json')]) {
+    const dir = packageDirFromAnchor(anchor, packageName)
+    if (dir !== undefined) return dir
+  }
+  return undefined
+}
+
+/**
+ * Drop selected bundles whose package neither the installation nor the profile can
+ * resolve, persisting the trimmed manifest. An interrupted package operation can leave
+ * a selection whose package is absent, and that selection fails every later boot, so
+ * the stale entry is removed instead of replayed. Bundles the installation supplies
+ * are never dropped. This is the boot-time counterpart of the plugin manager's
+ * post-install reconciliation.
+ * @param binName - the diagnostic prefix for the profile manifest read.
+ * @param dir - absolute profile package directory.
+ * @param installAnchor - absolute path of the owning alpha app's package.json.
+ * @returns the removed bundle names in manifest order; empty when nothing changed.
+ */
+export function dropUninstalledBundles(
+  binName: string, dir: string, installAnchor: string,
+): readonly string[] {
+  const manifest = readProfileManifest(binName, dir)
+  const bundles = manifest.dsh?.profile?.bundles ?? []
+  const resolved = new Set(bundles.filter(name => bundlePackageDir(name, installAnchor, dir) !== undefined))
+  if (resolved.size === bundles.length) return []
+  writeProfileManifest(dir, {
+    ...manifest,
+    dsh: {
+      ...manifest.dsh,
+      profile: { ...manifest.dsh?.profile, bundles: bundles.filter(name => resolved.has(name)) },
+    },
+  })
+  return bundles.filter(name => !resolved.has(name))
 }
 
 /**

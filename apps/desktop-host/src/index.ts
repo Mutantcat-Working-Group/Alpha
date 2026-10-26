@@ -8,7 +8,14 @@ const WEB_PROFILE_BUNDLES = (PROFILE_TEMPLATES.web as ProfileTemplate).bundles
 
 import { realpathSync } from 'node:fs'
 import { delimiter, join } from 'node:path'
-import { initProfile, loadLayeredEnv, loadProfileDirectory, PROFILE_TEMPLATES, type ProfileTemplate } from '@mutantcat/dsh-app-boot'
+import {
+  dropUninstalledBundles,
+  initProfile,
+  loadLayeredEnv,
+  loadProfileDirectory,
+  PROFILE_TEMPLATES,
+  type ProfileTemplate,
+} from '@mutantcat/dsh-app-boot'
 import { runProfile } from '@mutantcat/alpha/profile-boot'
 import type {} from '@mutantcat/dsh-client-connection'
 import type {} from '@mutantcat/dsh-host-webserver'
@@ -31,6 +38,11 @@ async function main(): Promise<void> {
   // the desktop shell used to create; existing manifests are left untouched.
   initProfile(projectDir, WEB_PROFILE_BUNDLES)
   const installAnchor = join(runtimeDir, 'node_modules', '@mutantcat', 'alpha', 'package.json')
+  // A watchdog restart replays this boot, so a selection whose package a package
+  // operation left behind fails every restart and keeps the shell unusable.
+  for (const name of dropUninstalledBundles('alpha', projectDir, installAnchor)) {
+    console.error(`alpha: warning: profile bundle ${name} is not installed and was removed from ${projectDir}`)
+  }
   const profile = loadProfileDirectory('alpha', projectDir, installAnchor)
   const application = runProfile({
     environment: loadLayeredEnv('alpha'),
