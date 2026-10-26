@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-timeout",
   "description": "Zero-dependency timeout/deadline primitive: clampTimeout, deadline, timeoutOf, TimeoutReason (timing + classification only, no termination)",
-  "version": "1.0.20261106",
+  "version": "1.0.20261107",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-file-reference-local",
   "description": "Local-filesystem ctx.fileReferences provider with bounded fuzzy indexes",
-  "version": "1.0.20261106",
+  "version": "1.0.20261107",
   "publishConfig": {
     "access": "public"
   },

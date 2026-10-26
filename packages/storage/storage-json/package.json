@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-storage-json",
   "description": "JSON file KV storage backend for the Alpha storage hub",
-  "version": "1.0.20261106",
+  "version": "1.0.20261107",
   "publishConfig": {
     "access": "public"
   },
