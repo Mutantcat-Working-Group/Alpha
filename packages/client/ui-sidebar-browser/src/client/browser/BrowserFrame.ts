@@ -16,6 +16,8 @@ export interface BrowserFrameState {
   readonly document: BrowserDocument | undefined
   readonly sandboxed: boolean
   readonly loadFailed: boolean
+  /** Whether the native document carrier refused this tab's current document. */
+  readonly nativeFailed: boolean
   /** Component-picker mode for this tab occurrence. */
   readonly picker: 'inactive' | 'active' | 'failed'
 }
@@ -32,6 +34,8 @@ export interface BrowserFrame extends HostObservable<BrowserFrameState> {
   reportLoaded(revision: number): void
   /** @param revision - rendered document revision whose carrier reported an error. */
   reportLoadFailed(revision: number): void
+  /** Publish a native carrier refusal, which returns rendering to the iframe. */
+  failNative(): void
   /** Enter component-picker mode. */
   startPicker(): void
   /** Leave component-picker mode. */
@@ -46,6 +50,7 @@ export class IframeImpl implements BrowserFrame {
     document: undefined,
     sandboxed: true,
     loadFailed: false,
+    nativeFailed: false,
     picker: 'inactive',
   })
 
@@ -81,7 +86,7 @@ export class IframeImpl implements BrowserFrame {
    * @param document - current prepared document.
    */
   setDocument(document: BrowserDocument): void {
-    this.store.set({ ...this.store.getSnapshot(), document, loadFailed: false })
+    this.store.set({ ...this.store.getSnapshot(), document, loadFailed: false, nativeFailed: false })
   }
 
   /** Remove the current prepared frame and transient load failure. */
@@ -103,6 +108,13 @@ export class IframeImpl implements BrowserFrame {
     const current = this.store.getSnapshot()
     if (current.document?.revision !== revision || current.loadFailed) return
     this.store.set({ ...current, loadFailed: true })
+  }
+
+  /** Publish a native carrier refusal, which returns rendering to the iframe. */
+  failNative(): void {
+    const current = this.store.getSnapshot()
+    if (current.nativeFailed) return
+    this.store.set({ ...current, nativeFailed: true })
   }
 
   /** Enter component-picker mode. */

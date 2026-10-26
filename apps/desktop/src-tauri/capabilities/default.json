@@ -5,5 +5,5 @@
   "remote": {
     "urls": ["http://127.0.0.1:*"]
   },
-  "permissions": ["core:default", "allow-save-markdown", "allow-component-picker"]
+  "permissions": ["core:default", "allow-save-markdown", "allow-component-picker", "allow-browser-document"]
 }

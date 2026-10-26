@@ -71,4 +71,28 @@ describe('IframeImpl', () => {
     expect(frame.getSnapshot().picker).toBe('inactive')
     expect(listener).toHaveBeenCalled()
   })
+
+  it('returns rendering to the iframe after one native carrier refusal', () => {
+    const changed = vi.fn<(sandboxed: boolean) => void>()
+    const loaded = vi.fn<(revision: number) => void>()
+    const frame = new IframeImpl(changed, loaded)
+    const listener = vi.fn()
+    frame.subscribe(listener)
+    const document = {
+      target: { kind: 'https' as const, url: 'https://example.test/', title: 'example.test' },
+      src: 'https://example.test/',
+      revision: 9,
+    }
+
+    expect(frame.getSnapshot().nativeFailed).toBe(false)
+    frame.failNative()
+    expect(frame.getSnapshot().nativeFailed).toBe(true)
+    frame.failNative()
+    expect(frame.getSnapshot().nativeFailed).toBe(true)
+    expect(listener).toHaveBeenCalledOnce()
+
+    frame.setDocument(document)
+    expect(frame.getSnapshot().nativeFailed).toBe(false)
+    expect(frame.getSnapshot().loadFailed).toBe(false)
+  })
 })

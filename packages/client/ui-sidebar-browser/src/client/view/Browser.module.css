@@ -138,6 +138,17 @@
   text-align: center;
 }
 
+/* Positioning host for the native document carrier; the shell-owned child view
+   covers it, so the element itself never receives pointer input. */
+.carrier {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  background: var(--dsw-alias-bg-base);
+  pointer-events: none;
+}
+
 .failure {
   flex: 0 0 auto;
   padding: 6px 12px;

@@ -25,7 +25,7 @@ export interface BrowserControllerOptions {
 }
 
 /** Bounding rectangle of the Browser iframe in logical CSS pixels. */
-export interface ComponentPickerRect {
+export interface BrowserCarrierRect {
   readonly x: number
   readonly y: number
   readonly width: number
@@ -38,6 +38,32 @@ export interface ComponentPickerResult {
   readonly status: 'selected' | 'cancelled' | 'error'
   readonly text?: string
   readonly message?: string
+}
+
+/** One request to open a native Browser document carrier. */
+export interface BrowserDocumentOpenRequest {
+  readonly key: string
+  readonly url: string
+  readonly x: number
+  readonly y: number
+  readonly width: number
+  readonly height: number
+}
+
+/** One request to reposition an open native Browser document carrier. */
+export interface BrowserDocumentMoveRequest {
+  readonly key: string
+  readonly x: number
+  readonly y: number
+  readonly width: number
+  readonly height: number
+}
+
+/** One event a native Browser document reports to the Web client. */
+export interface BrowserDocumentEvent {
+  readonly key: string
+  readonly status: 'loaded' | 'popup'
+  readonly url?: string
 }
 
 /* jscpd:ignore-start -- per-consumer copy of the `dshDesktopBoot` seam that
@@ -58,13 +84,21 @@ interface ComponentPickerBridge {
 }
 
 /** Desktop boot seam; every method is installed together in the shell. */
-interface DesktopPickerBridge {
-  dshDesktopBoot?: Partial<ComponentPickerBridge>
+interface DesktopBrowserDocumentBridge {
+  readonly openBrowserDocument: (request: BrowserDocumentOpenRequest) => Promise<void>
+  readonly moveBrowserDocument: (request: BrowserDocumentMoveRequest) => Promise<void>
+  readonly closeBrowserDocument: (key: string) => Promise<void>
+  readonly onBrowserDocument: (listener: (event: BrowserDocumentEvent) => void) => Promise<() => void>
+}
+
+/** Desktop boot seam; every method is installed together in the shell. */
+interface DesktopBootBridge {
+  dshDesktopBoot?: Partial<ComponentPickerBridge & DesktopBrowserDocumentBridge>
 }
 
 /** Resolve the Desktop component picker, or `undefined` in a plain browser. */
 function componentPickerBridge(): ComponentPickerBridge | undefined {
-  const bridge = (globalThis as DesktopPickerBridge).dshDesktopBoot
+  const bridge = (globalThis as DesktopBootBridge).dshDesktopBoot
   const startComponentPicker = bridge?.startComponentPicker
   const cancelComponentPicker = bridge?.cancelComponentPicker
   const onComponentPicker = bridge?.onComponentPicker
@@ -73,7 +107,26 @@ function componentPickerBridge(): ComponentPickerBridge | undefined {
   if (onComponentPicker === undefined) return undefined
   return { startComponentPicker, cancelComponentPicker, onComponentPicker }
 }
+
+/** Resolve the Desktop Browser document carrier, or `undefined` in a plain browser. */
+function browserDocumentBridge(): DesktopBrowserDocumentBridge | undefined {
+  const bridge = (globalThis as DesktopBootBridge).dshDesktopBoot
+  const openBrowserDocument = bridge?.openBrowserDocument
+  const moveBrowserDocument = bridge?.moveBrowserDocument
+  const closeBrowserDocument = bridge?.closeBrowserDocument
+  const onBrowserDocument = bridge?.onBrowserDocument
+  if (openBrowserDocument === undefined) return undefined
+  if (moveBrowserDocument === undefined) return undefined
+  if (closeBrowserDocument === undefined) return undefined
+  if (onBrowserDocument === undefined) return undefined
+  return { openBrowserDocument, moveBrowserDocument, closeBrowserDocument, onBrowserDocument }
+}
 /* jscpd:ignore-end */
+
+/** Native carrier registry key for one tab occurrence. */
+function documentKey(tabId: TabId): string {
+  return String(tabId)
+}
 
 function pickerFilename(document: { readonly target: BrowserTarget } | undefined): string {
   /* v8 ignore next -- a picker request ends before navigation can clear its document. */
@@ -90,6 +143,9 @@ export class BrowserController {
   private pickerRequestId: string | undefined
   private pickerUnsubscribe: (() => void) | undefined
   private pickerDisposed = false
+  /** Revision currently held by the native carrier, or `undefined` when none is. */
+  private nativeRevision: number | undefined
+  private nativeUnsubscribe: (() => void) | undefined
   private disposed = false
 
   /**
@@ -150,7 +206,7 @@ export class BrowserController {
    * @param rect - iframe bounds in the application document's CSS pixels.
    * @returns whether the picker entered its active state.
    */
-  startPicker(rect: ComponentPickerRect): boolean {
+  startPicker(rect: BrowserCarrierRect): boolean {
     if (this.disposed || this.frame.getSnapshot().picker === 'active') return false
     const document = this.frame.getSnapshot().document
     if (document === undefined) return false
@@ -174,7 +230,7 @@ export class BrowserController {
   private async pick(
     bridge: ComponentPickerBridge,
     requestId: string,
-    rect: ComponentPickerRect,
+    rect: BrowserCarrierRect,
     url: string,
   ): Promise<void> {
     try {
@@ -251,10 +307,112 @@ export class BrowserController {
     this.frame.stopPicker()
   }
 
+  /**
+   * Render the current document in the native carrier, or fall back to the iframe.
+   *
+   * A top-level child webview is not subject to the framing refusals that leave an
+   * iframe carrier blank, so the Desktop shell renders the document natively.
+   * @param url - prepared document URL.
+   * @param rect - carrier rectangle in the application document's CSS pixels.
+   */
+  openNativeDocument(url: string, rect: BrowserCarrierRect): void {
+    if (this.disposed) return
+    const document = this.frame.getSnapshot().document
+    if (document === undefined) return
+    const bridge = browserDocumentBridge()
+    if (bridge === undefined) return
+    this.nativeRevision = document.revision
+    void this.openDocument(bridge, url, rect, document.revision)
+  }
+
+  /**
+   * Reposition the open native carrier over a changed rectangle.
+   *
+   * Disposal clears the held revision, so a disposed controller never reaches the bridge.
+   * @param rect - carrier rectangle in the application document's CSS pixels.
+   */
+  moveNativeDocument(rect: BrowserCarrierRect): void {
+    if (this.nativeRevision === undefined) return
+    const bridge = browserDocumentBridge()
+    if (bridge === undefined) return
+    void bridge.moveBrowserDocument({ key: documentKey(this.options.tabId), ...rect }).catch(() => {})
+  }
+
+  /** Close the native carrier and stop consuming its events. */
+  closeNativeDocument(): void {
+    this.nativeRevision = undefined
+    const unsubscribe = this.nativeUnsubscribe
+    this.nativeUnsubscribe = undefined
+    unsubscribe?.()
+    void browserDocumentBridge()?.closeBrowserDocument(documentKey(this.options.tabId)).catch(() => {})
+  }
+
+  /**
+   * Whether one open request still owns the native carrier.
+   *
+   * Disposal and every revision change clear the carrier, so a superseded request
+   * must neither report loads nor keep its child webview open.
+   */
+  private holdsCarrier(revision: number): boolean {
+    return !this.disposed && this.nativeRevision === revision
+  }
+
+  /**
+   * Subscribe before opening the child webview, so a load reported during startup
+   * cannot outrun the listener that consumes it.
+   */
+  private async openDocument(
+    bridge: DesktopBrowserDocumentBridge,
+    url: string,
+    rect: BrowserCarrierRect,
+    revision: number,
+  ): Promise<void> {
+    try {
+      const unsubscribe = await bridge.onBrowserDocument((event) => { this.documentEvent(event) })
+      if (!this.holdsCarrier(revision)) {
+        unsubscribe()
+        return
+      }
+      this.nativeUnsubscribe?.()
+      this.nativeUnsubscribe = unsubscribe
+      await bridge.openBrowserDocument({ key: documentKey(this.options.tabId), url, ...rect })
+      if (!this.holdsCarrier(revision)) this.closeNativeDocument()
+    } catch {
+      if (!this.holdsCarrier(revision)) return
+      this.nativeRevision = undefined
+      this.nativeUnsubscribe?.()
+      this.nativeUnsubscribe = undefined
+      this.frame.failNative()
+    }
+  }
+
+  /**
+   * Route one native carrier event to the load state machine or the system browser.
+   *
+   * Every path that clears `nativeRevision` also drops the subscription, so a delivered
+   * event implies a live carrier; the guards below defend only a bridge that delivers
+   * after its unsubscribe.
+   */
+  private documentEvent(event: BrowserDocumentEvent): void {
+    /* v8 ignore next -- defensive: closeNativeDocument() drops this subscription on dispose. */
+    if (this.disposed) return
+    if (event.key !== documentKey(this.options.tabId)) return
+    if (event.status === 'loaded') {
+      const revision = this.nativeRevision
+      /* v8 ignore next -- defensive: every path that clears nativeRevision also drops the subscription. */
+      if (revision === undefined) return
+      this.frame.reportLoaded(revision)
+      return
+    }
+    if (event.url === undefined) return
+    window.open(event.url, '_blank', 'noopener,noreferrer')
+  }
+
   private dispose(): void {
     this.disposed = true
     this.stopPicker()
     this.pickerDisposed = true
+    this.closeNativeDocument()
     this.frame.clearDocument()
   }
 }
@@ -266,6 +424,8 @@ export interface BrowserInjected {
   }
   /** Whether the Desktop shell exposes component picking; `false` in a plain browser. */
   readonly pickerAvailable: boolean
+  /** Whether the Desktop shell renders documents in a native carrier; `false` in a plain browser. */
+  readonly nativeAvailable: boolean
   /**
    * @param tabId - tab occurrence.
    * @param signal - occurrence lifetime.
@@ -279,9 +439,24 @@ export interface BrowserInjected {
    * @param rect - iframe bounds in logical CSS pixels.
    * @returns whether picker mode entered its active state.
    */
-  startPicker(tabId: TabId, rect: ComponentPickerRect): boolean
+  startPicker(tabId: TabId, rect: BrowserCarrierRect): boolean
   /** @param tabId - tab occurrence. */
   stopPicker(tabId: TabId): void
+  /**
+   * Render one tab's current document in the native carrier.
+   * @param tabId - tab occurrence.
+   * @param url - prepared document URL.
+   * @param rect - carrier rectangle in logical CSS pixels.
+   */
+  openNativeDocument(tabId: TabId, url: string, rect: BrowserCarrierRect): void
+  /**
+   * Reposition one tab's native carrier.
+   * @param tabId - tab occurrence.
+   * @param rect - carrier rectangle in logical CSS pixels.
+   */
+  moveNativeDocument(tabId: TabId, rect: BrowserCarrierRect): void
+  /** @param tabId - tab occurrence. */
+  closeNativeDocument(tabId: TabId): void
   /** @param tabId - tab occurrence. @param value - address-bar or typed-open value. */
   loadUrl(tabId: TabId, value: string): void
   /** @param tabId - tab occurrence. */
@@ -314,6 +489,7 @@ export function createBrowserControllers(
   const controller = (tabId: TabId): BrowserController | undefined => controllers.get(tabId)?.controller
   return {
     pickerAvailable: componentPickerBridge() !== undefined,
+    nativeAvailable: browserDocumentBridge() !== undefined,
     keyedHooks: { browserFrame: key => controller(key as TabId)?.frame },
     mount(tabId, signal, applicationOrigin, initial) {
       const held = controllers.get(tabId)
@@ -331,6 +507,9 @@ export function createBrowserControllers(
     },
     startPicker: (tabId, rect) => controller(tabId)?.startPicker(rect) ?? false,
     stopPicker: (tabId) => { controller(tabId)?.stopPicker() },
+    openNativeDocument: (tabId, url, rect) => { controller(tabId)?.openNativeDocument(url, rect) },
+    moveNativeDocument: (tabId, rect) => { controller(tabId)?.moveNativeDocument(rect) },
+    closeNativeDocument: (tabId) => { controller(tabId)?.closeNativeDocument() },
     loadUrl: (tabId, value) => { controller(tabId)?.loadUrl(value) },
     goBack: (tabId) => { controller(tabId)?.goBack() },
     goForward: (tabId) => { controller(tabId)?.goForward() },

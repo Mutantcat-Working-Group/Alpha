@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-在独立的右侧 Sidebar tab 中浏览 HTTP(S) 页面，包括 loopback 服务。当前 Web 与 Desktop 都使用 iframe 和应用维护的 history。本包不会向被访问内容注入桌面原生或 Node 能力。
+在独立的右侧 Sidebar tab 中浏览 HTTP(S) 页面，包括 loopback 服务。Web 与 Desktop 都保留应用维护的 history：Web 用 iframe 渲染每个页面，Desktop 在 shell 能以原生 child webview 承载该页面时改用它，shell 拒绝时回到 iframe。本包不会向被访问内容注入桌面原生或 Node 能力。
 
 ## 目录
 
@@ -29,7 +29,7 @@ kind: "package-reference"
 
 ### 何时选择
 
-当 Web 页面需要保留在当前 Session 旁时，选择 Browser。本地文件使用 [Document Preview](../ui-sidebar-documentpreview/README.zh.md)；站点拒绝 iframe 嵌入或需要本包不授予的浏览器 capability 时，使用明确的外部浏览器操作。
+当 Web 页面需要保留在当前 Session 旁时，选择 Browser。本地文件使用 [Document Preview](../ui-sidebar-documentpreview/README.zh.md)；站点需要本包不授予的浏览器 capability 时，或在 Web 中拒绝 iframe 嵌入时，使用明确的外部浏览器操作。
 
 ### 最小配置
 
@@ -42,11 +42,11 @@ kind: "package-reference"
 
 Client 插件可以调用 `ctx.sidebarRight.openTab('browser', { params: { url } })` 打开 tab。可选 URL 会在导航前接受与地址栏输入相同的校验。
 
-工具栏提供后退、前进、刷新、前往、在系统浏览器中打开、逐 tab 的 sandbox 开关，以及选取组件按钮。关闭 sandbox 是临时选择，并会显示警告。外部打开接受已知的 HTTP(S) 目标。tab 标题显示 Web 主机名。
+工具栏提供后退、前进、刷新、前往、在系统浏览器中打开、逐 tab 的 sandbox 开关，以及选取组件按钮。关闭 sandbox 是临时选择，并会显示警告。外部打开接受已知的 HTTP(S) 目标。tab 标题显示 Web 主机名。Desktop 原生载体承载文档时 sandbox 开关不可用，因为 iframe `sandbox` 属性对该载体不生效。
 
 ### 选取组件（Desktop）
 
-Desktop 会为已加载的页面启用选取组件按钮；Web 保持禁用，因为 iframe 无法读取跨域文档。进入该模式会在页面之上放置一个原生子视图。移动指针会框出指针下的元素；点击某个元素会退出该模式，并把一份纯文本文档附加到当前 composer。按 Escape 或点击鼠标右键会退出该模式且不附加任何内容。该文档记录页面 URL 与标题、标签、XPath、CSS selector、DOM 深度、同级索引、父链、外接矩形、属性、部分计算样式、可见文本与外层 HTML。
+Desktop 会为已加载的页面启用选取组件按钮；Web 保持禁用，因为 iframe 无法读取跨域文档。进入该模式会在页面之上放置一个原生子视图。移动指针会框出指针下的元素；点击某个元素会退出该模式，并把一份纯文本文档附加到当前 composer。按 Escape 或点击鼠标右键会退出该模式且不附加任何内容。该文档记录页面 URL 与标题、标签、XPath、CSS selector、DOM 深度、同级索引、父链、外接矩形、属性、部分计算样式、可见文本与外层 HTML。选取会测量当前承载页面的载体，因此在原生 child webview 上与在 iframe 上同样有效。
 
 -----
 
@@ -62,15 +62,21 @@ Desktop 会为已加载的页面启用选取组件按钮；Web 保持禁用，�
 
 ### Iframe 载体
 
-Web 与 Desktop 默认使用 `sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"`。frame 没有直接的下载或顶层导航 flag。popup 会脱离 sandbox；在 Web 中，逃逸的 popup 会保留 opener，并可以导航顶层应用。被访问的 origin 可以使用自身 Cookie 与 Web storage，但跨域目标无法读取 DSH DOM、storage 或 API 响应。iframe 不发送 referrer，也不添加包自有的 Permissions Policy，因此浏览器默认策略与用户授权生效。toolbar 可以为当前 tab occurrence 移除 sandbox；该选择不持久化。未受 sandbox 约束的页面可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。本包不代理或探测远程页面。
+iframe 载体默认应用 `sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"`。frame 没有直接的下载或顶层导航 flag。popup 会脱离 sandbox；在 Web 中，逃逸的 popup 会保留 opener，并可以导航顶层应用。被访问的 origin 可以使用自身 Cookie 与 Web storage，但跨域目标无法读取 DSH DOM、storage 或 API 响应。iframe 不发送 referrer，也不添加包自有的 Permissions Policy，因此浏览器默认策略与用户授权生效。toolbar 可以为当前 tab occurrence 移除 sandbox；该选择不持久化。未受 sandbox 约束的页面可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。本包不代理或探测远程页面。
 
 Web 记录 toolbar 提交和 typed tab 打开。导航状态机把每个受控 revision 的第一次 iframe load 视为已知，把后续 load 视为页面已经变化到不可读取 URL 的证据。进入 unknown 状态后，地址会显示标记，后退、前进和外部打开会禁用，刷新则返回最后一个受控 URL。body 重挂载时会重新加载应用最后已知的 URL，并且仅在尚无受控目标时使用可选初始 URL。不产生 iframe load 的 History API 与 fragment 变化仍不可见。iframe `error` event 会显示临时加载失败 notice，直到下一个受控加载，但不会改变 URL history。
 
+### 原生载体（Desktop）
+
+当 shell 暴露 browser-document bridge 时，Desktop 用原生 child webview 渲染当前文档。body 用一个占位 div 替换 iframe，把该矩形上报给 shell，并通过 `ResizeObserver` 与 window resize event 保持其最新；关闭该 tab occurrence 会关闭该 child webview。顶层 child webview 不受 `X-Frame-Options` 或 CSP `frame-ancestors` 指令约束，因此拒绝 iframe 嵌入的页面也能渲染。
+
+shell 把每次完成的导航作为该载体所持 revision 的一次 load 上报，同一个导航状态机消费该上报。页面发起的 popup 在 shell 处被拒绝，并带着目标 URL 上报，客户端通过 `window.open` 打开该 URL。该载体不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。shell 拒绝打开载体时，该文档回到 iframe。
+
 ### Controller
 
-每个 tab 获得一个 `BrowserController` class。它的公开命令只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；地址校验与 history 变更均由该对象封装。它的 `BrowserNavigation` class 拥有可序列化的 URL 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只保留可编辑草稿与 iframe DOM。
+每个 tab 获得一个 `BrowserController` class。它的公开命令只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；地址校验与 history 变更均由该对象封装。它的 `BrowserNavigation` class 拥有可序列化的 URL 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只保留可编辑草稿与承载页面的 DOM 节点。
 
-Controller 接口不依赖 iframe API。未来的 `NativeWebViewImpl` 可以实现 `BrowserFrame`，并持有 `<webview>` attachment 与 target identity。该延期载体记录在同一份 Sidebar Browser 决策中，当前不注册也不测试。
+Controller 接口不依赖 iframe API。`openNativeDocument`、`moveNativeDocument` 与 `closeNativeDocument` 通过 shell bridge 操作 Desktop 载体；被拒绝的打开会标记 frame，让 body 把该文档交回 iframe。持有 attachment、detach 与 target identity 的 per-tab 原生视图对象仍然延期，并记录在同一份 Sidebar Browser 决策中。
 
 ### 选取组件载体
 
@@ -85,7 +91,7 @@ Controller 接口不依赖 iframe API。未来的 `NativeWebViewImpl` 可以实�
 
 - [右侧 Sidebar](../../../docs/subsystems/sidebar-right.zh.md)——tab composition、导航与生命周期。
 - [Document Preview](../ui-sidebar-documentpreview/README.zh.md)——本地源码、Markdown、图片、HTML 与 PDF 渲染。
-- [Sidebar Browser 决策](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.zh.md)——当前 iframe 行为、controller 所有权与延期原生载体。
+- [Sidebar Browser 决策](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.zh.md)——当前 iframe 行为、controller 所有权与延期原生载体工作。
 
 -----
 
@@ -104,14 +110,14 @@ Controller 接口不依赖 iframe API。未来的 `NativeWebViewImpl` 可以实�
 
 隔离策略有意放弃部分浏览器兼容性：
 
-- 很多站点拒绝 iframe 嵌入，或需要默认 sandbox 不向 frame 授予的下载与顶层导航。HTTPS 应用还可能按 mixed-content 策略阻止公共 HTTP 页面。关闭 sandbox 会用自身限制换取兼容性，但不会绕过 mixed-content 或 private-network 策略。未受 sandbox 约束的 frame 可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。该模式不会按 Browser tab 隔离被访问 origin 的 Cookie，也无法阻止 iframe 内页面自行选择后续 URL。
+- 在 Web 中，很多站点拒绝 iframe 嵌入，或需要默认 sandbox 不向 frame 授予的下载与顶层导航。HTTPS 应用还可能按 mixed-content 策略阻止公共 HTTP 页面。关闭 sandbox 会用自身限制换取兼容性，但不会绕过 mixed-content 或 private-network 策略。未受 sandbox 约束的 frame 可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。该模式不会按 Browser tab 隔离被访问 origin 的 Cookie，也无法阻止 iframe 内页面自行选择后续 URL。
 - 在 Web 中，逃逸出 sandbox 的 popup 会保留 opener，并可以通过该链导航顶层应用。Desktop 会单独处理 popup 创建。
 - 后续 iframe load 能表明发生了导航，但无法给出新的跨域 URL。History API 与 fragment 变化可能仍不可见；状态变成 unknown 后，Web 的后退与前进不可用。
 - 出于安全原因，浏览器会隐藏很多 iframe 失败：DNS、TLS、mixed-content、CSP 与 `X-Frame-Options` 失败可能触发 `load`，也可能不提供可操作 event，而不是触发 `error`。加载失败 notice 只能作为 best-effort 提示。
 - Browser history 会跨 body 重挂载与普通页面刷新保留，但关闭 tab 或卸载 `ui-sidebar-right` 会中止其 occurrence 并删除已存储的 history bucket。
 - 本地文件会被拒绝，并继续由 Document Preview 负责。
 - 选取组件仅在 Desktop 可用，并且描述被选页面的顶层 document：嵌套 frame 或 shadow root 中的内容会通过承载它的元素回报。Web 上该按钮显示为禁用。
-- 拟议的原生 `<webview>` tab 载体、per-tab Cookie partition、原生 history 和 target-specific CDP 连接尚未实现；选取组件使用自己临时的 child webview，并随该模式一起关闭。
+- Desktop 原生载体是每个 tab occurrence 一个 child webview，因此它不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。per-tab Cookie partition、原生 history 和 target-specific CDP 连接仍然延期，持有 attachment、detach 与 target identity 的 per-tab 原生视图对象同样延期；选取组件使用自己临时的 child webview，并随该模式一起关闭。
 
 <a id="dev-note"></a>
 ### 开发备注

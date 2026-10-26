@@ -14,6 +14,7 @@ import { createBrowserStore } from './browser/store.ts'
 
 export type { BrowserBodyProps } from './view/BrowserBody.tsx'
 export type { BrowserInjected } from './browser/BrowserController.ts'
+export type { BrowserCarrierRect, BrowserDocumentEvent, BrowserDocumentMoveRequest, BrowserDocumentOpenRequest } from './browser/BrowserController.ts'
 export type { BrowserDocument, BrowserFrame, BrowserFrameState } from './browser/BrowserFrame.ts'
 export type { BrowserFailure, BrowserHistoryEntry, BrowserNavigationStatus, BrowserTabState } from './browser/BrowserNavigation.ts'
 export type { SidebarBrowserKey } from './locales.ts'

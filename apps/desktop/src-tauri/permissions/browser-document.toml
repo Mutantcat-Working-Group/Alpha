@@ -1,0 +1,9 @@
+++
+[[permission]]
+identifier = "allow-browser-document"
+description = "Allow the Web client to open, move, and close the native Browser document webview."
+commands.allow = [
+  "open_browser_document",
+  "move_browser_document",
+  "close_browser_document",
+]

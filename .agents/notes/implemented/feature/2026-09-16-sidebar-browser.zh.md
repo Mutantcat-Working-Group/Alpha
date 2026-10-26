@@ -18,9 +18,9 @@ Status: implemented
 
 地址解析器接受 `http:` 与 `https:`，包括 loopback 目标；不带 scheme 的主机名补为 HTTPS。它拒绝内嵌凭据、应用自身 origin、畸形地址、`file:` URL，以及所有其他 scheme。本地文件继续由 Document Preview 负责。
 
-当前 Web 与 Desktop 都使用 iframe 载体。它的默认 Web 策略是 `sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"`；frame 没有直接的下载或顶层导航 flag。popup 会脱离 sandbox，Web popup 会保留 opener，并可以通过该链导航顶层应用。same-origin 允许被访问的 origin 使用自己的 Cookie 与 Web storage；它不会让跨域目标与 DSH 变成同源。iframe 不发送 referrer，也不添加包自有的 Permissions Policy，因此浏览器默认策略与用户授权生效。最右侧 toolbar 开关会为当前 tab occurrence 移除 sandbox attribute；该模式不持久化，启用期间持续显示警告。未受 sandbox 约束的页面可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。本包不执行 Host 侧 URL probe 或代理。
+Web 用 iframe 渲染每个页面；shell 未暴露 browser-document bridge 时，Desktop 同样如此。iframe 的默认策略是 `sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"`；frame 没有直接的下载或顶层导航 flag。popup 会脱离 sandbox，Web popup 会保留 opener，并可以通过该链导航顶层应用。same-origin 允许被访问的 origin 使用自己的 Cookie 与 Web storage；它不会让跨域目标与 DSH 变成同源。iframe 不发送 referrer，也不添加包自有的 Permissions Policy，因此浏览器默认策略与用户授权生效。最右侧 toolbar 开关会为当前 tab occurrence 移除 sandbox attribute；该模式不持久化，启用期间持续显示警告。未受 sandbox 约束的页面可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。本包不执行 Host 侧 URL probe 或代理。
 
-每个 tab 获得一个 `BrowserController` class。它的命令接口只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；它负责地址校验和 `BrowserNavigation` 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只负责可编辑草稿与 iframe DOM。未来的 `ElectronWebViewImpl` 可以实现相同接口，而不把 URL 或载体状态放进组件。
+每个 tab 获得一个 `BrowserController` class。它的命令接口只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；它负责地址校验和 `BrowserNavigation` 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只负责可编辑草稿与承载页面的 DOM 节点。`openNativeDocument`、`moveNativeDocument` 与 `closeNativeDocument` 通过 shell bridge 操作 Desktop 载体；被拒绝的打开会标记 frame，让 body 把该文档交回 iframe。未来的 `ElectronWebViewImpl` 可以实现相同接口，而不把 URL 或载体状态放进组件。
 
 `BrowserNavigation` 保存 canonical 当前 URL、受控加载 revision、导航状态，以及有上限的序列与当前位置。新地址丢弃 forward 分支；后退和前进移动 index；刷新重建应用最后已知的 URL 且不增加 history。body 重挂载时会重新加载应用最后已知的 URL，并且仅在尚无受控目标时使用可选初始 URL。Session-scoped store 只持久化该 class 的 immutable snapshot，供标题渲染与应用刷新恢复。occurrence abort 会删除其 bucket；`TabDomain` 对 tab 删除与 `ui-sidebar-right` 卸载使用同一个 abort，因此卸载或热重载 Sidebar 会清空 Browser history，即使 DockKit 随后恢复 tab record。
 
@@ -38,6 +38,12 @@ Browser 状态只属于呈现层，不进入 Session log、模型请求、resour
 | `unknown` | 当前 revision 收到 iframe 的第二次或后续 `load`。 | 最后一个受控 URL 变灰，并标记 `URL 已变化`。iframe 不提供跨域 `canGoBack` 或 `canGoForward`，因此后退和前进禁用；外部打开禁用。刷新以最后一个受控 URL 启动新的 revision。 |
 
 每个状态都允许编辑地址。无效草稿只报告地址错误，不改变当前导航状态。聚焦 unknown 地址会隐藏标记并显示前往按钮；回车与前往都会启动受控加载。切换 sandbox 模式会使用新的 revision 重新加载最后一个受控 Web 目标。iframe `error` event 只会为当前 `BrowserFrame` revision 标记临时加载失败 notice；它不改变 URL history，下一个受控 document 会清除它。浏览器不会为 DNS、TLS、mixed-content、CSP 或 `X-Frame-Options` 失败可靠触发该 event。不产生 iframe `load` 的 `pushState`、`replaceState` 与 fragment 变化仍不可观察。
+
+## Desktop 原生载体
+
+Desktop shell 为每个 Browser tab occurrence 打开一个 child webview，位置取 React body 为其占位 div 上报的矩形，body 通过 `ResizeObserver` 与 window resize event 保持该矩形最新。关闭该 tab occurrence 会关闭该 child webview。顶层 child webview 不受 `X-Frame-Options` 或 CSP `frame-ancestors` 指令约束，因此拒绝 iframe 嵌入的页面也能渲染。
+
+shell 把每次完成的导航作为该载体所持 revision 的一次 load 上报，`BrowserNavigation` 通过与 iframe load 相同的状态机消费该上报。页面发起的 popup 在 shell 处被拒绝，并带着目标 URL 上报，客户端通过 `window.open` 打开该 URL。该载体不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。被拒绝的打开会标记 frame，并把该文档交回 iframe。选取组件测量的是载体矩形，因此在原生载体上与在 iframe 上同样有效。
 
 ## Deferred Electron carrier
 
@@ -69,6 +75,6 @@ view 对象把非活动 guest 保持连接并停放在自有隐藏 DOM host 中�
 
 ## Consequences
 
-Browser 不增加 Electron 权限，并在当前 Web 与 Desktop 构建中保持相同行为。很多站点拒绝 iframe 嵌入，或者依赖默认 sandbox 不向 frame 提供的下载或顶层导航。HTTPS 应用可能按 mixed-content 策略阻止公共 HTTP 页面，或限制 private-network 请求；关闭 sandbox 也无法绕过这些浏览器策略。关闭 sandbox 在其他方面会用自身保护换取兼容性：frame 可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。逃逸出 sandbox 的 Web popup 会保留 opener，并可以通过该链导航顶层应用。这两条路径都不会增加 Electron 或 Node API。URL 检查无法阻止 iframe 内页面自行选择目标。后续 iframe load 能表明已经发生导航，但无法给出跨域 URL；History API 与 fragment 变化可能完全不可见。延期的 Electron 载体必须通过真实打包应用验证，才能成为当前行为。
+Browser 不增加 Electron 权限。Web 与 Desktop 只在载体上有别：shell 暴露 browser-document bridge 时，Desktop 用原生 child webview 渲染文档，Web 始终用 iframe 渲染。在 Web 中，很多站点拒绝 iframe 嵌入，或者依赖默认 sandbox 不向 frame 提供的下载或顶层导航。HTTPS 应用可能按 mixed-content 策略阻止公共 HTTP 页面，或限制 private-network 请求；关闭 sandbox 也无法绕过这些浏览器策略。关闭 sandbox 在其他方面会用自身保护换取兼容性：frame 可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。逃逸出 sandbox 的 Web popup 会保留 opener，并可以通过该链导航顶层应用。这两条路径都不会增加 Electron 或 Node API。URL 检查无法阻止 iframe 内页面自行选择目标。后续 iframe load 能表明已经发生导航，但无法给出跨域 URL；History API 与 fragment 变化可能完全不可见。延期的 Electron `<webview>` 载体必须通过真实打包应用验证，才能成为当前行为。
 
 站点 Cookie 行为遵循用户浏览器，并不按 Browser tab 隔离。本地文件会被拒绝，并继续由 Document Preview 负责。持久化 URL 可能含敏感 query 或 fragment，因此用户不应在地址栏输入不希望保留在应用本地浏览器存储中的凭据。

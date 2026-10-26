@@ -13,6 +13,7 @@ import {
 } from '@mutantcat/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@mutantcat/dsh-client-ui-slots'
 import type { BrowserInjected } from '../browser/BrowserController.ts'
+import type { BrowserCarrierRect } from '../browser/BrowserController.ts'
 import type { BrowserFrameState } from '../browser/BrowserFrame.ts'
 import { BrowserNavigation } from '../browser/BrowserNavigation.ts'
 import type { BrowserAddressFailure } from '../browser/url.ts'
@@ -23,7 +24,15 @@ import css from './Browser.module.css'
 export const WEB_BROWSER_SANDBOX = 'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox'
 
 const INITIAL_BROWSER_FRAME: BrowserFrameState = {
-  document: undefined, sandboxed: true, loadFailed: false, picker: 'inactive',
+  document: undefined, sandboxed: true, loadFailed: false, nativeFailed: false, picker: 'inactive',
+}
+
+/** Measure the current carrier element, or `undefined` when it has no area. */
+function carrierRect(node: HTMLElement | null): BrowserCarrierRect | undefined {
+  const rect = node?.getBoundingClientRect()
+  if (rect === undefined) return undefined
+  if (!(rect.width > 0) || !(rect.height > 0)) return undefined
+  return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
 }
 
 function SandboxPolicyIcon({ sandboxed }: { readonly sandboxed: boolean }): ReactNode {
@@ -61,7 +70,9 @@ function useBrowserDraft(
 export function BrowserBody(props: BrowserBodyProps): ReactNode {
   const {
     goBack, goForward, loadUrl, mount, reload, reportLoaded, reportLoadFailed, toggleSandbox,
-    pickerAvailable, startPicker, stopPicker, useBrowserFrame, useStore, useTabInfo, t,
+    pickerAvailable, nativeAvailable, startPicker, stopPicker,
+    openNativeDocument, moveNativeDocument, closeNativeDocument,
+    useBrowserFrame, useStore, useTabInfo, t,
   } = props
   const { tab } = useTabInfo()
   const state = useStore(snapshot => snapshot.byTab[tab.id]) ?? BrowserNavigation.empty()
@@ -71,6 +82,9 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
   const [draft, setDraft] = useBrowserDraft(current?.url ?? initialUrl.current, state.request?.revision)
   const [mountCount, setMountCount] = useState(0)
   const iframe = useRef<HTMLIFrameElement>(null)
+  const carrier = useRef<HTMLDivElement>(null)
+  /** Whichever carrier element the current document renders into. */
+  const host = (): HTMLElement | null => iframe.current ?? carrier.current
 
   useEffect(() => {
     mount(tab.id, tab.signal, window.location.origin, initialState.current)
@@ -89,7 +103,36 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
   }, [loadUrl, mountCount, reload, tab.id])
 
   const frameState = useBrowserFrame(tab.id) ?? INITIAL_BROWSER_FRAME
-  const { document, sandboxed, loadFailed, picker } = frameState
+  const { document, sandboxed, loadFailed, nativeFailed, picker } = frameState
+  const nativeDocument = document !== undefined && !nativeFailed && nativeAvailable ? document : undefined
+
+  useEffect(() => {
+    if (nativeDocument === undefined) return
+    const rect = carrierRect(host())
+    if (rect === undefined) return
+    openNativeDocument(tab.id, nativeDocument.target.url, rect)
+    return () => { closeNativeDocument(tab.id) }
+  }, [closeNativeDocument, nativeDocument, openNativeDocument, tab.id])
+
+  useEffect(() => {
+    if (nativeDocument === undefined) return
+    const sync = (): void => {
+      const rect = carrierRect(host())
+      if (rect !== undefined) moveNativeDocument(tab.id, rect)
+    }
+    // The carrier renders beside every open native document, so its element is
+    // attached by the time this effect runs.
+    const node = host()
+    /* v8 ignore next -- the carrier renders beside every open native document, so its element is attached before this effect runs. */
+    if (node === null) return
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(sync)
+    observer?.observe(node)
+    window.addEventListener('resize', sync)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', sync)
+    }
+  }, [moveNativeDocument, nativeDocument, tab.id])
 
   const navigationUnknown = state.navigation.status === 'unknown'
   const externalUrl = navigationUnknown ? undefined : current?.url
@@ -101,13 +144,16 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
     || navigationUnknown
     || externalUrl === undefined
   const pickerLabel = picker === 'active' ? t('picker.stop') : t('picker.start')
+  const sandboxLabel = nativeDocument === undefined
+    ? (sandboxed ? 'sandbox.disable' : 'sandbox.enable')
+    : 'sandbox.native'
 
   const togglePicker = (): void => {
     if (picker === 'active') {
       stopPicker(tab.id)
       return
     }
-    const rect = iframe.current?.getBoundingClientRect()
+    const rect = carrierRect(host())
     if (rect === undefined) return
     startPicker(tab.id, { x: rect.x, y: rect.y, width: rect.width, height: rect.height })
   }
@@ -144,10 +190,10 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
         <button
           type="button"
           className={`${css.tool} ${sandboxed ? '' : css.sandboxOff}`}
-          aria-label={t(sandboxed ? 'sandbox.disable' : 'sandbox.enable')}
-          title={t(sandboxed ? 'sandbox.disable' : 'sandbox.enable')}
+          aria-label={t(sandboxLabel)}
+          title={t(sandboxLabel)}
           aria-pressed={!sandboxed}
-          disabled={mountCount === 0}
+          disabled={mountCount === 0 || nativeDocument !== undefined}
           onClick={() => { toggleSandbox(tab.id) }}
         ><SandboxPolicyIcon sandboxed={sandboxed} /></button>
         <button
@@ -160,25 +206,31 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
           onClick={togglePicker}
         ><IconInspectOutline12 size={14} /></button>
       </form>
-      {!sandboxed && <div className={css.sandboxWarning} role="status">{t('sandbox.warning')}</div>}
+      {!sandboxed && nativeDocument === undefined && <div className={css.sandboxWarning} role="status">{t('sandbox.warning')}</div>}
       {loadFailed && <div className={css.failure} role="status">{t('web.loadFailed')}</div>}
       {picker === 'failed' && <div className={css.failure} role="alert">{t('picker.failed')}</div>}
       {failure !== undefined && <div className={css.failure} role="alert">{failure}</div>}
       {document === undefined
         ? <div className={css.start}>{placeholder}</div>
-        : <iframe
-          ref={iframe}
-          key={`${document.target.url}:${String(document.revision)}`}
-          className={css.frame}
-          src={document.src}
-          sandbox={sandboxed ? WEB_BROWSER_SANDBOX : undefined}
-          referrerPolicy="no-referrer"
-          title={document.target.title}
-          onLoad={() => { reportLoaded(tab.id, document.revision) }}
-          /* v8 ignore next -- jsdom does not dispatch React iframe error events; BrowserFrame owns the tested behavior. */
-          onError={() => { reportLoadFailed(tab.id, document.revision) }}
-          data-sidebar-browser-frame
-        />}
+        : nativeDocument === undefined
+          ? <iframe
+            ref={iframe}
+            key={`${document.target.url}:${String(document.revision)}`}
+            className={css.frame}
+            src={document.src}
+            sandbox={sandboxed ? WEB_BROWSER_SANDBOX : undefined}
+            referrerPolicy="no-referrer"
+            title={document.target.title}
+            onLoad={() => { reportLoaded(tab.id, document.revision) }}
+            /* v8 ignore next -- jsdom does not dispatch React iframe error events; BrowserFrame owns the tested behavior. */
+            onError={() => { reportLoadFailed(tab.id, document.revision) }}
+            data-sidebar-browser-frame
+          />
+          : <div
+            ref={carrier}
+            className={css.carrier}
+            data-sidebar-browser-carrier
+          />}
       {navigationUnknown && <p className={css.limit}>{t('web.unknown')}</p>}
     </div>
   )

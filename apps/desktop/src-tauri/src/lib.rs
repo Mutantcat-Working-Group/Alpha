@@ -25,6 +25,7 @@
 //! either stops answering, so a machine that was suspended or had its lid closed never leaves
 //! the window on a document that can no longer talk to anything.
 
+use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
 use std::net::SocketAddr;
 use std::net::TcpListener;
@@ -47,7 +48,7 @@ use tauri::path::BaseDirectory;
 use tauri::webview::PageLoadEvent;
 use tauri::webview::PageLoadPayload;
 use tauri::{
-    AppHandle, Emitter, Event, Listener, LogicalPosition, LogicalSize, Manager, RunEvent,
+    AppHandle, Emitter, Event, Listener, Manager, PhysicalPosition, PhysicalSize, RunEvent,
     Webview, WebviewBuilder, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
@@ -88,6 +89,10 @@ const COMPONENT_PICKER_ORIGIN: &str = "https://component-picker.alpha.invalid";
 const COMPONENT_PICKER_INPUT: &str = "input";
 /// Maximum encoded result accepted from the child webview.
 const COMPONENT_PICKER_RESULT_LIMIT: usize = 512 * 1024;
+/// Event through which a native Browser document reports a load or a popup.
+const BROWSER_DOCUMENT_EVENT: &str = "alpha-browser-document";
+/// Label prefix of the persistent Browser document child webview.
+const BROWSER_DOCUMENT_LABEL: &str = "browser-document";
 
 /// Picker script installed only in the temporary child webview.
 const COMPONENT_PICKER_SCRIPT: &str = r#"
@@ -359,6 +364,53 @@ const BOOT_BRIDGE: &str = r#"(() => {
         listener(event.payload);
       }));
     },
+    openBrowserDocument: (request) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.core === undefined || typeof api.core.invoke !== "function") {
+        return Promise.reject(new Error("native browser document unavailable"));
+      }
+      return Promise.resolve(api.core.invoke("open_browser_document", {
+        request: {
+          key: String(request.key),
+          url: String(request.url),
+          x: Number(request.x),
+          y: Number(request.y),
+          width: Number(request.width),
+          height: Number(request.height),
+        },
+      }));
+    },
+    moveBrowserDocument: (request) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.core === undefined || typeof api.core.invoke !== "function") {
+        return Promise.reject(new Error("native browser document unavailable"));
+      }
+      return Promise.resolve(api.core.invoke("move_browser_document", {
+        key: String(request.key),
+        x: Number(request.x),
+        y: Number(request.y),
+        width: Number(request.width),
+        height: Number(request.height),
+      }));
+    },
+    closeBrowserDocument: (key) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.core === undefined || typeof api.core.invoke !== "function") {
+        return Promise.reject(new Error("native browser document unavailable"));
+      }
+      return Promise.resolve(api.core.invoke("close_browser_document", {
+        key: String(key),
+      }));
+    },
+    onBrowserDocument: (listener) => {
+      const api = global.__TAURI__;
+      if (api === undefined || api.event === undefined || typeof api.event.listen !== "function") {
+        return Promise.resolve(() => {});
+      }
+      return Promise.resolve(api.event.listen("alpha-browser-document", (event) => {
+        listener(event.payload);
+      }));
+    },
   };
 })();
 "#;
@@ -597,6 +649,29 @@ async fn start_component_picker(
         .ok_or_else(|| "component picker: main window unavailable".to_string())?;
     let event_request_id = request.request_id.clone();
     let handle = app.clone();
+    // The reported rectangle is CSS pixels relative to the Browser iframe. wry maps a child
+    // webview's logical rectangle through two independent per-HWND DPI reads, so a logical
+    // rectangle lands wherever those reads disagree with the window's scale factor. Converting
+    // once to physical pixels against the window scale factor and the main webview's measured
+    // origin turns both reads into identity and places the child exactly over the iframe.
+    let scale_factor = match window.scale_factor() {
+        Ok(scale) if scale.is_finite() && scale > 0.0 => scale,
+        _ => 1.0,
+    };
+    let origin = app
+        .get_webview("main")
+        .and_then(|main| main.bounds().ok())
+        .map(|rect| rect.position.to_physical::<i32>(scale_factor))
+        .unwrap_or_else(|| PhysicalPosition::new(0, 0));
+    let to_physical = |value: f64| (value * scale_factor).round();
+    let position = PhysicalPosition::new(
+        origin.x + to_physical(request.x) as i32,
+        origin.y + to_physical(request.y) as i32,
+    );
+    let size = PhysicalSize::new(
+        to_physical(request.width).max(1.0) as u32,
+        to_physical(request.height).max(1.0) as u32,
+    );
     let webview = window
         .add_child(
             WebviewBuilder::new(label, WebviewUrl::External(target))
@@ -652,8 +727,8 @@ async fn start_component_picker(
                 }
                 false
             }),
-            LogicalPosition::new(request.x, request.y),
-            LogicalSize::new(request.width, request.height),
+            position,
+            size,
         )
         .map_err(|error| error.to_string())?;
     // The child webview must own the keyboard so Escape reaches the picker script.
@@ -685,6 +760,261 @@ fn cancel_component_picker(
     Ok(())
 }
 
+/// One request to open a native Browser document child webview.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserDocumentRequest {
+    key: String,
+    url: String,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+}
+
+/// Shell-owned registry of the live Browser document child webviews.
+#[derive(Default)]
+struct BrowserDocumentState(Mutex<BrowserDocumentRegistry>);
+
+/// Live Browser document child webviews keyed by the Web client's tab key.
+#[derive(Default)]
+struct BrowserDocumentRegistry {
+    /// Monotonic counter that keeps every child webview label unique.
+    sequence: u64,
+    /// Live child webview per tab key.
+    documents: HashMap<String, Webview>,
+}
+
+/// One Browser document event emitted to the Web client.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserDocumentEvent {
+    key: String,
+    /// `loaded` for a finished navigation, `popup` for a blocked new-window request.
+    status: &'static str,
+    /// Popup target, present only on `popup`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    url: Option<String>,
+}
+
+/// Convert one reported carrier rectangle into physical pixels.
+///
+/// wry maps a child webview's logical rectangle through two independent per-HWND DPI
+/// reads, so a logical rectangle lands wherever those reads disagree with the window's
+/// scale factor. Converting once against the window scale factor and the main webview's
+/// measured origin turns both reads into identity and places the child over the carrier.
+/// @param app - application handle that owns the main window.
+/// @param x - carrier rectangle left edge in CSS pixels.
+/// @param y - carrier rectangle top edge in CSS pixels.
+/// @param width - carrier rectangle width in CSS pixels.
+/// @param height - carrier rectangle height in CSS pixels.
+/// @returns the physical position and size, or the refusal reason.
+fn browser_document_placement(
+    app: &AppHandle,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> Result<(PhysicalPosition<i32>, PhysicalSize<u32>), String> {
+    if !x.is_finite()
+        || !y.is_finite()
+        || !width.is_finite()
+        || !height.is_finite()
+        || width <= 0.0
+        || height <= 0.0
+    {
+        return Err("browser document: carrier rectangle is invalid".to_string());
+    }
+    let window = app
+        .get_window("main")
+        .ok_or_else(|| "browser document: main window unavailable".to_string())?;
+    let scale_factor = match window.scale_factor() {
+        Ok(scale) if scale.is_finite() && scale > 0.0 => scale,
+        _ => 1.0,
+    };
+    let origin = app
+        .get_webview("main")
+        .and_then(|main| main.bounds().ok())
+        .map(|rect| rect.position.to_physical::<i32>(scale_factor))
+        .unwrap_or_else(|| PhysicalPosition::new(0, 0));
+    let to_physical = |value: f64| (value * scale_factor).round();
+    let position = PhysicalPosition::new(
+        origin.x + to_physical(x) as i32,
+        origin.y + to_physical(y) as i32,
+    );
+    let size = PhysicalSize::new(
+        to_physical(width).max(1.0) as u32,
+        to_physical(height).max(1.0) as u32,
+    );
+    Ok((position, size))
+}
+
+/// Close every live Browser document child webview.
+/// @param state - shell-owned registry of live document webviews.
+fn close_browser_documents(state: &BrowserDocumentState) {
+    let webviews: Vec<Webview> = match state.0.lock() {
+        Ok(mut registry) => registry.documents.drain().map(|(_, webview)| webview).collect(),
+        Err(_) => return,
+    };
+    for webview in webviews {
+        // `Webview::close` re-enters the event loop when the caller already runs on the
+        // main thread, and this runs from the shell's own exit handler.
+        tauri::async_runtime::spawn(async move {
+            let _ = webview.close();
+        });
+    }
+}
+
+/// Open one native Browser document child webview over the Browser carrier.
+///
+/// The child webview is isolated from the main window's boot bridge, so the page it
+/// renders cannot reach the application, and it is not subject to the framing refusals
+/// that leave an iframe carrier blank. A finished navigation is reported back through
+/// the Browser document event, and a blocked new-window request reports its target so
+/// the client can hand it to the system browser.
+/// @param app - application handle that owns the main window.
+/// @param state - shell-owned registry of live document webviews.
+/// @param request - tab key, target URL, and carrier rectangle in CSS pixels.
+/// @returns an acknowledgement once the child webview is created.
+#[tauri::command]
+async fn open_browser_document(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, BrowserDocumentState>,
+    request: BrowserDocumentRequest,
+) -> Result<(), String> {
+    if request.key.is_empty() {
+        return Err("browser document: key is empty".to_string());
+    }
+    let target = Url::parse(&request.url).map_err(|error| error.to_string())?;
+    if target.scheme() != "http" && target.scheme() != "https" {
+        return Err("browser document: only HTTP(S) URLs are supported".to_string());
+    }
+    let (position, size) =
+        browser_document_placement(&app, request.x, request.y, request.width, request.height)?;
+    let window = app
+        .get_window("main")
+        .ok_or_else(|| "browser document: main window unavailable".to_string())?;
+    let label = {
+        let mut registry = state
+            .0
+            .lock()
+            .map_err(|_| "browser document: state lock poisoned".to_string())?;
+        registry.sequence = registry.sequence.saturating_add(1);
+        let sequence = registry.sequence;
+        let previous = registry.documents.remove(&request.key);
+        drop(registry);
+        if let Some(previous) = previous {
+            // Deferring the close keeps the controller alive until wry has finished
+            // reading this command's arguments, matching the picker's own close.
+            tauri::async_runtime::spawn(async move {
+                let _ = previous.close();
+            });
+        }
+        format!("{BROWSER_DOCUMENT_LABEL}-{sequence}")
+    };
+    let webview = window
+        .add_child(
+            WebviewBuilder::new(label, WebviewUrl::External(target))
+                .on_page_load({
+                    let emitter = app.clone();
+                    let key = request.key.clone();
+                    move |_webview, payload| {
+                        if payload.event() != PageLoadEvent::Finished {
+                            return;
+                        }
+                        let _ = emitter.emit(
+                            BROWSER_DOCUMENT_EVENT,
+                            BrowserDocumentEvent { key: key.clone(), status: "loaded", url: None },
+                        );
+                    }
+                })
+                .on_new_window({
+                    let emitter = app.clone();
+                    let key = request.key.clone();
+                    move |url, _features| {
+                        let _ = emitter.emit(
+                            BROWSER_DOCUMENT_EVENT,
+                            BrowserDocumentEvent {
+                                key: key.clone(),
+                                status: "popup",
+                                url: Some(url.to_string()),
+                            },
+                        );
+                        tauri::webview::NewWindowResponse::Deny
+                    }
+                }),
+            position,
+            size,
+        )
+        .map_err(|error| error.to_string())?;
+    {
+        let mut registry = state
+            .0
+            .lock()
+            .map_err(|_| "browser document: state lock poisoned".to_string())?;
+        registry.documents.insert(request.key, webview);
+    }
+    Ok(())
+}
+
+/// Reposition one open native Browser document child webview.
+/// @param app - application handle that owns the main window.
+/// @param state - shell-owned registry of live document webviews.
+/// @param key - tab key the child webview was opened for.
+/// @param x - carrier rectangle left edge in CSS pixels.
+/// @param y - carrier rectangle top edge in CSS pixels.
+/// @param width - carrier rectangle width in CSS pixels.
+/// @param height - carrier rectangle height in CSS pixels.
+/// @returns an acknowledgement, or a refusal when the rectangle is unusable.
+#[tauri::command]
+fn move_browser_document(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, BrowserDocumentState>,
+    key: String,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
+    let (position, size) = browser_document_placement(&app, x, y, width, height)?;
+    let webview = state
+        .0
+        .lock()
+        .map_err(|_| "browser document: state lock poisoned".to_string())?
+        .documents
+        .get(&key)
+        .cloned();
+    let Some(webview) = webview else {
+        return Ok(());
+    };
+    webview.set_position(position).map_err(|error| error.to_string())?;
+    webview.set_size(size).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+/// Close one native Browser document child webview.
+/// @param state - shell-owned registry of live document webviews.
+/// @param key - tab key the child webview was opened for.
+/// @returns an acknowledgement once the child webview is closed.
+#[tauri::command]
+fn close_browser_document(
+    state: tauri::State<'_, BrowserDocumentState>,
+    key: String,
+) -> Result<(), String> {
+    let webview = state
+        .0
+        .lock()
+        .map_err(|_| "browser document: state lock poisoned".to_string())?
+        .documents
+        .remove(&key);
+    if let Some(webview) = webview {
+        tauri::async_runtime::spawn(async move {
+            let _ = webview.close();
+        });
+    }
+    Ok(())
+}
+
 /// Build and run the Alpha desktop shell.
 pub fn run() {
     tauri::Builder::default()
@@ -698,13 +1028,17 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save_markdown,
             start_component_picker,
-            cancel_component_picker
+            cancel_component_picker,
+            open_browser_document,
+            move_browser_document,
+            close_browser_document
         ])
         .setup(|app| {
             app.manage(HostState::default());
             app.manage(Supervision::default());
             app.manage(EngineUrl::default());
             app.manage(ComponentPickerState::default());
+            app.manage(BrowserDocumentState::default());
             let handle = app.handle().clone();
             match resolve_launch(&handle) {
                 Ok((node, runtime, project)) => {
@@ -724,6 +1058,9 @@ pub fn run() {
                 }
                 if let Some(picker) = handle.try_state::<ComponentPickerState>() {
                     close_component_picker(&picker, None);
+                }
+                if let Some(documents) = handle.try_state::<BrowserDocumentState>() {
+                    close_browser_documents(&documents);
                 }
                 stop_current_host(handle);
             }

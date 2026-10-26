@@ -5,7 +5,13 @@ import type { SessionId } from '@mutantcat/dsh-session/types'
 import type { IConversation } from '@mutantcat/dsh-client-ui-conversation/client'
 import { randomUUID } from '@mutantcat/dsh-util-crypto'
 import { BrowserController, createBrowserControllers } from '../src/client/browser/BrowserController.ts'
-import type { ComponentPickerRect, ComponentPickerResult } from '../src/client/browser/BrowserController.ts'
+import type {
+  BrowserCarrierRect,
+  BrowserDocumentEvent,
+  BrowserDocumentMoveRequest,
+  BrowserDocumentOpenRequest,
+  ComponentPickerResult,
+} from '../src/client/browser/BrowserController.ts'
 import { createBrowserStore } from '../src/client/browser/store.ts'
 
 vi.mock('@mutantcat/dsh-util-crypto', () => ({
@@ -64,7 +70,34 @@ function installBridge(value: unknown): void {
   ;(globalThis as { dshDesktopBoot?: unknown }).dshDesktopBoot = value
 }
 
-const RECT: ComponentPickerRect = { x: 10, y: 20, width: 300, height: 200 }
+function documentBridge() {
+  const listeners = new Set<(event: BrowserDocumentEvent) => void>()
+  const open = vi.fn<(request: BrowserDocumentOpenRequest) => Promise<void>>(() => Promise.resolve())
+  const move = vi.fn<(request: BrowserDocumentMoveRequest) => Promise<void>>(() => Promise.resolve())
+  const close = vi.fn<(key: string) => Promise<void>>(() => Promise.resolve())
+  const subscribe = vi.fn((listener: (event: BrowserDocumentEvent) => void) => {
+    listeners.add(listener)
+    return Promise.resolve(() => { listeners.delete(listener) })
+  })
+  const bridge = {
+    openBrowserDocument: (request: BrowserDocumentOpenRequest) => open(request),
+    moveBrowserDocument: (request: BrowserDocumentMoveRequest) => move(request),
+    closeBrowserDocument: (key: string) => close(key),
+    onBrowserDocument: subscribe,
+  }
+  return {
+    bridge,
+    open,
+    move,
+    close,
+    emit: (event: BrowserDocumentEvent): void => { for (const listener of [...listeners]) listener(event) },
+    listenerCount: (): number => listeners.size,
+  }
+}
+
+const MOVED: BrowserCarrierRect = { x: 40, y: 50, width: 600, height: 400 }
+
+const RECT: BrowserCarrierRect = { x: 10, y: 20, width: 300, height: 200 }
 
 /** Settle the picker's subscribe-then-open microtask chain. */
 async function settlePicker(): Promise<void> {
@@ -97,7 +130,7 @@ afterEach(() => {
 })
 
 describe('BrowserController', () => {
-  it('ignores navigation commands after its tab occurrence ends', () => {
+  it('ignores navigation and carrier commands after its tab occurrence ends', () => {
     const store = createBrowserStore().create('browser-controller-ended-test')
     const tabLifetime = lifetime()
     const { conversation } = conversationStub()
@@ -113,6 +146,13 @@ describe('BrowserController', () => {
     controller.reload()
     controller.frame.reportLoaded(1)
     expect(store.getSnapshot().byTab[TAB]).toBeUndefined()
+
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    controller.openNativeDocument('https://ignored.example/', RECT)
+    controller.moveNativeDocument(RECT)
+    expect(stub.open).not.toHaveBeenCalled()
+    expect(stub.move).not.toHaveBeenCalled()
   })
 
   it('owns the four navigation commands and frame load state', () => {
@@ -282,7 +322,7 @@ describe('BrowserController', () => {
     face.mount(TAB, tabLifetime.signal, APP)
     face.loadUrl(TAB, 'https://example.test/one')
     const frame = face.keyedHooks.browserFrame(TAB)!
-    const invalid: readonly ComponentPickerRect[] = [
+    const invalid: readonly BrowserCarrierRect[] = [
       { ...RECT, x: -1 },
       { ...RECT, y: -1 },
       { ...RECT, width: 0 },
@@ -560,5 +600,275 @@ describe('BrowserController', () => {
     const torn = stub.start.mock.calls[1]![0].requestId
     tabLifetime.abort()
     expect(stub.cancel).toHaveBeenCalledWith(torn)
+  })
+
+  it('requires every Desktop carrier method before enabling native rendering', () => {
+    const store = createBrowserStore().create('browser-controller-native-partial-bridge-test')
+    const { conversation } = conversationStub()
+    const open = vi.fn(() => Promise.resolve())
+
+    installBridge({ openBrowserDocument: open })
+    expect(createBrowserControllers(store.actions, SESSION, conversation).nativeAvailable).toBe(false)
+
+    installBridge({ openBrowserDocument: open, moveBrowserDocument: vi.fn(() => Promise.resolve()) })
+    expect(createBrowserControllers(store.actions, SESSION, conversation).nativeAvailable).toBe(false)
+
+    installBridge({
+      openBrowserDocument: open,
+      moveBrowserDocument: vi.fn(() => Promise.resolve()),
+      closeBrowserDocument: vi.fn(() => Promise.resolve()),
+    })
+    expect(createBrowserControllers(store.actions, SESSION, conversation).nativeAvailable).toBe(false)
+
+    installBridge({
+      openBrowserDocument: open,
+      moveBrowserDocument: vi.fn(() => Promise.resolve()),
+      closeBrowserDocument: vi.fn(() => Promise.resolve()),
+      onBrowserDocument: vi.fn(() => Promise.resolve(() => {})),
+    })
+    expect(createBrowserControllers(store.actions, SESSION, conversation).nativeAvailable).toBe(true)
+  })
+
+  it('opens, moves, and closes the native carrier for the held document', async () => {
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-lifecycle-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+    expect(face.nativeAvailable).toBe(true)
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    expect(stub.open).toHaveBeenCalledWith({ key: 'tab', url: 'https://example.test/one', ...RECT })
+    expect(stub.listenerCount()).toBe(1)
+
+    face.moveNativeDocument(TAB, MOVED)
+    expect(stub.move).toHaveBeenCalledWith({ key: 'tab', ...MOVED })
+
+    face.closeNativeDocument(TAB)
+    expect(stub.close).toHaveBeenCalledWith('tab')
+    expect(stub.listenerCount()).toBe(0)
+    face.moveNativeDocument(TAB, MOVED)
+    expect(stub.move).toHaveBeenCalledOnce()
+  })
+
+  it('ignores carrier commands without a document or a Desktop bridge', async () => {
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-absent-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    face.moveNativeDocument(TAB, RECT)
+    await settlePicker()
+    expect(stub.open).not.toHaveBeenCalled()
+
+    face.loadUrl(TAB, 'https://example.test/one')
+    installBridge({})
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    face.moveNativeDocument(TAB, RECT)
+    face.closeNativeDocument(TAB)
+    await settlePicker()
+    expect(stub.open).not.toHaveBeenCalled()
+    expect(stub.move).not.toHaveBeenCalled()
+    expect(stub.close).not.toHaveBeenCalled()
+  })
+
+  it('ignores a carrier move once the Desktop bridge disappears', async () => {
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-bridge-lost-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    expect(stub.listenerCount()).toBe(1)
+
+    installBridge({})
+    face.moveNativeDocument(TAB, MOVED)
+    expect(stub.move).not.toHaveBeenCalled()
+  })
+
+  it('reports a native load against the revision the carrier holds', async () => {
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-loaded-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('loading')
+
+    stub.emit({ key: 'tab', status: 'loaded' })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
+
+    face.closeNativeDocument(TAB)
+    stub.emit({ key: 'tab', status: 'loaded' })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
+  })
+
+  it('opens a native popup target in the system browser', async () => {
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    const open = vi.fn()
+    vi.stubGlobal('open', open)
+    const store = createBrowserStore().create('browser-controller-native-popup-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    stub.emit({ key: 'tab', status: 'popup', url: 'https://popup.example/' })
+    expect(open).toHaveBeenCalledWith('https://popup.example/', '_blank', 'noopener,noreferrer')
+
+    stub.emit({ key: 'tab', status: 'popup' })
+    expect(open).toHaveBeenCalledOnce()
+  })
+
+  it('ignores native carrier events from another tab or a torn-down controller', async () => {
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-foreign-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    stub.emit({ key: 'other-tab', status: 'loaded' })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('loading')
+
+    tabLifetime.abort()
+    stub.emit({ key: 'tab', status: 'loaded' })
+    expect(stub.close).toHaveBeenCalledWith('tab')
+  })
+
+  it('returns rendering to the iframe when the native carrier refuses to open', async () => {
+    const stub = documentBridge()
+    stub.open.mockRejectedValueOnce(new Error('carrier refused'))
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-open-failure-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+    const frame = face.keyedHooks.browserFrame(TAB)!
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    expect(frame.getSnapshot().nativeFailed).toBe(true)
+    expect(stub.listenerCount()).toBe(0)
+
+    face.loadUrl(TAB, 'https://example.test/two')
+    expect(frame.getSnapshot().nativeFailed).toBe(false)
+  })
+
+  it('ignores a carrier startup failure that was already superseded', async () => {
+    const startup = deferred<undefined>()
+    const stub = documentBridge()
+    stub.open.mockImplementationOnce(() => startup.promise)
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-stale-failure-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+    const frame = face.keyedHooks.browserFrame(TAB)!
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    face.closeNativeDocument(TAB)
+    startup.reject(new Error('carrier closed'))
+    await settlePicker()
+    expect(frame.getSnapshot().nativeFailed).toBe(false)
+  })
+
+  it('unsubscribes when the document changes during carrier startup', async () => {
+    const registration = deferred<() => void>()
+    const unsubscribe = vi.fn()
+    const open = vi.fn(() => Promise.resolve())
+    installBridge({
+      openBrowserDocument: open,
+      moveBrowserDocument: vi.fn(() => Promise.resolve()),
+      closeBrowserDocument: vi.fn(() => Promise.resolve()),
+      onBrowserDocument: (_listener: (event: BrowserDocumentEvent) => void) => {
+        return registration.promise.then(() => unsubscribe)
+      },
+    })
+    const store = createBrowserStore().create('browser-controller-native-race-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    face.closeNativeDocument(TAB)
+    registration.resolve(() => {})
+    await settlePicker()
+
+    expect(unsubscribe).toHaveBeenCalledOnce()
+    expect(open).not.toHaveBeenCalled()
+  })
+
+  it('closes the native carrier when the tab occurrence ends during startup', async () => {
+    const startup = deferred<undefined>()
+    const stub = documentBridge()
+    stub.open.mockImplementationOnce(() => startup.promise)
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-dispose-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    tabLifetime.abort()
+    startup.resolve(undefined)
+    await settlePicker()
+    expect(stub.close).toHaveBeenCalledWith('tab')
+  })
+
+  it('tolerates carrier commands the Desktop shell already rejects', async () => {
+    const stub = documentBridge()
+    stub.close.mockRejectedValueOnce(new Error('carrier already closed'))
+    stub.move.mockRejectedValueOnce(new Error('carrier already closed'))
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-rejection-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    face.moveNativeDocument(TAB, MOVED)
+    face.closeNativeDocument(TAB)
+    await settlePicker()
+    expect(stub.move).toHaveBeenCalledOnce()
+    expect(stub.close).toHaveBeenCalledOnce()
   })
 })

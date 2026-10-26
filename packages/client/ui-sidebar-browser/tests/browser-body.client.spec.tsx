@@ -6,7 +6,12 @@ import type { SessionId } from '@mutantcat/dsh-session/types'
 import type { TabId } from '@mutantcat/dsh-client-ui-dockkit'
 import type { IConversation } from '@mutantcat/dsh-client-ui-conversation/client'
 import { createBrowserControllers } from '../src/client/browser/BrowserController.ts'
-import type { ComponentPickerResult } from '../src/client/browser/BrowserController.ts'
+import type {
+  BrowserDocumentEvent,
+  BrowserDocumentMoveRequest,
+  BrowserDocumentOpenRequest,
+  ComponentPickerResult,
+} from '../src/client/browser/BrowserController.ts'
 import type { BrowserFrameState } from '../src/client/browser/BrowserFrame.ts'
 import { createBrowserStore } from '../src/client/browser/store.ts'
 import type { BrowserBodyProps } from '../src/client/view/BrowserBody.tsx'
@@ -40,6 +45,35 @@ function pickerBridge() {
     start,
     cancel,
   }
+}
+
+function documentBridge() {
+  const listeners = new Set<(event: BrowserDocumentEvent) => void>()
+  const open = vi.fn<(request: BrowserDocumentOpenRequest) => Promise<void>>(() => Promise.resolve())
+  const move = vi.fn<(request: BrowserDocumentMoveRequest) => Promise<void>>(() => Promise.resolve())
+  const close = vi.fn<(key: string) => Promise<void>>(() => Promise.resolve())
+  return {
+    bridge: {
+      openBrowserDocument: (request: BrowserDocumentOpenRequest) => open(request),
+      moveBrowserDocument: (request: BrowserDocumentMoveRequest) => move(request),
+      closeBrowserDocument: (key: string) => close(key),
+      onBrowserDocument: (listener: (event: BrowserDocumentEvent) => void) => {
+        listeners.add(listener)
+        return Promise.resolve(() => { listeners.delete(listener) })
+      },
+    },
+    open,
+    move,
+    close,
+  }
+}
+
+/** jsdom reports zero-sized geometry for every element, so carriers need a measured rectangle. */
+function stubRect(): void {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+    x: 10, y: 20, width: 300, height: 200,
+    top: 20, left: 10, right: 310, bottom: 220, toJSON: () => ({}),
+  })
 }
 
 /** jsdom reports a zero-sized iframe rectangle the controller rejects. */
@@ -114,6 +148,7 @@ afterEach(() => {
   localStorage.clear()
   delete (globalThis as { dshDesktopBoot?: unknown }).dshDesktopBoot
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 describe('BrowserBody', () => {
@@ -326,4 +361,101 @@ describe('BrowserBody', () => {
     await waitFor(() => { expect(mounted.view.getByText(zh['picker.failed'])).toBeDefined() })
   })
 
+  it('renders the native carrier instead of the iframe when the Desktop shell is present', async () => {
+    stubRect()
+    const carrier = documentBridge()
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull() })
+
+    expect(mounted.view.container.querySelector('iframe')).toBeNull()
+    await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
+    expect(carrier.open.mock.calls[0]![0]).toMatchObject({
+      key: 'tab', url: 'https://example.com/one', x: 10, y: 20, width: 300, height: 200,
+    })
+
+    const sandbox = mounted.view.getByRole('button', { name: zh['sandbox.native'] })
+    expect(sandbox).toHaveProperty('disabled', true)
+    expect(mounted.view.queryByText(zh['sandbox.warning'])).toBeNull()
+  })
+
+  it('moves and closes the native carrier as the sidebar geometry changes', async () => {
+    class FakeResizeObserver implements ResizeObserver {
+      static latest: FakeResizeObserver | undefined
+      readonly observe = vi.fn()
+      readonly unobserve = vi.fn()
+      readonly disconnect = vi.fn()
+      constructor(private readonly callback: ResizeObserverCallback) {
+        FakeResizeObserver.latest = this
+      }
+
+      fire(): void {
+        this.callback([], this)
+      }
+    }
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver)
+    stubRect()
+    const carrier = documentBridge()
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
+    const observer = FakeResizeObserver.latest
+    if (observer === undefined) throw new Error('expected the carrier to observe its size')
+    const node = mounted.view.container.querySelector('[data-sidebar-browser-carrier]')
+    expect(observer.observe).toHaveBeenCalledWith(node)
+
+    act(() => { observer.fire() })
+    expect(carrier.move).toHaveBeenCalledOnce()
+    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: 'tab', x: 10, y: 20, width: 300, height: 200 })
+
+    act(() => { window.dispatchEvent(new Event('resize')) })
+    expect(carrier.move).toHaveBeenCalledTimes(2)
+
+    mounted.view.unmount()
+    expect(observer.disconnect).toHaveBeenCalledOnce()
+    expect(carrier.close).toHaveBeenCalledWith('tab')
+  })
+
+  it('returns the document to the iframe when the native carrier refuses it', async () => {
+    stubRect()
+    const carrier = documentBridge()
+    carrier.open.mockRejectedValueOnce(new Error('carrier refused'))
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(mounted.view.container.querySelector('iframe')).not.toBeNull() })
+
+    expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).toBeNull()
+    expect(carrier.close).toHaveBeenCalledWith('tab')
+  })
+
+  it('moves the native carrier from the window resize listener without a ResizeObserver', async () => {
+    stubRect()
+    vi.stubGlobal('ResizeObserver', undefined)
+    const carrier = documentBridge()
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
+
+    expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull()
+    expect(carrier.move).not.toHaveBeenCalled()
+    act(() => { window.dispatchEvent(new Event('resize')) })
+    expect(carrier.move).toHaveBeenCalledOnce()
+  })
+
+  it('does nothing when the native carrier has no measurable rectangle', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(undefined as unknown as DOMRect)
+    const carrier = documentBridge()
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull() })
+
+    expect(carrier.open).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when the native carrier rectangle has no area', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      x: 10, y: 20, width: 0, height: 0,
+      top: 20, left: 10, right: 10, bottom: 20, toJSON: () => ({}),
+    })
+    const carrier = documentBridge()
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).not.toBeNull() })
+
+    expect(carrier.open).not.toHaveBeenCalled()
+  })
 })
