@@ -25,6 +25,9 @@
 //! either stops answering, so a machine that was suspended or had its lid closed never leaves
 //! the window on a document that can no longer talk to anything.
 
+mod browser_webview;
+
+use browser_webview::placement as browser_document_placement;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
 use std::net::SocketAddr;
@@ -48,7 +51,7 @@ use tauri::path::BaseDirectory;
 use tauri::webview::PageLoadEvent;
 use tauri::webview::PageLoadPayload;
 use tauri::{
-    AppHandle, Emitter, Event, Listener, Manager, PhysicalPosition, PhysicalSize, RunEvent,
+    AppHandle, Emitter, Event, Listener, Manager, RunEvent,
     Webview, WebviewBuilder, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
@@ -811,9 +814,9 @@ async fn start_component_picker(
     let handle = app.clone();
     let (position, size) =
         browser_document_placement(&app, request.x, request.y, request.width, request.height)?;
-    let webview = window
-        .add_child(
-            WebviewBuilder::new(label, WebviewUrl::External(target))
+    let webview = browser_webview::add_child(
+        &window,
+        WebviewBuilder::new(label, WebviewUrl::External(target))
             .initialization_script(COMPONENT_PICKER_SCRIPT)
             .on_navigation(move |url| {
                 if !is_component_picker_navigation(url) {
@@ -829,10 +832,9 @@ async fn start_component_picker(
             // wry maps this to AppKit's `acceptFirstMouse:`. Its default spends
             // the first click on an inactive window merely activating Alpha.
             .accept_first_mouse(true),
-            position,
-            size,
-        )
-        .map_err(|error| error.to_string())?;
+        position,
+        size,
+    )?;
     // The child webview must own the keyboard so Escape reaches the picker script.
     if let Err(error) = webview.set_focus() {
         let _ = webview.close();
@@ -897,60 +899,6 @@ struct BrowserDocumentEvent {
     /// Committed URL of a `loaded` navigation, or the popup target on `popup`.
     #[serde(skip_serializing_if = "Option::is_none")]
     url: Option<String>,
-}
-
-/// Convert one reported carrier rectangle into physical pixels.
-///
-/// A CSS rectangle reaches a child webview through wry's own logical conversion, which
-/// reads the backing scale factor of the window the child is attached to. Converting
-/// once here against that same window scale factor leaves wry's read as the only
-/// remaining conversion, so the child lands on the rectangle the client measured.
-///
-/// The rectangle is relative to the main webview's viewport, and a child added through
-/// `add_child` is attached to the window's content view, so the two spaces would need
-/// the main webview's offset within that content view. `Webview::bounds()` cannot supply
-/// it: wry reports `parent height - frame origin y - frame height`, which equals the
-/// real offset only while the main webview is no taller than its superview. On macOS the
-/// main webview is sized to the window while its content view excludes the title bar, so
-/// the webview is top-aligned but taller and `bounds()` reports the negated title bar
-/// height. Adding that value lifted every child webview above its carrier, far enough to
-/// cover the Browser toolbar.
-/// @param app - application handle that owns the main window.
-/// @param x - carrier rectangle left edge in CSS pixels.
-/// @param y - carrier rectangle top edge in CSS pixels.
-/// @param width - carrier rectangle width in CSS pixels.
-/// @param height - carrier rectangle height in CSS pixels.
-/// @returns the physical position and size, or the refusal reason.
-fn browser_document_placement(
-    app: &AppHandle,
-    x: f64,
-    y: f64,
-    width: f64,
-    height: f64,
-) -> Result<(PhysicalPosition<i32>, PhysicalSize<u32>), String> {
-    if !x.is_finite()
-        || !y.is_finite()
-        || !width.is_finite()
-        || !height.is_finite()
-        || width <= 0.0
-        || height <= 0.0
-    {
-        return Err("native child webview: rectangle is invalid".to_string());
-    }
-    let window = app
-        .get_window("main")
-        .ok_or_else(|| "native child webview: main window unavailable".to_string())?;
-    let scale_factor = match window.scale_factor() {
-        Ok(scale) if scale.is_finite() && scale > 0.0 => scale,
-        _ => 1.0,
-    };
-    let to_physical = |value: f64| (value * scale_factor).round();
-    let position = PhysicalPosition::new(to_physical(x) as i32, to_physical(y) as i32);
-    let size = PhysicalSize::new(
-        to_physical(width).max(1.0) as u32,
-        to_physical(height).max(1.0) as u32,
-    );
-    Ok((position, size))
 }
 
 /// Close every live Browser document child webview.
@@ -1019,66 +967,65 @@ async fn open_browser_document(
         }
         format!("{BROWSER_DOCUMENT_LABEL}-{sequence}")
     };
-    let webview = window
-        .add_child(
-            WebviewBuilder::new(label, WebviewUrl::External(target))
-                .on_page_load({
-                    let emitter = app.clone();
-                    let key = request.key.clone();
-                    move |_webview, payload| {
-                        if payload.event() != PageLoadEvent::Finished {
-                            return;
-                        }
-                        rearm_component_picker(&emitter, &key);
-                        let _ = emitter.emit(
-                            BROWSER_DOCUMENT_EVENT,
-                            BrowserDocumentEvent {
-                                key: key.clone(),
-                                status: "loaded",
-                                url: Some(payload.url().to_string()),
-                            },
+    let webview = browser_webview::add_child(
+        &window,
+        WebviewBuilder::new(label, WebviewUrl::External(target))
+            .on_page_load({
+                let emitter = app.clone();
+                let key = request.key.clone();
+                move |_webview, payload| {
+                    if payload.event() != PageLoadEvent::Finished {
+                        return;
+                    }
+                    rearm_component_picker(&emitter, &key);
+                    let _ = emitter.emit(
+                        BROWSER_DOCUMENT_EVENT,
+                        BrowserDocumentEvent {
+                            key: key.clone(),
+                            status: "loaded",
+                            url: Some(payload.url().to_string()),
+                        },
+                    );
+                }
+            })
+            .on_new_window({
+                let emitter = app.clone();
+                let key = request.key.clone();
+                move |url, _features| {
+                    let _ = emitter.emit(
+                        BROWSER_DOCUMENT_EVENT,
+                        BrowserDocumentEvent {
+                            key: key.clone(),
+                            status: "popup",
+                            url: Some(url.to_string()),
+                        },
+                    );
+                    tauri::webview::NewWindowResponse::Deny
+                }
+            })
+            .on_navigation({
+                let handle = app.clone();
+                let key = request.key.clone();
+                move |url| {
+                    if !is_component_picker_navigation(url) {
+                        return true;
+                    }
+                    if let Some(request_id) = document_picker_request(&handle, &key) {
+                        close_component_picker(
+                            &handle.state::<ComponentPickerState>(),
+                            Some(&request_id),
                         );
+                        emit_picker_navigation(&handle, &request_id, url);
                     }
-                })
-                .on_new_window({
-                    let emitter = app.clone();
-                    let key = request.key.clone();
-                    move |url, _features| {
-                        let _ = emitter.emit(
-                            BROWSER_DOCUMENT_EVENT,
-                            BrowserDocumentEvent {
-                                key: key.clone(),
-                                status: "popup",
-                                url: Some(url.to_string()),
-                            },
-                        );
-                        tauri::webview::NewWindowResponse::Deny
-                    }
-                })
-                .on_navigation({
-                    let handle = app.clone();
-                    let key = request.key.clone();
-                    move |url| {
-                        if !is_component_picker_navigation(url) {
-                            return true;
-                        }
-                        if let Some(request_id) = document_picker_request(&handle, &key) {
-                            close_component_picker(
-                                &handle.state::<ComponentPickerState>(),
-                                Some(&request_id),
-                            );
-                            emit_picker_navigation(&handle, &request_id, url);
-                        }
-                        false
-                    }
-                })
-                // wry maps this to AppKit's `acceptFirstMouse:`. Its default spends
-                // the first click on an inactive window merely activating Alpha.
-                .accept_first_mouse(true),
-            position,
-            size,
-        )
-        .map_err(|error| error.to_string())?;
+                    false
+                }
+            })
+            // wry maps this to AppKit's `acceptFirstMouse:`. Its default spends
+            // the first click on an inactive window merely activating Alpha.
+            .accept_first_mouse(true),
+        position,
+        size,
+    )?;
     {
         let mut registry = state
             .0

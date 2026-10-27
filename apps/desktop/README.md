@@ -18,6 +18,10 @@ Window close requests send `{"type":"shutdown"}` on the host's stdin and wait up
 
 A host an earlier launch left running owns the engine port, so a new host takes the profile directory over before booting. It reads the `host.pid` it writes into that directory, stops a live former host with `SIGTERM`, waits up to five seconds, then `SIGKILL`, and continues once the process or the port is gone. The port is the ownership signal: a former host whose shell died before reaping it stays as a zombie entry, and a zombie holds no listener. A former host that survives the forced stop fails the launch with its process id named, rather than racing it on the port. The Host also initializes the profile directory before loading it, writing the manifest, the user patch layer, and the pnpm workspace settings when they are absent; existing files are never touched.
 
+## Browser documents
+
+The sidebar browser and component picker share native child-webview placement. On macOS, the shell includes the main WebView's current safe-area inset when converting a CSS carrier rectangle to window coordinates, so the document stays below its toolbar during moves and resizing. Browser documents preserve the system WebKit User-Agent and append `Safari Alpha/<version>` for browser compatibility; the main application's User-Agent is unchanged.
+
 ## macOS code signing
 
 The bundled Node engine runs V8 and cannot start under the macOS hardened runtime without JIT permissions. [entitlements/alpha.plist](src-tauri/entitlements/alpha.plist) grants the JIT, unsigned-executable-memory, executable-page-protection, library-validation, and dyld-environment permissions, and `bundle.macOS.entitlements` points the Tauri bundler at it. The bundler applies that plist to every Mach-O file it signs, including the Node sidecar: a sidecar that keeps its own release signature loses these entitlements during the ad-hoc re-sign and traps immediately, which is why the plist is mandatory rather than optional.
@@ -68,6 +72,12 @@ Fatal startup opens one native dialog naming the cause; there is no automatic pl
 One narrow repair precedes that dialog. Before loading the Desktop profile, the Host removes selected bundles whose package the installation and the profile no longer resolve and reports each removal, so an interrupted package operation cannot leave a selection that fails every boot while a watchdog restart replays it. Installed packages and every other manifest field are untouched.
 
 ## Develop
+
+On a macOS desktop, the native browser regression opens a window against its own loopback HTTP fixture and compares placement, page interaction, and request headers with [the expected output](tests/expected/browser-webview.json). Run from the repository root; ordinary Cargo test runs skip this interactive test unless `--run` is supplied:
+
+```sh
+cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --test browser-webview -- --run
+```
 
 The complete release chain prepares the monorepo first, then stages the runtime, and finally invokes the Tauri bundler:
 

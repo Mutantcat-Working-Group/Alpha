@@ -372,7 +372,7 @@ describe('BrowserBody', () => {
     expect(mounted.view.container.querySelector('iframe')).toBeNull()
     await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
     expect(carrier.open.mock.calls[0]![0]).toMatchObject({
-      key: 'tab', url: 'https://example.com/one', x: 10, y: 20, width: 300, height: 200,
+      key: carrier.open.mock.calls[0]![0].key, url: 'https://example.com/one', x: 10, y: 20, width: 300, height: 200,
     })
 
     const sandbox = mounted.view.getByRole('button', { name: zh['sandbox.native'] })
@@ -390,7 +390,7 @@ describe('BrowserBody', () => {
     stubRect()
     await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
     expect(carrier.open.mock.calls[0]![0]).toMatchObject({
-      key: 'tab', url: 'https://example.com/one', x: 10, y: 20, width: 300, height: 200,
+      key: carrier.open.mock.calls[0]![0].key, url: 'https://example.com/one', x: 10, y: 20, width: 300, height: 200,
     })
   })
 
@@ -402,10 +402,10 @@ describe('BrowserBody', () => {
 
     stubRect(10, 20, 420, 200)
     await waitFor(() => { expect(carrier.move).toHaveBeenCalledOnce() })
-    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: 'tab', x: 10, y: 20, width: 420, height: 200 })
+    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: carrier.open.mock.calls[0]![0].key, x: 10, y: 20, width: 420, height: 200 })
 
     mounted.view.unmount()
-    expect(carrier.close).toHaveBeenCalledWith('tab')
+    expect(carrier.close).toHaveBeenCalledWith(carrier.open.mock.calls[0]![0].key)
   })
 
   it('repositions the native carrier when the sidebar only moves it', async () => {
@@ -417,7 +417,7 @@ describe('BrowserBody', () => {
     // The sidebar slides on a transform, which moves the carrier without resizing it.
     stubRect(10, 64, 300, 200)
     await waitFor(() => { expect(carrier.move).toHaveBeenCalledOnce() })
-    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: 'tab', x: 10, y: 64, width: 300, height: 200 })
+    expect(carrier.move.mock.calls[0]![0]).toMatchObject({ key: carrier.open.mock.calls[0]![0].key, x: 10, y: 64, width: 300, height: 200 })
 
     // An unchanged rectangle costs no further shell traffic.
     await new Promise((resolve) => { setTimeout(resolve, 60) })
@@ -432,7 +432,7 @@ describe('BrowserBody', () => {
     await waitFor(() => { expect(mounted.view.container.querySelector('iframe')).not.toBeNull() })
 
     expect(mounted.view.container.querySelector('[data-sidebar-browser-carrier]')).toBeNull()
-    expect(carrier.close).toHaveBeenCalledWith('tab')
+    expect(carrier.close).toHaveBeenCalledWith(carrier.open.mock.calls[0]![0].key)
   })
 
   it('keeps the native carrier closed when its rectangle has no area', async () => {

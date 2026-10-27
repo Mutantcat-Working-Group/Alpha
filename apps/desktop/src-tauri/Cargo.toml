@@ -15,6 +15,11 @@ path = "src/lib.rs"
 name = "alpha-desktop"
 path = "src/main.rs"
 
+[[test]]
+name = "browser-webview"
+path = "tests/browser_webview.rs"
+harness = false
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -26,6 +31,12 @@ tauri = { version = "2", features = ["unstable"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-single-instance = "2"
 url = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", features = ["NSApplication", "NSWindow", "NSView", "NSResponder"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["NSString"] }
+objc2-web-kit = { version = "0.3", default-features = false, features = ["WKWebViewConfiguration"] }
 
 [profile.release]
 codegen-units = 1

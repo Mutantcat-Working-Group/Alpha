@@ -146,6 +146,7 @@ export class BrowserController {
   private pickerDisposed = false
   /** Revision currently held by the native carrier, or `undefined` when none is. */
   private nativeRevision: number | undefined
+  private nativeKey: string | undefined
   private nativeUnsubscribe: (() => void) | undefined
   private disposed = false
 
@@ -220,7 +221,7 @@ export class BrowserController {
     const requestId = randomUUID()
     this.pickerRequestId = requestId
     this.frame.startPicker()
-    void this.pick(bridge, requestId, rect, document.target.url, documentKey(this.options.tabId))
+    void this.pick(bridge, requestId, rect, document.target.url, this.nativeKey ?? documentKey(this.options.tabId))
     return true
   }
 
@@ -328,8 +329,11 @@ export class BrowserController {
     if (document === undefined) return
     const bridge = browserDocumentBridge()
     if (bridge === undefined) return
+    this.closeNativeDocument()
+    const key = `${documentKey(this.options.tabId)}:${randomUUID()}`
+    this.nativeKey = key
     this.nativeRevision = document.revision
-    void this.openDocument(bridge, url, rect, document.revision)
+    void this.openDocument(bridge, url, rect, key)
   }
 
   /**
@@ -339,29 +343,32 @@ export class BrowserController {
    * @param rect - carrier rectangle in the application document's CSS pixels.
    */
   moveNativeDocument(rect: BrowserCarrierRect): void {
-    if (this.nativeRevision === undefined) return
+    const key = this.nativeKey
+    if (key === undefined) return
     const bridge = browserDocumentBridge()
     if (bridge === undefined) return
-    void bridge.moveBrowserDocument({ key: documentKey(this.options.tabId), ...rect }).catch(() => {})
+    void bridge.moveBrowserDocument({ key, ...rect }).catch(() => {})
   }
 
   /** Close the native carrier and stop consuming its events. */
   closeNativeDocument(): void {
+    const key = this.nativeKey
+    this.nativeKey = undefined
     this.nativeRevision = undefined
     const unsubscribe = this.nativeUnsubscribe
     this.nativeUnsubscribe = undefined
     unsubscribe?.()
-    void browserDocumentBridge()?.closeBrowserDocument(documentKey(this.options.tabId)).catch(() => {})
+    if (key !== undefined) void browserDocumentBridge()?.closeBrowserDocument(key).catch(() => {})
   }
 
   /**
    * Whether one open request still owns the native carrier.
    *
-   * Disposal and every revision change clear the carrier, so a superseded request
+   * Every open has its own key, including remounts of the same revision. A superseded request
    * must neither report loads nor keep its child webview open.
    */
-  private holdsCarrier(revision: number): boolean {
-    return !this.disposed && this.nativeRevision === revision
+  private holdsCarrier(key: string): boolean {
+    return !this.disposed && this.nativeKey === key
   }
 
   /**
@@ -372,23 +379,21 @@ export class BrowserController {
     bridge: DesktopBrowserDocumentBridge,
     url: string,
     rect: BrowserCarrierRect,
-    revision: number,
+    key: string,
   ): Promise<void> {
     try {
       const unsubscribe = await bridge.onBrowserDocument((event) => { this.documentEvent(event) })
-      if (!this.holdsCarrier(revision)) {
+      if (!this.holdsCarrier(key)) {
         unsubscribe()
         return
       }
       this.nativeUnsubscribe?.()
       this.nativeUnsubscribe = unsubscribe
-      await bridge.openBrowserDocument({ key: documentKey(this.options.tabId), url, ...rect })
-      if (!this.holdsCarrier(revision)) this.closeNativeDocument()
+      await bridge.openBrowserDocument({ key, url, ...rect })
+      if (!this.holdsCarrier(key)) await bridge.closeBrowserDocument(key)
     } catch {
-      if (!this.holdsCarrier(revision)) return
-      this.nativeRevision = undefined
-      this.nativeUnsubscribe?.()
-      this.nativeUnsubscribe = undefined
+      if (!this.holdsCarrier(key)) return
+      this.closeNativeDocument()
       this.frame.failNative()
     }
   }
@@ -403,7 +408,7 @@ export class BrowserController {
   private documentEvent(event: BrowserDocumentEvent): void {
     /* v8 ignore next -- defensive: closeNativeDocument() drops this subscription on dispose. */
     if (this.disposed) return
-    if (event.key !== documentKey(this.options.tabId)) return
+    if (event.key !== this.nativeKey) return
     if (event.status === 'loaded') {
       const revision = this.nativeRevision
       /* v8 ignore next -- defensive: every path that clears nativeRevision also drops the subscription. */

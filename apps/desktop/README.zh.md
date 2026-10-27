@@ -18,6 +18,10 @@ Host 在报告就绪前退出、就绪后引擎端口仍拒绝连接、或就绪
 
 引擎端口被上次启动留下的 Host 占着，新 Host 在启动前先接管 profile 目录：读取它写在该目录下的 `host.pid`，对仍存活的旧 Host 先发 `SIGTERM`、最多等五秒、再发 `SIGKILL`，进程或端口一消失就继续。端口才是所有权信号：壳先死、子进程未被回收的旧 Host 只剩僵尸表项，而僵尸不持有监听。旧 Host 在强杀后仍存活时，本次启动带着它的进程 id 失败，而不是与它争抢端口。Host 在加载 profile 前还会初始化 profile 目录：manifest、用户 patch 层和 pnpm 工作区设置在缺失时写入，已有文件从不改动。
 
+## 浏览器文档
+
+右侧栏浏览器和组件选取器共用原生子 WebView 定位逻辑。在 macOS 上，shell 将 CSS 载体矩形转换为窗口坐标时计入主 WebView 当前的安全区内边距，确保文档在移动和缩放时保持在工具栏下方。浏览器文档保留系统 WebKit 的 User-Agent，并追加 `Safari Alpha/<version>` 以兼容网站；主应用的 User-Agent 不变。
+
 ## macOS 代码签名
 
 内置 Node 引擎运行 V8，在没有 JIT 权限的情况下无法在 macOS 强化运行时下启动。[entitlements/alpha.plist](src-tauri/entitlements/alpha.plist) 授予 JIT、未签名可执行内存、可执行页保护、库加载校验和 dyld 环境变量权限，`bundle.macOS.entitlements` 让 Tauri 打包器使用它。打包器会把该 plist 应用到它签名的每个 Mach-O 文件，包括 Node sidecar：保留自身发布签名的 sidecar 在 ad-hoc 重签名过程中会丢掉这些 entitlement 并立即 trap，因此该 plist 是必需而非可选。
@@ -68,6 +72,12 @@ Alpha 拥有它的应用数据目录，它同时是 profile 根目录：macOS �
 有一种窄修复先于该对话框发生。加载 Desktop profile 前，Host 会移除安装与 profile 都已无法解析的已选组合包并逐条报告，使被中断的包操作不会留下一个每次启动都失败、又被看门狗重启反复重放的选择。已安装包和其他所有 manifest 字段都不受影响。
 
 ## 开发
+
+在 macOS 桌面上，原生浏览器回归测试会打开窗口并访问自有的本地 HTTP 测试服务，将定位、页面交互和请求头与[预期输出](tests/expected/browser-webview.json)比较。请在仓库根目录执行；普通 Cargo 测试运行会跳过此交互测试，除非提供 `--run`：
+
+```sh
+cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --test browser-webview -- --run
+```
 
 完整发布链先准备整个 monorepo，再 stage 运行时，最后调用 Tauri 打包器：
 

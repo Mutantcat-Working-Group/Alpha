@@ -19,6 +19,7 @@ vi.mock('@mutantcat/dsh-util-crypto', () => ({
 }))
 
 const TAB = 'tab' as TabId
+const NATIVE_KEY = 'tab:00000000-0000-4000-8000-000000000000'
 const SESSION = 'session' as SessionId
 const APP = 'https://dsh.example'
 const lifetimes = new Set<AbortController>()
@@ -644,14 +645,14 @@ describe('BrowserController', () => {
 
     face.openNativeDocument(TAB, 'https://example.test/one', RECT)
     await settlePicker()
-    expect(stub.open).toHaveBeenCalledWith({ key: 'tab', url: 'https://example.test/one', ...RECT })
+    expect(stub.open).toHaveBeenCalledWith({ key: NATIVE_KEY, url: 'https://example.test/one', ...RECT })
     expect(stub.listenerCount()).toBe(1)
 
     face.moveNativeDocument(TAB, MOVED)
-    expect(stub.move).toHaveBeenCalledWith({ key: 'tab', ...MOVED })
+    expect(stub.move).toHaveBeenCalledWith({ key: NATIVE_KEY, ...MOVED })
 
     face.closeNativeDocument(TAB)
-    expect(stub.close).toHaveBeenCalledWith('tab')
+    expect(stub.close).toHaveBeenCalledWith(NATIVE_KEY)
     expect(stub.listenerCount()).toBe(0)
     face.moveNativeDocument(TAB, MOVED)
     expect(stub.move).toHaveBeenCalledOnce()
@@ -714,11 +715,11 @@ describe('BrowserController', () => {
     await settlePicker()
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('loading')
 
-    stub.emit({ key: 'tab', status: 'loaded' })
+    stub.emit({ key: NATIVE_KEY, status: 'loaded' })
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
 
     face.closeNativeDocument(TAB)
-    stub.emit({ key: 'tab', status: 'loaded' })
+    stub.emit({ key: NATIVE_KEY, status: 'loaded' })
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
   })
 
@@ -734,14 +735,14 @@ describe('BrowserController', () => {
 
     face.openNativeDocument(TAB, 'https://example.test/one', RECT)
     await settlePicker()
-    stub.emit({ key: 'tab', status: 'loaded', url: 'https://example.test/final' })
+    stub.emit({ key: NATIVE_KEY, status: 'loaded', url: 'https://example.test/final' })
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
     expect(store.getSnapshot().byTab[TAB]?.entries[0]?.url).toBe('https://example.test/final')
 
-    stub.emit({ key: 'tab', status: 'loaded', url: 'https://example.test/final' })
+    stub.emit({ key: NATIVE_KEY, status: 'loaded', url: 'https://example.test/final' })
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
 
-    stub.emit({ key: 'tab', status: 'loaded', url: `${APP}/page` })
+    stub.emit({ key: NATIVE_KEY, status: 'loaded', url: `${APP}/page` })
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('unknown')
   })
 
@@ -759,10 +760,10 @@ describe('BrowserController', () => {
 
     face.openNativeDocument(TAB, 'https://example.test/one', RECT)
     await settlePicker()
-    stub.emit({ key: 'tab', status: 'popup', url: 'https://popup.example/' })
+    stub.emit({ key: NATIVE_KEY, status: 'popup', url: 'https://popup.example/' })
     expect(open).toHaveBeenCalledWith('https://popup.example/', '_blank', 'noopener,noreferrer')
 
-    stub.emit({ key: 'tab', status: 'popup' })
+    stub.emit({ key: NATIVE_KEY, status: 'popup' })
     expect(open).toHaveBeenCalledOnce()
   })
 
@@ -782,8 +783,8 @@ describe('BrowserController', () => {
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('loading')
 
     tabLifetime.abort()
-    stub.emit({ key: 'tab', status: 'loaded' })
-    expect(stub.close).toHaveBeenCalledWith('tab')
+    stub.emit({ key: NATIVE_KEY, status: 'loaded' })
+    expect(stub.close).toHaveBeenCalledWith(NATIVE_KEY)
   })
 
   it('returns rendering to the iframe when the native carrier refuses to open', async () => {
@@ -856,6 +857,45 @@ describe('BrowserController', () => {
     expect(open).not.toHaveBeenCalled()
   })
 
+  it.each([false, true])('keeps the new carrier after a late open (navigate=%s)', async (navigate) => {
+    vi.mocked(randomUUID).mockReturnValueOnce('00000000-0000-4000-8000-000000000001').mockReturnValueOnce('00000000-0000-4000-8000-000000000002')
+    const startup = deferred<undefined>()
+    const stub = documentBridge()
+    stub.open.mockImplementationOnce(() => startup.promise)
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-remount-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    face.mount(TAB, lifetime().signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    const oldKey = stub.open.mock.calls[0]![0].key
+    face.closeNativeDocument(TAB)
+    const nextUrl = navigate ? 'https://example.test/two' : 'https://example.test/one'
+    if (navigate) face.loadUrl(TAB, nextUrl)
+    face.openNativeDocument(TAB, nextUrl, RECT)
+    await settlePicker()
+    const newKey = stub.open.mock.calls[1]![0].key
+    startup.resolve(undefined)
+    await settlePicker()
+    expect(newKey).not.toBe(oldKey)
+    expect(stub.close).not.toHaveBeenCalledWith(newKey)
+    expect(stub.listenerCount()).toBe(1)
+    face.moveNativeDocument(TAB, MOVED)
+    expect(stub.move).toHaveBeenLastCalledWith({ key: newKey, ...MOVED })
+    stub.emit({ key: oldKey, status: 'loaded', url: 'https://stale.example/' })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('loading')
+    stub.emit({ key: newKey, status: 'loaded' })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
+    await expect(JSON.stringify({
+      activeListeners: stub.listenerCount(),
+      activePage: store.getSnapshot().byTab[TAB]?.navigation.status,
+      staleCarrierClosed: stub.close.mock.calls.some(([key]) => key === oldKey),
+      activeCarrierClosed: stub.close.mock.calls.some(([key]) => key === newKey),
+    }, null, 2) + '\n').toMatchFileSnapshot('./expected/native-carrier-race.json')
+  })
+
   it('closes the native carrier when the tab occurrence ends during startup', async () => {
     const startup = deferred<undefined>()
     const stub = documentBridge()
@@ -873,7 +913,7 @@ describe('BrowserController', () => {
     tabLifetime.abort()
     startup.resolve(undefined)
     await settlePicker()
-    expect(stub.close).toHaveBeenCalledWith('tab')
+    expect(stub.close).toHaveBeenCalledWith(NATIVE_KEY)
   })
 
   it('tolerates carrier commands the Desktop shell already rejects', async () => {

@@ -1,0 +1,7 @@
+{
+  "initial": { "bottomAligned": true, "widthMatches": true, "heightMatches": true },
+  "moved": { "bottomAligned": true, "widthMatches": true, "heightMatches": true },
+  "resized": { "bottomAligned": true, "widthMatches": true, "heightMatches": true },
+  "page": { "title": "Native browser fixture", "inputWritable": true },
+  "request": { "safariCompatible": true, "branded": true }
+}
