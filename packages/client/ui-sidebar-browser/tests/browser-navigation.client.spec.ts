@@ -51,6 +51,29 @@ describe('BrowserNavigation', () => {
     expect(navigation.snapshot.navigation).toEqual({ status: 'loading', revision: reload.revision })
   })
 
+  it('keeps the address readable when a native carrier reports each committed URL', () => {
+    const navigation = new BrowserNavigation(undefined, 'https://app.test')
+    const first = navigation.navigate(httpsTarget(1))
+    navigation.frameLoaded(first.revision, 'https://example.test/final')
+    expect(navigation.snapshot.navigation).toEqual({ status: 'known', revision: first.revision })
+    expect(BrowserNavigation.current(navigation.snapshot)?.url).toBe('https://example.test/final')
+    expect(navigation.snapshot.request?.target.url).toBe('https://example.test/1')
+
+    const second = navigation.navigate(httpsTarget(2))
+    navigation.frameLoaded(second.revision, 'https://example.test/2')
+    expect(navigation.snapshot.navigation).toEqual({ status: 'known', revision: second.revision })
+    navigation.frameLoaded(second.revision, 'https://example.test/2')
+    expect(navigation.snapshot.navigation).toEqual({ status: 'known', revision: second.revision })
+    expect(navigation.canGoBack).toBe(true)
+
+    navigation.frameLoaded(second.revision, 'file:///etc/passwd')
+    expect(navigation.snapshot.navigation).toEqual({ status: 'unknown', revision: second.revision })
+
+    const third = navigation.reload()!
+    navigation.frameLoaded(third.revision, 'https://app.test/')
+    expect(navigation.snapshot.navigation).toEqual({ status: 'unknown', revision: third.revision })
+  })
+
   it('leaves address failures outside navigation', () => {
     const navigation = new BrowserNavigation()
     navigation.frameLoaded(1)

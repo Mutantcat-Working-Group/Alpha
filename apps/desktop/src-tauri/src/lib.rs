@@ -809,29 +809,8 @@ async fn start_component_picker(
         .ok_or_else(|| "component picker: main window unavailable".to_string())?;
     let event_request_id = request.request_id.clone();
     let handle = app.clone();
-    // The reported rectangle is CSS pixels relative to the Browser iframe. wry maps a child
-    // webview's logical rectangle through two independent per-HWND DPI reads, so a logical
-    // rectangle lands wherever those reads disagree with the window's scale factor. Converting
-    // once to physical pixels against the window scale factor and the main webview's measured
-    // origin turns both reads into identity and places the child exactly over the iframe.
-    let scale_factor = match window.scale_factor() {
-        Ok(scale) if scale.is_finite() && scale > 0.0 => scale,
-        _ => 1.0,
-    };
-    let origin = app
-        .get_webview("main")
-        .and_then(|main| main.bounds().ok())
-        .map(|rect| rect.position.to_physical::<i32>(scale_factor))
-        .unwrap_or_else(|| PhysicalPosition::new(0, 0));
-    let to_physical = |value: f64| (value * scale_factor).round();
-    let position = PhysicalPosition::new(
-        origin.x + to_physical(request.x) as i32,
-        origin.y + to_physical(request.y) as i32,
-    );
-    let size = PhysicalSize::new(
-        to_physical(request.width).max(1.0) as u32,
-        to_physical(request.height).max(1.0) as u32,
-    );
+    let (position, size) =
+        browser_document_placement(&app, request.x, request.y, request.width, request.height)?;
     let webview = window
         .add_child(
             WebviewBuilder::new(label, WebviewUrl::External(target))
@@ -915,17 +894,27 @@ struct BrowserDocumentEvent {
     key: String,
     /// `loaded` for a finished navigation, `popup` for a blocked new-window request.
     status: &'static str,
-    /// Popup target, present only on `popup`.
+    /// Committed URL of a `loaded` navigation, or the popup target on `popup`.
     #[serde(skip_serializing_if = "Option::is_none")]
     url: Option<String>,
 }
 
 /// Convert one reported carrier rectangle into physical pixels.
 ///
-/// wry maps a child webview's logical rectangle through two independent per-HWND DPI
-/// reads, so a logical rectangle lands wherever those reads disagree with the window's
-/// scale factor. Converting once against the window scale factor and the main webview's
-/// measured origin turns both reads into identity and places the child over the carrier.
+/// A CSS rectangle reaches a child webview through wry's own logical conversion, which
+/// reads the backing scale factor of the window the child is attached to. Converting
+/// once here against that same window scale factor leaves wry's read as the only
+/// remaining conversion, so the child lands on the rectangle the client measured.
+///
+/// The rectangle is relative to the main webview's viewport, and a child added through
+/// `add_child` is attached to the window's content view, so the two spaces would need
+/// the main webview's offset within that content view. `Webview::bounds()` cannot supply
+/// it: wry reports `parent height - frame origin y - frame height`, which equals the
+/// real offset only while the main webview is no taller than its superview. On macOS the
+/// main webview is sized to the window while its content view excludes the title bar, so
+/// the webview is top-aligned but taller and `bounds()` reports the negated title bar
+/// height. Adding that value lifted every child webview above its carrier, far enough to
+/// cover the Browser toolbar.
 /// @param app - application handle that owns the main window.
 /// @param x - carrier rectangle left edge in CSS pixels.
 /// @param y - carrier rectangle top edge in CSS pixels.
@@ -946,25 +935,17 @@ fn browser_document_placement(
         || width <= 0.0
         || height <= 0.0
     {
-        return Err("browser document: carrier rectangle is invalid".to_string());
+        return Err("native child webview: rectangle is invalid".to_string());
     }
     let window = app
         .get_window("main")
-        .ok_or_else(|| "browser document: main window unavailable".to_string())?;
+        .ok_or_else(|| "native child webview: main window unavailable".to_string())?;
     let scale_factor = match window.scale_factor() {
         Ok(scale) if scale.is_finite() && scale > 0.0 => scale,
         _ => 1.0,
     };
-    let origin = app
-        .get_webview("main")
-        .and_then(|main| main.bounds().ok())
-        .map(|rect| rect.position.to_physical::<i32>(scale_factor))
-        .unwrap_or_else(|| PhysicalPosition::new(0, 0));
     let to_physical = |value: f64| (value * scale_factor).round();
-    let position = PhysicalPosition::new(
-        origin.x + to_physical(x) as i32,
-        origin.y + to_physical(y) as i32,
-    );
+    let position = PhysicalPosition::new(to_physical(x) as i32, to_physical(y) as i32);
     let size = PhysicalSize::new(
         to_physical(width).max(1.0) as u32,
         to_physical(height).max(1.0) as u32,
@@ -1051,7 +1032,11 @@ async fn open_browser_document(
                         rearm_component_picker(&emitter, &key);
                         let _ = emitter.emit(
                             BROWSER_DOCUMENT_EVENT,
-                            BrowserDocumentEvent { key: key.clone(), status: "loaded", url: None },
+                            BrowserDocumentEvent {
+                                key: key.clone(),
+                                status: "loaded",
+                                url: Some(payload.url().to_string()),
+                            },
                         );
                     }
                 })

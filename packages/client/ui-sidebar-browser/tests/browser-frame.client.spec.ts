@@ -4,7 +4,7 @@ import { IframeImpl } from '../src/client/browser/BrowserFrame.ts'
 describe('IframeImpl', () => {
   it('owns transient sandbox mode and prepared document state', () => {
     const changed = vi.fn<(sandboxed: boolean) => void>()
-    const loaded = vi.fn<(revision: number) => void>()
+    const loaded = vi.fn<(revision: number, url?: string) => void>()
     const frame = new IframeImpl(changed, loaded)
     const listener = vi.fn()
     const unsubscribe = frame.subscribe(listener)
@@ -27,7 +27,9 @@ describe('IframeImpl', () => {
     frame.reportLoadFailed(4)
     expect(frame.getSnapshot().loadFailed).toBe(true)
     frame.reportLoaded(4)
-    expect(loaded).toHaveBeenCalledWith(4)
+    expect(loaded).toHaveBeenCalledWith(4, undefined)
+    frame.reportLoaded(4, 'https://example.test/final')
+    expect(loaded).toHaveBeenCalledWith(4, 'https://example.test/final')
     frame.setDocument({ ...document, revision: 5 })
     expect(frame.getSnapshot().loadFailed).toBe(false)
     frame.clearDocument()
@@ -41,7 +43,7 @@ describe('IframeImpl', () => {
 
   it('tracks component-picker mode for the tab occurrence', () => {
     const changed = vi.fn<(sandboxed: boolean) => void>()
-    const loaded = vi.fn<(revision: number) => void>()
+    const loaded = vi.fn<(revision: number, url?: string) => void>()
     const frame = new IframeImpl(changed, loaded)
     const listener = vi.fn()
     frame.subscribe(listener)
@@ -74,7 +76,7 @@ describe('IframeImpl', () => {
 
   it('returns rendering to the iframe after one native carrier refusal', () => {
     const changed = vi.fn<(sandboxed: boolean) => void>()
-    const loaded = vi.fn<(revision: number) => void>()
+    const loaded = vi.fn<(revision: number, url?: string) => void>()
     const frame = new IframeImpl(changed, loaded)
     const listener = vi.fn()
     frame.subscribe(listener)

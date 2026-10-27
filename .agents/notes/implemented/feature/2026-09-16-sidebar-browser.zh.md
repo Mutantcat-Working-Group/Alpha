@@ -43,7 +43,7 @@ Browser 状态只属于呈现层，不进入 Session log、模型请求、resour
 
 Desktop shell 为每个 Browser tab occurrence 打开一个 child webview，位置取 React body 为其占位 div 上报的矩形，body 在文档打开期间每帧重新测量该矩形。关闭该 tab occurrence 会关闭该 child webview。顶层 child webview 不受 `X-Frame-Options` 或 CSP `frame-ancestors` 指令约束，因此拒绝 iframe 嵌入的页面也能渲染。
 
-shell 把每次完成的导航作为该载体所持 revision 的一次 load 上报，`BrowserNavigation` 通过与 iframe load 相同的状态机消费该上报。页面发起的 popup 在 shell 处被拒绝，并带着目标 URL 上报，客户端通过 `window.open` 打开该 URL。该载体不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。被拒绝的打开会标记 frame，并把该文档交回 iframe。选取组件测量的是载体矩形，因此在原生载体上与在 iframe 上同样有效。
+shell 把每次完成的导航作为该载体所持 revision 的一次 load 上报，并同时上报它实际提交的 URL；`BrowserNavigation` 通过与 iframe load 相同的状态机消费该上报：上报的 URL 会改写所选 entry 的地址，因此重定向仍保持地址可读，而不会被判为不可读取。页面发起的 popup 在 shell 处被拒绝，并带着目标 URL 上报，客户端通过 `window.open` 打开该 URL。该载体不跨 body 重挂载保留页面 identity，不按 tab 隔离 Cookie，也不暴露调试目标。被拒绝的打开会标记 frame，并把该文档交回 iframe。选取组件测量的是载体矩形，因此在原生载体上与在 iframe 上同样有效。
 
 ## Deferred Electron carrier
 

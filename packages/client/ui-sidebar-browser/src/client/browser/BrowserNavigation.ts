@@ -1,4 +1,5 @@
 /** URL, history, and observability state for one Browser tab. */
+import { parseBrowserAddress } from './url.ts'
 import type { BrowserAddressFailure, BrowserTarget } from './url.ts'
 
 /** Maximum retained application-known navigation entries per tab. */
@@ -29,16 +30,22 @@ export interface BrowserTabState {
 }
 
 /**
- * Owns the application-known URL history and the iframe observation state machine.
- * The first load for a request keeps its URL authoritative; another load marks it unknown.
+ * Owns the application-known URL history and the carrier observation state machine.
+ * The first load for a request keeps its URL authoritative; another iframe load marks it
+ * unknown, while a native load carries the URL the carrier committed and replaces the
+ * current entry's address with it.
  */
 export class BrowserNavigation {
   private value: BrowserTabState
 
   /**
    * @param initial - persisted state restored for this tab, or a fresh empty state.
+   * @param applicationOrigin - current DSH document origin, refused for observed URLs.
    */
-  constructor(initial: BrowserTabState = BrowserNavigation.empty()) {
+  constructor(
+    initial: BrowserTabState = BrowserNavigation.empty(),
+    private readonly applicationOrigin?: string,
+  ) {
     this.value = initial
   }
 
@@ -147,15 +154,41 @@ export class BrowserNavigation {
   /**
    * Record a frame load for its captured revision.
    * @param revision - revision bound to the rendered frame.
+   * @param url - URL a native carrier committed, when the carrier reports one.
    */
-  frameLoaded(revision: number): void {
+  frameLoaded(revision: number, url?: string): void {
     const navigation = this.value.navigation
     if (navigation.status === 'empty' || navigation.revision !== revision) return
+    if (url !== undefined) {
+      this.observed(url, revision)
+      return
+    }
     if (navigation.status === 'loading') {
       this.value = { ...this.value, navigation: { status: 'known', revision } }
     } else if (navigation.status === 'known') {
       this.value = { ...this.value, navigation: { status: 'unknown', revision } }
     }
+  }
+
+  /**
+   * Settle a revision from the URL its carrier committed.
+   *
+   * A native carrier reports the URL of every finished load, including a redirect the
+   * application did not request, so the load keeps the address readable and replaces the
+   * selected entry's address with the committed one. An address the parser refuses leaves
+   * the carrier unobservable.
+   * @param url - URL the carrier committed.
+   * @param revision - revision bound to the rendered frame.
+   */
+  private observed(url: string, revision: number): void {
+    const parsed = parseBrowserAddress(url, this.applicationOrigin)
+    if (!parsed.ok) {
+      this.value = { ...this.value, navigation: { status: 'unknown', revision } }
+      return
+    }
+    const index = this.value.index
+    const entries = this.value.entries.map((entry, at) => (at === index ? parsed.target : entry))
+    this.value = { ...this.value, entries, navigation: { status: 'known', revision } }
   }
 
   private request(

@@ -153,10 +153,10 @@ export class BrowserController {
    * @param options - tab identity, persistence writer, URL origin, and lifetime.
    */
   constructor(private readonly options: BrowserControllerOptions) {
-    this.navigation = new BrowserNavigation(options.initial)
+    this.navigation = new BrowserNavigation(options.initial, options.applicationOrigin)
     this.frame = new IframeImpl(
       () => { this.reload() },
-      (revision) => { this.frameLoaded(revision) },
+      (revision, url) => { this.frameLoaded(revision, url) },
     )
     options.signal.addEventListener('abort', () => { this.dispose() }, { once: true })
   }
@@ -264,10 +264,14 @@ export class BrowserController {
     this.frame.setDocument({ target: request.target, src: request.target.url, revision: request.revision })
   }
 
-  private frameLoaded(revision: number): void {
+  /**
+   * @param revision - revision bound to the rendered frame.
+   * @param url - URL a native carrier committed, when the carrier reports one.
+   */
+  private frameLoaded(revision: number, url?: string): void {
     if (this.disposed) return
     const previous = this.navigation.snapshot
-    this.navigation.frameLoaded(revision)
+    this.navigation.frameLoaded(revision, url)
     if (this.navigation.snapshot !== previous) this.publish()
   }
 
@@ -404,7 +408,7 @@ export class BrowserController {
       const revision = this.nativeRevision
       /* v8 ignore next -- defensive: every path that clears nativeRevision also drops the subscription. */
       if (revision === undefined) return
-      this.frame.reportLoaded(revision)
+      this.frame.reportLoaded(revision, event.url)
       return
     }
     if (event.url === undefined) return

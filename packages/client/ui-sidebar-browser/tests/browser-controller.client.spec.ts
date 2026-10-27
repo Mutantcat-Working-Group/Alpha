@@ -722,6 +722,29 @@ describe('BrowserController', () => {
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
   })
 
+  it('keeps the address readable across the URLs a native carrier commits', async () => {
+    const stub = documentBridge()
+    installBridge(stub.bridge)
+    const store = createBrowserStore().create('browser-controller-native-committed-url-test')
+    const { conversation } = conversationStub()
+    const face = createBrowserControllers(store.actions, SESSION, conversation)
+    const tabLifetime = lifetime()
+    face.mount(TAB, tabLifetime.signal, APP)
+    face.loadUrl(TAB, 'https://example.test/one')
+
+    face.openNativeDocument(TAB, 'https://example.test/one', RECT)
+    await settlePicker()
+    stub.emit({ key: 'tab', status: 'loaded', url: 'https://example.test/final' })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
+    expect(store.getSnapshot().byTab[TAB]?.entries[0]?.url).toBe('https://example.test/final')
+
+    stub.emit({ key: 'tab', status: 'loaded', url: 'https://example.test/final' })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('known')
+
+    stub.emit({ key: 'tab', status: 'loaded', url: `${APP}/page` })
+    expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('unknown')
+  })
+
   it('opens a native popup target in the system browser', async () => {
     const stub = documentBridge()
     installBridge(stub.bridge)
