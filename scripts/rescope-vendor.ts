@@ -76,6 +76,8 @@ interface GenericSkip {
 }
 
 const GENERIC_SKIPS: readonly GenericSkip[] = [
+  // The harness rescope verifies this codemod's upstream-name mapping verbatim.
+  { file: 'scripts/rescope-harness.ts', upstream: ['cordis'] },
   // `Symbol.for('schemastery')` and the `vendor:` metadata field are upstream identifiers.
   { file: 'vendor/schemastery/src/index.ts', upstream: ['schemastery'] },
   // Asserts the vendored-manifest table, which gains an upstream-name column.
