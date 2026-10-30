@@ -34,7 +34,7 @@ dependencies = [
 
 [[package]]
 name = "alpha-desktop"
-version = "1.0.20261109"
+version = "1.0.20261110"
 dependencies = [
  "base64 0.22.1",
  "objc2",
