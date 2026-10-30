@@ -1,10 +1,18 @@
 /**
  * Composer keymap over the Lexical command layer: menu arbitration
- * (arrows/escape/enter), space adjudication, the Enter submit gesture, and
- * paste routing. Registered at CRITICAL priority so it decides before
- * @lexical/plain-text's own Enter/paste defaults; a handler returning false
- * falls through to those defaults (Shift+Enter's line break, ordinary
- * spaces, text paste the bar routes itself).
+ * (arrows/escape/enter), space adjudication, the Enter submit gesture, the
+ * horizontal document-edge guard, and paste routing. Registered at CRITICAL
+ * priority so it decides before @lexical/plain-text's own Enter/paste
+ * defaults; a handler returning false falls through to those defaults
+ * (Shift+Enter's line break, ordinary spaces, text paste the bar routes
+ * itself).
+ *
+ * Horizontal edge: past the outermost character there is no position left to
+ * move to, so @lexical/plain-text declines the gesture and leaves it to the
+ * browser. Beside a chip the browser answers by synthesizing a U+FFFC
+ * placeholder inside the editable, which the reconciler then imports as
+ * text. The keymap consumes the gesture there instead, under the same IME
+ * guard as every other intercepted key.
  *
  * IME guard: a composition-closing Enter/Space must not submit or adjudicate.
  * KeyboardEvent.isComposing covers most engines; Safari delivers the closing
@@ -16,11 +24,13 @@
  */
 import type { LexicalEditor } from 'lexical'
 import {
-  COMMAND_PRIORITY_CRITICAL, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND,
+  $getSelection, $isRangeSelection, COMMAND_PRIORITY_CRITICAL, KEY_ARROW_DOWN_COMMAND,
+  KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND,
   KEY_ESCAPE_COMMAND, KEY_SPACE_COMMAND, KEY_TAB_COMMAND, PASTE_COMMAND,
 } from 'lexical'
 import { mergeRegister } from '@lexical/utils'
 import type { ArbitrateKey, ArbitrateOutcome } from '../../contract/draft-editor.ts'
+import { $composerLayout, $detectOffsetOfPoint } from './projection.ts'
 
 /**
  * Character count above which a plain-text paste becomes a file attachment
@@ -92,6 +102,30 @@ export function registerComposerKeymap(editor: LexicalEditor, handlers: Composer
     return false
   }
 
+  /**
+   * Consume a horizontal arrow whose caret already sits at the document
+   * edge. Past the outermost character there is no position left to move
+   * to, so @lexical/plain-text declines the gesture and the browser answers
+   * it: adjacent to a chip it synthesizes a U+FFFC placeholder in the
+   * editable, which the reconciler then imports as text.
+   */
+  const guardDocumentEdge = (backward: boolean) => (event: KeyboardEvent): boolean => {
+    if (isComposingEvent(event, recentlyComposing)) return false
+    let consumed = false
+    editor.getEditorState().read(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection) || !selection.isCollapsed()) return
+      const layout = $composerLayout()
+      const edge = backward ? 0 : layout.detectLength
+      // An unmapped caret answers null, which matches no edge: pass rather
+      // than consume on a guess.
+      if ($detectOffsetOfPoint(layout, selection.focus) !== edge) return
+      event.preventDefault()
+      consumed = true
+    })
+    return consumed
+  }
+
   return mergeRegister(
     editor.registerRootListener((root, prevRoot) => {
       prevRoot?.removeEventListener('compositionstart', onCompositionStart)
@@ -107,6 +141,8 @@ export function registerComposerKeymap(editor: LexicalEditor, handlers: Composer
     editor.registerUpdateListener(syncComposition),
     editor.registerCommand(KEY_ARROW_UP_COMMAND, arrow('up'), COMMAND_PRIORITY_CRITICAL),
     editor.registerCommand(KEY_ARROW_DOWN_COMMAND, arrow('down'), COMMAND_PRIORITY_CRITICAL),
+    editor.registerCommand(KEY_ARROW_LEFT_COMMAND, guardDocumentEdge(true), COMMAND_PRIORITY_CRITICAL),
+    editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, guardDocumentEdge(false), COMMAND_PRIORITY_CRITICAL),
     // Tab settles the highlighted completion and passes without one, keeping
     // native focus traversal; Shift+Tab leaves the menu like Escape whenever it
     // is open, highlight or not, so the two Tab gestures never disagree about
