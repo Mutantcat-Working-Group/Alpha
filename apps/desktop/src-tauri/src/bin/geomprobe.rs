@@ -1,4 +1,5 @@
-//! Throwaway probe for the child-webview move path. `cargo run --bin geomprobe`.
+//! Throwaway probe for the child-webview move path.
+//! macOS only; run it with `cargo run --features geomprobe --bin geomprobe`.
 
 use std::time::Duration;
 

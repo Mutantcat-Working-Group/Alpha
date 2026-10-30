@@ -20,6 +20,17 @@ name = "browser-webview"
 path = "tests/browser_webview.rs"
 harness = false
 
+[features]
+# Opt-in build of the throwaway macOS AppKit probe in src/bin/geomprobe.rs.
+# Cargo auto-discovers src/bin as bin targets, so the probe has to be excluded
+# from the default build: it imports objc2 crates that only macOS links.
+geomprobe = []
+
+[[bin]]
+name = "geomprobe"
+path = "src/bin/geomprobe.rs"
+required-features = ["geomprobe"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
