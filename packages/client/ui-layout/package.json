@@ -48,6 +48,7 @@
     "@mutantcat/dsh-brand": "workspace:^",
     "@mutantcat/dsh-client-locale": "workspace:^",
     "@mutantcat/dsh-client-store": "workspace:^",
+    "@mutantcat/dsh-client-ui-primitives": "workspace:^",
     "@mutantcat/dsh-client-ui-renderer": "workspace:^",
     "@mutantcat/dsh-client-ui-session": "workspace:^",
     "@mutantcat/dsh-client-ui-slots": "workspace:^",

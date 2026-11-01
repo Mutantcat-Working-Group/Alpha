@@ -3,8 +3,7 @@
   display: inline-flex;
 }
 
-/* Dropdown card (figma MenuDropdown 122:9481 / 419:16920): menu surface,
- * r12, elevation-prominent (hairline stroke in shadow), 4px inset padding. */
+/* Shared menu surface, prominent elevation, and 4px inset padding. */
 .list,
 .submenu {
   /* min-widths below are the design's outer card widths — include the pad. */
@@ -14,7 +13,7 @@
   flex-direction: column;
   gap: 0;
   border: 0;
-  border-radius: 20px;
+  border-radius: 8px;
   background: var(--dsw-specific-menu);
   --dsw-elevation-stroke-color: var(--dsw-alias-border-l1);
   box-shadow: var(--dsw-elevation-prominent);
@@ -103,7 +102,7 @@
   min-height: 40px;
   padding: 8px 10px;
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   background: transparent;
   cursor: pointer;
   font-size: 14px;

@@ -31,6 +31,10 @@ jobs:
           pnpm exec vitest run
           packages/client/ui-conversation/tests/input-bar.client.spec.tsx
           packages/client/ui-conversation/tests/keymap-routing.client.spec.tsx
+          packages/client/ui-layout/tests
+          packages/client/ui-dockkit/tests/components.client.spec.tsx
+          packages/client/ui-primitives/tests/atoms.client.spec.tsx
+          packages/client/ui-sidebar-files/tests
           packages/client/ui-sidebar-browser/tests
           packages/client/ui-sidebar-documentpreview/tests
           packages/client/ui-schedule/tests/task-manager-page.client.spec.tsx
@@ -38,6 +42,21 @@ jobs:
           scripts/rescope-vendor.spec.ts
       - name: Check client types
         run: pnpm run typecheck
+      - name: Build the real Web application
+        run: pnpm run build
+      - name: Install browser
+        run: pnpm --filter @mutantcat/dsh-web-frontend exec playwright install --with-deps chromium
+      - name: Exercise contextual editing in the real application
+        env:
+          DSH_SNAPSHOT: replay
+        run: pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/context-menu.e2e.ts
+      - name: Upload context menu screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: context-menu-screenshots
+          path: .artifacts/context-menu-*.png
+          if-no-files-found: ignore
 
   native-browser:
     runs-on: macos-14

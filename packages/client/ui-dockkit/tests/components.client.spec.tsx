@@ -854,7 +854,7 @@ describe('DockSurface', () => {
     left = window.innerWidth + 100
     renderSurface(controller, spyIntents())
     fireEvent.contextMenu(screen.getByRole('tab'))
-    expect(screen.getByRole('menu').style.left).toBe(`${left + 60}px`)
+    expect(screen.getByRole('menu').style.left).toBe(`${window.innerWidth - 4}px`)
   })
 
   it('offers no copy or float item: those gestures are the embedder\'s API and the drag', () => {

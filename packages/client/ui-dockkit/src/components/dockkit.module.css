@@ -449,11 +449,16 @@
   z-index: 70;
   display: flex;
   flex-direction: column;
-  min-width: 96px;
+  min-width: 164px;
+  max-width: calc(100vw - 8px);
+  max-height: calc(100vh - 8px);
+  overflow-y: auto;
   padding: 4px;
-  background: var(--dsw-alias-bg-layer-3);
+  background: var(--dsw-specific-menu);
   border: 0.5px solid var(--dsw-alias-border-l2);
   border-radius: 6px;
+  --dsw-elevation-stroke-color: var(--dsw-alias-border-l1);
+  box-shadow: var(--dsw-elevation-prominent);
 }
 
 .menu:not(:has([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])) {
@@ -471,8 +476,10 @@
   cursor: pointer;
 }
 
-.menuItem:hover {
+.menuItem:hover,
+.menuItem:focus-visible {
   background: var(--dsw-alias-interactive-bg-hover);
+  outline: none;
 }
 
 /* No padding of its own: a tab's body reaches the pane's edges and the strip's

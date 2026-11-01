@@ -40,6 +40,20 @@ function names(root: HTMLElement): string[] {
 }
 
 describe('FilesBody', () => {
+  it('opens files and toggles directories from their context menus', async () => {
+    const { view, script, tabActions } = mountBody()
+    await act(() => script.settle({ ok: true, value: ROOT_LEVEL }))
+    fireEvent.contextMenu(view.getByRole('button', { name: 'README.md' }))
+    const open = document.querySelector<HTMLButtonElement>('[role="menuitem"]')!
+    expect(open.textContent).toBe(zh['entry.open'])
+    fireEvent.click(open)
+    expect(tabActions.openResource).toHaveBeenCalledWith(fileAddressFor(SESSION, ROOT, `${ROOT}/README.md`))
+    fireEvent.contextMenu(view.getByRole('button', { name: 'src' }))
+    fireEvent.click(document.querySelector<HTMLButtonElement>('[role="menuitem"]')!)
+    expect(script.list).toHaveBeenLastCalledWith(SESSION, `${ROOT}/src`, expect.any(AbortSignal))
+    expect(document.querySelector('[role="menu"]')).toBeNull()
+  })
+
   it('says so when the session has no workspace directory, and asks for nothing', () => {
     const { view, script } = mountBody(null)
     expect(view.container.querySelector('[data-files-state="no-workspace"]')?.textContent).toBe(zh.noWorkspace)

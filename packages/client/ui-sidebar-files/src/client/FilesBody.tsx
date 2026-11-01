@@ -10,13 +10,14 @@
  * ink, then the one control at its end, reload, which drops every listed level
  * and asks again for the expanded ones.
  */
-import { useEffect, useLayoutEffect, useRef } from 'react'
-import type { ReactNode, RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import type { MouseEvent, ReactNode, RefObject } from 'react'
 import clsx from 'clsx'
 import type { RemoteFailure } from '@mutantcat/dsh-api-remotes/client'
 import type { PropsLocale, PropsRuntime, PropsStore, TranslateNS } from '@mutantcat/dsh-client-ui-slots'
 import {
   FileTypeIcon, IconFolderClose16, IconFolderOpen16, IconRefreshOutline16, classifyFileType,
+  IconCopyOutline16, Menu, Toast, writeClipboard,
 } from '@mutantcat/dsh-client-ui-primitives'
 import { fileAddressFor, pathPartsOf } from '@mutantcat/dsh-util-workspace-path'
 import type { WorkspaceDirectoryEntry } from '@mutantcat/dsh-api-workspace-files/types'
@@ -105,6 +106,7 @@ interface TreeContext {
   readonly state: FilesTabState
   readonly onToggle: (path: string) => void
   readonly onOpen: (path: string) => void
+  readonly onMenu: (event: MouseEvent, path: string, type: WorkspaceDirectoryEntry['type']) => void
   readonly t: TranslateNS<'sidebarFiles'>
 }
 
@@ -115,7 +117,7 @@ function Entry({ parent, entry, tree }: { parent: string; entry: WorkspaceDirect
     const expanded = tree.state.expanded.includes(path)
     return (
       <li className={css.item} data-files-entry="directory" data-files-path={path}>
-        <button type="button" className={css.row} aria-expanded={expanded} onClick={() => { tree.onToggle(path) }}>
+        <button type="button" className={css.row} aria-expanded={expanded} onClick={() => { tree.onToggle(path) }} onContextMenu={event => { tree.onMenu(event, path, entry.type) }}>
           {expanded ? <IconFolderOpen16 className={css.icon} /> : <IconFolderClose16 className={css.icon} />}
           <span className={css.name}>{entry.name}</span>
         </button>
@@ -126,7 +128,7 @@ function Entry({ parent, entry, tree }: { parent: string; entry: WorkspaceDirect
   if (entry.type === 'file') {
     return (
       <li className={css.item} data-files-entry="file" data-files-path={path}>
-        <button type="button" className={css.row} onClick={() => { tree.onOpen(path) }}>
+        <button type="button" className={css.row} onClick={() => { tree.onOpen(path) }} onContextMenu={event => { tree.onMenu(event, path, entry.type) }}>
           <FileTypeIcon kind={classifyFileType(entry.name)} size={16} className={css.fileIcon} />
           <span className={css.name}>{entry.name}</span>
         </button>
@@ -178,6 +180,8 @@ export function FilesBody({
   const pathTextRef = useRef<HTMLSpanElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const scrollTopRef = useRef(0)
+  const [menu, setMenu] = useState<{ path: string; type: WorkspaceDirectoryEntry['type']; rect: DOMRect } | null>(null)
+  const [copyFailed, setCopyFailed] = useState(false)
   usePathClipped(pathRef, pathTextRef, state?.root)
   // Come back where the reader was: loaded levels outlive the body in the
   // store, so a remounted tree lays out at its full height before this runs
@@ -216,6 +220,10 @@ export function FilesBody({
     onToggle: (path) => { toggle(tab.id, path, state.levels[path] !== undefined, signal) },
     // Every row is under the tree's root, so its address is session-relative.
     onOpen: (path) => { tabActions.openResource(fileAddressFor(sessionId, state.root, path)) },
+    onMenu: (event, path, type) => {
+      event.preventDefault()
+      setMenu({ path, type, rect: new DOMRect(event.clientX, event.clientY, 0, 0) })
+    },
     t,
   }
   // Reload drops every level and asks again for the expanded ones; a collapsed
@@ -251,10 +259,34 @@ export function FilesBody({
         ref={bodyRef}
         className={css.body}
         data-files-body
-        onScroll={(event) => { scrollTopRef.current = event.currentTarget.scrollTop }}
+        onScroll={(event) => { scrollTopRef.current = event.currentTarget.scrollTop; setMenu(null) }}
       >
         <ul className={css.level}><Level path={state.root} tree={tree} /></ul>
       </div>
+      {menu !== null && <Menu
+        open compact portal autoFocus anchor={null}
+        getAnchorRect={() => menu.rect}
+        onClose={() => { setMenu(null) }}
+        items={[
+          { id: 'open', label: menu.type === 'directory'
+            ? state.expanded.includes(menu.path) ? t('collapse') : t('expand') : t('entry.open') },
+          { type: 'separator', id: 'copy' },
+          { id: 'path', label: t('entry.copyPath'), icon: <IconCopyOutline16 /> },
+          { id: 'name', label: t('entry.copyName'), icon: <IconCopyOutline16 /> },
+        ]}
+        onSelect={(id) => {
+          setMenu(null)
+          if (id === 'open') {
+            if (menu.type === 'directory') tree.onToggle(menu.path)
+            else tree.onOpen(menu.path)
+          } else {
+            void writeClipboard(id === 'path' ? menu.path : pathPartsOf(menu.path).name).then(ok => {
+              if (!ok && !signal.aborted) setCopyFailed(true)
+            })
+          }
+        }}
+      />}
+      {copyFailed && <Toast text={t('copy.failed')} onDone={() => { setCopyFailed(false) }} />}
     </div>
   )
 }

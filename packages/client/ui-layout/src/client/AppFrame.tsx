@@ -21,6 +21,7 @@ import type {
 } from '@mutantcat/dsh-client-ui-slots'
 import { computeColumns, RIGHTBAR_DEFAULT_RATIO, SIDEBAR_AUTO_COLLAPSE, SIDEBAR_COLLAPSED, SIDEBAR_DEFAULT } from './columns.ts'
 import { DocumentTitle } from './DocumentTitle.tsx'
+import { ContextMenu } from './ContextMenu.tsx'
 import type { createLayoutStore } from './stores.ts'
 import css from './AppFrame.module.css'
 
@@ -223,6 +224,7 @@ export function AppFrame({
         useSessions={useSessions}
         usePanelInfo={usePanelInfo}
       />
+      <ContextMenu t={t} />
       <div className={css.sidebarCol}>
         {sidebar}
       </div>

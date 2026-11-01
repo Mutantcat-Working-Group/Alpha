@@ -40,13 +40,17 @@ export interface TabMenuProps {
 function placeMenu(anchor: HTMLElement, menu: HTMLElement): CSSProperties {
   const rect = anchor.getBoundingClientRect()
   const width = menu.offsetWidth
+  const height = menu.offsetHeight
   // Below the control, aligned to its left edge; flipped to its right edge when
   // that would run off the viewport, as it does for the last tab in a column
   // against the window's right side.
   const left = rect.left + width + MENU_GAP > window.innerWidth
     ? Math.max(MENU_GAP, rect.right - width)
     : rect.left
-  return { top: rect.bottom + MENU_GAP, left }
+  return {
+    top: Math.max(MENU_GAP, Math.min(rect.bottom + MENU_GAP, window.innerHeight - height - MENU_GAP)),
+    left: Math.max(MENU_GAP, Math.min(left, window.innerWidth - width - MENU_GAP)),
+  }
 }
 
 /** The actions menu body, anchored to the control that opened it. */
@@ -58,6 +62,7 @@ export function TabMenu({ labels, anchor, onClose, onDismiss, extras }: TabMenuP
   useLayoutEffect(() => {
     if (self.current === null) return
     setPosition(placeMenu(anchor, self.current))
+    self.current.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)')?.focus()
   }, [anchor, hasItems])
 
   useEffect(() => {
@@ -70,11 +75,35 @@ export function TabMenu({ labels, anchor, onClose, onDismiss, extras }: TabMenuP
       if (event.target instanceof Node && menu.contains(event.target)) return
       onDismiss()
     }
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape' || event.key === 'Tab') {
+        if (event.key === 'Escape') event.preventDefault()
+        onDismiss()
+        anchor.focus({ preventScroll: true })
+        return
+      }
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
+      const rows = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)'))
+      if (rows.length === 0) return
+      event.preventDefault()
+      const index = rows.indexOf(document.activeElement as HTMLElement)
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? rows.length - 1
+        : (index + (event.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length
+      rows[next]?.focus()
+    }
     // Capture phase: a press on a tab chip starts a drag on its own handler,
     // so the menu must be gone before that handler runs.
     window.addEventListener('pointerdown', onPointerDown, true)
-    return () => { window.removeEventListener('pointerdown', onPointerDown, true) }
-  }, [onDismiss, hasItems])
+    menu.addEventListener('keydown', onKeyDown)
+    window.addEventListener('resize', onDismiss)
+    window.addEventListener('scroll', onDismiss, true)
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown, true)
+      menu.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('resize', onDismiss)
+      window.removeEventListener('scroll', onDismiss, true)
+    }
+  }, [anchor, onDismiss, hasItems])
 
   if (!hasItems) return null
   return createPortal(

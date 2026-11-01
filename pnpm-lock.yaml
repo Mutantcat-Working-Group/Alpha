@@ -3380,6 +3380,9 @@ importers:
       '@mutantcat/dsh-client-store':
         specifier: workspace:^
         version: link:../store
+      '@mutantcat/dsh-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
       '@mutantcat/dsh-client-ui-renderer':
         specifier: workspace:^
         version: link:../ui-renderer
