@@ -68,9 +68,19 @@ function useBrowserDraft(
   controlledUrl: string | undefined,
   requestId: number | undefined,
 ): readonly [string, (value: string) => void] {
-  const [edit, setEdit] = useState<{ readonly requestId: number | undefined; readonly value: string }>()
-  const value = edit !== undefined && edit.requestId === requestId ? edit.value : controlledUrl ?? ''
-  return [value, (draft) => { setEdit({ requestId, value: draft }) }]
+  const [edit, setEdit] = useState<{
+    readonly requestId: number | undefined
+    readonly source: string
+    readonly value: string
+  }>()
+  // An edit belongs to the URL it was typed over. The page navigating on its
+  // own replaces the controlled URL, and the address box follows it instead
+  // of showing the text that was being typed over the previous one.
+  const source = controlledUrl ?? ''
+  const value = edit !== undefined && edit.requestId === requestId && edit.source === source
+    ? edit.value
+    : source
+  return [value, (draft) => { setEdit({ requestId, source, value: draft }) }]
 }
 
 /** Browser tab renderer for a controller-owned URL state and Web iframe carrier. */

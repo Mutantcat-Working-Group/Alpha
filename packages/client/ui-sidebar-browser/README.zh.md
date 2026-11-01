@@ -76,7 +76,7 @@ shell 把每次完成的导航作为该载体所持 revision 的一次 load 上�
 
 ### Controller
 
-每个 tab 获得一个 `BrowserController` class。它的公开命令只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；地址校验与 history 变更均由该对象封装。它的 `BrowserNavigation` class 拥有可序列化的 URL 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只保留可编辑草稿与承载页面的 DOM 节点。
+每个 tab 获得一个 `BrowserController` class。它的公开命令只有 `loadUrl`、`goBack`、`goForward` 与 `reload`；地址校验与 history 变更均由该对象封装。它的 `BrowserNavigation` class 拥有可序列化的 URL 状态机。`BrowserFrame` 接口负责临时 sandbox 与 document 状态以及载体操作，`IframeImpl` 为当前 iframe 载体实现该接口。Slot injection 通过 `useBrowserFrame` 提供按 key 索引的 frame 状态，并提供普通 callback，因此 React body 不接收 controller 或 observable source；它只保留可编辑草稿与承载页面的 DOM 节点。该草稿以其键入时所对应的 URL 为键，因此页面自行跳转时会替换地址框内容。
 
 Controller 接口不依赖 iframe API。`openNativeDocument`、`moveNativeDocument` 与 `closeNativeDocument` 通过 shell bridge 操作 Desktop 载体；被拒绝的打开会标记 frame，让 body 把该文档交回 iframe。持有 attachment、detach 与 target identity 的 per-tab 原生视图对象仍然延期，并记录在同一份 Sidebar Browser 决策中。
 

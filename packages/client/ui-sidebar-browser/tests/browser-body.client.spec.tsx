@@ -66,6 +66,7 @@ function documentBridge() {
     open,
     move,
     close,
+    emit: (event: BrowserDocumentEvent) => { for (const listener of listeners) listener(event) },
   }
 }
 
@@ -448,5 +449,28 @@ describe('BrowserBody', () => {
 
     expect(carrier.open).not.toHaveBeenCalled()
     expect(carrier.move).not.toHaveBeenCalled()
+  })
+
+  it('follows a page navigation in the address input while its draft is unsubmitted', async () => {
+    stubRect()
+    const carrier = documentBridge()
+    const mounted = mountBrowser({ url: 'https://example.com/one' }, carrier.bridge)
+    await waitFor(() => { expect(carrier.open).toHaveBeenCalledOnce() })
+    const key = carrier.open.mock.calls[0]![0].key
+    const input = mounted.view.getByRole('textbox') as HTMLInputElement
+    await act(async () => {
+      carrier.emit({ key, status: 'loaded', url: 'https://example.com/one' })
+    })
+
+    // The typed text belongs to the URL it was typed over, so it stays put.
+    fireEvent.change(input, { target: { value: 'https://example.com/three' } })
+    expect(input).toHaveProperty('value', 'https://example.com/three')
+
+    // The page navigating on its own replaces that URL, and the address box follows it.
+    await act(async () => {
+      carrier.emit({ key, status: 'loaded', url: 'https://example.com/two' })
+    })
+    expect(mounted.store.getSnapshot().byTab[TAB]?.entries.at(-1)?.url).toBe('https://example.com/two')
+    expect(input).toHaveProperty('value', 'https://example.com/two')
   })
 })
