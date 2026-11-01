@@ -99,6 +99,13 @@ jobs:
           pnpm --dir native/system run build:ts
           pnpm --dir native/system run build:native
 
+      # The client assembly suite imports generated Host remote declarations;
+      # build them before the macOS parity run, matching the repository's
+      # contract-ready typecheck entry point.
+      - name: Build host contracts for darwin parity
+        if: matrix.runner == 'seatbelt'
+        run: pnpm run build:lib:host
+
       # The unit suite runs on ubuntu in `checks`; this is the one darwin leg
       # in the workflow, so run it here too — the platform-dependent unit
       # expectations (Seatbelt path canonicalization: /tmp IS /private/tmp)
