@@ -103,6 +103,7 @@ function constructWithRoute(
     contextBaseUrl?: string
     entryBaseUrl?: string
     internal?: NonNullable<Context['loader']['internal']>
+    onEntries?: () => void
   } = {},
 ): { context: Context; service: ClientModuleRegistry; route: Promise<WebRoute> } {
   const ctx = new Context()
@@ -112,6 +113,7 @@ function constructWithRoute(
   ctx.provide('loader', {
     internal: options.internal,
     *entries() {
+      options.onEntries?.()
       for (const packageName of packageNames) {
         yield {
           options: { name: packageName },
@@ -281,6 +283,55 @@ describe('HTML bootstrap facade', () => {
 })
 
 describe('client bundle activation', () => {
+  it('enumerates Loader entries once per dirty-name batch and skips empty batches', async () => {
+    const names = ['@fixture/scan-first', '@fixture/scan-second', '@fixture/scan-retained']
+    for (const name of names) writeBuiltPackage(name, {})
+    const scans = vi.fn()
+    const { context, service } = constructWithRoute(names, { onEntries: scans })
+
+    expect(scans).toHaveBeenCalledTimes(2)
+    expect(service.graph().entries).toHaveLength(3)
+    scans.mockClear()
+
+    const removed = names.splice(0, 2)
+    for (const name of [...removed, removed[0]!]) emitLoaderEntryChange(context, name)
+    await Promise.resolve()
+
+    expect(scans).toHaveBeenCalledTimes(1)
+    expect(service.graph().entries.map(entry => entry.id)).toEqual(names)
+    for (const name of removed) expect(service.clientPath(name)).toBeUndefined()
+
+    scans.mockClear()
+    context.emit('internal/plugin', context.fiber)
+    await Promise.resolve()
+    expect(scans).not.toHaveBeenCalled()
+
+    const emptyScans = vi.fn()
+    const empty = constructWithRoute([], { onEntries: emptyScans })
+    expect(empty.service.graph().entries).toEqual([])
+    expect(emptyScans).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a shared source until its last same-name Loader entry unloads', async () => {
+    const name = '@fixture/shared-source-owners'
+    writeBuiltPackage(name, {})
+    const names = [name, name]
+    const { context, service } = constructWithRoute(names)
+    const initial = service.graph()
+
+    names.pop()
+    emitLoaderEntryChange(context, name)
+    await Promise.resolve()
+    expect(service.graph()).toBe(initial)
+    expect(service.clientPath(name)).toBeDefined()
+
+    names.pop()
+    emitLoaderEntryChange(context, name)
+    await Promise.resolve()
+    expect(service.graph().entries).toEqual([])
+    expect(service.clientPath(name)).toBeUndefined()
+  })
+
   it.each(['v1', 'v2'] as const)(
     'resolves %s package metadata from the owning entry tree',
     (version) => {
@@ -432,6 +483,51 @@ describe('client bundle activation', () => {
     expect(service.graph().entries[0]!.rev).not.toBe(firstRevision)
     expect(service.clientPath(packageName)).toBe(clientPath)
   })
+
+  it('reports an activation flush enumeration failure as a composition error', () => {
+    const name = '@fixture/failed-activation-scan'
+    writeBuiltPackage(name, {})
+    const scans = vi.fn()
+      .mockImplementationOnce(() => undefined)
+      .mockImplementationOnce(() => { throw new Error('Loader enumeration failed') })
+    expect(() => constructWithRoute([name], { onEntries: scans })).toThrow(AggregateError)
+  })
+
+  it.each([new Error('Loader enumeration failed'), 'Loader enumeration failed'])(
+    'retains the graph and consumes the failed batch when Loader enumeration throws %s',
+    async (failure) => {
+      const names = ['@fixture/failed-scan-first', '@fixture/failed-scan-second', '@fixture/failed-scan-retained']
+      for (const name of names) writeBuiltPackage(name, {})
+      const scans = vi.fn()
+      const { context, service, route } = constructWithRoute(names, { onEntries: scans })
+      await route
+      const initial = service.graph()
+      const warning = vi.spyOn(context.logger, 'warn').mockImplementation(() => undefined)
+      const removed = names.splice(0, 2)
+      scans.mockImplementationOnce(() => { throw failure })
+      const callbacks: VoidFunction[] = []
+      const enqueue = vi.spyOn(globalThis, 'queueMicrotask').mockImplementation(callback => callbacks.push(callback))
+      try {
+        for (const name of removed) emitLoaderEntryChange(context, name)
+        expect(callbacks).toHaveLength(1)
+        expect(callbacks[0]!).not.toThrow()
+      } finally {
+        enqueue.mockRestore()
+      }
+      expect(warning).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ message: 'Loader enumeration failed' }))
+      expect(service.graph()).toBe(initial)
+      for (const name of removed) expect(service.clientPath(name)).toBeDefined()
+
+      emitLoaderEntryChange(context, names[0]!)
+      await Promise.resolve()
+      expect(service.graph()).toBe(initial)
+
+      for (const name of removed) emitLoaderEntryChange(context, name)
+      await Promise.resolve()
+      expect(service.graph().entries.map(entry => entry.id)).toEqual(names)
+      for (const name of removed) expect(service.clientPath(name)).toBeUndefined()
+    },
+  )
 
   it('uses owning-tree package resolution for an import-only Worker module loader', () => {
     const packageName = '@fixture/worker-loader'

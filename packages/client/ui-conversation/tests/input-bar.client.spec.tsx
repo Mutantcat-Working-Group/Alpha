@@ -276,6 +276,47 @@ function writeDraft(shell: SessionInputShell, text: string): void {
   act(() => { shell.setDraft(text) })
 }
 
+describe('composer sent text recall', () => {
+  it('walks submitted text with real arrow keys and restores the unfinished draft', async () => {
+    const { shell, textarea, sink } = bench()
+    onTestFinished(() => { shell.dispose() })
+    for (const text of ['first message', 'second message']) {
+      writeDraft(shell, text)
+      fireEvent.keyDown(textarea, { key: 'Enter' })
+      await act(async () => {})
+      expect(shell.snapshot.draft).toBe('')
+    }
+    expect(sink).toHaveBeenCalledTimes(2)
+    writeDraft(shell, 'unfinished draft')
+    for (const [key, expected] of [
+      ['ArrowUp', 'second message'],
+      ['ArrowUp', 'first message'],
+      ['ArrowDown', 'second message'],
+      ['ArrowDown', 'unfinished draft'],
+    ]) {
+      fireEvent.keyDown(textarea, { key })
+      await act(async () => {})
+      expect(shell.snapshot.draft).toBe(expected)
+      expect(textarea.textContent).toBe(expected)
+    }
+  })
+
+  it('keeps modified arrows and multiline caret movement out of recall', async () => {
+    const { shell, textarea } = bench({ draft: 'sent message' })
+    onTestFinished(() => { shell.dispose() })
+    fireEvent.keyDown(textarea, { key: 'Enter' })
+    await act(async () => {})
+    writeDraft(shell, 'line one\nline two')
+    fireEvent.keyDown(textarea, { key: 'ArrowUp' })
+    await act(async () => {})
+    expect(shell.snapshot.draft).toBe('line one\nline two')
+    writeDraft(shell, 'unfinished')
+    fireEvent.keyDown(textarea, { key: 'ArrowUp', shiftKey: true })
+    await act(async () => {})
+    expect(shell.snapshot.draft).toBe('unfinished')
+  })
+})
+
 describe('composer focus handoff', () => {
   it('focus() returns the keyboard to the editor through Lexical, not a bare DOM focus', () => {
     const { shell, textarea } = bench()

@@ -93,7 +93,7 @@ mod macos {
                 if request.starts_with("GET /stop ") {
                     break;
                 }
-                let document = request.starts_with("GET /document ");
+                let document = request.starts_with("GET /document ") || request.starts_with("GET /next ");
                 if document {
                     *request_agent.lock().unwrap() = request
                         .lines()
@@ -137,6 +137,28 @@ mod macos {
                         loaded.recv_timeout(WAIT).expect("browser document loaded");
                         let initial = observe(&child, &rect, 0.0);
                         let page = evaluate(&child, "({title:document.title,inputWritable:(document.querySelector('#query').value='typed')==='typed'})");
+                        let (url_changed, urls) = mpsc::channel();
+                        super::browser_webview::observe_url(handle.clone(), "browser-fixture".to_string(), move |url| {
+                            let _ = url_changed.send(url);
+                        });
+                        let wait_url = |path: &str| {
+                            let deadline = std::time::Instant::now() + WAIT;
+                            loop {
+                                let url = urls.recv_timeout(deadline.saturating_duration_since(std::time::Instant::now()))
+                                    .expect("committed browser URL observed");
+                                if format!("{}{}", url.path(), url.fragment().map(|value| format!("#{value}")).unwrap_or_default()) == path {
+                                    break;
+                                }
+                            }
+                        };
+                        wait_url("/document");
+                        evaluate(&child, "document.querySelector('a').click(); true");
+                        loaded.recv_timeout(WAIT).expect("clicked link loaded");
+                        wait_url("/next");
+                        evaluate(&child, "history.pushState({}, '', '/spa'); true");
+                        wait_url("/spa");
+                        evaluate(&child, "location.hash = 'section'; true");
+                        wait_url("/spa#section");
                         evaluate(&main, "document.querySelector('#carrier').style.cssText='top:116px;bottom:20px;left:50vw'");
                         let rect = carrier(&main);
                         let (position, size) = placement(&handle, &rect);

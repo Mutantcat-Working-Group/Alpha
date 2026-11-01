@@ -2,6 +2,34 @@
 
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Webview, WebviewBuilder, Window};
 
+/// Observe committed URLs, including same-document history and fragment changes.
+/// The worker exits when the uniquely labelled child is removed from Tauri.
+/// @param app - application that owns the child.
+/// @param label - unique child webview label.
+/// @param changed - receives each distinct URL without exposing IPC to the page.
+pub(crate) fn observe_url(
+    app: AppHandle,
+    label: String,
+    changed: impl Fn(url::Url) + Send + 'static,
+) {
+    std::thread::spawn(move || {
+        let mut previous = None;
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(250));
+            let Some(webview) = app.get_webview(&label) else {
+                break;
+            };
+            let Ok(url) = webview.url() else {
+                break;
+            };
+            if previous.as_ref() != Some(&url) {
+                previous = Some(url.clone());
+                changed(url);
+            }
+        }
+    });
+}
+
 /// Convert a CSS carrier rectangle to window-relative physical pixels.
 /// On macOS, WebKit insets the main document by the native view's safe area; child
 /// webviews use the enclosing content view's coordinates without that inset.

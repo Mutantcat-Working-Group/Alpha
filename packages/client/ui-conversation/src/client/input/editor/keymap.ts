@@ -151,6 +151,7 @@ export function registerComposerKeymap(editor: LexicalEditor, handlers: Composer
   const recallAtEdge = (direction: 'up' | 'down') => (event: KeyboardEvent): boolean => {
     if (arrow(direction)(event)) return true
     if (isComposingEvent(event, recentlyComposing)) return false
+    if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return false
     const atEdge = editor.getEditorState().read(() => {
       const layout = $composerLayout()
       const caret = $collapsedCaret(layout)

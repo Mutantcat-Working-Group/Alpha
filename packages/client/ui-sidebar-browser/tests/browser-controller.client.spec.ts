@@ -746,7 +746,7 @@ describe('BrowserController', () => {
     expect(store.getSnapshot().byTab[TAB]?.navigation.status).toBe('unknown')
   })
 
-  it('opens a native popup target in the system browser', async () => {
+  it('opens a native popup target in the preview without a browser popup', async () => {
     const stub = documentBridge()
     installBridge(stub.bridge)
     const open = vi.fn()
@@ -761,10 +761,15 @@ describe('BrowserController', () => {
     face.openNativeDocument(TAB, 'https://example.test/one', RECT)
     await settlePicker()
     stub.emit({ key: NATIVE_KEY, status: 'popup', url: 'https://popup.example/' })
-    expect(open).toHaveBeenCalledWith('https://popup.example/', '_blank', 'noopener,noreferrer')
+    expect(open).not.toHaveBeenCalled()
+    expect(store.getSnapshot().byTab[TAB]?.entries.at(-1)?.url).toBe('https://popup.example/')
+    expect(face.keyedHooks.browserFrame(TAB)?.getSnapshot().document?.src).toBe('https://popup.example/')
 
     stub.emit({ key: NATIVE_KEY, status: 'popup' })
-    expect(open).toHaveBeenCalledOnce()
+    expect(open).not.toHaveBeenCalled()
+    expect(store.getSnapshot().byTab[TAB]?.entries).toHaveLength(2)
+    stub.emit({ key: NATIVE_KEY, status: 'popup', url: 'javascript:alert(1)' })
+    expect(store.getSnapshot().byTab[TAB]?.entries).toHaveLength(2)
   })
 
   it('ignores native carrier events from another tab or a torn-down controller', async () => {

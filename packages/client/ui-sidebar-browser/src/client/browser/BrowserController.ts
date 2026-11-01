@@ -399,7 +399,7 @@ export class BrowserController {
   }
 
   /**
-   * Route one native carrier event to the load state machine or the system browser.
+   * Route native loads and new-window links into this preview.
    *
    * Every path that clears `nativeRevision` also drops the subscription, so a delivered
    * event implies a live carrier; the guards below defend only a bridge that delivers
@@ -417,7 +417,7 @@ export class BrowserController {
       return
     }
     if (event.url === undefined) return
-    window.open(event.url, '_blank', 'noopener,noreferrer')
+    this.loadUrl(event.url)
   }
 
   private dispose(): void {

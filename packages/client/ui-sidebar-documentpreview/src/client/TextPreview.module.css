@@ -84,6 +84,8 @@
   margin: 0;
   padding: 0;
   overflow: auto;
+  /* The remembered offset is a pixel distance; browser anchoring would move it when content above it reflows. */
+  overflow-anchor: none;
   /* The notice and retry surfaces in this sheet are elevated, so the file body's
      scroller rebinds the thumb indirection in a complete pair. */
   --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);

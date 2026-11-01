@@ -472,5 +472,7 @@ describe('BrowserBody', () => {
     })
     expect(mounted.store.getSnapshot().byTab[TAB]?.entries.at(-1)?.url).toBe('https://example.com/two')
     expect(input).toHaveProperty('value', 'https://example.com/two')
+    expect(carrier.open).toHaveBeenCalledOnce()
+    expect(carrier.close).not.toHaveBeenCalled()
   })
 })

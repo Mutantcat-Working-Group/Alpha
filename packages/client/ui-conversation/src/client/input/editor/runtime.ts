@@ -148,7 +148,7 @@ export class DraftEditorRuntime {
   setDraft(text: string): void {
     const clean = text.replace(REFERENCE_PLACEHOLDER_RE, '')
     if (clean === this.projection.clipboardText) return
-    this.editor.update(() => {
+    this.applyEdit(() => {
       const root = $getRoot()
       root.clear()
       for (const line of clean.split('\n')) {
@@ -157,7 +157,7 @@ export class DraftEditorRuntime {
         root.append(paragraph)
       }
       root.selectEnd()
-    }, { discrete: true, tag: HISTORY_MERGE_TAG })
+    }, HISTORY_MERGE_TAG)
   }
 
   /**

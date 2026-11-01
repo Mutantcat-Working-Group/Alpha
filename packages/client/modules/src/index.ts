@@ -12,14 +12,18 @@
  * Scanning is incremental per package — there is no full-rescan code path.
  * Every cordis `internal/plugin` emission (fiber construction/disposal) marks
  * the fiber's entry name dirty; a microtask flush reconciles each dirty name
- * against the live loader entries. The activation pass seeds the same dirty
- * set with all current entries and flushes synchronously, so first scan and
- * steady state share one implementation. Package metadata (including the
- * negative "not a client package" verdict) is cached per Loader specifier and
- * owning-tree base URL until restart. The manifest package name identifies
- * the browser module; distinct active Loader sources for that package are a
- * composition error. Bundle content changes reach the graph only through
- * {@link ClientModuleRegistry.rebuilt}.
+ * against the Loader entries indexed at the start of that flush. Synchronous
+ * package resolution must not add or remove Loader entries during
+ * reconciliation. The activation pass seeds the same dirty set with all
+ * current entries and flushes synchronously, so first scan and steady state
+ * share one implementation. A failed entry enumeration consumes the dirty
+ * batch without changing package state or the published graph; activation
+ * reports it as a composition error and steady state logs a warning. Package
+ * metadata (including the negative "not a client package" verdict) is cached
+ * per Loader specifier and owning-tree base URL until restart. The manifest
+ * package name identifies the browser module; distinct active Loader sources
+ * for that package are a composition error. Bundle content changes reach the
+ * graph only through {@link ClientModuleRegistry.rebuilt}.
  * @module @mutantcat/dsh-client-modules
  */
 
@@ -939,11 +943,17 @@ export class ClientModuleRegistry extends Service {
     }
   }
 
-  /** Reconcile one entry name against the live Loader sources. @returns whether the table changed. */
-  private processOne(entryName: string, onError: (err: Error) => void): boolean {
+  /**
+   * Reconcile one entry name against its sources at flush start.
+   * @param entryName - Loader entry name being reconciled.
+   * @param entries - same-name entries collected at flush start.
+   * @param onError - receives package reconciliation failures.
+   * @returns whether the table changed.
+   */
+  private processOne(entryName: string, entries: readonly Entry[], onError: (err: Error) => void): boolean {
     const nextSources = new Map<string, ClientPackageSource>()
-    for (const entry of this.ctx.loader.entries()) {
-      if (entry.options.name !== entryName || entry.fiber === undefined || entry.disabled) continue
+    for (const entry of entries) {
+      if (entry.fiber === undefined || entry.disabled) continue
       const source = this.resolveSource(entry)
       if (source !== undefined) nextSources.set(source.sourceKey, source)
     }
@@ -1012,11 +1022,26 @@ export class ClientModuleRegistry extends Service {
   }
 
   private flush(onError: (err: Error) => void): void {
+    if (this.dirty.size === 0) return
+    const entriesByName = new Map<string, Entry[]>()
+    try {
+      for (const entry of this.ctx.loader.entries()) {
+        const name = entry.options.name
+        const entries = entriesByName.get(name)
+        if (entries) entries.push(entry)
+        else entriesByName.set(name, [entry])
+      }
+    } catch (error) {
+      // No package state changed; consume this failed batch and retain the published graph.
+      this.dirty.clear()
+      onError(error instanceof Error ? error : new Error(String(error)))
+      return
+    }
     let changed = false
     for (const entryName of [...this.dirty]) {
       this.dirty.delete(entryName)
       try {
-        if (this.processOne(entryName, onError)) changed = true
+        if (this.processOne(entryName, entriesByName.get(entryName) ?? [], onError)) changed = true
       } catch (error) {
         // Steady state: one broken package must not poison the others; the
         // activation pass aggregates these into a loud throw instead.

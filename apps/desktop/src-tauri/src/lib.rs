@@ -923,7 +923,7 @@ fn close_browser_documents(state: &BrowserDocumentState) {
 /// renders cannot reach the application, and it is not subject to the framing refusals
 /// that leave an iframe carrier blank. A finished navigation is reported back through
 /// the Browser document event, and a blocked new-window request reports its target so
-/// the client can hand it to the system browser.
+/// the client can navigate the preview to it.
 /// @param app - application handle that owns the main window.
 /// @param state - shell-owned registry of live document webviews.
 /// @param request - tab key, target URL, and carrier rectangle in CSS pixels.
@@ -969,7 +969,7 @@ async fn open_browser_document(
     };
     let webview = browser_webview::add_child(
         &window,
-        WebviewBuilder::new(label, WebviewUrl::External(target))
+        WebviewBuilder::new(label.clone(), WebviewUrl::External(target))
             .on_page_load({
                 let emitter = app.clone();
                 let key = request.key.clone();
@@ -1031,8 +1031,19 @@ async fn open_browser_document(
             .0
             .lock()
             .map_err(|_| "browser document: state lock poisoned".to_string())?;
-        registry.documents.insert(request.key, webview);
+        registry.documents.insert(request.key.clone(), webview);
     }
+    let emitter = app.clone();
+    browser_webview::observe_url(app, label, move |url| {
+        let _ = emitter.emit(
+            BROWSER_DOCUMENT_EVENT,
+            BrowserDocumentEvent {
+                key: request.key.clone(),
+                status: "loaded",
+                url: Some(url.to_string()),
+            },
+        );
+    });
     Ok(())
 }
 

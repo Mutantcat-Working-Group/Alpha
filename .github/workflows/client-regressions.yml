@@ -1,0 +1,54 @@
+name: Client regressions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: client-regressions-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  client:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run affected client and script tests
+        run: >-
+          pnpm exec vitest run
+          packages/client/ui-conversation/tests/input-bar.client.spec.tsx
+          packages/client/ui-conversation/tests/keymap-routing.client.spec.tsx
+          packages/client/ui-sidebar-browser/tests
+          packages/client/ui-sidebar-documentpreview/tests
+          packages/client/modules/tests/node-half.client.spec.ts
+          scripts/rescope-vendor.spec.ts
+      - name: Check client types
+        run: pnpm exec tsc -b tsconfig.client.json
+
+  native-browser:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check desktop shell
+        working-directory: apps/desktop/src-tauri
+        run: cargo check --locked
+      - name: Exercise native link and same-document navigation
+        working-directory: apps/desktop/src-tauri
+        run: cargo test --locked --test browser-webview -- --run
