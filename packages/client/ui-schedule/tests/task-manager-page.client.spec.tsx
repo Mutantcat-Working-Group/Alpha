@@ -2142,6 +2142,15 @@ describe('Task detail rule header and run-time card', () => {
     vi.spyOn(Intl, 'supportedValuesOf').mockReturnValue([
       'America/Anchorage', 'America/Juneau', 'Asia/Shanghai',
     ])
+    const DateTimeFormat = Intl.DateTimeFormat
+    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (locales, options) {
+      const formatter = new DateTimeFormat(locales, options)
+      if (options?.timeZoneName === 'longGeneric'
+        && (options.timeZone === 'America/Anchorage' || options.timeZone === 'America/Juneau')) {
+        vi.spyOn(formatter, 'formatToParts').mockReturnValue([{ type: 'timeZoneName', value: 'Alaska Time' }])
+      }
+      return formatter
+    })
     const stored: ScheduleCatalogEntry = { ...daily, timeZone: 'America/Juneau' }
     mount({ records: [stored] }, zh)
     fireEvent.click(screen.getByRole('button', { name: 'Daily weather' }))

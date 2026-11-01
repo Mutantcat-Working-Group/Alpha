@@ -33,6 +33,7 @@ jobs:
           packages/client/ui-conversation/tests/keymap-routing.client.spec.tsx
           packages/client/ui-sidebar-browser/tests
           packages/client/ui-sidebar-documentpreview/tests
+          packages/client/ui-schedule/tests/task-manager-page.client.spec.tsx
           packages/client/modules/tests/node-half.client.spec.ts
           scripts/rescope-vendor.spec.ts
       - name: Check client types
