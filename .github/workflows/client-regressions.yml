@@ -36,7 +36,7 @@ jobs:
           packages/client/modules/tests/node-half.client.spec.ts
           scripts/rescope-vendor.spec.ts
       - name: Check client types
-        run: pnpm exec tsc -b tsconfig.client.json
+        run: pnpm run typecheck
 
   native-browser:
     runs-on: macos-14
