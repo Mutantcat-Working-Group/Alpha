@@ -135,6 +135,8 @@ mod macos {
                             position, size,
                         ).unwrap();
                         loaded.recv_timeout(WAIT).expect("browser document loaded");
+                        assert_eq!(evaluate(&child, "document.body.dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true}))"), json!(false));
+                        assert_eq!(evaluate(&child, "document.querySelector('#query').dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true}))"), json!(true));
                         let initial = observe(&child, &rect, 0.0);
                         let page = evaluate(&child, "({title:document.title,inputWritable:(document.querySelector('#query').value='typed')==='typed'})");
                         let (url_changed, urls) = mpsc::channel();
@@ -154,6 +156,7 @@ mod macos {
                         wait_url("/document");
                         evaluate(&child, "document.querySelector('a').click(); true");
                         loaded.recv_timeout(WAIT).expect("clicked link loaded");
+                        assert_eq!(evaluate(&child, "document.body.dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true}))"), json!(false));
                         wait_url("/next");
                         evaluate(&child, "history.pushState({}, '', '/spa'); true");
                         wait_url("/spa");

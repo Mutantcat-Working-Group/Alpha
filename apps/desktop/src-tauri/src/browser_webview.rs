@@ -123,6 +123,17 @@ pub(crate) fn add_child(
     position: PhysicalPosition<i32>,
     size: PhysicalSize<u32>,
 ) -> Result<Webview, String> {
+    // Keep document editing and link/media actions while removing browser chrome
+    // from blank preview areas. Page-owned context menus still receive the event.
+    let builder = builder.initialization_script(r#"
+        document.addEventListener('contextmenu', (event) => {
+            const node = event.target;
+            if (!(node instanceof Element)) return;
+            if (node.closest('input, textarea, [contenteditable], a[href], img, video, audio, .monaco-editor, .cm-editor, .xterm')) return;
+            if (window.getSelection()?.toString()) return;
+            event.preventDefault();
+        });
+    "#);
     #[cfg(target_os = "macos")]
     let builder = {
         let (send, receive) = std::sync::mpsc::channel();

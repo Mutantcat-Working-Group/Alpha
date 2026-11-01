@@ -40,6 +40,16 @@ describe('application context menu', () => {
     expect(screen.queryByRole('menu')).toBeNull()
   })
 
+  it('dismisses a text menu when a blank area is right-clicked', () => {
+    render(<>{menu()}<textarea /><div data-testid="blank" /><input type="checkbox" /></>)
+    open(screen.getByRole('textbox'))
+    expect(screen.getByRole('menu')).not.toBeNull()
+    expect(open(screen.getByTestId('blank'))).toBe(false)
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(open(screen.getByRole('checkbox'))).toBe(false)
+    expect(screen.queryByRole('menu')).toBeNull()
+  })
+
   it('keeps a feature-owned context menu and terminal gestures', () => {
     render(<>{menu()}<button onContextMenu={event => { event.preventDefault() }}>feature</button><div className="xterm">terminal</div></>)
     open(screen.getByText('feature'))

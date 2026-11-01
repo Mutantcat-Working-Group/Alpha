@@ -20,10 +20,9 @@ interface Target {
 function resolveTarget(event: MouseEvent): Target | null {
   if (!(event.target instanceof Element)) return null
   const node = event.target
-  // Terminal and code-editor carriers own their selection and edit commands.
-  if (node.closest('.xterm, .monaco-editor, .cm-editor') !== null) return null
   const field = node.closest('input, textarea')
-  const input = field instanceof HTMLTextAreaElement || field instanceof HTMLInputElement ? field : null
+  const input = field instanceof HTMLTextAreaElement || (field instanceof HTMLInputElement
+    && ['text', 'search', 'url', 'tel', 'email', 'password', 'number'].includes(field.type)) ? field : null
   const editableParent = node.closest<HTMLElement>('[contenteditable]')
   const editor = editableParent?.getAttribute('contenteditable') === 'true'
     || editableParent?.getAttribute('contenteditable') === 'plaintext-only' ? editableParent : null
@@ -40,6 +39,7 @@ function resolveTarget(event: MouseEvent): Target | null {
   const editable = input !== null ? !input.disabled && !input.readOnly : editor !== null
   const candidate = node.closest<HTMLAnchorElement>('a[href]')
   const link = candidate !== null && /^(https?:|mailto:|tel:)$/.test(new URL(candidate.href, document.baseURI).protocol) ? candidate : null
+  if (input === null && editor === null && text.length === 0 && link === null) return null
   return { element, input, start, end, range, text, editable, link, rect: new DOMRect(event.clientX, event.clientY, 0, 0) }
 }
 
@@ -77,9 +77,10 @@ export function ContextMenu({ t }: PropsLocale<'common'>) {
   const active = useRef<Target | null>(null)
   useEffect(() => {
     const open = (event: MouseEvent) => {
-      if (event.defaultPrevented) return
+      // Terminal and code-editor carriers own their selection and edit commands.
+      if (event.defaultPrevented || (event.target instanceof Element
+        && event.target.closest('.xterm, .monaco-editor, .cm-editor') !== null)) return
       const next = resolveTarget(event)
-      if (next === null) return
       event.preventDefault()
       active.current = next
       setFailed(false)
