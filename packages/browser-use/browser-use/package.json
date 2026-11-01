@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-browser-use",
   "description": "Exclusive named browser-use provider registration",
-  "version": "1.0.20261111",
+  "version": "1.0.20261112",
   "publishConfig": {
     "access": "public"
   },
