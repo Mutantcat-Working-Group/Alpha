@@ -12,6 +12,7 @@ import type { LexicalEditor } from 'lexical'
 import {
   $createParagraphNode, $createTextNode, $getRoot, $setSelection, COMMAND_PRIORITY_EDITOR,
   createEditor, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND,
+  KEY_ARROW_UP_COMMAND,
 } from 'lexical'
 import { registerPlainText } from '@lexical/plain-text'
 import type { ReferenceInsert } from '../src/client/contract/draft-editor.ts'
@@ -35,6 +36,7 @@ const CHIP_REF: ReferenceInsert = {
 const IDLE_HANDLERS: ComposerKeymapHandlers = {
   arbitrate: () => 'pass', space: () => false, dismissPopup: () => {},
   canSubmit: () => false, submit: () => {}, intakeFiles: () => {}, pasteText: () => {},
+  recallHistory: () => false,
 }
 
 /**
@@ -96,6 +98,7 @@ describe('keymap keydown routing', () => {
     const unregister = registerComposerKeymap(editor, {
       arbitrate: () => 'pass', space: () => false, dismissPopup: () => {},
       canSubmit: () => false, submit: () => {}, intakeFiles: () => {}, pasteText: () => {},
+      recallHistory: () => false,
     })
     onTestFinished(unregister)
     fireEvent.compositionStart(first)
@@ -131,6 +134,7 @@ describe('keymap keydown routing', () => {
       submit,
       intakeFiles: () => {},
       pasteText: () => {},
+      recallHistory: () => false,
     })
     fireEvent.keyDown(root, { key: 'Enter' })
     expect(submit).toHaveBeenCalledWith(false)
@@ -157,6 +161,7 @@ describe('keymap keydown routing', () => {
       submit: () => {},
       intakeFiles: () => {},
       pasteText: () => {},
+      recallHistory: () => false,
     })
     const consumed = fireEvent.keyDown(root, { key: 'Tab', keyCode: 9 })
     expect(arbitrate).toHaveBeenCalledWith('tab', false)
@@ -246,5 +251,115 @@ describe('keymap horizontal document edge', () => {
     const forward = edgeEditor({ start: 9, end: 9 }, true)
     expectSeed(forward.editor, { start: 9, end: 9 })
     expect(fireEvent.keyDown(forward.root, { key: 'ArrowRight', keyCode: 39 })).toBe(false)
+  })
+})
+
+/**
+ * Bind an editor holding one paragraph per line with the caret at one detect
+ * offset, for the vertical recall edge cases.
+ * @param lines - paragraph texts in document order.
+ * @param caret - detect offset of the collapsed caret.
+ * @param overrides - handler replacements over the idle defaults.
+ * @returns the editor and its contenteditable root.
+ */
+function recallEditor(
+  lines: readonly string[],
+  caret: number,
+  overrides: Partial<ComposerKeymapHandlers> = {},
+): { editor: LexicalEditor; root: HTMLElement } {
+  const editor = createEditor({
+    namespace: 'keymap-recall',
+    nodes: [ReferenceChipNode],
+    onError: (error) => { throw error },
+  })
+  const root = document.createElement('div')
+  root.contentEditable = 'true'
+  document.body.append(root)
+  editor.setRootElement(root)
+  const disposers = [registerComposerKeymap(editor, { ...IDLE_HANDLERS, ...overrides })]
+  editor.update(() => {
+    const doc = $getRoot()
+    for (const line of lines) {
+      const paragraph = $createParagraphNode()
+      if (line !== '') paragraph.append($createTextNode(line))
+      doc.append(paragraph)
+    }
+  }, { discrete: true })
+  editor.update(() => {
+    $selectDetectSpan({ start: caret, end: caret })
+  }, { discrete: true })
+  onTestFinished(() => {
+    for (const dispose of disposers) dispose()
+    editor.setRootElement(null)
+    root.remove()
+  })
+  return { editor, root }
+}
+
+/** Assert the recall seed reads the way the case assumes before it fires a key. */
+function expectRecallSeed(editor: LexicalEditor, text: string, caret: number): void {
+  const projection = editor.getEditorState().read(() => $projectComposer(() => 0))
+  expect(projection.detectText).toBe(text)
+  expect(projection.caret).toBe(caret)
+}
+
+describe('keymap sent-draft recall', () => {
+  it('consumes ArrowUp on the first line to walk the history', () => {
+    const recallHistory = vi.fn<(direction: 'up' | 'down') => boolean>(() => true)
+    const { editor, root } = recallEditor(['one', 'two'], 0, { recallHistory })
+    expectRecallSeed(editor, 'one\ntwo', 0)
+    // The probe sits below CRITICAL: reaching it would mean the gesture passed.
+    const probe = vi.fn(() => false)
+    onTestFinished(editor.registerCommand(KEY_ARROW_UP_COMMAND, probe, COMMAND_PRIORITY_EDITOR))
+    expect(fireEvent.keyDown(root, { key: 'ArrowUp', keyCode: 38 })).toBe(false)
+    expect(recallHistory).toHaveBeenCalledWith('up')
+    expect(probe).not.toHaveBeenCalled()
+  })
+
+  it('consumes ArrowDown on the last line while a recall runs', () => {
+    const recallHistory = vi.fn<(direction: 'up' | 'down') => boolean>(() => true)
+    const { editor, root } = recallEditor(['one', 'two'], 4, { recallHistory })
+    expectRecallSeed(editor, 'one\ntwo', 4)
+    expect(fireEvent.keyDown(root, { key: 'ArrowDown', keyCode: 40 })).toBe(false)
+    expect(recallHistory).toHaveBeenCalledWith('down')
+  })
+
+  it('passes a vertical arrow that still has a line to move to', () => {
+    const recallHistory = vi.fn<(direction: 'up' | 'down') => boolean>(() => true)
+    const later = recallEditor(['one', 'two'], 5, { recallHistory })
+    expectRecallSeed(later.editor, 'one\ntwo', 5)
+    expect(fireEvent.keyDown(later.root, { key: 'ArrowUp', keyCode: 38 })).toBe(true)
+    expect(recallHistory).not.toHaveBeenCalled()
+
+    const earlier = recallEditor(['one', 'two'], 0, { recallHistory })
+    expectRecallSeed(earlier.editor, 'one\ntwo', 0)
+    expect(fireEvent.keyDown(earlier.root, { key: 'ArrowDown', keyCode: 40 })).toBe(true)
+    expect(recallHistory).not.toHaveBeenCalled()
+  })
+
+  it('passes a vertical arrow the history declines', () => {
+    // An empty history, or a Down with no recall running, leaves the gesture
+    // to native caret movement.
+    const { root } = recallEditor(['one', 'two'], 0)
+    expect(fireEvent.keyDown(root, { key: 'ArrowUp', keyCode: 38 })).toBe(true)
+    expect(fireEvent.keyDown(root, { key: 'ArrowDown', keyCode: 40 })).toBe(true)
+  })
+
+  it('lets the open menu keep the vertical arrows', () => {
+    const arbitrate = vi.fn<(key: string, composing: boolean) => 'consumed' | 'pick-highlighted' | 'pass'>()
+      .mockReturnValue('consumed')
+    const recallHistory = vi.fn<(direction: 'up' | 'down') => boolean>(() => true)
+    const { root } = recallEditor(['one', 'two'], 0, { arbitrate, recallHistory })
+    expect(fireEvent.keyDown(root, { key: 'ArrowUp', keyCode: 38 })).toBe(false)
+    expect(arbitrate).toHaveBeenCalledWith('up', false)
+    expect(recallHistory).not.toHaveBeenCalled()
+  })
+
+  it('passes a vertical arrow the IME owns', () => {
+    const recallHistory = vi.fn<(direction: 'up' | 'down') => boolean>(() => true)
+    const { root } = recallEditor(['one', 'two'], 0, { recallHistory })
+    expect(fireEvent.keyDown(root, { key: 'ArrowUp', keyCode: 38, isComposing: true })).toBe(true)
+    expect(fireEvent.keyDown(root, { key: 'ArrowDown', keyCode: 229 })).toBe(true)
+    expect(recallHistory).not.toHaveBeenCalled()
   })
 })

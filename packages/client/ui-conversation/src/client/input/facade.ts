@@ -94,6 +94,9 @@ const EMPTY_QUEUE: InboxState['next-turn'] = []
 /** No-pipeline lexicon: zero text-ref decorations. */
 const EMPTY_LEXICON: ReadonlyMap<'/' | '@', readonly string[]> = new Map()
 
+/** Retained sent-draft recall entries per shell (the Up/Down history). */
+const MAX_SENT_HISTORY = 100
+
 /** Editor and attachment snapshot owned by one detached default send. */
 interface DetachedDraft {
   readonly draft: string
@@ -152,6 +155,12 @@ export class SessionInputShell implements SessionInput {
     readonly controller: AbortController
     readonly attachmentIds: readonly DraftAttachmentId[]
   }>()
+  /** Accepted draft texts, newest first; the Up/Down recall history. */
+  private readonly sentDrafts: string[] = []
+  /** Index into {@link sentDrafts} while a recall walks it; null = the live draft is showing. */
+  private recallCursor: number | null = null
+  /** Draft the recall replaced, restored when the walk steps back down to it. */
+  private recallStash = ''
 
   private readonly unsubscribeInbox: (() => void) | undefined
 
@@ -180,6 +189,10 @@ export class SessionInputShell implements SessionInput {
     // caret motion and subscribers do not re-render per caret move.
     if (projectionContentChanged(prev, this.projection)) {
       this.rev += 1
+      if (this.recallCursor !== null && this.projection.clipboardText !== this.sentDrafts[this.recallCursor]) {
+        // The recalled entry no longer shows: the user edited it, so the walk ends.
+        this.recallCursor = null
+      }
       if (!this.restoringFailures && this.failedRestoreRev !== undefined) {
         this.failedDetached.clear()
         this.failedRestoreRev = undefined
@@ -327,6 +340,49 @@ export class SessionInputShell implements SessionInput {
    */
   steerQueue(): void {
     this.deps.steerQueue?.()
+  }
+
+  /**
+   * Walk the sent-draft history into the composer: `up` answers an earlier
+   * send, `down` a later one, and stepping `down` past the newest restores
+   * the draft the walk replaced. Attachments and reference chips are not
+   * part of a recalled entry; the clipboard projection of the sent draft
+   * returns as plain text.
+   * @param direction - 'up' toward earlier sends, 'down' toward the live draft.
+   * @returns whether the gesture was consumed; false leaves the caret to native movement.
+   */
+  recall(direction: 'up' | 'down'): boolean {
+    const phase = this.core.state.phase
+    if (phase === 'adjudicating' || phase === 'submitting') return false
+    let cursor = this.recallCursor
+    if (direction === 'down') {
+      // Down only walks while a recall runs; at the newest entry it restores
+      // the stashed draft and ends the walk.
+      if (cursor === null) return false
+      if (cursor === 0) {
+        this.recallCursor = null
+        this.setDraft(this.recallStash)
+        return true
+      }
+      cursor -= 1
+    } else {
+      if (cursor === null) {
+        if (this.sentDrafts.length === 0) return false
+        this.recallStash = this.projection.clipboardText
+        cursor = 0
+      } else if (cursor + 1 >= this.sentDrafts.length) {
+        return false
+      } else {
+        cursor += 1
+      }
+    }
+    const recalled = this.sentDrafts[cursor]
+    if (recalled === undefined) return false
+    // Recorded before the write: the editor commit that follows reports the
+    // recalled text, which the update listener must not read as an edit.
+    this.recallCursor = cursor
+    this.setDraft(recalled)
+    return true
   }
 
   /**
@@ -593,6 +649,7 @@ export class SessionInputShell implements SessionInput {
    * undo history so sent content cannot resurrect.
    */
   private commitDraft(retainSuffixOf: string | null): void {
+    this.rememberSentDraft(retainSuffixOf)
     this.draftEditor.clearCommittedDraft((clip) => {
       if (retainSuffixOf !== null && clip !== retainSuffixOf && clip.startsWith(retainSuffixOf)) {
         return retainSuffixOf.length
@@ -600,6 +657,22 @@ export class SessionInputShell implements SessionInput {
       return null
     })
     this.draftEditor.clearHistory()
+  }
+
+  /**
+   * Retain one accepted draft for Up/Down recall. The snapshot is the
+   * clipboard projection of what the box held, so a reference chip returns
+   * as its plain text; attachment-only sends carry no snapshot, an empty
+   * draft adds nothing, and a repeat of the newest entry does not reorder.
+   * @param draft - the accepted draft's clipboard projection, or null.
+   */
+  private rememberSentDraft(draft: string | null): void {
+    if (draft === null) return
+    const text = draft.trim()
+    if (text === '' || text === this.sentDrafts[0]) return
+    this.sentDrafts.unshift(text)
+    if (this.sentDrafts.length > MAX_SENT_HISTORY) this.sentDrafts.splice(MAX_SENT_HISTORY)
+    this.recallCursor = null
   }
 
   /**

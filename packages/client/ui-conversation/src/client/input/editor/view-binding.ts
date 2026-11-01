@@ -141,6 +141,10 @@ export function installDraftKeymap(
       if (gate.current.machineBusy || gate.current.locked) return
       keyboard.paste(text)
     },
+    recallHistory: (direction) => {
+      if (gate.current.machineBusy || gate.current.locked) return false
+      return keyboard.recall(direction)
+    },
   })
 }
 

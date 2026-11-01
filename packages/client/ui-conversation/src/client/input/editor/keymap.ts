@@ -1,11 +1,11 @@
 /**
  * Composer keymap over the Lexical command layer: menu arbitration
  * (arrows/escape/enter), space adjudication, the Enter submit gesture, the
- * horizontal document-edge guard, and paste routing. Registered at CRITICAL
- * priority so it decides before @lexical/plain-text's own Enter/paste
- * defaults; a handler returning false falls through to those defaults
- * (Shift+Enter's line break, ordinary spaces, text paste the bar routes
- * itself).
+ * horizontal and vertical document-edge guards, and paste routing. Registered
+ * at CRITICAL priority so it decides before @lexical/plain-text's own
+ * Enter/paste defaults; a handler returning false falls through to those
+ * defaults (Shift+Enter's line break, ordinary spaces, text paste the bar
+ * routes itself).
  *
  * Horizontal edge: past the outermost character there is no position left to
  * move to, so @lexical/plain-text declines the gesture and leaves it to the
@@ -13,6 +13,11 @@
  * placeholder inside the editable, which the reconciler then imports as
  * text. The keymap consumes the gesture there instead, under the same IME
  * guard as every other intercepted key.
+ *
+ * Vertical edge: a caret inside a multi-line draft keeps native line
+ * movement, so only the first line's Up and the last line's Down reach the
+ * sent-draft history. Down stays with the caret while no recall is running,
+ * which keeps an ordinary Down at the document end a caret gesture.
  *
  * IME guard: a composition-closing Enter/Space must not submit or adjudicate.
  * KeyboardEvent.isComposing covers most engines; Safari delivers the closing
@@ -30,6 +35,7 @@ import {
 } from 'lexical'
 import { mergeRegister } from '@lexical/utils'
 import type { ArbitrateKey, ArbitrateOutcome } from '../../contract/draft-editor.ts'
+import type { ComposerLayout } from './projection.ts'
 import { $composerLayout, $detectOffsetOfPoint } from './projection.ts'
 
 /**
@@ -55,6 +61,8 @@ export interface ComposerKeymapHandlers {
   intakeFiles(files: readonly File[]): void
   /** Pasted plain text (sanitized insertion through the shell). */
   pasteText(text: string): void
+  /** Sent-draft history recall at the caret's vertical document edge; true = the gesture was consumed. */
+  recallHistory(direction: 'up' | 'down'): boolean
 }
 
 /** Composition state a keydown can trust (see the module doc's Safari note). */
@@ -62,6 +70,18 @@ function isComposingEvent(event: KeyboardEvent, recentlyComposing: () => boolean
   // keyCode 229 is the legacy IME-composition signal engines emit without isComposing.
   // oxlint-disable-next-line typescript/no-deprecated
   return event.isComposing || event.keyCode === 229 || recentlyComposing()
+}
+
+/**
+ * The collapsed caret's detect offset, or null when the selection is absent,
+ * ranged, or references a node this layout does not map.
+ * @param layout - the current walk product.
+ * @returns the detect offset of the collapsed selection's focus.
+ */
+function $collapsedCaret(layout: ComposerLayout): number | null {
+  const selection = $getSelection()
+  if (!$isRangeSelection(selection) || !selection.isCollapsed()) return null
+  return $detectOffsetOfPoint(layout, selection.focus)
 }
 
 /**
@@ -111,19 +131,40 @@ export function registerComposerKeymap(editor: LexicalEditor, handlers: Composer
    */
   const guardDocumentEdge = (backward: boolean) => (event: KeyboardEvent): boolean => {
     if (isComposingEvent(event, recentlyComposing)) return false
-    let consumed = false
-    editor.getEditorState().read(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection) || !selection.isCollapsed()) return
+    const atEdge = editor.getEditorState().read(() => {
       const layout = $composerLayout()
-      const edge = backward ? 0 : layout.detectLength
       // An unmapped caret answers null, which matches no edge: pass rather
       // than consume on a guess.
-      if ($detectOffsetOfPoint(layout, selection.focus) !== edge) return
-      event.preventDefault()
-      consumed = true
+      return $collapsedCaret(layout) === (backward ? 0 : layout.detectLength)
     })
-    return consumed
+    if (!atEdge) return false
+    event.preventDefault()
+    return true
+  }
+
+  /**
+   * Consume a vertical arrow at its document edge to walk the sent-draft
+   * history. A caret inside a multi-line draft keeps native line movement,
+   * so only the first line's Up and the last line's Down reach the history,
+   * and Down reaches it only while a recall is running.
+   */
+  const recallAtEdge = (direction: 'up' | 'down') => (event: KeyboardEvent): boolean => {
+    if (arrow(direction)(event)) return true
+    if (isComposingEvent(event, recentlyComposing)) return false
+    const atEdge = editor.getEditorState().read(() => {
+      const layout = $composerLayout()
+      const caret = $collapsedCaret(layout)
+      if (caret === null) return false
+      const firstLineEnd = layout.detectText.indexOf('\n')
+      const lastLineStart = layout.detectText.lastIndexOf('\n') + 1
+      return direction === 'up'
+        ? caret <= (firstLineEnd === -1 ? layout.detectLength : firstLineEnd)
+        : caret >= lastLineStart
+    })
+    if (!atEdge) return false
+    if (!handlers.recallHistory(direction)) return false
+    event.preventDefault()
+    return true
   }
 
   return mergeRegister(
@@ -139,8 +180,8 @@ export function registerComposerKeymap(editor: LexicalEditor, handlers: Composer
       syncComposition()
     }),
     editor.registerUpdateListener(syncComposition),
-    editor.registerCommand(KEY_ARROW_UP_COMMAND, arrow('up'), COMMAND_PRIORITY_CRITICAL),
-    editor.registerCommand(KEY_ARROW_DOWN_COMMAND, arrow('down'), COMMAND_PRIORITY_CRITICAL),
+    editor.registerCommand(KEY_ARROW_UP_COMMAND, recallAtEdge('up'), COMMAND_PRIORITY_CRITICAL),
+    editor.registerCommand(KEY_ARROW_DOWN_COMMAND, recallAtEdge('down'), COMMAND_PRIORITY_CRITICAL),
     editor.registerCommand(KEY_ARROW_LEFT_COMMAND, guardDocumentEdge(true), COMMAND_PRIORITY_CRITICAL),
     editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, guardDocumentEdge(false), COMMAND_PRIORITY_CRITICAL),
     // Tab settles the highlighted completion and passes without one, keeping

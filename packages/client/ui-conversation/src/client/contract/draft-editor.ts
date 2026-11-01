@@ -50,6 +50,16 @@ export interface ComposerKeyboard {
   /** Insert pasted plain text over the current editor selection (reference-placeholder-sanitized). */
   paste(text: string): void
   /**
+   * Walk the sent-draft history into the composer: `up` answers an earlier
+   * send, `down` a later one, and walking `down` past the newest restores the
+   * draft recall replaced. Attachments and reference chips are not part of a
+   * recalled entry; the clipboard projection of the sent draft returns as
+   * plain text.
+   * @param direction - 'up' toward earlier sends, 'down' toward the live draft.
+   * @returns whether the gesture was consumed; false leaves the caret to native movement.
+   */
+  recall(direction: 'up' | 'down'): boolean
+  /**
    * The live selection as a detect-coordinate span (menu-launcher synthetic
    * hits replace it on pick); an absent selection answers a collapsed span at
    * the document end.
