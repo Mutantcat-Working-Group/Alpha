@@ -189,7 +189,7 @@ export function TextPreview({
     }
     const landed = scrollToLine(body, line)
     if (!landed && line <= loadedThrough) return
-    actions.navigated(tab.id, navigation.revision)
+    actions.navigated(tab.id, navigation.revision, landed ? line : undefined)
     // Recorded here as well as by the scroll event, so the store holds the
     // landing before any later navigation reads it.
     actions.scrolled(tab.id, body.scrollTop)
@@ -364,6 +364,7 @@ export function TextPreview({
         )}
         {content !== undefined && renderSlot('sidebar.right.tab.document', {
           resourceAddress: tab.contentId, content, wrap: state.wrap, scrollportRef: bindScrollport,
+          targetLine: current?.revision === navigation.revision ? current.targetLine : line,
         }, {
           entryKey: selected.id, hookContext: useTabInfo,
           fallback: <p className={css.statusLine}>{t('rendererUnavailable', { name: selected.title() })}</p>,

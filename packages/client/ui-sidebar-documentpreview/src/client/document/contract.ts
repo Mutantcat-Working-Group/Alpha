@@ -35,6 +35,8 @@ export interface DocumentBodyOwner {
   readonly content: DocumentContent
   /** The document toolbar's current wrapping preference. */
   readonly wrap: boolean
+  /** Source line highlighted by the current navigation, absent when no line was revealed. */
+  readonly targetLine?: number
   /** Report a renderer-owned scrollport; passing `null` restores the shared body as the owner. */
   readonly scrollportRef: RefCallback<HTMLElement>
 }

@@ -46,6 +46,11 @@ jobs:
         with:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
+      - name: Stage unused bundle paths for the native test
+        run: |
+          mkdir -p apps/desktop/src-tauri/bin apps/desktop/src-tauri/staging/runtime
+          target=$(rustc -vV | sed -n 's/^host: //p')
+          printf 'unused sidecar fixture\n' > "apps/desktop/src-tauri/bin/node-$target"
       - name: Check desktop shell
         working-directory: apps/desktop/src-tauri
         run: cargo check --locked

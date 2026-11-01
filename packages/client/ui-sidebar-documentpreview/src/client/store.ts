@@ -59,6 +59,8 @@ export interface TextTabState {
   wrap: boolean
   /** The `navigation.revision` the body already answered; absent before the first. */
   revision: number | undefined
+  /** Source line reached by the answered navigation; absent when no line was revealed. */
+  targetLine?: number
 }
 
 /** Every tab's state, keyed by tab id. */
@@ -101,7 +103,7 @@ type TextActions = {
   reset: (draft: TextState, tabId: TabId) => void
   scrolled: (draft: TextState, tabId: TabId, scrollTop: number) => void
   toggledWrap: (draft: TextState, tabId: TabId) => void
-  navigated: (draft: TextState, tabId: TabId, revision: number) => void
+  navigated: (draft: TextState, tabId: TabId, revision: number, targetLine?: number) => void
   forget: (draft: TextState, tabId: TabId) => void
 }
 
@@ -224,9 +226,13 @@ export function createTextStore(): EngineStoreHandle<TextState, TextActions> {
        * @param d - draft state.
        * @param tabId - the tab being drawn.
        * @param revision - the `navigation.revision` answered.
+       * @param targetLine - source line revealed by this navigation, if any.
        */
-      navigated: (d, tabId: TabId, revision: number) => {
-        bucket(d, tabId).revision = revision
+      navigated: (d, tabId: TabId, revision: number, targetLine?: number) => {
+        const state = bucket(d, tabId)
+        state.revision = revision
+        if (targetLine === undefined) delete state.targetLine
+        else state.targetLine = targetLine
       },
       /**
        * Drop one tab's state, for a tab record that is gone.

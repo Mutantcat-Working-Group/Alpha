@@ -20,6 +20,15 @@ function pageValue(offset: number, lines: readonly string[], eof: boolean, versi
 }
 
 describe('text store', () => {
+  it('clears the revealed source line when the next navigation has no line target', () => {
+    const instance = createTextStore().create()
+    instance.actions.navigated(TAB_1, 1, 3)
+    expect(instance.getSnapshot().byTab[TAB_1]?.targetLine).toBe(3)
+    instance.actions.navigated(TAB_1, 2)
+    expect(instance.getSnapshot().byTab[TAB_1]?.revision).toBe(2)
+    expect(instance.getSnapshot().byTab[TAB_1]?.targetLine).toBeUndefined()
+  })
+
   it('clears an explicit implementation choice to resume automatic selection', () => {
     const instance = createTextStore().create()
     instance.actions.selected(TAB_1, 'custom')

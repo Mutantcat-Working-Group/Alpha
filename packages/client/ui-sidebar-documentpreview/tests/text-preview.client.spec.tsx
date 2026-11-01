@@ -500,6 +500,10 @@ describe('TextPreview — navigation and view', () => {
       await settle()
       expect(scrollport(view.container).scrollTop).toBe(0)
       expect(marks(view.container)).toEqual([])
+      view.rerender(<TextPreview {...markdownProps(h, { params: { line: 2 }, revision: 2 })} />)
+      await settle()
+      expect(scrollport(view.container).scrollTop).toBe(LINE_HEIGHT)
+      expect(h.instance.getSnapshot().byTab[TAB_ID]?.targetLine).toBe(2)
     },
   )
 
