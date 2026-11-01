@@ -126,6 +126,7 @@ export function TextPreview({
   // Every tab of this type is a `file` resource address, so its params are the
   // `file` type's; the union is narrowed on the one field read, not validated.
   const line = navigation.params !== undefined && 'line' in navigation.params ? navigation.params.line : undefined
+  const targetLine = current?.revision === navigation.revision ? current.targetLine : line
   const pages = current?.pages
   const loaded = useMemo(() => loadedPages(pages ?? {}), [pages])
   const loadedThrough = lastLineLoaded(loaded)
@@ -364,7 +365,7 @@ export function TextPreview({
         )}
         {content !== undefined && renderSlot('sidebar.right.tab.document', {
           resourceAddress: tab.contentId, content, wrap: state.wrap, scrollportRef: bindScrollport,
-          targetLine: current?.revision === navigation.revision ? current.targetLine : line,
+          ...(targetLine === undefined ? {} : { targetLine }),
         }, {
           entryKey: selected.id, hookContext: useTabInfo,
           fallback: <p className={css.statusLine}>{t('rendererUnavailable', { name: selected.title() })}</p>,
