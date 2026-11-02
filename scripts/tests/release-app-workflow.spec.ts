@@ -26,7 +26,7 @@ describe('Release app workflow', () => {
       'win-x64', 'win-arm64', 'mac-arm64', 'mac-x64', 'linux-x64', 'linux-arm64',
     ])
     expect(matrixColumn(matrix, 'runner')).toEqual([
-      'windows-latest', 'windows-11-arm', 'macos-14', 'macos-15-intel',
+      'windows-latest', 'windows-11-arm', 'macos-15', 'macos-15-intel',
       'ubuntu-24.04', 'ubuntu-24.04-arm',
     ])
     expect(matrixColumn(matrix, 'script')).toEqual([

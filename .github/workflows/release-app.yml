@@ -54,7 +54,7 @@ jobs:
             triple: aarch64-pc-windows-msvc
             extension: exe
           - name: macOS arm64 / DMG
-            runner: macos-14
+            runner: macos-15
             target: mac-arm64
             script: package:ci:tauri:mac:arm64
             triple: aarch64-apple-darwin

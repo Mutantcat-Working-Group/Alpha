@@ -40,6 +40,7 @@ jobs:
           packages/client/ui-schedule/tests/task-manager-page.client.spec.tsx
           packages/client/modules/tests/node-half.client.spec.ts
           scripts/rescope-vendor.spec.ts
+          scripts/tests/release-app-workflow.spec.ts
       - name: Check client types
         run: pnpm run typecheck
       - name: Build the real Web application
@@ -59,7 +60,7 @@ jobs:
           if-no-files-found: ignore
 
   native-browser:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
