@@ -19,15 +19,50 @@ pub(crate) fn observe_url(
             let Some(webview) = app.get_webview(&label) else {
                 break;
             };
-            let Ok(url) = webview.url() else {
+            let Ok(url) = committed_url(&webview) else {
                 break;
             };
+            let Some(url) = url else { continue };
             if previous.as_ref() != Some(&url) {
                 previous = Some(url.clone());
                 changed(url);
             }
         }
     });
+}
+
+/// Read a committed URL, allowing WebKit's empty URL while a document loads.
+/// @param webview - live document whose native URL is read on the main thread.
+/// @returns the committed URL, or no URL before WebKit commits a document.
+#[cfg(target_os = "macos")]
+fn committed_url(webview: &Webview) -> Result<Option<url::Url>, String> {
+    let (send, receive) = std::sync::mpsc::channel();
+    webview
+        .with_webview(move |native| {
+            // Wry's URL getter unwraps WKWebView.URL, which is nil during navigation.
+            let view = unsafe { &*(native.inner() as *const objc2_web_kit::WKWebView) };
+            let _ = send.send(native_url(view));
+        })
+        .map_err(|error| error.to_string())?;
+    receive.recv().map_err(|error| error.to_string())
+}
+
+/// Read WebKit's nullable document URL on the main thread.
+/// @param view - WKWebView retained by the caller for this read.
+/// @returns a parsed URL after the first navigation commits.
+#[cfg(target_os = "macos")]
+pub(crate) fn native_url(view: &objc2_web_kit::WKWebView) -> Option<url::Url> {
+    unsafe { view.URL() }
+        .and_then(|url| url.absoluteString())
+        .and_then(|value| url::Url::parse(&value.to_string()).ok())
+}
+
+/// Read the platform URL without macOS's nullable WKWebView property.
+/// @param webview - live document to inspect.
+/// @returns the platform's current document URL.
+#[cfg(not(target_os = "macos"))]
+fn committed_url(webview: &Webview) -> Result<Option<url::Url>, String> {
+    webview.url().map(Some).map_err(|error| error.to_string())
 }
 
 /// Convert a CSS carrier rectangle to window-relative physical pixels.

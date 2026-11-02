@@ -109,6 +109,10 @@ mod macos {
         let (complete, result) = mpsc::channel();
         tauri::Builder::default()
             .setup(move |app| {
+                let main_thread = objc2::MainThreadMarker::new().unwrap();
+                let empty = unsafe { objc2_web_kit::WKWebView::new(main_thread) };
+                assert!(unsafe { empty.URL() }.is_none());
+                assert!(super::browser_webview::native_url(&empty).is_none());
                 let (ready, loaded) = mpsc::channel();
                 WebviewWindowBuilder::new(app, "main", WebviewUrl::External(format!("http://{address}/").parse().unwrap()))
                     .title("Alpha browser regression")
@@ -134,15 +138,15 @@ mod macos {
                                 }),
                             position, size,
                         ).unwrap();
+                        let (url_changed, urls) = mpsc::channel();
+                        super::browser_webview::observe_url(handle.clone(), "browser-fixture".to_string(), move |url| {
+                            let _ = url_changed.send(url);
+                        });
                         loaded.recv_timeout(WAIT).expect("browser document loaded");
                         assert_eq!(evaluate(&child, "document.body.dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true}))"), json!(false));
                         assert_eq!(evaluate(&child, "document.querySelector('#query').dispatchEvent(new MouseEvent('contextmenu', {bubbles:true,cancelable:true}))"), json!(true));
                         let initial = observe(&child, &rect, 0.0);
                         let page = evaluate(&child, "({title:document.title,inputWritable:(document.querySelector('#query').value='typed')==='typed'})");
-                        let (url_changed, urls) = mpsc::channel();
-                        super::browser_webview::observe_url(handle.clone(), "browser-fixture".to_string(), move |url| {
-                            let _ = url_changed.send(url);
-                        });
                         let wait_url = |path: &str| {
                             let deadline = std::time::Instant::now() + WAIT;
                             loop {
