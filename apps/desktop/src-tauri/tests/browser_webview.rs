@@ -79,7 +79,10 @@ mod macos {
         let server = std::thread::spawn(move || {
             for incoming in listener.incoming() {
                 let mut stream = incoming.unwrap();
-                stream.set_read_timeout(Some(WAIT)).unwrap();
+                if let Err(error) = stream.set_read_timeout(Some(WAIT)) {
+                    eprintln!("fixture connection closed before its read deadline was set: {error}");
+                    continue;
+                }
                 let mut request = Vec::new();
                 let mut buffer = [0; 4096];
                 while !request.windows(4).any(|bytes| bytes == b"\r\n\r\n") {
