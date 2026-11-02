@@ -455,7 +455,7 @@
   overflow-y: auto;
   padding: 4px;
   background: var(--dsw-specific-menu);
-  border: 0.5px solid var(--dsw-alias-border-l2);
+  border: none;
   border-radius: 6px;
   --dsw-elevation-stroke-color: var(--dsw-alias-border-l1);
   box-shadow: var(--dsw-elevation-prominent);
