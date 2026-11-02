@@ -51,7 +51,7 @@ describe('application context menu', () => {
   })
 
   it('keeps a feature-owned context menu and terminal gestures', () => {
-    render(<>{menu()}<button onContextMenu={event => { event.preventDefault() }}>feature</button><div className="xterm">terminal</div></>)
+    render(<>{menu()}<button onContextMenu={(event) => { event.preventDefault() }}>feature</button><div className="xterm">terminal</div></>)
     open(screen.getByText('feature'))
     expect(screen.queryByRole('menu')).toBeNull()
     expect(open(screen.getByText('terminal'))).toBe(true)
@@ -137,7 +137,7 @@ describe('application context menu', () => {
 
   it('abandons pending paste when the user moves to another field', async () => {
     let resolveRead!: (text: string) => void
-    readText.mockImplementation(() => new Promise(resolve => { resolveRead = resolve }))
+    readText.mockImplementation(() => new Promise((resolve) => { resolveRead = resolve }))
     render(<>{menu()}<textarea aria-label="first" /><textarea aria-label="second" /></>)
     open(screen.getByLabelText('first'))
     fireEvent.click(screen.getByRole('menuitem', { name: 'context.paste' }))
@@ -159,6 +159,15 @@ describe('application context menu', () => {
     open(input)
     fireEvent.scroll(window)
     expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  it('keeps the menu open when its own viewport scrolls', () => {
+    render(<>{menu()}<textarea defaultValue="draft" /></>)
+    open(screen.getByRole('textbox'))
+    const viewport = screen.getByRole('menu').querySelector('[role="presentation"]')
+    expect(viewport).not.toBeNull()
+    fireEvent.scroll(viewport!)
+    expect(screen.getByRole('menu')).toBeTruthy()
   })
 
   it('removes global handlers on unmount', () => {

@@ -224,7 +224,6 @@ export function AppFrame({
         useSessions={useSessions}
         usePanelInfo={usePanelInfo}
       />
-      <ContextMenu t={t} />
       <div className={css.sidebarCol}>
         {sidebar}
       </div>
@@ -235,6 +234,7 @@ export function AppFrame({
         </RightbarColumn>
       </>
       <div className={css.overlayLayer} data-shell-overlay>
+        <ContextMenu t={t} />
         {overlays}
       </div>
       {/* The collapsed rail is fixed-width: no resize handle while closed. */}

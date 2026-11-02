@@ -86,7 +86,12 @@ export function ContextMenu({ t }: PropsLocale<'common'>) {
       setFailed(false)
       setTarget(next)
     }
-    const dismiss = () => { active.current = null; setTarget(null) }
+    const dismiss = (event?: Event) => {
+      // The menu owns its scroll viewport; repositioning it must not close it.
+      if (event?.target instanceof Element && event.target.closest('[role="menu"]') !== null) return
+      active.current = null
+      setTarget(null)
+    }
     const cancelPending = (event: Event) => {
       if (event.target instanceof Element && event.target.closest('[role="menu"]') !== null) return
       active.current = null
@@ -155,7 +160,7 @@ export function ContextMenu({ t }: PropsLocale<'common'>) {
       } else {
         success = edit(saved, id)
       }
-    } catch (error) {
+    } catch (_error) {
       // Clipboard permissions and native editing commands can reject the action.
       success = false
     }
@@ -166,7 +171,7 @@ export function ContextMenu({ t }: PropsLocale<'common'>) {
     {target !== null && items.length > 0 && <Menu
       open autoFocus compact portal anchor={null} items={items}
       getAnchorRect={() => target.rect}
-      onSelect={id => { void select(id) }}
+      onSelect={(id) => { void select(id) }}
       onClose={() => {
         if (document.activeElement?.closest('[role="menu"]') !== null) restore(target)
         active.current = null

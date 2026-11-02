@@ -47,7 +47,15 @@ it('uses contextual actions without browser navigation chrome', async () => {
       await expect.poll(() => input.textContent()).toBe('menu paste continued')
       for (const width of [1280, 390]) {
         await page.setViewportSize({ width, height: 800 })
+        await input.click()
+        const before = await input.boundingBox()
+        expect(before).not.toBeNull()
         await input.click({ button: 'right' })
+        await page.getByRole('menu').waitFor({ state: 'visible' })
+        await page.evaluate(() => new Promise<void>((resolve) => {
+          requestAnimationFrame(() => { requestAnimationFrame(() => { resolve() }) })
+        }))
+        expect(await input.boundingBox()).toEqual(before)
         const bounds = await page.getByRole('menu').boundingBox()
         expect(bounds).not.toBeNull()
         expect(bounds!.x).toBeGreaterThanOrEqual(0)

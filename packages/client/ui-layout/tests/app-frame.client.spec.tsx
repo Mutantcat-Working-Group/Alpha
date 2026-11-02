@@ -3,7 +3,7 @@
 import type { GlobalStandardProps, RenderOpts } from '@mutantcat/dsh-client-ui-slots'
 import { bindSnapshotSelector } from '@mutantcat/dsh-client-test-runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, cleanup, render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import { AppFrame } from '../src/client/AppFrame.tsx'
 import type { AppFrameProps } from '../src/client/AppFrame.tsx'
 import type { MainPanelId, RightbarOwnerProps, SidebarOwnerProps } from '../src/client/index.ts'
@@ -211,6 +211,16 @@ describe('AppFrame', () => {
     expect(getByTestId('sidebar-content')).toBeTruthy()
     expect(getByTestId('rightbar-content')).toBeTruthy()
     expect(tracks(frame)).toEqual([280, 0])
+  })
+
+  it('keeps the context menu anchor in the overlay layer outside the grid tracks', () => {
+    const { frame, getByTestId } = mountFrame()
+    const main = getByTestId('main-content')
+    main.setAttribute('contenteditable', 'true')
+    fireEvent.contextMenu(main, { clientX: 40, clientY: 60 })
+    const overlay = frame.querySelector('[data-shell-overlay]')
+    expect(overlay?.querySelector('span')).not.toBeNull()
+    expect(Array.from(frame.children).filter(child => child.matches('span'))).toHaveLength(0)
   })
 
   it('renders both occupants before workspace baselines settle', () => {
