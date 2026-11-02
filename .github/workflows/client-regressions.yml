@@ -58,6 +58,7 @@ jobs:
           name: context-menu-screenshots
           path: .artifacts/context-menu-*.png
           if-no-files-found: ignore
+          include-hidden-files: true
 
   native-browser:
     runs-on: macos-15
