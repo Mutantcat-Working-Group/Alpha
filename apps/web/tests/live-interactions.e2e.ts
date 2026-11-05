@@ -226,12 +226,17 @@ describe('web e2e: live-turn interactions (cancel / error / retry)', () => {
         ]
       })
       onTestFailed(() => saveFailureShot(page, `web-e2e-priority-${action}`))
-      const { settled } = await sendPrompt()
+      const { settled } = await sendPrompt(120_000)
+      void settled.catch(() => {})
       await expect.poll(() => existsSync(activeMarker), { timeout: 15_000 }).toBe(true)
       const input = page.locator('[data-composer-input]').first()
       for (const text of ['old first', 'old second']) {
         await input.fill(text)
         await input.press('Enter')
+        await expect.poll(() => input.textContent()).toBe('')
+        if (text === 'old second') {
+          await page.locator('[data-queue-dock] button[aria-expanded="false"]').click()
+        }
         await page.locator('[data-queue-dock]').getByRole('listitem').filter({ hasText: text }).waitFor()
       }
       await page.getByRole('button', { name: action === 'stop' ? 'Stop generating' : 'Pause', exact: true }).click()
