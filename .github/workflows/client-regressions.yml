@@ -26,6 +26,8 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build the persistence file-lock addon
+        run: pnpm run build:native-system
       - name: Run affected client and script tests
         run: >-
           pnpm exec vitest run

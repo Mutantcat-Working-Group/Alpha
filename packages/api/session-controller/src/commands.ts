@@ -305,6 +305,7 @@ export class SessionCommandController {
 
   /**
    * Reject empty content, then admit one prompt after Agent and attachment validation.
+   * A paused turn receives the prompt as steering before resuming; queued turns stay pending.
    * @param request - Session identity, prompt content, source metadata, and delivery mode.
    * @returns acknowledgement that the Agent accepted the prompt.
    */
