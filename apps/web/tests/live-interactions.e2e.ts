@@ -246,6 +246,7 @@ describe('web e2e: live-turn interactions (cancel / error / retry)', () => {
       await input.press('Enter')
       await expect.poll(() => existsSync(continuedMarker), { timeout: 15_000 }).toBe(true)
       const userTexts = () => sessionEvents.filter(event => event.type === 'user/message')
+        .filter(event => event.data.source.kind === 'user')
         .flatMap(event => event.data.content.flatMap(block => block.type === 'text' ? [block.text] : []))
       expect(userTexts()).toEqual([PROMPT, 'continue now'])
       for (const text of ['old first', 'old second']) {
