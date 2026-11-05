@@ -121,6 +121,31 @@ function throwUnknown(value: unknown): never {
 }
 
 describe('the session-persistence Agent Note: AgentLoop factory create/resume', () => {
+  it.each(['aborted', 'completed'] as const)('restores follow-up priority from a %s turn', async (kind) => {
+    const adapter = new MockAdapter([textResponse('first reply'), textResponse('second reply')])
+    const { ctx } = await persistentHarness(adapter)
+    try {
+      const id = SessionId(`restored-queue-${kind}`)
+      const session = Session.create(id)
+      session.append('turn/start', { turn: 1 })
+      const queued = createUserMessage({ content: [{ type: 'text', text: 'old' }], source: { kind: 'user' } })
+      session.append('agent/inbox/spliced', { target: 'next-turn', start: 0, inserted: [queued] })
+      session.append('turn/end', { turn: 1, reason: kind === 'aborted'
+        ? { kind: 'aborted', reason: { kind: 'user' } } : { kind: 'completed' } })
+      await seedStoredSession(ctx, id, session.snapshotEvents())
+      const { agent } = await ctx.agents.resume({
+        resumeSessionId: id, agentOptions: { provider: 'mock', model: 'mock' },
+      })
+      agent.followup(createUserMessage({ content: [{ type: 'text', text: 'continue' }], source: { kind: 'user' } }))
+      await agent.whenIdle()
+      expect(agent.session.snapshotEvents().filter(event => event.type === 'user/message')
+        .flatMap(event => event.data.content.flatMap(block => block.type === 'text' ? [block.text] : [])))
+        .toEqual(kind === 'aborted' ? ['continue', 'old'] : ['old', 'continue'])
+    } finally {
+      await ctx.fiber.dispose()
+    }
+  })
+
   it('normalizes a non-Error resume publication failure for rollback and releases the write handle', async () => {
     const sessionId = SessionId('unknown-resume-failure-s')
     const root = await persistSession(sessionId)

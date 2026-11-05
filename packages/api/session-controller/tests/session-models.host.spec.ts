@@ -162,6 +162,34 @@ function currentSelection(ctx: Context, sessionId: SessionId) {
 }
 
 describe('Web session model selection', () => {
+  it.each(['queue', 'steer'] as const)('admits a %s prompt before resuming a paused turn', async (mode) => {
+    const { ctx, agent, sessionId } = await harness()
+    try {
+      const remote = createSessionTestRemote(ctx, {
+        defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+        cwd: '/tmp',
+      })
+      const calls: string[] = []
+      const followup = vi.fn()
+      Object.assign(agent, {
+        status: 'paused',
+        steer: (message: UserMessage) => {
+          expect(message.content).toEqual([{ type: 'text', text: 'continue' }])
+          calls.push('steer')
+        },
+        resume: () => { calls.push('resume') },
+        followup,
+      })
+      expectValue(await remote.prompt(promptRequest({
+        sessionId, mode, content: [{ type: 'text', text: 'continue' }],
+      })))
+      expect(calls).toEqual(['steer', 'resume'])
+      expect(followup).not.toHaveBeenCalled()
+    } finally {
+      await ctx.fiber.dispose()
+    }
+  })
+
   it('validates an ordered image batch before persisting any member', async () => {
     const { ctx, agent, sessionId } = await harness()
     const validateImage = vi.fn((_input: { data: Uint8Array }) => Promise.resolve())

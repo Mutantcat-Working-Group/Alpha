@@ -104,9 +104,8 @@ export class ReactLoopAgent implements Agent {
   /** Identities fully frozen by this loop; weak references do not retain replaced history. */
   private readonly frozenMessages = new WeakSet<Message>()
   /**
-   * Whether next-turn work a terminated turn left parked is still pending, so
-   * the next follow-up leads it. Recomputed each time a driver converges to
-   * idle, so it never outlives the idle episode that set it.
+   * The first follow-up after cancellation leads preserved next-turn work,
+   * including while the aborted driver is still unwinding.
    */
   private leftoverQueueLeads = false
 
@@ -121,6 +120,10 @@ export class ReactLoopAgent implements Agent {
     this.scope = createScope(loopCtx, this)
     this.ctx = this.scope.ctx
     this.inbox = new ReactLoopInbox(this.ctx.sessionProjections, session, this.dispatch)
+    if (this.inbox.nextTurn.length > 0) {
+      const lastEnd = session.snapshotEvents().findLast(event => event.type === 'turn/end')
+      this.leftoverQueueLeads = lastEnd?.data.reason.kind === 'aborted'
+    }
     /* v8 ignore next -- the loop registers its own turnBoundary unit, so the key is always present */
     const lastTurn = this.loopCtx.sessionProjections.stateOf(session, 'turnBoundary')?.lastTurn ?? 0
     this.phase = { kind: 'idle', lastTurn }
@@ -155,18 +158,16 @@ export class ReactLoopAgent implements Agent {
   followup(input: UserMessage): void {
     // Read the phase before the insertion: a splice observer may reenter
     // cancel(), which clears the queue this decision was taken from.
-    const leadsLeftovers = this.phase.kind === 'idle' && this.leftoverQueueLeads
+    const leadsLeftovers = this.leftoverQueueLeads
     if (!leadsLeftovers) {
       this.send(input, 'next-turn', true)
       return
     }
-    // A terminated turn leaves its queued work parked with nothing running. The
-    // follow-up arriving after that run ended is the prompt the user is waiting
-    // on, so it leads the leftovers, which keep their relative order. Behind a
-    // live or parked turn, and after a turn that ended on its own, input still
-    // appends.
+    const wakingAfterAbort = this.phase.kind !== 'idle' && this.phase.abort.signal.aborted
+    // Consume priority before observers can submit another follow-up.
+    this.leftoverQueueLeads = false
     this.inbox.prepend('next-turn', input)
-    this.wakeDriver()
+    this.wakeDriver(wakingAfterAbort)
   }
 
   steer(input: UserMessage): void {
@@ -179,8 +180,11 @@ export class ReactLoopAgent implements Agent {
 
   cancel(cause: AgentCancelCause, options: CancelOptions = {}): void {
     if (!options.keepInbox) {
+      this.leftoverQueueLeads = false
       this.inbox.clear()
       if (this.phase.kind !== 'idle') this.phase.wakeRequested = false
+    } else if (this.phase.kind !== 'idle' && !this.phase.abort.signal.aborted) {
+      this.leftoverQueueLeads = this.inbox.nextTurn.length > 0
     }
     // Wake a parked loop so it observes the abort; a paused turn ends aborted.
     const gate = this.pauseGate
@@ -271,6 +275,7 @@ export class ReactLoopAgent implements Agent {
       return
     }
     const driver = Promise.withResolvers<void>()
+    this.leftoverQueueLeads = false
     this.activityDone = driver.promise
     this.setPhase({
       kind: 'running',
@@ -307,12 +312,7 @@ export class ReactLoopAgent implements Agent {
       /* v8 ignore next -- kick owns a running phase until this driver boundary */
       if (this.phase.kind === 'running') {
         const { turn, wakeRequested } = this.phase
-        const terminated = this.phase.abort.signal.aborted
         this.setPhase({ kind: 'idle', lastTurn: turn })
-        // A cancelled turn parks its queued work with nothing running, so the
-        // follow-up that arrives next leads it. A turn that ended on its own --
-        // completed, blocked, or failed -- keeps its queue in arrival order.
-        this.leftoverQueueLeads = terminated && this.inbox.nextTurn.length > 0
         if (wakeRequested && this.inbox.hasPending) this.wakeDriver()
       }
     }

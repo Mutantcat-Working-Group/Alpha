@@ -118,6 +118,14 @@ describe('beginSubmission', () => {
     expect(session.getSnapshot().pendingSubmissions).toEqual([])
     expect(retirements).toEqual([{ reason: 'failed' }])
   })
+
+  it('places a paused prompt in steering instead of the old queue', async ({ mock, start }) => {
+    const session = await sessionBench(mock, start, SID)
+    session.handleRunning(false)
+    session.handlePaused(true)
+    session.beginSubmission({ mode: 'queue', text: 'continue', attachments: [] })
+    expect(session.getSnapshot().pendingSubmissions).toMatchObject([{ placement: 'steering' }])
+  })
 })
 
 describe('prompt-coupled retirement', () => {

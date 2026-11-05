@@ -62,6 +62,49 @@ function textOf(message: UserMessage): string[] {
 }
 
 describe('Agent.cancel()', () => {
+  it.each(['unwinding', 'idle-listener', 'settled'] as const)(
+    'the first follow-up leads preserved work during %s and later sends remain FIFO',
+    async (window) => {
+      const adapter = new MockAdapter(['hang', ...Array.from({ length: 4 }, () => textResponse('reply'))])
+      const ctx = await harness(adapter)
+      const agent = await ctx.agentLoop.create(SessionId(`priority-${window}`), { provider: 'mock', model: 'mock' })
+      try {
+        send(agent, 'active')
+        await expect.poll(() => adapter.requests.length).toBe(1)
+        send(agent, 'old first')
+        send(agent, 'old second')
+        const submit = () => {
+          send(agent, 'continue')
+          send(agent, 'later')
+        }
+        if (window === 'idle-listener') {
+          const off = ctx.on('agent/status', ({ agent: subject, status }) => {
+            if (subject !== agent || status !== 'idle') return
+            off()
+            submit()
+          })
+        }
+        agent.cancel({ kind: 'user' }, { keepInbox: true })
+        if (window === 'settled') await agent.whenIdle()
+        if (window !== 'idle-listener') submit()
+        if (window === 'unwinding') {
+          expect(agent.inbox.nextTurn.flatMap(textOf)).toEqual(['continue', 'old first', 'old second', 'later'])
+        }
+        await agent.whenIdle()
+        expect(userTexts(agent)).toEqual(['active', 'continue', 'old first', 'old second', 'later'])
+        expect(adapter.requests.map(request => request.messages
+          .filter(message => message.role === 'user').at(-1)?.content
+          .flatMap(block => block.type === 'text' ? [block.text] : [])))
+          .toEqual([['active'], ['continue'], ['old first'], ['old second'], ['later']])
+        expect(agent.inbox.nextTurn).toEqual([])
+      } finally {
+        agent.cancel({ kind: 'user' })
+        await agent.whenIdle()
+        await ctx.fiber.dispose()
+      }
+    },
+  )
+
   it('cancel() on an idle agent with nothing queued is a no-op; the next prompt runs (F2 leak guard)', async () => {
     const adapter = new MockAdapter([textResponse('reply')])
     const ctx = await harness(adapter)

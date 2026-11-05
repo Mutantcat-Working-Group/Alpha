@@ -383,9 +383,11 @@ export class SessionCommandController {
           )
         }
         using binding = this.ctx.fileUploads.bindPrompt(agent, admission.receiptIds, request.requestId)
-        if (request.mode === 'steer') agent.steer(message)
+        const resumePaused = agent.status === 'paused'
+        if (resumePaused || request.mode === 'steer') agent.steer(message)
         else agent.followup(message)
         binding.commit()
+        if (resumePaused) agent.resume()
       } catch (error) {
         if (remoteErrorOf(error) !== undefined) throw error
         if (error instanceof AttachmentError) {

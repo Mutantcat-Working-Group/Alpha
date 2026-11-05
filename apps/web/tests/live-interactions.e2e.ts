@@ -210,6 +210,53 @@ describe('web e2e: live-turn interactions (cancel / error / retry)', () => {
     expect(tripwire.warnings).toEqual([])
   }, 120_000)
 
+  it.skipIf(MODE === 'record').each(['stop', 'pause'] as const)(
+    'a prompt after %s reaches the model before preserved queued messages',
+    async (action) => {
+      const derived = deriveReplayScript(parseSessionLog(await readFile(FIXTURE, 'utf8')))
+      let activeMarker = ''
+      let continuedMarker = ''
+      await launch((home) => {
+        activeMarker = join(home, '.active-ready')
+        continuedMarker = join(home, '.continued-ready')
+        return [
+          { kind: 'hang', readyFile: activeMarker },
+          { kind: 'hang', readyFile: continuedMarker },
+          derived[0]!, derived[0]!, derived[0]!,
+        ]
+      })
+      onTestFailed(() => saveFailureShot(page, `web-e2e-priority-${action}`))
+      const { settled } = await sendPrompt()
+      await expect.poll(() => existsSync(activeMarker), { timeout: 15_000 }).toBe(true)
+      const input = page.locator('[data-composer-input]').first()
+      for (const text of ['old first', 'old second']) {
+        await input.fill(text)
+        await input.press('Enter')
+        await page.locator('[data-queue-dock]').getByRole('listitem').filter({ hasText: text }).waitFor()
+      }
+      await page.getByRole('button', { name: action === 'stop' ? 'Stop generating' : 'Pause', exact: true }).click()
+      if (action === 'stop') await settled
+      else await page.getByRole('button', { name: 'Resume', exact: true }).waitFor()
+      await input.fill('continue now')
+      await input.press('Enter')
+      await expect.poll(() => existsSync(continuedMarker), { timeout: 15_000 }).toBe(true)
+      const userTexts = () => sessionEvents.filter(event => event.type === 'user/message')
+        .flatMap(event => event.data.content.flatMap(block => block.type === 'text' ? [block.text] : []))
+      expect(userTexts()).toEqual([PROMPT, 'continue now'])
+      for (const text of ['old first', 'old second']) {
+        expect(await page.locator('[data-queue-dock]').getByRole('listitem').filter({ hasText: text }).count()).toBe(1)
+      }
+      await page.getByRole('button', { name: 'Pause', exact: true }).click()
+      await page.getByRole('button', { name: 'Resume', exact: true }).click()
+      await expect.poll(userTexts, { timeout: 30_000 }).toEqual([PROMPT, 'continue now', 'old first', 'old second'])
+      await expect.poll(() => turnEndReasons(sessionEvents).filter(reason => reason === 'completed').length,
+        { timeout: 30_000 }).toBe(3)
+      await settled
+      expect(tripwire.pageErrors).toEqual([])
+      expect(tripwire.warnings).toEqual([])
+    }, 120_000,
+  )
+
   it.skipIf(MODE === 'record')('surfaces a non-retryable AUTH failure without retrying', async () => {
     await launch(() => ({
       patches: [{ at: 0, entry: { kind: 'throw', chunks: [], message: AUTH_PROVIDER_MESSAGE, code: 'AUTH' } }],

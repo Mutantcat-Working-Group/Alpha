@@ -208,7 +208,7 @@ export class Session implements SessionFace {
     const requestId = randomUUID() as SessionRequestId
     this.pendingSubmissions = [...this.pendingSubmissions, {
       requestId,
-      placement: this.running
+      placement: this.paused ? 'steering' : this.running
         ? input.mode === 'steer' ? 'steering' : 'queued'
         : 'transcript',
       time: Date.now(),
