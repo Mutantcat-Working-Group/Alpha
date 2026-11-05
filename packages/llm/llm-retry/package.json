@@ -1,7 +1,7 @@
 {
   "name": "@mutantcat/dsh-llm-retry",
   "description": "Provider-routed LLM request retry policy for the Alpha",
-  "version": "1.0.20261118",
+  "version": "1.0.20261119",
   "publishConfig": {
     "access": "public"
   },
