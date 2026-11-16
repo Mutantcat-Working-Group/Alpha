@@ -210,7 +210,7 @@ class ConfiningFakeBash extends ShellExecutor {
 }
 
 /** Sandboxed composition: the shared policy service + a confining executor + the pwsh tool (+ optional approval). */
-async function setupSandboxed(withApproval = false) {
+async function setupSandboxed(withApproval = false, toolConfig: Partial<ToolPwsh.Config> = {}) {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
@@ -226,7 +226,7 @@ async function setupSandboxed(withApproval = false) {
   await ctx.plugin(SandboxPolicyService, {})
   await ctx.plugin(ConfiningFakeBash)
   if (withApproval) await ctx.plugin(ApprovalService)
-  await ctx.plugin(ToolPwsh)
+  await ctx.plugin(ToolPwsh, toolConfig)
   const bash = ctx.shell as ConfiningFakeBash
   return { ctx, bash }
 }
@@ -625,7 +625,11 @@ describe('sandbox escalation through ctx.approval', () => {
 
   it('rejects injected escalation without a sandbox and narrower escalation without prompting', async () => {
     const plain = await setup()
-    expect(text(await call(plain.ctx, 'pwsh', escalate))).toContain('not available in this composition')
+    const { command, description, sandbox_permissions, justification } = escalate
+    for (const args of [escalate, { command, description, sandbox_permissions }, { command, description, justification }]) {
+      expect(text(await call(plain.ctx, 'pwsh', args)))
+        .toContain('sandbox_permissions and justification are not available in this composition')
+    }
 
     const { ctx } = await setupSandboxed(true)
     const prompted = vi.fn()
@@ -640,6 +644,16 @@ describe('sandbox escalation through ctx.approval', () => {
       data: Record<string, unknown>,
     ) => unknown)('sandbox/mode', { mode: 'unknown-mode' })
     expect(text(await call(ctx, 'pwsh', escalate, malformed))).toContain('not strictly wider')
+  })
+
+  it('rejects a forced background call before asking for an escalation', async () => {
+    const { ctx, bash } = await setupSandboxed(true, { enableRunInBackground: false })
+    const prompted = vi.fn()
+    ctx.on('approval/request', () => { prompted(); return Promise.resolve<ApprovalOutcome>('allowed-once') })
+    const result = await call(ctx, 'pwsh', { ...escalate, run_in_background: true }, sandboxAgent())
+    expect(text(result)).toContain('run_in_background is disabled for this deployment (enableRunInBackground: false)')
+    expect(prompted).not.toHaveBeenCalled()
+    expect(bash.modes).toEqual([])
   })
 
   it.each(['workspace-write', 'danger-full-access'] as const)('runs a repeated %s request without approval', async (mode) => {

@@ -117,7 +117,7 @@ function Entry({ parent, entry, tree }: { parent: string; entry: WorkspaceDirect
     const expanded = tree.state.expanded.includes(path)
     return (
       <li className={css.item} data-files-entry="directory" data-files-path={path}>
-        <button type="button" className={css.row} aria-expanded={expanded} onClick={() => { tree.onToggle(path) }} onContextMenu={event => { tree.onMenu(event, path, entry.type) }}>
+        <button type="button" className={css.row} aria-expanded={expanded} onClick={() => { tree.onToggle(path) }} onContextMenu={(event) => { tree.onMenu(event, path, entry.type) }}>
           {expanded ? <IconFolderOpen16 className={css.icon} /> : <IconFolderClose16 className={css.icon} />}
           <span className={css.name}>{entry.name}</span>
         </button>
@@ -128,7 +128,7 @@ function Entry({ parent, entry, tree }: { parent: string; entry: WorkspaceDirect
   if (entry.type === 'file') {
     return (
       <li className={css.item} data-files-entry="file" data-files-path={path}>
-        <button type="button" className={css.row} onClick={() => { tree.onOpen(path) }} onContextMenu={event => { tree.onMenu(event, path, entry.type) }}>
+        <button type="button" className={css.row} onClick={() => { tree.onOpen(path) }} onContextMenu={(event) => { tree.onMenu(event, path, entry.type) }}>
           <FileTypeIcon kind={classifyFileType(entry.name)} size={16} className={css.fileIcon} />
           <span className={css.name}>{entry.name}</span>
         </button>
@@ -280,7 +280,7 @@ export function FilesBody({
             if (menu.type === 'directory') tree.onToggle(menu.path)
             else tree.onOpen(menu.path)
           } else {
-            void writeClipboard(id === 'path' ? menu.path : pathPartsOf(menu.path).name).then(ok => {
+            void writeClipboard(id === 'path' ? menu.path : pathPartsOf(menu.path).name).then((ok) => {
               if (!ok && !signal.aborted) setCopyFailed(true)
             })
           }

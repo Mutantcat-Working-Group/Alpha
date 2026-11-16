@@ -2247,12 +2247,19 @@ describe('per-program execution controls', () => {
   it('rejects escalation fields for a runtime without confinement support', async () => {
     const { ctx, tools, runtime } = await setup()
     try {
-      const result = await tools.execute({
-        callId: ToolCallId('unsupported-escalation'), name: RUN_CODE_NAME, signal: testToolSignal,
-        arguments: { code: 'return 1', description: 'Try an unsupported mode', sandbox_permissions: 'workspace-write', justification: 'Need file writes' },
-      })
-      expect(result.isError).toBe(true)
-      expect(JSON.stringify(result.content)).toContain('sandbox_permissions is not available for this PTC runtime')
+      for (const fields of [
+        { sandbox_permissions: 'workspace-write', justification: 'Need file writes' },
+        { sandbox_permissions: 'workspace-write' },
+        { justification: 'Need file writes' },
+      ]) {
+        const result = await tools.execute({
+          callId: ToolCallId('unsupported-escalation'), name: RUN_CODE_NAME, signal: testToolSignal,
+          arguments: { code: 'return 1', description: 'Try an unsupported mode', ...fields },
+        })
+        expect(result.isError).toBe(true)
+        expect(JSON.stringify(result.content)).toContain('sandbox_permissions and justification are not available for this PTC runtime')
+        expect(JSON.stringify(result.content)).not.toContain('requires a justification')
+      }
       expect(runtime.lastRequest).toBeUndefined()
     } finally { await ctx.fiber.dispose() }
   })

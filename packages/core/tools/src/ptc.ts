@@ -381,6 +381,10 @@ export function createRunCodeTool(registry: ToolRuntime, options: RunCodeBridgeO
         throw new Error('invalid description: expected a non-empty string')
       }
       const runtime = requireRuntime()
+      // The schema omits both fields without runtime confinement; reject them before pairing checks.
+      if (runtime.sandboxMode === undefined && (args.sandbox_permissions !== undefined || args.justification !== undefined)) {
+        throw new Error('sandbox_permissions and justification are not available for this PTC runtime')
+      }
       validateEscalationArgs(args.sandbox_permissions, args.justification)
       if (args.timeoutMs !== undefined && runtime.timeout === undefined) {
         throw new Error('timeoutMs is not available for this PTC runtime')
@@ -391,7 +395,7 @@ export function createRunCodeTool(registry: ToolRuntime, options: RunCodeBridgeO
       const standingPolicy = runtime.sandboxMode === undefined ? undefined : options.resolveSandboxPolicy(exec)
       let policy = standingPolicy
       if (args.sandbox_permissions !== undefined && args.justification !== undefined) {
-        if (standingPolicy === undefined) throw new Error('sandbox_permissions is not available for this PTC runtime')
+        if (standingPolicy === undefined) throw new Error('sandbox_permissions and justification are not available for this PTC runtime')
         const approvedMode = await approveEscalation({
           requestedMode: args.sandbox_permissions,
           justification: args.justification,

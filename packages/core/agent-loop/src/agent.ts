@@ -121,6 +121,7 @@ export class ReactLoopAgent implements Agent {
     this.ctx = this.scope.ctx
     this.inbox = new ReactLoopInbox(this.ctx.sessionProjections, session, this.dispatch)
     if (this.inbox.nextTurn.length > 0) {
+      // oxlint-disable-next-line typescript/no-deprecated -- Existing Session history read; migration deferred.
       const lastEnd = session.snapshotEvents().findLast(event => event.type === 'turn/end')
       this.leftoverQueueLeads = lastEnd?.data.reason.kind === 'aborted'
     }
