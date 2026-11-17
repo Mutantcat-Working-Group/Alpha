@@ -7,10 +7,12 @@ import { describe, expect, it } from 'vitest'
 const root = resolve(import.meta.dirname, '../..')
 
 describe('Release app workflow', () => {
-  it('publishes artifacts only from a published release', () => {
+  it('publishes artifacts when a release tag is pushed or dispatched', () => {
     const workflow = releaseAppWorkflow()
-    expect(workflowEvent(workflow, 'release')).toMatchObject({ types: ['published'] })
+    if (!isRecord(workflow.on)) throw new TypeError('release-app.yml must define triggers')
+    expect(workflowEvent(workflow, 'push')).toMatchObject({ tags: ['v*'] })
     expect(workflowEvent(workflow, 'workflow_dispatch')).toBeDefined()
+    expect(workflow.on.release).toBeUndefined()
     expect(workflow.permissions).toEqual({ contents: 'write' })
   })
 
@@ -55,14 +57,32 @@ describe('Release app workflow', () => {
     expect(packageJob().env).toMatchObject({ CSC_IDENTITY_AUTO_DISCOVERY: 'false' })
   })
 
-  it('uploads each installer to the release tag it was published for', () => {
+  it('creates a missing release before any package uploads artifacts', () => {
+    const prepare = prepareReleaseJob()
+    const steps = jobSteps(prepare, 'prepare-release')
+    const ensure = stepNamed(steps, 'Ensure the GitHub release exists')
+    expect(ensure.env).toMatchObject({
+      GH_TOKEN: '${{ github.token }}',
+      GH_REPO: '${{ github.repository }}',
+      TAG: '${{ steps.release.outputs.tag }}',
+    })
+    expect(ensure.run).toContain('gh release view')
+    expect(ensure.run).toContain('gh release create')
+    expect(ensure.run).toContain('--verify-tag')
+    expect(ensure.run).toContain('--generate-notes')
+    expect(packageJob().needs).toBe('prepare-release')
+  })
+
+  it('checks out and uploads to the tag resolved by the preparation job', () => {
     const steps = packageSteps()
-    const resolveTag = stepNamed(steps, 'Resolve the release tag')
-    expect(resolveTag.run).toContain('github.event.release.tag_name')
-    expect(resolveTag.run).toContain('inputs.tag')
+    const checkout = stepUsing(steps, 'actions/checkout@')
+    expect(stepInput(checkout, 'ref')).toBe('${{ needs.prepare-release.outputs.tag }}')
 
     const upload = stepNamed(steps, 'Upload to the release')
-    expect(upload.env).toMatchObject({ GH_TOKEN: '${{ github.token }}' })
+    expect(upload.env).toMatchObject({
+      GH_TOKEN: '${{ github.token }}',
+      TAG: '${{ needs.prepare-release.outputs.tag }}',
+    })
     expect(upload.run).toContain('gh release upload')
     // A re-run replaces the assets it already uploaded instead of failing on the duplicate name.
     expect(upload.run).toContain('--clobber')
@@ -87,6 +107,7 @@ describe('Release app workflow', () => {
       /^\$\{\{ runner\.temp \}\}\/setup-pnpm-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}-\$\{\{ github\.job \}\}$/u,
     )
     expect(stepInput(checkout, 'persist-credentials')).toBe(false)
+    expect(stepInput(checkout, 'ref')).toBe('${{ needs.prepare-release.outputs.tag }}')
   })
 })
 
@@ -104,6 +125,18 @@ function stepInput(step: Record<string, unknown>, key: string): string | boolean
     throw new TypeError(`every action step must declare the ${key} input`)
   }
   return value
+}
+
+/**
+ * Find the first step that uses a named action.
+ * @param steps - Steps declared by a job.
+ * @param prefix - Action name prefix to find.
+ * @returns The matching step.
+ */
+function stepUsing(steps: ReadonlyArray<Record<string, unknown>>, prefix: string): Record<string, unknown> {
+  const step = steps.find(candidate => typeof candidate.uses === 'string' && candidate.uses.startsWith(prefix))
+  if (step === undefined) throw new TypeError(`the job must use ${prefix}`)
+  return step
 }
 
 /**
@@ -155,10 +188,29 @@ function packageJob(): Record<string, unknown> {
   return workflow.jobs.package
 }
 
+/** Release preparation job that resolves the tag and creates its Release. */
+function prepareReleaseJob(): Record<string, unknown> {
+  const workflow = releaseAppWorkflow()
+  if (!isRecord(workflow.jobs) || !isRecord(workflow.jobs['prepare-release'])) {
+    throw new TypeError('release-app.yml must define the prepare-release job')
+  }
+  return workflow.jobs['prepare-release']
+}
+
 /** Steps declared by the packaging job. */
 function packageSteps(): Array<Record<string, unknown>> {
-  const steps: unknown = packageJob().steps
-  if (!Array.isArray(steps)) throw new TypeError('the package job must define steps')
+  return jobSteps(packageJob(), 'package')
+}
+
+/**
+ * Steps declared by one workflow job.
+ * @param job - Workflow job to read.
+ * @param name - Job name used in diagnostics.
+ * @returns The job's steps.
+ */
+function jobSteps(job: Record<string, unknown>, name: string): Array<Record<string, unknown>> {
+  const steps: unknown = job.steps
+  if (!Array.isArray(steps)) throw new TypeError(`the ${name} job must define steps`)
   return steps.filter(isRecord)
 }
 
