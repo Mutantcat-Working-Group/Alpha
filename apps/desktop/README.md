@@ -105,7 +105,7 @@ On macOS a local DMG build prepends [scripts/dmg-tools](scripts/dmg-tools) to `P
 
 | Target | Runner | Rust triple | Bundle | Release asset |
 | ---|---|---|---|---|
-| `mac-arm64` | `macos-14` | `aarch64-apple-darwin` | ad-hoc DMG | `Alpha-<version>-arm64-mac.dmg` |
+| `mac-arm64` | `macos-26` | `aarch64-apple-darwin` | ad-hoc DMG | `Alpha-<version>-arm64-mac.dmg` |
 | `mac-x64` | `macos-15-intel` | `x86_64-apple-darwin` | ad-hoc DMG | `Alpha-<version>-x64-mac.dmg` |
 | `win-x64` | `windows-latest` | `x86_64-pc-windows-msvc` | NSIS `.exe` | `Alpha-<version>-x64-setup.exe` |
 | `win-arm64` | `windows-11-arm` | `aarch64-pc-windows-msvc` | NSIS `.exe` | `Alpha-<version>-arm64-setup.exe` |
