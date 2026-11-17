@@ -65,6 +65,48 @@ it('extracts a hash-verified cached library without a Python installer or networ
   }
 })
 
+it('retries a terminated runtime download and accepts the next verified response', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'desktop-download-retry-'))
+  try {
+    const bytes = Buffer.from('verified runtime asset')
+    const hash = createHash('sha256').update(bytes).digest('hex')
+    let attempts = 0
+    const archive = await downloadPrimaryRuntimeAsset('https://example.invalid/runtime.zip', hash, root, {
+      fetch: async () => {
+        attempts++
+        if (attempts === 1) {
+          throw Object.assign(new TypeError('terminated'), {
+            cause: Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' }),
+          })
+        }
+        return new Response(bytes)
+      },
+      retryDelay: async () => {},
+    })
+    expect(attempts).toBe(2)
+    expect(await readFile(archive)).toEqual(bytes)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+it('does not retry deterministic runtime download failures', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'desktop-download-no-retry-'))
+  try {
+    let attempts = 0
+    await expect(downloadPrimaryRuntimeAsset('https://example.invalid/missing.zip', 'a'.repeat(64), root, {
+      fetch: async () => {
+        attempts++
+        return new Response(null, { status: 404 })
+      },
+      retryDelay: async () => {},
+    })).rejects.toThrow('primary runtime download: 404')
+    expect(attempts).toBe(1)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
 it('routes every locked Node archive through an extractor that reads its compression', () => {
   const formats = Object.fromEntries(
     Object.entries(lock.targets).map(([target, artifact]) => [target, nodeArchiveFormat(artifact.nodeArchive)]),

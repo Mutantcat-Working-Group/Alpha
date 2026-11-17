@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.release.outputs.tag }}
+      # A tag push builds the tagged commit. A manual publication builds the
+      # dispatched commit while attaching its artifacts to the requested tag.
+      source_ref: ${{ github.sha }}
     steps:
       - name: Resolve the release tag
         id: release
@@ -121,7 +124,7 @@ jobs:
       # token rather than a persisted git credential.
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.prepare-release.outputs.tag }}
+          ref: ${{ needs.prepare-release.outputs.source_ref }}
           persist-credentials: false
           clean: true
 
@@ -294,7 +297,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.prepare-release.outputs.tag }}
+          ref: ${{ needs.prepare-release.outputs.source_ref }}
           persist-credentials: false
 
       # The release body is authored by the publisher, so the notes are appended

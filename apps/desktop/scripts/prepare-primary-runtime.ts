@@ -15,6 +15,72 @@ import lock from './primary-runtime-lock.json' with { type: 'json' }
 
 const SENSITIVE_ENVIRONMENT_NAME = /(?:KEY|SECRET|TOKEN|PASSWORD)/iu
 const WINDOWS_SIGNING_ENVIRONMENT_PREFIX = 'DSH_DESKTOP_WINDOWS_'
+const PRIMARY_RUNTIME_DOWNLOAD_ATTEMPTS = 3
+const PRIMARY_RUNTIME_RETRY_DELAY_MS = 1_000
+const TRANSIENT_NETWORK_CODES = new Set([
+  'EAI_AGAIN',
+  'ECONNRESET',
+  'ENETDOWN',
+  'ENETUNREACH',
+  'EPIPE',
+  'ETIMEDOUT',
+  'UND_ERR_BODY_TIMEOUT',
+  'UND_ERR_CONNECT_TIMEOUT',
+  'UND_ERR_HEADERS_TIMEOUT',
+  'UND_ERR_SOCKET',
+])
+
+/**
+ * Read a network error code from an error or its nested cause.
+ * @param error - Error thrown while downloading an asset.
+ * @param visited - Errors already traversed while following causes.
+ * @returns The first nested error code, when one exists.
+ */
+function networkErrorCode(error: unknown, visited = new Set<unknown>()): string | undefined {
+  if (typeof error !== 'object' || error === null || visited.has(error)) return undefined
+  visited.add(error)
+  const candidate = error as { cause?: unknown; code?: unknown; errors?: unknown }
+  if (typeof candidate.code === 'string') return candidate.code
+  if (Array.isArray(candidate.errors)) {
+    for (const nested of candidate.errors) {
+      const code = networkErrorCode(nested, visited)
+      if (code !== undefined) return code
+    }
+  }
+  return networkErrorCode(candidate.cause, visited)
+}
+
+/**
+ * Decide whether a failed runtime download can be retried at the external network edge.
+ * @param error - Error thrown by fetching or reading the response body.
+ * @returns Whether the error reports a connection reset, timeout, or terminated response.
+ */
+function isTransientRuntimeDownloadError(error: unknown): boolean {
+  if (error instanceof Error && error.message === 'terminated') return true
+  const code = networkErrorCode(error)
+  return code !== undefined && TRANSIENT_NETWORK_CODES.has(code)
+}
+
+async function waitForRuntimeDownloadRetry(attempt: number): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, PRIMARY_RUNTIME_RETRY_DELAY_MS * 2 ** (attempt - 1)))
+}
+
+async function fetchPrimaryRuntimeBytes(
+  url: string,
+  options: { fetch?: typeof fetch; retryDelay?: (attempt: number) => Promise<void> },
+): Promise<Buffer> {
+  const fetchAsset = options.fetch ?? fetch
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const response = await fetchAsset(url)
+      if (!response.ok) throw new Error(`primary runtime download: ${String(response.status)} ${url}`)
+      return Buffer.from(await response.arrayBuffer())
+    } catch (error) {
+      if (attempt === PRIMARY_RUNTIME_DOWNLOAD_ATTEMPTS || !isTransientRuntimeDownloadError(error)) throw error
+      await (options.retryDelay ?? waitForRuntimeDownloadRetry)(attempt)
+    }
+  }
+}
 
 /**
  * Remove inherited credentials before starting the bundled runtime smoke checks.
@@ -32,16 +98,20 @@ function scrubWindowsSigningEnvironment(environment: NodeJS.ProcessEnv): NodeJS.
  * @param url - Locked archive URL.
  * @param sha256 - Expected SHA-256 digest.
  * @param cache - Download cache directory.
+ * @param options - Fetch and retry dependencies for the external download boundary.
  * @returns Verified local archive path.
  */
-export async function downloadPrimaryRuntimeAsset(url: string, sha256: string, cache: string): Promise<string> {
+export async function downloadPrimaryRuntimeAsset(
+  url: string,
+  sha256: string,
+  cache: string,
+  options: { fetch?: typeof fetch; retryDelay?: (attempt: number) => Promise<void> } = {},
+): Promise<string> {
   const destination = join(cache, sha256)
   let bytes: Buffer
   try { bytes = readFileSync(destination) } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
-    const response = await fetch(url)
-    if (!response.ok) throw new Error(`primary runtime download: ${String(response.status)} ${url}`)
-    bytes = Buffer.from(await response.arrayBuffer())
+    bytes = await fetchPrimaryRuntimeBytes(url, options)
   }
   if (createHash('sha256').update(bytes).digest('hex') !== sha256) throw new Error(`primary runtime download: checksum mismatch for ${url}`)
   writeFileSync(destination, bytes)

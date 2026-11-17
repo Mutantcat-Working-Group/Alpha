@@ -59,6 +59,7 @@ describe('Release app workflow', () => {
 
   it('creates a missing release before any package uploads artifacts', () => {
     const prepare = prepareReleaseJob()
+    expect(prepare.outputs).toMatchObject({ source_ref: '${{ github.sha }}' })
     const steps = jobSteps(prepare, 'prepare-release')
     const ensure = stepNamed(steps, 'Ensure the GitHub release exists')
     expect(ensure.env).toMatchObject({
@@ -73,10 +74,10 @@ describe('Release app workflow', () => {
     expect(packageJob().needs).toBe('prepare-release')
   })
 
-  it('checks out and uploads to the tag resolved by the preparation job', () => {
+  it('builds the dispatched commit and uploads to the tag resolved by the preparation job', () => {
     const steps = packageSteps()
     const checkout = stepUsing(steps, 'actions/checkout@')
-    expect(stepInput(checkout, 'ref')).toBe('${{ needs.prepare-release.outputs.tag }}')
+    expect(stepInput(checkout, 'ref')).toBe('${{ needs.prepare-release.outputs.source_ref }}')
 
     const upload = stepNamed(steps, 'Upload to the release')
     expect(upload.env).toMatchObject({
@@ -107,7 +108,7 @@ describe('Release app workflow', () => {
       /^\$\{\{ runner\.temp \}\}\/setup-pnpm-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}-\$\{\{ github\.job \}\}$/u,
     )
     expect(stepInput(checkout, 'persist-credentials')).toBe(false)
-    expect(stepInput(checkout, 'ref')).toBe('${{ needs.prepare-release.outputs.tag }}')
+    expect(stepInput(checkout, 'ref')).toBe('${{ needs.prepare-release.outputs.source_ref }}')
   })
 })
 
